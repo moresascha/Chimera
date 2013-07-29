@@ -1,0 +1,104 @@
+<Level>
+	<Actor>
+		<PhysicComponent>
+			<Shape>plane</Shape>
+			<Material>static</Material>
+			<MeshFile>plane.obj</MeshFile>
+		</PhysicComponent>
+		<TransformComponent>
+			<Position x="0.0" y="0.0" z="0.0" />
+		</TransformComponent>
+		
+		<RenderComponent>
+			<MeshFile>plane.obj</MeshFile>
+		</RenderComponent>
+		
+	</Actor>
+	
+	<Actor>
+		<PhysicComponent>
+			<Shape>sphere</Shape>
+			<Material>kinematic</Material>
+			<MeshFile>plane.obj</MeshFile>
+			<Dimensions x="2" y="2" z="2" />
+		</PhysicComponent>
+		<RenderComponent>
+			<MeshFile>sphere.obj</MeshFile>
+		</RenderComponent>
+		<TransformComponent>
+			<Position x="0" y="5" z="10" />
+		</TransformComponent>
+		<PickableComponent/>
+    </Actor>
+	
+	<Actor>
+		<PhysicComponent>
+			<Material>kinematic</Material>
+			<Shape>box</Shape>
+			<MeshFile>plane.obj</MeshFile>
+			<Dimensions x="2" y="2" z="2" />
+		</PhysicComponent>
+		
+		<RenderComponent>
+			<MeshFile>box.obj</MeshFile>
+		</RenderComponent>
+		<TransformComponent>
+			<Position x="-6" y="1" z="10" />
+			<Rotation x="0.0" y="45" z="0" />
+		</TransformComponent>
+		<PickableComponent/>
+    </Actor>
+
+	<!--<Actor>
+		<RenderComponent>
+			<MeshFile>treppe.obj</MeshFile>
+		</RenderComponent>
+		<TransformComponent>
+			<Position x="-10" y="0" z="0" />
+			<Rotation x="0.0" y="90" z="0" />
+		</TransformComponent>
+    </Actor>-->
+	
+	<Actor>
+		<TransformComponent>
+			<Position x="-5" y="5" z="0.0" />
+		</TransformComponent>
+		<LightComponent>
+			<Type>Point</Type>
+			<Color r="255" g="192" b="203" />
+			<Radius>50</Radius>
+		</LightComponent>
+		<PickableComponent/>
+	</Actor>
+
+	<Actor>
+	<!--
+		<PhysicComponent>
+			<Shape>sphere</Shape>
+			<Material>dynamic</Material>
+			<Dimensions radius="1" />
+		</PhysicComponent> -->
+		<TransformComponent>
+			<Position x="5" y="5" z="0.0" />
+		</TransformComponent>
+		<LightComponent>
+			<Type>Point</Type>
+			<Color r="0" g="255" b="0" />
+			<Radius>50</Radius>
+		</LightComponent>
+		<PickableComponent/>
+	</Actor>
+	
+	<Actor>
+		<TransformComponent>
+			<Position x="0" y="5" z="15.0" />
+		</TransformComponent>
+		<LightComponent>
+			<Type>Point</Type>
+			<Color r="160" g="32" b="240" />
+			<Radius>50</Radius>
+		</LightComponent>
+		<PickableComponent/>
+	</Actor>
+
+</Level>

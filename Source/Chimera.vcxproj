@@ -1,0 +1,380 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build" ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup Label="ProjectConfigurations">
+    <ProjectConfiguration Include="Debug|Win32">
+      <Configuration>Debug</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Debug|x64">
+      <Configuration>Debug</Configuration>
+      <Platform>x64</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Release|Win32">
+      <Configuration>Release</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Release|x64">
+      <Configuration>Release</Configuration>
+      <Platform>x64</Platform>
+    </ProjectConfiguration>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="..\Assets\shader\ShaderGlobals.h" />
+    <ClInclude Include="chimera\Actor.h" />
+    <ClInclude Include="chimera\ActorFactory.h" />
+    <ClInclude Include="chimera\AIView.h" />
+    <ClInclude Include="chimera\Animation.h" />
+    <ClInclude Include="chimera\AxisAlignedBB.h" />
+    <ClInclude Include="chimera\BasicApp.h" />
+    <ClInclude Include="chimera\ByteStream.h" />
+    <ClInclude Include="chimera\Camera.h" />
+    <ClInclude Include="chimera\CameraDebugNode.h" />
+    <ClInclude Include="chimera\CameraTracking.h" />
+    <ClInclude Include="chimera\CascadedShadowMapper.h" />
+    <ClInclude Include="chimera\Commands.h" />
+    <ClInclude Include="chimera\Components.h" />
+    <ClInclude Include="chimera\Config.h" />
+    <ClInclude Include="chimera\ConstBuffer.h" />
+    <ClInclude Include="chimera\Cudah.h" />
+    <ClInclude Include="chimera\CudaTransformationNode.h" />
+    <ClInclude Include="chimera\d3d.h" />
+    <ClInclude Include="chimera\D3DRenderer.h" />
+    <ClInclude Include="chimera\D3DResource.h" />
+    <ClInclude Include="chimera\DebugSceneNode.h" />
+    <ClInclude Include="chimera\DebugStartup.h" />
+    <ClInclude Include="chimera\EditNode.h" />
+    <ClInclude Include="chimera\Effect.h" />
+    <ClInclude Include="chimera\Event.h" />
+    <ClInclude Include="chimera\EventManager.h" />
+    <ClInclude Include="chimera\FPSControler.h" />
+    <ClInclude Include="chimera\Frustum.h" />
+    <ClInclude Include="chimera\GameApp.h" />
+    <ClInclude Include="chimera\GameInputActions.h" />
+    <ClInclude Include="chimera\GameLogic.h" />
+    <ClInclude Include="chimera\GameView.h" />
+    <ClInclude Include="chimera\Geometry.h" />
+    <ClInclude Include="chimera\GeometryFactory.h" />
+    <ClInclude Include="chimera\GraphicsSettings.h" />
+    <ClInclude Include="chimera\GuiComponent.h" />
+    <ClInclude Include="chimera\GuiHelper.h" />
+    <ClInclude Include="chimera\Input.h" />
+    <ClInclude Include="chimera\InstancedMeshNode.h" />
+    <ClInclude Include="chimera\Level.h" />
+    <ClInclude Include="chimera\Line.h" />
+    <ClInclude Include="chimera\Locker.h" />
+    <ClInclude Include="chimera\Logger.h" />
+    <ClInclude Include="chimera\LuaHelper.h" />
+    <ClInclude Include="chimera\Mat4.h" />
+    <ClInclude Include="chimera\Material.h" />
+    <ClInclude Include="chimera\math.h" />
+    <ClInclude Include="chimera\Maze.h" />
+    <ClInclude Include="chimera\Mesh.h" />
+    <ClInclude Include="chimera\MeshNode.h" />
+    <ClInclude Include="chimera\Packman.h" />
+    <ClInclude Include="chimera\PackmanLogic.h" />
+    <ClInclude Include="chimera\ParticleManager.h" />
+    <ClInclude Include="chimera\ParticleNode.h" />
+    <ClInclude Include="chimera\ParticleSystem.h" />
+    <ClInclude Include="chimera\PhysicsSystem.h" />
+    <ClInclude Include="chimera\Picker.h" />
+    <ClInclude Include="chimera\Plane.h" />
+    <ClInclude Include="chimera\PointLightNode.h" />
+    <ClInclude Include="chimera\Process.h" />
+    <ClInclude Include="chimera\ProcessManager.h" />
+    <ClInclude Include="chimera\Profiling.h" />
+    <ClInclude Include="chimera\Renderer.h" />
+    <ClInclude Include="chimera\RenderPath.h" />
+    <ClInclude Include="chimera\RenderTarget.h" />
+    <ClInclude Include="chimera\resource.h" />
+    <ClInclude Include="chimera\Resources.h" />
+    <ClInclude Include="chimera\SceneGraph.h" />
+    <ClInclude Include="chimera\SceneNode.h" />
+    <ClInclude Include="chimera\Scheduler.h" />
+    <ClInclude Include="chimera\ScreenElement.h" />
+    <ClInclude Include="chimera\Script.h" />
+    <ClInclude Include="chimera\ScriptEvent.h" />
+    <ClInclude Include="chimera\ShaderProgram.h" />
+    <ClInclude Include="chimera\SkyDomeNode.h" />
+    <ClInclude Include="chimera\Sound.h" />
+    <ClInclude Include="chimera\SoundEngine.h" />
+    <ClInclude Include="chimera\Spline.h" />
+    <ClInclude Include="chimera\stdafx.h" />
+    <ClInclude Include="chimera\targetver.h" />
+    <ClInclude Include="chimera\tbdFont.h" />
+    <ClInclude Include="chimera\tbdStack.h" />
+    <ClInclude Include="chimera\Texture.h" />
+    <ClInclude Include="chimera\Thread.h" />
+    <ClInclude Include="chimera\Timer.h" />
+    <ClInclude Include="chimera\tinyxml2.h" />
+    <ClInclude Include="chimera\ts_queue.h" />
+    <ClInclude Include="chimera\util.h" />
+    <ClInclude Include="chimera\Vec3.h" />
+    <ClInclude Include="chimera\Vec4.h" />
+    <ClInclude Include="chimera\VRamManager.h" />
+    <ClInclude Include="resource.h" />
+    <ClInclude Include="resource1.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="chimera\Actor.cpp" />
+    <ClCompile Include="chimera\ActorFactory.cpp" />
+    <ClCompile Include="chimera\AIView.cpp" />
+    <ClCompile Include="chimera\AnchorNode.cpp" />
+    <ClCompile Include="chimera\AxisAlignedBB.cpp" />
+    <ClCompile Include="chimera\BasicApp.cpp" />
+    <ClCompile Include="chimera\ByteStream.cpp" />
+    <ClCompile Include="chimera\Camera.cpp" />
+    <ClCompile Include="chimera\CameraDebugNode.cpp" />
+    <ClCompile Include="chimera\CameraTracking.cpp" />
+    <ClCompile Include="chimera\CascadedShadowMapper.cpp" />
+    <ClCompile Include="chimera\Commands.cpp" />
+    <ClCompile Include="chimera\Components.cpp" />
+    <ClCompile Include="chimera\Config.cpp" />
+    <ClCompile Include="chimera\ConstBuffer.cpp" />
+    <ClCompile Include="chimera\Controller.cpp" />
+    <ClCompile Include="chimera\Cudah.cpp" />
+    <ClCompile Include="chimera\CudaTransformationNode.cpp" />
+    <ClCompile Include="chimera\d3d.cpp" />
+    <ClCompile Include="chimera\D3DRenderer.cpp" />
+    <ClCompile Include="chimera\Effect.cpp" />
+    <ClCompile Include="chimera\Event.cpp" />
+    <ClCompile Include="chimera\EventManager.cpp" />
+    <ClCompile Include="chimera\FPSControler.cpp" />
+    <ClCompile Include="chimera\Frustum.cpp" />
+    <ClCompile Include="chimera\GameApp.cpp" />
+    <ClCompile Include="chimera\GameInputActions.cpp" />
+    <ClCompile Include="chimera\GameLogic.cpp" />
+    <ClCompile Include="chimera\GameView.cpp" />
+    <ClCompile Include="chimera\Geometry.cpp" />
+    <ClCompile Include="chimera\GeometryFactory.cpp" />
+    <ClCompile Include="chimera\GeometryNode.cpp" />
+    <ClCompile Include="chimera\GraphicsSettings.cpp" />
+    <ClCompile Include="chimera\GuiComponent.cpp" />
+    <ClCompile Include="chimera\Input.cpp" />
+    <ClCompile Include="chimera\InstancedMeshNode.cpp" />
+    <ClCompile Include="chimera\Level.cpp" />
+    <ClCompile Include="chimera\LoaderImp.cpp" />
+    <ClCompile Include="chimera\Logger.cpp" />
+    <ClCompile Include="chimera\LuaHelper.cpp" />
+    <ClCompile Include="chimera\Main.cpp" />
+    <ClCompile Include="chimera\Material.cpp" />
+    <ClCompile Include="chimera\MatVec.cpp" />
+    <ClCompile Include="chimera\Maze.cpp" />
+    <ClCompile Include="chimera\Mesh.cpp" />
+    <ClCompile Include="chimera\MeshNode.cpp" />
+    <ClCompile Include="chimera\Modifier.cpp" />
+    <ClCompile Include="chimera\Packman.cpp" />
+    <ClCompile Include="chimera\PackmanLogic.cpp" />
+    <ClCompile Include="chimera\ParticleManager.cpp" />
+    <ClCompile Include="chimera\ParticleNode.cpp" />
+    <ClCompile Include="chimera\ParticleSystem.cpp" />
+    <ClCompile Include="chimera\PhysicsSystem.cpp" />
+    <ClCompile Include="chimera\Picker.cpp" />
+    <ClCompile Include="chimera\PointLightNode.cpp" />
+    <ClCompile Include="chimera\Process.cpp" />
+    <ClCompile Include="chimera\ProcessManager.cpp" />
+    <ClCompile Include="chimera\Profiling.cpp" />
+    <ClCompile Include="chimera\RenderTarget.cpp" />
+    <ClCompile Include="chimera\Resources.cpp" />
+    <ClCompile Include="chimera\SceneGraph.cpp" />
+    <ClCompile Include="chimera\SceneNode.cpp" />
+    <ClCompile Include="chimera\Scheduler.cpp" />
+    <ClCompile Include="chimera\ScreenElement.cpp" />
+    <ClCompile Include="chimera\Script.cpp" />
+    <ClCompile Include="chimera\ScriptEvent.cpp" />
+    <ClCompile Include="chimera\ShaderProgram.cpp" />
+    <ClCompile Include="chimera\SkyDomeNode.cpp" />
+    <ClCompile Include="chimera\Sound.cpp" />
+    <ClCompile Include="chimera\SoundEngine.cpp" />
+    <ClCompile Include="chimera\SoundProcess.cpp" />
+    <ClCompile Include="chimera\Spline.cpp" />
+    <ClCompile Include="chimera\tbdFont.cpp" />
+    <ClCompile Include="chimera\tbdStack.cpp" />
+    <ClCompile Include="chimera\Texture.cpp" />
+    <ClCompile Include="chimera\Thread.cpp" />
+    <ClCompile Include="chimera\Timer.cpp" />
+    <ClCompile Include="chimera\tinyxml2.cpp" />
+    <ClCompile Include="chimera\util.cpp" />
+    <ClCompile Include="chimera\VRamManager.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="..\Assets\icon\icon.ico" />
+    <None Include="..\Assets\shader\BoundingGeo.hlsl" />
+    <None Include="..\Assets\shader\CascadedShadowMap.hlsl" />
+    <None Include="..\Assets\shader\DefShading.hlsl" />
+    <None Include="..\Assets\shader\Effects.hlsl" />
+    <None Include="..\Assets\shader\GeometryTransformation.ptx" />
+    <None Include="..\Assets\shader\Gui.hlsl" />
+    <None Include="..\Assets\shader\Lighting.hlsl" />
+    <None Include="..\Assets\shader\Main.hlsl" />
+    <None Include="..\Assets\shader\Particles.hlsl" />
+    <None Include="..\Assets\shader\Particles.ptx" />
+    <None Include="..\Assets\shader\Picking.hlsl" />
+    <None Include="..\Assets\shader\PointLightShadowMap.hlsl" />
+    <None Include="..\Assets\shader\ScreenQuad.hlsl" />
+    <None Include="..\Assets\shader\Sky.hlsl" />
+    <None Include="..\Assets\shader\Transparency.hlsl" />
+    <None Include="chimera\GeometryTransformation.cu" />
+    <CudaCompile Include="chimera\Particles.cu">
+      <FileType>Document</FileType>
+      <CompileOut Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">.\chimera\ptx\%(Filename).ptx</CompileOut>
+      <NvccCompilation Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">ptx</NvccCompilation>
+      <TargetMachinePlatform Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">64</TargetMachinePlatform>
+      <Include Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">../Include</Include>
+    </CudaCompile>
+    <None Include="chimera\Particles.cuh" />
+    <None Include="chimera\Transformation.cuh" />
+  </ItemGroup>
+  <ItemGroup>
+    <ResourceCompile Include="Chimera.rc" />
+  </ItemGroup>
+  <PropertyGroup Label="Globals">
+    <ProjectGuid>{528B376B-7ED9-449B-8FCD-365684CC6C67}</ProjectGuid>
+    <RootNamespace>Chimera</RootNamespace>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
+    <ConfigurationType>Application</ConfigurationType>
+    <UseDebugLibraries>true</UseDebugLibraries>
+    <CharacterSet>MultiByte</CharacterSet>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="Configuration">
+    <ConfigurationType>Application</ConfigurationType>
+    <UseDebugLibraries>true</UseDebugLibraries>
+    <CharacterSet>Unicode</CharacterSet>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="Configuration">
+    <ConfigurationType>Application</ConfigurationType>
+    <UseDebugLibraries>false</UseDebugLibraries>
+    <WholeProgramOptimization>true</WholeProgramOptimization>
+    <CharacterSet>MultiByte</CharacterSet>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="Configuration">
+    <ConfigurationType>Application</ConfigurationType>
+    <UseDebugLibraries>false</UseDebugLibraries>
+    <WholeProgramOptimization>true</WholeProgramOptimization>
+    <CharacterSet>Unicode</CharacterSet>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
+  <ImportGroup Label="ExtensionSettings">
+    <Import Project="$(VCTargetsPath)\BuildCustomizations\CUDA 4.2.props" />
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="PropertySheets">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="PropertySheets">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <PropertyGroup Label="UserMacros" />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <IntDir>$(SolutionDir)..\..\Tmp\$(ProjectName)$(PlatformName)$(Configuration)\</IntDir>
+    <OutDir>$(SolutionDir)..\..\Lib\$(PlatformName)$(Configuration)\</OutDir>
+    <TargetName>$(ProjectName)$(PlatformName)$(Configuration)</TargetName>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+    <IntDir>$(SolutionDir)..\Tmp\$(ProjectName)$(PlatformName)$(Configuration)\</IntDir>
+    <OutDir>$(SolutionDir)..\Bin\$(PlatformName)$(Configuration)\</OutDir>
+    <TargetName>$(ProjectName)$(PlatformName)$(Configuration)</TargetName>
+    <IncludePath>$(CUDA_PATH_V42)include;$(DXSDK_DIR)Include;$(IncludePath)</IncludePath>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+    <IncludePath>$(CUDA_PATH_V42)include;$(DXSDK_DIR)Include;$(IncludePath)</IncludePath>
+    <OutDir>$(SolutionDir)..\Bin\$(PlatformName)$(Configuration)\</OutDir>
+    <IntDir>$(SolutionDir)..\Tmp\$(ProjectName)$(PlatformName)$(Configuration)\</IntDir>
+    <TargetName>$(ProjectName)$(PlatformName)$(Configuration)</TargetName>
+  </PropertyGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <ClCompile>
+      <WarningLevel>Level3</WarningLevel>
+      <Optimization>Disabled</Optimization>
+    </ClCompile>
+    <Link>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+    <ClCompile>
+      <WarningLevel>Level3</WarningLevel>
+      <Optimization>Disabled</Optimization>
+      <AdditionalIncludeDirectories>../Include;./Source/Chimera;../Include/physx/foundation;../Include/physx/Source/foundation/include;../Include/physx/physxprofilesdk;../Include/physx/physxvisualdebuggersdk;../Include/physx/common;../Include/physx/geometry;../Include/physx/pvd;../Include/physx/particles;../Include/physx/cooking;../Include/physx/extensions;../Include/physx/characterdynamic;../Include/physx/vehicle;../Include/physx/RepX;../Include/physx/RepXUpgrader;../Include/physx/Source/GeomUtils/headers;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
+      <PrecompiledHeaderOutputFile>$(IntDir)StdAfx.pch</PrecompiledHeaderOutputFile>
+      <MultiProcessorCompilation>true</MultiProcessorCompilation>
+      <MinimalRebuild>false</MinimalRebuild>
+    </ClCompile>
+    <Link>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <AdditionalLibraryDirectories>../Lib;$(DXSDK_DIR)Lib/$(PlatformName)</AdditionalLibraryDirectories>
+      <IgnoreSpecificDefaultLibraries>LIBCMTD;LIBCMT;libcpmt;%(IgnoreSpecificDefaultLibraries)</IgnoreSpecificDefaultLibraries>
+    </Link>
+    <CudaCompile>
+      <Include>../Include</Include>
+    </CudaCompile>
+    <CudaCompile>
+      <NvccCompilation>ptx</NvccCompilation>
+    </CudaCompile>
+    <CudaCompile>
+      <TargetMachinePlatform>64</TargetMachinePlatform>
+      <CompileOut>.\chimera\ptx\%(Filename).ptx</CompileOut>
+      <Keep>true</Keep>
+      <KeepDir>$(SolutionDir)..\Tmp\$(ProjectName)$(PlatformName)$(Configuration)\</KeepDir>
+    </CudaCompile>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <ClCompile>
+      <WarningLevel>Level3</WarningLevel>
+      <Optimization>MaxSpeed</Optimization>
+      <FunctionLevelLinking>true</FunctionLevelLinking>
+      <IntrinsicFunctions>true</IntrinsicFunctions>
+    </ClCompile>
+    <Link>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <EnableCOMDATFolding>true</EnableCOMDATFolding>
+      <OptimizeReferences>true</OptimizeReferences>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+    <ClCompile>
+      <WarningLevel>Level3</WarningLevel>
+      <Optimization>MaxSpeed</Optimization>
+      <FunctionLevelLinking>true</FunctionLevelLinking>
+      <IntrinsicFunctions>true</IntrinsicFunctions>
+      <AdditionalIncludeDirectories>../Include;./Source/Chimera;../Include/physx/foundation;../Include/physx/Source/foundation/include;../Include/physx/physxprofilesdk;../Include/physx/physxvisualdebuggersdk;../Include/physx/common;../Include/physx/geometry;../Include/physx/pvd;../Include/physx/particles;../Include/physx/cooking;../Include/physx/extensions;../Include/physx/characterdynamic;../Include/physx/vehicle;../Include/physx/RepX;../Include/physx/RepXUpgrader;../Include/physx/Source/GeomUtils/headers;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <MultiProcessorCompilation>true</MultiProcessorCompilation>
+    </ClCompile>
+    <Link>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <EnableCOMDATFolding>true</EnableCOMDATFolding>
+      <OptimizeReferences>true</OptimizeReferences>
+      <IgnoreSpecificDefaultLibraries>LIBCMTD;LIBCMT;libcpmt;%(IgnoreSpecificDefaultLibraries)</IgnoreSpecificDefaultLibraries>
+      <AdditionalLibraryDirectories>../Lib;$(DXSDK_DIR)Lib/$(PlatformName)</AdditionalLibraryDirectories>
+    </Link>
+    <CudaCompile>
+      <CompileOut>.\chimera\ptx\%(Filename).ptx</CompileOut>
+    </CudaCompile>
+    <CudaCompile>
+      <Include>../Include</Include>
+    </CudaCompile>
+    <CudaCompile>
+      <Keep>true</Keep>
+    </CudaCompile>
+    <CudaCompile>
+      <KeepDir>$(SolutionDir)..\Tmp\$(ProjectName)$(PlatformName)$(Configuration)\</KeepDir>
+    </CudaCompile>
+    <CudaCompile>
+      <NvccCompilation>ptx</NvccCompilation>
+    </CudaCompile>
+    <CudaCompile>
+      <TargetMachinePlatform>64</TargetMachinePlatform>
+    </CudaCompile>
+  </ItemDefinitionGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
+  <ImportGroup Label="ExtensionTargets">
+    <Import Project="$(VCTargetsPath)\BuildCustomizations\CUDA 4.2.targets" />
+  </ImportGroup>
+</Project>
