@@ -52,7 +52,7 @@ namespace d3d
         this->m_constBuffer[eMaterialBuffer]->Init(sizeof(_MaterialBuffer));
 
         this->m_constBuffer[ePointLightBuffer]  = new d3d::ConstBuffer();
-        this->m_constBuffer[ePointLightBuffer]->Init(sizeof(_PointLightBuffer));
+        this->m_constBuffer[ePointLightBuffer]->Init(sizeof(_LightSettingsBuffer));
 
         this->m_constBuffer[eCubeMapViewsBuffer] = new d3d::ConstBuffer();
         this->m_constBuffer[eCubeMapViewsBuffer]->Init(sizeof(_CubeMapViewsBuffer));
@@ -376,9 +376,9 @@ namespace d3d
         this->m_constBuffer[eCubeMapViewsBuffer]->Unmap();
     }
 
-    VOID D3DRenderer::SetPointLightSettings(CONST util::Vec4& color, CONST util::Vec3& position, FLOAT radius)
+    VOID D3DRenderer::SetLightSettings(CONST util::Vec4& color, CONST util::Vec3& position, FLOAT radius)
     {
-        _PointLightBuffer* plb = (_PointLightBuffer*)this->m_constBuffer[ePointLightBuffer]->Map();
+        _LightSettingsBuffer* plb = (_LightSettingsBuffer*)this->m_constBuffer[ePointLightBuffer]->Map();
         plb->m_colorNRadiusW.x = color.x;
         plb->m_colorNRadiusW.y = color.y;
         plb->m_colorNRadiusW.z = color.z;

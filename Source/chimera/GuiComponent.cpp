@@ -10,6 +10,7 @@
 #include "Input.h"
 #include "VRamManager.h"
 #include "Effect.h"
+#include "math.h"
 
 namespace tbd
 {
@@ -60,7 +61,7 @@ namespace tbd
         BOOL D3DGuiComponent::VOnRestore(VOID)
         {
             m_pPixelShader = d3d::PixelShader::CreateShader(m_shaderName.c_str(), L"Gui.hlsl", m_shaderName.c_str());
-            return TRUE;
+            return ScreenElement::VOnRestore();
         }
 
         GuiRectangle::GuiRectangle(VOID)
@@ -222,6 +223,11 @@ namespace tbd
             SetTexture("");
         }
 
+        CONST std::vector<TextLine> GuiTextComponent::GetTextLines() CONST
+        {
+            return m_textLines;
+        }
+
         VOID GuiTextComponent::SetAlignment(Alignment alignment)
         {
             m_alignment = alignment;
@@ -335,9 +341,9 @@ namespace tbd
                 for(INT i = (INT)m_textLines.size() - 1; i >= 0; --i)
                 {
                     TextLine line = m_textLines[i];
-                    DrawText(line, x + 2, y - lineheight - 2);
-                    y -= lineheight;
-                    if((y-lineheight) < (INT)VGetPosY())
+                    DrawText(line, x + 2, VGetHeight() - y - lineheight - 2);
+                    y += lineheight;
+                    if((VGetHeight()-y-lineheight) < (INT)VGetPosY())
                     {
                         break;
                     }
@@ -495,16 +501,7 @@ namespace tbd
 
         }
 
-        GuiConsole::GuiConsole(VOID) : m_currentHistoryLine(0) , m_pAutoComplete(NULL), m_pTextLabel(NULL), m_pTextInput(NULL)
-        {
-        }
-
-        VOID GuiConsole::AppendText(CONST std::string& text)
-        {
-            m_pTextLabel->AppendText(text);
-        }
-
-        BOOL GuiConsole::VOnRestore(VOID)
+        GuiConsole::GuiConsole(VOID) : m_currentHistoryLine(0) , m_pAutoComplete(NULL), m_pTextLabel(NULL), m_pTextInput(NULL), m_currentAutoCompleteIndex(-1)
         {
             m_pTextInput = new GuiTextInput();
             AddComponent("input", m_pTextInput);
@@ -516,7 +513,16 @@ namespace tbd
 
             m_pAutoComplete = new GuiTextComponent();
             AddComponent("autocomplete", m_pAutoComplete);
+        }
 
+        VOID GuiConsole::AppendText(CONST std::string& text)
+        {
+            m_pTextLabel->AppendText(text);
+        }
+
+        //Todo: create factory
+        BOOL GuiConsole::VOnRestore(VOID)
+        {
             tbd::KeyboardButtonPressedListener l0 = fastdelegate::MakeDelegate(this, &GuiConsole::ComputeInput);
             tbd::KeyboardButtonRepeatListener l1 = fastdelegate::MakeDelegate(this, &GuiConsole::ComputeInput);
             
@@ -549,14 +555,14 @@ namespace tbd
             m_pTextLabel->SetTextColor(c);
 
             dim.x = VGetPosX();
-            dim.y = VGetPosY() + (INT)(VGetHeight() * 0.75);
+            dim.y = VGetPosY() + (INT)(VGetHeight() * 0.75) + 16;
             dim.w = 200;
             dim.h = 100;
 
             m_pAutoComplete->VSetDimension(dim);
             m_pAutoComplete->SetTextColor(c);
 
-            return TRUE;
+            return ScreenElementContainer::VOnRestore();
         }
 
         VOID GuiConsole::VSetActive(BOOL active)
@@ -569,6 +575,15 @@ namespace tbd
             else
             {
                 m_pTextInput->Deactivate();
+            }
+        }
+
+        VOID GuiConsole::SetAutoComplete(VOID)
+        {
+            CLAMP(m_currentAutoCompleteIndex, 0, (INT)m_pAutoComplete->GetTextLines().size()-1);
+            if(m_pAutoComplete->GetTextLines().size() > 0 )
+            {
+                m_pTextInput->SetText(m_pAutoComplete->GetTextLines()[m_currentAutoCompleteIndex].text);
             }
         }
 
@@ -598,25 +613,50 @@ namespace tbd
             }
             else if(code == KEY_ARROW_UP)
             {
-                m_currentHistoryLine--;
-                m_currentHistoryLine = m_currentHistoryLine < 0 ? 0 : m_currentHistoryLine;
-                if(m_commandHistory.size() > 0)
+
+                if(m_pAutoComplete->GetTextLines().size() > 0)
                 {
-                    m_pTextInput->SetText(m_commandHistory[m_currentHistoryLine]);
+                    m_currentAutoCompleteIndex--;
+                    SetAutoComplete();
+                    return;
+                }
+                else
+                {
+                    m_currentHistoryLine--;
+                    m_currentHistoryLine = m_currentHistoryLine < 0 ? 0 : m_currentHistoryLine;
+                    if(m_commandHistory.size() > 0)
+                    {
+                        m_pTextInput->SetText(m_commandHistory[m_currentHistoryLine]);
+                    }
                 }
             }
             else if(code == KEY_ARROW_DOWN)
             {
-                m_currentHistoryLine++;
-                m_currentHistoryLine = (INT)(m_currentHistoryLine >= m_commandHistory.size() ? m_commandHistory.size() - 1 : m_currentHistoryLine);
-                if(m_commandHistory.size() > 0)
+
+                if(m_pAutoComplete->GetTextLines().size() > 0)
                 {
-                    m_pTextInput->SetText(m_commandHistory[m_currentHistoryLine]);
+                    m_currentAutoCompleteIndex++;
+                    SetAutoComplete();
+                    return;
+                }
+                else
+                {
+                    m_currentHistoryLine++;
+                    m_currentHistoryLine = (INT)(m_currentHistoryLine >= m_commandHistory.size() ? m_commandHistory.size() - 1 : m_currentHistoryLine);
+                    if(m_commandHistory.size() > 0)
+                    {
+                        m_pTextInput->SetText(m_commandHistory[m_currentHistoryLine]);
+                    }
                 }
             }
             else if(code == KEY_CIRCUMFLEX)
             {
                 app::g_pApp->GetHumanView()->ToggleConsole();
+            }
+            else if(code == KEY_TAB)
+            {
+                SetAutoComplete();
+                m_currentAutoCompleteIndex = 0;
             }
 
             m_pAutoComplete->ClearText();

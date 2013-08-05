@@ -15,7 +15,7 @@ namespace tbd
 }
 namespace tbd 
 {
-    class PointLightNode : public tbd::SceneNode
+    class PointlightNode : public tbd::SceneNode
     {
     private:
         util::Mat4 m_mats[6];
@@ -31,7 +31,7 @@ namespace tbd
     public:
         static d3d::RenderTarget* g_pCubeMapRenderTarget;
     public:
-        PointLightNode(ActorId actorid);
+        PointlightNode(ActorId actorid);
         VOID _VRender(tbd::SceneGraph* graph, tbd::RenderPath& path);
         BOOL VIsVisible(SceneGraph* graph);
         static BOOL Create(VOID);
@@ -39,6 +39,6 @@ namespace tbd
         VOID VOnRestore(tbd::SceneGraph* graph);
         VOID VOnActorMoved(VOID);
         UINT VGetRenderPaths(VOID);
-        ~PointLightNode(VOID);
+        ~PointlightNode(VOID);
     };
 };

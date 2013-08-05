@@ -5,6 +5,7 @@
 #include "D3DRenderer.h"
 #include "Camera.h"
 #include "DebugStartup.h"
+#include "SpotlightNode.h"
 
 namespace app
 {
@@ -19,68 +20,31 @@ namespace app
 
         m_pHumanView = new tbd::HumanGameView();
 
-        tbd::Dimension dim;
-        dim.x = 0;
-        dim.y = 0;
-        dim.w = d3d::g_width;
-        dim.h = d3d::g_height;
+
+
+#ifndef FAST_STARTUP
 
         std::shared_ptr<tbd::DefaultGraphicsSettings> gs = std::shared_ptr<tbd::DefaultGraphicsSettings>(new tbd::DefaultGraphicsSettings());
         tbd::RenderScreen* screen = new tbd::RenderScreen(gs);
         screen->VSetName("default");
-        screen->VSetDimension(dim);
         m_pHumanView->AddScene(screen);
 
         std::shared_ptr<tbd::EditorGraphicsSettings> egs = std::shared_ptr<tbd::EditorGraphicsSettings>(new tbd::EditorGraphicsSettings());
         screen = new tbd::RenderScreen(egs);
         screen->VSetName("editor");
-        screen->VSetDimension(dim);
         m_pHumanView->AddScene(screen);
 
         std::shared_ptr<tbd::ProfileGraphicsSettings> pgs = std::shared_ptr<tbd::ProfileGraphicsSettings>(new tbd::ProfileGraphicsSettings());
         screen = new tbd::RenderScreen(pgs);
         screen->VSetName("profile");
-        screen->VSetDimension(dim);
+        m_pHumanView->AddScene(screen);
+#else
+
+        tbd::DefShaderRenderScreen* screen = new tbd::DefShaderRenderScreen(d3d::Diff_DiffuseColorSpecBTarget);
+        screen->VSetName("bla");
         m_pHumanView->AddScene(screen);
 
-//#ifndef FAST_STARTUP
-        /*
-
-        std::shared_ptr<tbd::DebugGraphicsSettings> dgs = std::shared_ptr<tbd::DebugGraphicsSettings>(new tbd::DebugGraphicsSettings());
-        screen = new tbd::RenderScreen(dgs);
-        screen->VSetName("debug");
-        dim.x = 0;
-        dim.y = 0;
-        dim.w = d3d::g_width;
-        dim.h = d3d::g_height;
-        screen->VSetDimension(dim);
-        m_pHumanView->AddScene(screen);
-
-        std::shared_ptr<tbd::EditorGraphicsSettings> egs = std::shared_ptr<tbd::EditorGraphicsSettings>(new tbd::EditorGraphicsSettings(gs.get()));
-        screen = new tbd::RenderScreen(egs);
-        screen->VSetName("editor");
-        dim.x = 0;
-        dim.y = 0;
-        dim.w = d3d::g_width;
-        dim.h = d3d::g_height;
-        screen->VSetDimension(dim);
-        m_pHumanView->AddScene(screen);
-
-        std::shared_ptr<tbd::WireFrameFilledSettings> wfs = std::shared_ptr<tbd::WireFrameFilledSettings>(new tbd::WireFrameFilledSettings(gs.get()));
-        screen = new tbd::RenderScreen(wfs);
-        screen->VSetName("wire");
-        dim.x = 0;
-        dim.y = 0;
-        dim.w = d3d::g_width;
-        dim.h = d3d::g_height;
-        screen->VSetDimension(dim);
-        m_pHumanView->AddScene(screen); */
-//#else
-
-        /*
-        std::shared_ptr<tbd::SimpleSettings> gs = std::shared_ptr<tbd::SimpleSettings>(new tbd::SimpleSettings(FALSE)); */
-
-//#endif
+#endif
 
         /*std::shared_ptr<tbd::DebugGraphicsSettings> dgs = std::shared_ptr<tbd::DebugGraphicsSettings>(new tbd::DebugGraphicsSettings());
         screen = new tbd::RenderScreen(dgs);
@@ -136,7 +100,17 @@ namespace app
         screen->VSetDimension(dim);
         m_pHumanView->AddScreenElement(screen); */
 
-        m_pHumanView->SetName("HGameView");
+        tbd::RendertargetScreen* shadowMap = new tbd::RendertargetScreen(tbd::SpotlightNode::g_pShadowRenderTarget);
+        tbd::Dimension dim;
+        dim.x = 0;
+        dim.y = 0;
+        dim.w = d3d::g_width / 4;
+        dim.h = d3d::g_height / 4;
+        shadowMap->VSetDimension(dim);
+        m_pHumanView->AddScreenElement(shadowMap);
+        m_pHumanView->SetName("Shadowmap");
+
+
         std::shared_ptr<tbd::Actor> camera = m_pLogic->VCreateActor("camera.xml");
         
         camera->SetName("player");
@@ -179,7 +153,7 @@ namespace app
         tbd::gui::InformationWindow* wnd = new tbd::gui::InformationWindow();
         wnd->VSetBackgroundColor(0,0,0);
         wnd->VSetAlpha(0);
-
+        
         dim.x = (INT)(0.8 * d3d::g_width);
         dim.y = 12;
         dim.w = (INT)(0.2 * d3d::g_width);
@@ -187,14 +161,15 @@ namespace app
         wnd->VSetDimension(dim);
         c->AddComponent("informationwindow", wnd);
 
-        tbd::gui::GuiSpriteComponent* crossHair = new tbd::gui::GuiSpriteComponent(0, 0, 8, 8);
-        dim.x = d3d::g_width / 2 - 4;
-        dim.y = d3d::g_height / 2 - 4;
-        dim.h = 8;
-        dim.w = 8;
+        tbd::gui::GuiSpriteComponent* crossHair = new tbd::gui::GuiSpriteComponent(0, 0, 7, 7);
+        dim.x = (d3d::g_width / 2 - 3);
+        dim.y = (d3d::g_height / 2 - 3);
+        dim.h = 7;
+        dim.w = 7;
         crossHair->VSetBackgroundColor(1,1,1);
         crossHair->VSetDimension(dim);
-        crossHair->SetTexture("crosshair_dot.png");
+        crossHair->VSetName("CH");
+        crossHair->SetTexture("crosshair_cross.png");
         c->AddComponent("CH", crossHair);
 
         

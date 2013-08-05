@@ -11,8 +11,8 @@
     }
 
 #define CHECK_IN (!IsOut(&pos, &min, &max)) 
-  
-typedef unsigned int UINT; 
+   
+typedef unsigned int UINT;  
  
 #define GlobalId blockDim.x * blockIdx.x + threadIdx.x
  
@@ -181,7 +181,7 @@ extern "C" __global__ void _computeGradientField(float4* positions, float3* acc,
     float t = 5;
     float s = t - t * (distanceSquared / (range * range));
 
-    grad *= s;
+    grad *= 0.5 * s;
 
     float3 a = acc[id];
     a.x += grad.x;

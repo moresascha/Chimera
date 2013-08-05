@@ -150,6 +150,8 @@ namespace tbd
 
         VOID LevelLoadedDelegate(event::IEventPtr pEventData);
 
+        VOID Resize(UINT w, UINT h, BOOL fullscreen);
+
         virtual ~HumanGameView(VOID);
     };
 

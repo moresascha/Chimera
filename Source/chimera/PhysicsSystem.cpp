@@ -5,6 +5,12 @@
 #include "GameLogic.h"
 #include "EventManager.h"
 #include "Mesh.h"
+#include "math.h"
+
+#include "GameApp.h"
+#include "GameView.h"
+#include "SceneGraph.h"
+#include "Camera.h"
 
 #define NDEBUG
 
@@ -404,26 +410,19 @@ namespace logic
         m_controller[id] = c;
     }
 
-    VOID PhysX::VMoveKinematic(std::shared_ptr<tbd::Actor> actor, CONST util::Vec3& posDelta, CONST util::Vec3& rotationDelta, FLOAT deltaMillis, BOOL isDeltaMove) 
+    VOID PhysX::VMoveKinematic(std::shared_ptr<tbd::Actor> actor, CONST util::Vec3& posDelta, CONST util::Vec3& rotationDelta, FLOAT deltaMillis, BOOL isDeltaMove, BOOL isJump) 
     {
         auto it = m_controller.find(actor->GetId());
         if(it != m_controller.end())
         {
             Controller_& conroller = it->second;
             
-            if(posDelta.y > 0)
+            if(isJump)
             {
                 conroller.Jump(posDelta.y);
             }
 
             conroller.Move(posDelta.x, posDelta.z, deltaMillis);
-
-            //conroller.m_rotation = rotationDelta;
-            //std::shared_ptr<tbd::TransformComponent> comp = actor->GetComponent<tbd::TransformComponent>(tbd::TransformComponent::COMPONENT_ID).lock();
-            //comp->GetTransformation()->Rotate(rotationDelta.x, rotationDelta.y, rotationDelta.z);
-            //comp->GetTransformation()->GetPitchYawRoll(conroller.m_rotation);
-            /*event::IEventPtr aMoved(new event::ActorMovedEvent(actor->GetId()));
-            event::IEventManager::Get()->VQueueEvent(aMoved); */
         }
         else
         {
@@ -774,7 +773,7 @@ namespace logic
         } 
     }
 
-    PhysX::Controller_::Controller_(VOID) : m_controller(NULL), m_time(0), m_jumpDy(1), m_a(10)
+    PhysX::Controller_::Controller_(VOID) : m_controller(NULL), m_time(0), m_jumpDy(1), m_jumpVelo(0), m_a(-9.81f), m_p0(0), m_p1(0), m_maxJumpvalueFunc(1)
     {
         SetJumpSettings(2.0f);
         m_time = 0.55f;
@@ -782,7 +781,8 @@ namespace logic
 
     VOID PhysX::Controller_::Move(FLOAT dx, FLOAT dz, FLOAT deltaMillis)
     {
-        m_controller->move(physx::PxVec3(dx, 0, dz), 0.0f, deltaMillis, physx::PxControllerFilters(), NULL);
+        physx::PxVec3 dm(dx, 0, dz);
+        m_controller->move(dm, 0.0f, deltaMillis, physx::PxControllerFilters(), NULL);
     }
 
     BOOL PhysX::Controller_::IsOnGround(VOID)
@@ -798,14 +798,15 @@ namespace logic
         {
             m_jumpDy = dy;
             m_time = 0;
-            m_a = m_jumpDy / (m_m * m_m);
+            FLOAT th = m_duration * 0.5f;
+            m_jumpVelo = -th * m_a;
+            m_maxJumpvalueFunc = m_jumpVelo * th + 0.5f * m_a * th * th;
         }
     }
 
     VOID PhysX::Controller_::SetJumpSettings(FLOAT duration)
     {
         m_duration = duration;
-        m_m = m_duration * 0.5f;
     }
 
     VOID PhysX::Controller_::Update(FLOAT deltaMillis)
@@ -813,9 +814,23 @@ namespace logic
         if(!IsOnGround())
         {
             m_time += deltaMillis;
-            FLOAT jd = -m_a * (m_time - m_m);
-            jd *= deltaMillis;
-            m_controller->move(physx::PxVec3(0, jd, 0), 0.0f, deltaMillis, physx::PxControllerFilters(), NULL);
+            //todo: find time bug
+            FLOAT p = m_jumpVelo * m_time + 0.5f * m_a * m_time * m_time;
+            p = p / m_maxJumpvalueFunc * m_jumpDy;
+
+            m_p0 = m_p1;
+            m_p1 = p;
+            
+            m_controller->move(physx::PxVec3(0, m_p1 - m_p0, 0), 0.0f, deltaMillis, physx::PxControllerFilters(), NULL);
+        }
+        else
+        {
+            m_p0 = 0;
+            m_p1 = 0;
+            m_jumpVelo = 0;
+            m_jumpDy = 1;
+            m_time = 0;
+            m_maxJumpvalueFunc = 1;
         }
     }
 };

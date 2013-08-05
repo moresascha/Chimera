@@ -259,7 +259,7 @@ namespace tbd
             move.x = factor;
         }
 
-        if(move.x != 0 || move.y != 0 || move.z != 0)
+        if(move.x != 0 || move.z != 0)
         {
             std::shared_ptr<util::ICamera> camera = m_cameraComp->GetCamera();
 
@@ -268,7 +268,7 @@ namespace tbd
             util::Vec3 deltaX(camera->GetSideDir());
             deltaX.Scale(move.x);
 
-            util::Vec3 deltaZ(camera->GetViewDir());
+            util::Vec3 deltaZ(camera->GetViewDirXZ());
             deltaZ.Scale(move.z);
 
             //util::Vec3 deltaY(0, move.y, 0);
@@ -277,8 +277,7 @@ namespace tbd
             //deltaX.Add(deltaY);
             deltaX.Add(deltaZ);
 
-            event::IEventPtr event(new event::MoveActorEvent(this->m_actor->GetId(), deltaX, util::Vec3()));
-            event::IEventManager::Get()->VQueueEvent(event); 
+            QUEUE_EVENT(new event::MoveActorEvent(this->m_actor->GetId(), deltaX, util::Vec3()));
         }
 
         return TRUE;

@@ -1,8 +1,7 @@
 #pragma once
 
 //#include <D3Dcompiler.h>
-#include <D3DX11.h>
-
+#include <D3D11.h>
 //#pragma comment(lib, "D3dcompiler.lib")
 
 namespace d3d 
@@ -47,7 +46,7 @@ namespace d3d
     extern UINT g_samples;
     extern UINT g_quality;
 
-    HRESULT Init(WNDPROC wndProc, CONST HINSTANCE hInstance, CONST LPCWSTR title, CONST UINT width, CONST UINT height, CONST BOOL fullscreen = FALSE);
+    HRESULT Init(WNDPROC wndProc, CONST HINSTANCE hInstance, CONST LPCWSTR title, UINT width, UINT height);
 
     ID3D11Device* GetDevice(VOID);
 
@@ -67,7 +66,9 @@ namespace d3d
 
     VOID ClearBackBuffer(CONST FLOAT color[4]);
 
-    VOID Resize(UINT w, UINT h);
+    VOID Resize(UINT w, UINT h, BOOL fullscreen);
+
+    VOID GetFullscreenSize(UINT* width, UINT* height);
 
     VOID CreateBackbuffer(UINT width, UINT height);
 

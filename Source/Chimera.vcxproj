@@ -78,14 +78,13 @@
     <ClInclude Include="chimera\PhysicsSystem.h" />
     <ClInclude Include="chimera\Picker.h" />
     <ClInclude Include="chimera\Plane.h" />
-    <ClInclude Include="chimera\PointLightNode.h" />
+    <ClInclude Include="chimera\PointlightNode.h" />
     <ClInclude Include="chimera\Process.h" />
     <ClInclude Include="chimera\ProcessManager.h" />
     <ClInclude Include="chimera\Profiling.h" />
     <ClInclude Include="chimera\Renderer.h" />
     <ClInclude Include="chimera\RenderPath.h" />
     <ClInclude Include="chimera\RenderTarget.h" />
-    <ClInclude Include="chimera\resource.h" />
     <ClInclude Include="chimera\Resources.h" />
     <ClInclude Include="chimera\SceneGraph.h" />
     <ClInclude Include="chimera\SceneNode.h" />
@@ -98,6 +97,7 @@
     <ClInclude Include="chimera\Sound.h" />
     <ClInclude Include="chimera\SoundEngine.h" />
     <ClInclude Include="chimera\Spline.h" />
+    <ClInclude Include="chimera\SpotlightNode.h" />
     <ClInclude Include="chimera\stdafx.h" />
     <ClInclude Include="chimera\targetver.h" />
     <ClInclude Include="chimera\tbdFont.h" />
@@ -112,7 +112,6 @@
     <ClInclude Include="chimera\Vec4.h" />
     <ClInclude Include="chimera\VRamManager.h" />
     <ClInclude Include="resource.h" />
-    <ClInclude Include="resource1.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="chimera\Actor.cpp" />
@@ -169,7 +168,7 @@
     <ClCompile Include="chimera\ParticleSystem.cpp" />
     <ClCompile Include="chimera\PhysicsSystem.cpp" />
     <ClCompile Include="chimera\Picker.cpp" />
-    <ClCompile Include="chimera\PointLightNode.cpp" />
+    <ClCompile Include="chimera\PointlightNode.cpp" />
     <ClCompile Include="chimera\Process.cpp" />
     <ClCompile Include="chimera\ProcessManager.cpp" />
     <ClCompile Include="chimera\Profiling.cpp" />
@@ -187,6 +186,7 @@
     <ClCompile Include="chimera\SoundEngine.cpp" />
     <ClCompile Include="chimera\SoundProcess.cpp" />
     <ClCompile Include="chimera\Spline.cpp" />
+    <ClCompile Include="chimera\SpotlightNode.cpp" />
     <ClCompile Include="chimera\tbdFont.cpp" />
     <ClCompile Include="chimera\tbdStack.cpp" />
     <ClCompile Include="chimera\Texture.cpp" />
@@ -212,6 +212,7 @@
     <None Include="..\Assets\shader\PointLightShadowMap.hlsl" />
     <None Include="..\Assets\shader\ScreenQuad.hlsl" />
     <None Include="..\Assets\shader\Sky.hlsl" />
+    <None Include="..\Assets\shader\SpotLightShadowMap.hlsl" />
     <None Include="..\Assets\shader\Transparency.hlsl" />
     <None Include="chimera\GeometryTransformation.cu" />
     <CudaCompile Include="chimera\Particles.cu">
@@ -225,7 +226,9 @@
     <None Include="chimera\Transformation.cuh" />
   </ItemGroup>
   <ItemGroup>
-    <ResourceCompile Include="Chimera.rc" />
+    <ResourceCompile Include="Chimera.rc">
+      <AdditionalIncludeDirectories Condition="'$(Configuration)|$(Platform)'=='Debug|x64'"> ;"$(VCInstallDir)atlmfc\include";"$(VCInstallDir)PlatformSDK\Include"</AdditionalIncludeDirectories>
+    </ResourceCompile>
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <ProjectGuid>{528B376B-7ED9-449B-8FCD-365684CC6C67}</ProjectGuid>
@@ -236,27 +239,31 @@
     <ConfigurationType>Application</ConfigurationType>
     <UseDebugLibraries>true</UseDebugLibraries>
     <CharacterSet>MultiByte</CharacterSet>
+    <PlatformToolset>v110</PlatformToolset>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="Configuration">
     <ConfigurationType>Application</ConfigurationType>
     <UseDebugLibraries>true</UseDebugLibraries>
     <CharacterSet>Unicode</CharacterSet>
+    <PlatformToolset>v110</PlatformToolset>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="Configuration">
     <ConfigurationType>Application</ConfigurationType>
     <UseDebugLibraries>false</UseDebugLibraries>
     <WholeProgramOptimization>true</WholeProgramOptimization>
     <CharacterSet>MultiByte</CharacterSet>
+    <PlatformToolset>v110</PlatformToolset>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="Configuration">
     <ConfigurationType>Application</ConfigurationType>
     <UseDebugLibraries>false</UseDebugLibraries>
     <WholeProgramOptimization>true</WholeProgramOptimization>
     <CharacterSet>Unicode</CharacterSet>
+    <PlatformToolset>v110</PlatformToolset>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
   <ImportGroup Label="ExtensionSettings">
-    <Import Project="$(VCTargetsPath)\BuildCustomizations\CUDA 4.2.props" />
+    <Import Project="$(VCTargetsPath)\BuildCustomizations\CUDA 5.5.props" />
   </ImportGroup>
   <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
@@ -281,6 +288,7 @@
     <OutDir>$(SolutionDir)..\Bin\$(PlatformName)$(Configuration)\</OutDir>
     <TargetName>$(ProjectName)$(PlatformName)$(Configuration)</TargetName>
     <IncludePath>$(CUDA_PATH_V42)include;$(DXSDK_DIR)Include;$(IncludePath)</IncludePath>
+    <LibraryPath>$(LibraryPath);$(DXSDK_DIR)Lib\$(Platform)</LibraryPath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <IncludePath>$(CUDA_PATH_V42)include;$(DXSDK_DIR)Include;$(IncludePath)</IncludePath>
@@ -309,7 +317,7 @@
     </ClCompile>
     <Link>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalLibraryDirectories>../Lib;$(DXSDK_DIR)Lib/$(PlatformName)</AdditionalLibraryDirectories>
+      <AdditionalLibraryDirectories>../Lib;$(FrameworkSdkDir)Lib/win8/um/($Platform)</AdditionalLibraryDirectories>
       <IgnoreSpecificDefaultLibraries>LIBCMTD;LIBCMT;libcpmt;%(IgnoreSpecificDefaultLibraries)</IgnoreSpecificDefaultLibraries>
     </Link>
     <CudaCompile>
@@ -323,6 +331,7 @@
       <CompileOut>.\chimera\ptx\%(Filename).ptx</CompileOut>
       <Keep>true</Keep>
       <KeepDir>$(SolutionDir)..\Tmp\$(ProjectName)$(PlatformName)$(Configuration)\</KeepDir>
+      <UseHostInclude>false</UseHostInclude>
     </CudaCompile>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
@@ -375,6 +384,6 @@
   </ItemDefinitionGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
-    <Import Project="$(VCTargetsPath)\BuildCustomizations\CUDA 4.2.targets" />
+    <Import Project="$(VCTargetsPath)\BuildCustomizations\CUDA 5.5.targets" />
   </ImportGroup>
 </Project>

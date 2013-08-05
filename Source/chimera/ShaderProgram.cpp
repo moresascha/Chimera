@@ -2,6 +2,7 @@
 #include "ShaderProgram.h"
 #include "Process.h"
 #include "GameApp.h"
+#include <d3dcompiler.h>
 
 namespace d3d 
 {
@@ -42,7 +43,7 @@ namespace d3d
         ID3DBlob* errorMessage = NULL;
         ID3DBlob* shaderCode = NULL;
 
-        HRESULT hr = D3DX11CompileFromFileW(m_file.c_str(), 0, 0, m_function.c_str(), d3d::g_pixelShaderMaxProfile, 0, 0, 0, &shaderCode, &errorMessage, 0);
+        HRESULT hr = D3DCompileFromFile(m_file.c_str(), 0, D3D_COMPILE_STANDARD_FILE_INCLUDE, m_function.c_str(), d3d::g_pixelShaderMaxProfile, 0, 0, &shaderCode, &errorMessage);
 
         if(FAILED(hr) && errorMessage == NULL)
         {
@@ -127,7 +128,7 @@ namespace d3d
         ID3DBlob* errorMessage = NULL;
         ID3DBlob* vsShaderCode = NULL;
 
-        HRESULT hr = D3DX11CompileFromFileW(m_file.c_str(), 0, 0, m_function.c_str(), d3d::g_vertexShaderMaxProfile, 0, 0, 0, &vsShaderCode, &errorMessage, 0);
+        HRESULT hr = D3DCompileFromFile(m_file.c_str(), 0, D3D_COMPILE_STANDARD_FILE_INCLUDE, m_function.c_str(), d3d::g_vertexShaderMaxProfile, 0, 0, &vsShaderCode, &errorMessage);
 
         if(FAILED(hr) && errorMessage == NULL)
         {
@@ -245,7 +246,7 @@ namespace d3d
         ID3DBlob* errorMessage = NULL;
         ID3DBlob* shaderCode = NULL;
 
-        HRESULT hr = D3DX11CompileFromFileW(m_file.c_str(), 0, 0, m_function.c_str(), d3d::g_geometryShaderMaxProfile, 0, 0, 0, &shaderCode, &errorMessage, 0);
+        HRESULT hr = D3DCompileFromFile(m_file.c_str(), 0, D3D_COMPILE_STANDARD_FILE_INCLUDE, m_function.c_str(), d3d::g_geometryShaderMaxProfile, 0, 0, &shaderCode, &errorMessage);
 
         if(FAILED(hr))
         {

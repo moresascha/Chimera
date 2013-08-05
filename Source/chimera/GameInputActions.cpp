@@ -260,7 +260,7 @@ namespace gameinput
         }
 
         tbd::LightComponent* lightComponent = desc->AddComponent<tbd::LightComponent>("LightComponent");
-        lightComponent->m_type = "Point";
+        lightComponent->m_type = "point";
         lightComponent->m_color.x = 0.5f + 2 * rand() / (FLOAT)RAND_MAX;
         lightComponent->m_color.y = 0.5f + 2 * rand() / (FLOAT)RAND_MAX;
         lightComponent->m_color.z = 0.5f + 2 * rand() / (FLOAT)RAND_MAX;
@@ -367,7 +367,9 @@ namespace gameinput
         CHECK_COMMAND(cmd);
 
         ActorId id = app::g_pApp->GetHumanView()->GetTarget()->GetId();
-        QUEUE_EVENT(new event::MoveActorEvent(id, util::Vec3(0, height, 0), util::Vec3()));
+        event::MoveActorEvent* me = new event::MoveActorEvent(id, util::Vec3(0, height, 0), util::Vec3());
+        me->m_isJump = TRUE;
+        QUEUE_EVENT(me);
         return TRUE;
     }
 
@@ -548,6 +550,22 @@ namespace gameinput
         return exitCode;
     }
 
+    BOOL SetFullscreen(tbd::Command& cmd)
+    {
+        BOOL fs = cmd.GetNextBool();
+        CHECK_COMMAND(cmd);
+        UINT w = 0;
+        UINT h = 0;
+        if(!fs)
+        {
+            w = 1024;
+            h = 768;
+        }
+        app::g_pApp->GetHumanView()->Resize(w, h, fs);
+
+        return TRUE;
+    }
+
     //set actions here
     VOID RegisterCommands(tbd::ActorController& controller, tbd::CommandInterpreter& interpreter)
     {
@@ -562,6 +580,7 @@ namespace gameinput
         interpreter.RegisterCommand("rasterstate", SetRasterState, "rasterstate [wire, nocull, fronfaces, backfaces]");
         interpreter.RegisterCommand("drawCP", DrawCP);
         interpreter.RegisterCommand("loadlevel", LoadLevel);
+        interpreter.RegisterCommand("fullscreen", SetFullscreen);
         
         interpreter.RegisterCommand("toggleCamera", ToogleCamera);
         interpreter.RegisterCommand("spawnz", SpawnSpheres);

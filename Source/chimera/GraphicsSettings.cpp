@@ -49,7 +49,7 @@ namespace tbd
 
     }
 
-    BOOL ShaderPathSetting::VOnRestore(CONST Dimension& dim)
+    BOOL ShaderPathSetting::VOnRestore(UINT w, UINT h)
     {
         if(!m_pProgram)
         {
@@ -69,7 +69,7 @@ namespace tbd
 
     }
 
-    BOOL GloablLightingSetting::VOnRestore(CONST Dimension& dim)
+    BOOL GloablLightingSetting::VOnRestore(UINT w, UINT h)
     {
         if(!m_pGlobalLightProgram) //if this is 0 everything else is 0
         {
@@ -91,7 +91,7 @@ namespace tbd
         GeometryFactory::GetGlobalScreenQuad()->Draw();
     }
 
-    BOOL CSMSetting::VOnRestore(CONST Dimension& dim)
+    BOOL CSMSetting::VOnRestore(UINT w, UINT h)
     {
         if(!m_pCSM)
         {
@@ -127,11 +127,11 @@ namespace tbd
         m_pScene = pScene;
     }
 
-    BOOL PostFXSetting::VOnRestore(CONST Dimension& dim)
+    BOOL PostFXSetting::VOnRestore(UINT w, UINT h)
     {
         if(!m_pEffectChain)
         {
-            m_pEffectChain = new d3d::EffectChain(m_pPreResult, dim.w, dim.h);
+            m_pEffectChain = new d3d::EffectChain(m_pPreResult, w, h);
 
             d3d::Effect* lumi = m_pEffectChain->CreateEffect("Luminance");
             lumi->SetSource(m_pPreResult);
@@ -140,9 +140,9 @@ namespace tbd
 
             d3d::Effect* e = NULL;
 
-            for(INT i = dim.w / 2; i > 1; i = i >> 1)
+            for(INT i = w / 2; i > 1; i = i >> 1)
             {
-                FLOAT s = (FLOAT)i / (FLOAT)dim.w;
+                FLOAT s = (FLOAT)i / (FLOAT)w;
                 if(e == NULL)
                 {
                     d3d::Effect* ds = m_pEffectChain->CreateEffect("Sample", s, s);
@@ -157,7 +157,7 @@ namespace tbd
                 }
             }
 
-            d3d::Effect* ds = m_pEffectChain->CreateEffect("Sample", 1.0f / dim.w, 1.0f / dim.h);
+            d3d::Effect* ds = m_pEffectChain->CreateEffect("Sample", 1.0f / w, 1.0f / h);
             ds->AddRequirement(e);
             e = ds;
 
@@ -180,7 +180,7 @@ namespace tbd
         }
         else
         {
-            m_pEffectChain->OnRestore(dim.w, dim.h);
+            m_pEffectChain->OnRestore(w, h);
         }
         return TRUE;
     }
@@ -234,9 +234,9 @@ namespace tbd
         return m_resultAsString.c_str();
     }
 
-    BOOL ProfileSetting::VOnRestore(CONST Dimension& dim)
+    BOOL ProfileSetting::VOnRestore(UINT w, UINT h)
     {
-        return m_pSetting->VOnRestore(dim);
+        return m_pSetting->VOnRestore(w, h);
     }
 
     VOID ProfileSetting::VRender(VOID)
@@ -278,13 +278,7 @@ namespace tbd
 
     }
 
-    VOID IGraphicsSettings::SetDimension(CONST tbd::Dimension& dim)
-    {
-        m_dim = dim;
-        VOnRestore();
-    }
-
-    GraphicsSettings::GraphicsSettings(VOID) : m_pPostFX(NULL), m_pScene(NULL), m_pPreResult(NULL)
+    GraphicsSettings::GraphicsSettings(VOID) : m_pPostFX(NULL), m_pScene(NULL), m_pPreResult(NULL), m_lastW(0), m_lastH(0)
     {
 
     }
@@ -309,7 +303,7 @@ namespace tbd
         {
             m_pPreResult = new d3d::RenderTarget();
 
-            m_pPreResult->OnRestore(m_dim.w, m_dim.h, DXGI_FORMAT_R32G32B32A32_FLOAT);
+            m_pPreResult->OnRestore(m_lastW, m_lastH, DXGI_FORMAT_R32G32B32A32_FLOAT);
         }
     }
 
@@ -336,8 +330,10 @@ namespace tbd
         return m_pScene;
     }
 
-    BOOL GraphicsSettings::VOnRestore(VOID)
+    BOOL GraphicsSettings::VOnRestore(UINT w, UINT h)
     {
+        m_lastW = w;
+        m_lastH = h;
         if(!m_pScene)
         {
             m_pScene = new d3d::RenderTarget();
@@ -345,7 +341,7 @@ namespace tbd
 
         if(m_pPreResult)
         {
-            m_pPreResult->OnRestore(m_dim.w, m_dim.h, DXGI_FORMAT_R32G32B32A32_FLOAT);
+            m_pPreResult->OnRestore(w, h, DXGI_FORMAT_R32G32B32A32_FLOAT);
         }
 
         if(m_pPostFX)
@@ -366,20 +362,20 @@ namespace tbd
             }
             fx->SetPreResult(m_pPreResult);
             fx->SetScene(m_pScene);
-            m_pPostFX->VOnRestore(m_dim);
+            m_pPostFX->VOnRestore(w, h);
         }
 
         TBD_FOR(m_albedoSettings)
         {
-            (*it)->VOnRestore(m_dim);
+            (*it)->VOnRestore(w, h);
         }
 
         TBD_FOR(m_lightSettings)
         {
-            (*it)->VOnRestore(m_dim);
+            (*it)->VOnRestore(w, h);
         }
 
-        m_pScene->OnRestore(m_dim.w, m_dim.h, DXGI_FORMAT_R32G32B32A32_FLOAT);
+        m_pScene->OnRestore(w, h, DXGI_FORMAT_R32G32B32A32_FLOAT);
 
         return TRUE;
     }
@@ -466,11 +462,11 @@ namespace tbd
         AddSetting(new tbd::ShaderPathSetting(tbd::eDRAW_PARTICLE_EFFECTS, "Particles", "particles"), tbd::eAlbedo);
         AddSetting(new tbd::ShaderPathSetting(tbd::eDRAW_SKY, "Sky", "sky"), tbd::eAlbedo);
 
-        AddSetting(new tbd::CSMSetting(), tbd::eLighting);
+        //AddSetting(new tbd::CSMSetting(), tbd::eLighting);
         AddSetting(new tbd::GloablLightingSetting(), tbd::eLighting);
         AddSetting(new tbd::LightingSetting(), tbd::eLighting);
 
-        SetPostFX(new tbd::PostFXSetting());
+        //SetPostFX(new tbd::PostFXSetting());
     }
 
     ProfileGraphicsSettings::ProfileGraphicsSettings(VOID)
@@ -616,6 +612,25 @@ namespace tbd
         b[0] = INVALID_ACTOR_ID;
         buffer->Unmap();
         //DEBUG_OUT("1");
+    }
+
+    AlbedoSettings::AlbedoSettings(VOID)
+    {
+        AddSetting(new tbd::ShaderPathSetting(tbd::eDRAW_TO_ALBEDO, "DefShader", "albedo"), tbd::eAlbedo);
+        AddSetting(new tbd::ShaderPathSetting(tbd::eDRAW_TO_ALBEDO_INSTANCED, "DefShaderInstanced", "albedoInstanced"), tbd::eAlbedo);
+    }
+
+    VOID AlbedoSettings::VRender(VOID)
+    {
+        app::g_pApp->GetHumanView()->GetRenderer()->GetDeferredShader()->ClearAndBindRenderTargets();
+
+        d3d::GetContext()->OMSetDepthStencilState(d3d::m_pDepthNoStencilState, 0);
+
+        TBD_FOR(m_albedoSettings)
+        {
+            (*it)->VRender();
+        }
+        app::g_pApp->GetHumanView()->GetRenderer()->VPostRender();
     }
 
     /*

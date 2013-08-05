@@ -108,6 +108,10 @@ namespace app
 
         HWND GetWindowHandle(VOID);
 
+        UINT GetWindowWidth(VOID) CONST;
+
+        UINT GetWindowHeight(VOID) CONST;
+
         virtual ~GameApp(VOID);
     };
 

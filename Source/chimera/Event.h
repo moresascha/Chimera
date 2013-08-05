@@ -65,11 +65,12 @@ namespace event
 
     public:
         static const EventType TYPE;
-        MoveActorEvent(ActorId id, util::Vec3 translation, util::Vec3 rotation, BOOL isDeltaMove = TRUE) : m_id(id), m_translation(translation), m_rotation(rotation) , m_isDelta(isDeltaMove) {}
+        MoveActorEvent(ActorId id, util::Vec3 translation, util::Vec3 rotation, BOOL isDeltaMove = TRUE) : m_id(id), m_translation(translation), m_rotation(rotation) , m_isDelta(isDeltaMove), m_isJump(FALSE) {}
         ActorId m_id;
         util::Vec3 m_translation;
         util::Vec3 m_rotation;
         BOOL m_isDelta;
+        BOOL m_isJump;
 
         BOOL IsDeltaMove(VOID)
         {

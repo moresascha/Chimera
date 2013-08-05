@@ -22,6 +22,7 @@
 #include "GuiComponent.h"
 #include "ScriptEvent.h"
 #include "DebugStartup.h"
+#include "SpotlightNode.h"
 
 namespace app
 {
@@ -31,7 +32,7 @@ namespace app
     LRESULT CALLBACK WndProc(HWND, UINT, WPARAM, LPARAM);
     INT_PTR CALLBACK About(HWND, UINT, WPARAM, LPARAM);
 
-/*#ifdef _DEBUG
+#ifdef _DEBUG
     template <class T>
     VOID CreateShaderWatcher(VOID)
     {
@@ -52,7 +53,7 @@ namespace app
             app::g_pApp->GetLogic()->AttachProcess(modProc);
         }
     }
-#endif */
+#endif
 
     VOID PostInitMessage(LPCSTR message)
     {
@@ -132,24 +133,21 @@ namespace app
         UINT width = (UINT)m_config.GetInteger("iWidth");
         UINT height = (UINT)m_config.GetInteger("iHeight");
 
-        BOOL fullscreen = m_config.GetBool("bFullscreen");
-        if(fullscreen)
-        {
-            RECT r;
-            GetWindowRect(GetDesktopWindow(), &r);
-            height = r.bottom;
-            width = r.right;
-        }
-
-        if(!d3d::Init(WndProc, hInstance, title, width, height, fullscreen))
+        if(!d3d::Init(WndProc, hInstance, title, width, height))
         {
             LOG_CRITICAL_ERROR("Failed to init Direct3D");
             return FALSE;
         }
 
+        BOOL fullscreen = m_config.GetBool("bFullscreen");
+        if(fullscreen)
+        {
+            d3d::Resize(0,0, fullscreen);
+        }
+
         if(!cudah::Init(d3d::g_pDevice))
         {
-            LOG_CRITICAL_ERROR("Failed to load cuda device");
+            LOG_CRITICAL_ERROR("Failed to load Cuda device");
             return FALSE;
         }
 
@@ -228,8 +226,13 @@ namespace app
 
         tbd::script::internalexports::Register();
 
-        tbd::PointLightNode::Create();
+        //todo move this to view
+        tbd::PointlightNode::Create();
 
+        //todo move this to view
+        tbd::SpotlightNode::Create();
+
+        //todo move this to view
         d3d::EffectChain::StaticCreate();
 
         PostInitMessage("Loading Shader ...");
@@ -283,6 +286,11 @@ namespace app
         pointLight->SetInputAttr("TEXCOORD", 1, 0, DXGI_FORMAT_R32G32_FLOAT);
         pointLight->GenerateLayout();
 
+        std::shared_ptr<d3d::ShaderProgram> spottLight = d3d::ShaderProgram::CreateProgram("SpotLight", L"Lighting.hlsl", "Lighting_VS", "SpotLighting_PS", NULL);
+        spottLight->SetInputAttr("POSITION", 0, 0, DXGI_FORMAT_R32G32B32_FLOAT);
+        spottLight->SetInputAttr("TEXCOORD", 1, 0, DXGI_FORMAT_R32G32_FLOAT);
+        spottLight->GenerateLayout();
+
         std::shared_ptr<d3d::ShaderProgram> boundingDebug = d3d::ShaderProgram::CreateProgram("BoundingGeo", L"BoundingGeo.hlsl", "Sphere_VS", "Sphere_PS", NULL);
         boundingDebug->SetInputAttr("POSITION", 0, 0, DXGI_FORMAT_R32G32B32_FLOAT);
         boundingDebug->SetInputAttr("NORMAL", 1, 0, DXGI_FORMAT_R32G32B32_FLOAT);
@@ -300,12 +308,25 @@ namespace app
         render2cubemap->SetInputAttr("TEXCOORD", 2, 0, DXGI_FORMAT_R32G32_FLOAT);
         render2cubemap->GenerateLayout();
 
+        std::shared_ptr<d3d::ShaderProgram> spotLightShadow = d3d::ShaderProgram::CreateProgram("SpotLightShadowMap", L"SpotLightShadowMap.hlsl", "SpotLightShadow_VS", "SpotLightShadow_PS");
+        spotLightShadow->SetInputAttr("POSITION", 0, 0, DXGI_FORMAT_R32G32B32_FLOAT);
+        spotLightShadow->SetInputAttr("NORMAL", 1, 0, DXGI_FORMAT_R32G32B32_FLOAT);
+        spotLightShadow->SetInputAttr("TEXCOORD", 2, 0, DXGI_FORMAT_R32G32_FLOAT);
+        spotLightShadow->GenerateLayout();
+
         std::shared_ptr<d3d::ShaderProgram> render2cubemapInstanced = d3d::ShaderProgram::CreateProgram("PointLightShadowMapInstanced", L"PointLightShadowMap.hlsl", "RenderCubeMapInstanced_VS", "RenderCubeMap_PS", "RenderCubeMap_GS");
         render2cubemapInstanced->SetInputAttr("POSITION", 0, 0, DXGI_FORMAT_R32G32B32_FLOAT);
         render2cubemapInstanced->SetInputAttr("NORMAL", 1, 0, DXGI_FORMAT_R32G32B32_FLOAT);
         render2cubemapInstanced->SetInputAttr("TEXCOORD", 2, 0, DXGI_FORMAT_R32G32_FLOAT);
         render2cubemapInstanced->SetInputAttrInstanced("TANGENT", 3, 1, DXGI_FORMAT_R32G32B32_FLOAT);
         render2cubemapInstanced->GenerateLayout();
+
+        std::shared_ptr<d3d::ShaderProgram> spotLightShadowInstanced = d3d::ShaderProgram::CreateProgram("SpotLightShadowMapInstanced", L"SpotLightShadowMap.hlsl", "SpotLightShadowInstanced_VS", "SpotLightShadow_PS");
+        spotLightShadowInstanced->SetInputAttr("POSITION", 0, 0, DXGI_FORMAT_R32G32B32_FLOAT);
+        spotLightShadowInstanced->SetInputAttr("NORMAL", 1, 0, DXGI_FORMAT_R32G32B32_FLOAT);
+        spotLightShadowInstanced->SetInputAttr("TEXCOORD", 2, 0, DXGI_FORMAT_R32G32_FLOAT);
+        spotLightShadowInstanced->SetInputAttrInstanced("TANGENT", 3, 1, DXGI_FORMAT_R32G32B32_FLOAT);
+        spotLightShadowInstanced->GenerateLayout();
 
         std::shared_ptr<d3d::ShaderProgram> render2cubemapparticles = d3d::ShaderProgram::CreateProgram("PointLightShadowMap_Particles",  
             L"PointLightShadowMap.hlsl", "RenderCubeMapParticles_VS", "RenderCubeMap_PS", "RenderCubeMap_GS");
@@ -343,6 +364,12 @@ namespace app
 
         app::PostInitMessage("Creating Logic and View ...");
         VCreateLogicAndView();
+
+#ifdef _DEBUG
+        CreateShaderWatcher<d3d::VertexShader>();
+        CreateShaderWatcher<d3d::PixelShader>();
+        CreateShaderWatcher<d3d::GeometryShader>();
+#endif
 
         app::PostInitMessage("Loading Commands ...");
         tbd::commands::AddCommandsToInterpreter(*GetLogic()->GetCommandInterpreter());
@@ -438,10 +465,22 @@ namespace app
         m_renderingTimer.Tick();
     }
 
+    UINT GameApp::GetWindowWidth(VOID) CONST
+    {
+        return d3d::GetWindowWidth();
+    }
+
+    UINT GameApp::GetWindowHeight(VOID) CONST
+    {
+        return d3d::GetWindowHeight();
+    }
+
     GameApp::~GameApp(VOID)
     {
 
-        tbd::PointLightNode::Destroy();
+        tbd::SpotlightNode::Destroy();
+
+        tbd::PointlightNode::Destroy();
 
         d3d::EffectChain::StaticDestroy();
 
@@ -503,10 +542,8 @@ namespace app
             {
                 UINT w = LOWORD(lParam);
                 UINT h = HIWORD(lParam);
-                if(d3d::g_pSwapChain) 
-                {
-                    d3d::Resize(w, h); // TODO
-                }
+                BOOL fullscreen = (wParam == SIZE_MAXIMIZED);
+                //app::g_pApp->GetHumanView()->Resize(w, h, fullscreen); todo
             } break;
 
         case WM_MOUSEMOVE:

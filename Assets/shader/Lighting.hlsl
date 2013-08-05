@@ -118,7 +118,7 @@ PixelOutput DebugGlobalLighting_PS(PixelInput input)
     normal = nn.xyz;
     diffuse = g_diffuseColorSpecB.Sample(g_samplerClamp, input.texCoord).xyz;
 
-    float3 sunposition = normalize(g_lightPos.xyz);
+    float3 sunposition = normalize(g_CSMlightPos.xyz);
     diffuse = float3(1,1,1);
     op.color = float4(diffuse * saturate(dot(sunposition, normalize(normal))),1);
     
@@ -141,7 +141,7 @@ PixelOutput GlobalLighting_PS(PixelInput input)
     normal = nn.xyz;
     diffuse = g_diffuseColorSpecB.Sample(g_samplerClamp, input.texCoord).xyz;
 
-    float3 sunposition = normalize(g_lightPos.xyz);
+    float3 sunposition = normalize(g_CSMlightPos.xyz);
 
     float4 worldDepth = g_worldPosDepth.Sample(g_samplerClamp, input.texCoord);
     float d = worldDepth.w;
@@ -228,11 +228,11 @@ PixelOutput PointLighting_PS(PixelInput input)
         discard;
     } */
 
-    float3 lightPos = g_pointLightPos.xyz;
+    float3 lightPos = g_lightPos.xyz;
 
     float3 d = world - lightPos;
 
-    float radius = g_pointLightColorRadius.w;
+    float radius = g_lightColorRadius.w;
 
     float distSquared = dot(d, d);
 
@@ -266,7 +266,7 @@ PixelOutput PointLighting_PS(PixelInput input)
 
     diffuseColor = dcsmb.xyz;
 
-    float3 lightColor = g_pointLightColorRadius.xyz;
+    float3 lightColor = g_lightColorRadius.xyz;
     float3 posToEye = normalize(g_eyePos.xyz - world);
 
     float3 reflectVec = reflect(lightToPos, normal);
@@ -280,6 +280,104 @@ PixelOutput PointLighting_PS(PixelInput input)
     float specular = s * pow(saturate(dot(reflectVec, posToEye)), 32) + (1-s);
 
     float intensity = max(0, 1 - distSquared / (radius * radius));
+
+    float3 color = 0;
+
+    color = lightColor * (specular * specularMat + diffuseMat * diffuse * diffuseColor);
+    
+    color *= intensity; // * fShadow;
+
+    op.color = float4(color, 1);
+    return op;
+}
+
+PixelOutput SpotLighting_PS(PixelInput input)
+{
+    PixelOutput op;
+
+    float3 normal = 0;
+    float3 ambientMat = 0;
+    float3 diffuseMat = 0;
+    float3 specularMat = 0;
+    float3 diffuseColor = 0;
+    float3 world = 0;
+    float depth = 0;
+
+    float4 wd =  g_worldPosDepth.Sample(g_samplerClamp, input.texCoord);
+    world = wd.xyz; 
+    depth = wd.w;
+
+    /*if(depth == 0)
+    {
+        discard;
+    } */
+
+    float3 lightPos = g_lightPos.xyz;
+
+    float3 d = world - lightPos;
+
+    float length = g_lightColorRadius.w;
+
+    float distSquared = dot(d, d);
+
+    float3 dir = normalize(-lightPos);
+
+    if(distSquared > 2 * length*length) 
+    {
+        discard;
+    }
+    
+    float3 lightToPos = normalize(world - lightPos);
+    float lpd = max(dot(lightToPos, dir),0);
+    float a = acos(lpd);
+
+    if(a > PIDIV2 * 0.5)
+    {
+        discard;
+    }
+    
+    float4 worldLight = mul(g_projection, mul(g_view, float4(world, 1)));
+    worldLight /= worldLight.w;
+    float2 tc = 0.5 * float2(worldLight.x, worldLight.y) + 0.5;
+    tc = float2(tc.x, 1-tc.y);
+
+    float shadowSample = g_diffuseColor.Sample(g_samplerClamp, tc).r;
+    float bias = 0.15;//0.005 * tan(acos(dot(-lightToPos, normal)));//0.15
+    //bias = saturate(bias);
+    int shadow = shadowSample < (distSquared - bias) ? 1 : 0;
+
+    if(shadow)
+    {
+        discard;
+    }
+
+    normal = g_normals.Sample(g_samplerClamp, input.texCoord).xyz;
+    normal = normalize(normal);
+
+    float4 dmsmr = g_diffuseMaterialSpecR.Sample(g_samplerClamp, input.texCoord);
+    float4 amsmg = g_ambientMaterialSpecG.Sample(g_samplerClamp, input.texCoord);
+    float4 dcsmb = g_diffuseColorSpecB.Sample(g_samplerClamp, input.texCoord);
+
+    ambientMat = amsmg.xyz;
+    diffuseMat = dmsmr.xyz;
+    specularMat = float3(dmsmr.w, amsmg.w, dcsmb.w);
+
+    diffuseColor = dcsmb.xyz;
+
+    float3 lightColor = g_lightColorRadius.xyz;
+    float3 posToEye = normalize(g_eyePos.xyz - world);
+
+    float3 reflectVec = reflect(lightToPos, normal);
+
+    //float bias = (distSquared * DepthBias) - shadowSample;
+
+    float s = sign(dot(abs(normal), abs(normal)));
+
+    float diffuse = s * saturate(dot(-lightToPos, normal)) + (1-s);
+
+    float specular = s * pow(saturate(dot(reflectVec, posToEye)), 32) + (1-s);
+
+    float intensity = (PIDIV2 * 0.5 - a) * (length * length / (2.5*distSquared));
 
     float3 color = 0;
 

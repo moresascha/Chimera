@@ -14,7 +14,6 @@
 
 namespace tbd
 {
-
     VOID CreateStaticPlane(BaseLevel* level)
     {
         tbd::ActorDescription desc = app::g_pApp->GetLogic()->GetActorFactory()->CreateActorDescription();
@@ -307,11 +306,9 @@ namespace tbd
                 tbd::TransformComponent* t = desc->AddComponent<tbd::TransformComponent>("TransformComponent");
                 t->GetTransformation()->SetTranslate(0,5,0);//3 * i - 3,0.1f, 3 * j - j);
                 tbd::PickableComponent* pick = desc->AddComponent<tbd::PickableComponent>("PickableComponent");
-                std::shared_ptr<Actor> actor = VAddActor(desc);
+                //std::shared_ptr<Actor> actor = VAddActor(desc);
             }
         } 
-
-        
 
         /*
         desc = app::g_pApp->GetLogic()->GetActorFactory()->CreateActorDescription();
@@ -340,8 +337,38 @@ namespace tbd
         tbd::RenderComponent* renderCmp = desc->AddComponent<tbd::RenderComponent>(tbd::RenderComponent::COMPONENT_ID);
         renderCmp->m_type = "skydome";
         renderCmp->m_info = "skydome3.jpg";
-        VAddActor(desc);
+        //VAddActor(desc);
 
+        desc = m_pActorFactory->CreateActorDescription();
+        tcomp = desc->AddComponent<tbd::TransformComponent>(tbd::TransformComponent::COMPONENT_ID);
+        tcomp->GetTransformation()->SetTranslate(0,0,0);
+
+        renderCmp = desc->AddComponent<tbd::RenderComponent>(tbd::RenderComponent::COMPONENT_ID);
+        renderCmp->m_meshFile = "halfbox.obj";
+
+
+        tbd::PhysicComponent* phxCmp = desc->AddComponent<tbd::PhysicComponent>(tbd::PhysicComponent::COMPONENT_ID);
+        phxCmp->m_shapeType = "static_mesh";
+        phxCmp->m_meshFile = "halfbox.obj";
+        phxCmp->m_material = "static";
+        //VAddActor(desc);
+
+        desc = m_pActorFactory->CreateActorDescription();
+
+        tbd::LightComponent* lightComponent = desc->AddComponent<tbd::LightComponent>("LightComponent");
+        lightComponent->m_type = "spot";
+        lightComponent->m_color.x = 0.5f + 2 * rand() / (FLOAT)RAND_MAX;
+        lightComponent->m_color.y = 0.5f + 2 * rand() / (FLOAT)RAND_MAX;
+        lightComponent->m_color.z = 0.5f + 2 * rand() / (FLOAT)RAND_MAX;
+        lightComponent->m_color.w = 1;
+
+        tcomp = desc->AddComponent<tbd::TransformComponent>(tbd::TransformComponent::COMPONENT_ID);
+        tcomp->GetTransformation()->SetTranslate(0,5,-5);
+        tcomp->GetTransformation()->SetScale(30);
+
+         desc->AddComponent<tbd::PickableComponent>(tbd::PickableComponent::COMPONENT_ID);
+
+        VAddActor(desc);
         /*desc = m_pActorFactory->CreateActorDescription();
         tcomp = desc->AddComponent<tbd::TransformComponent>(tbd::TransformComponent::COMPONENT_ID);
         tcomp->GetTransformation()->SetTranslate(0,0,10);
@@ -573,7 +600,7 @@ namespace tbd
 
         tbd::TransformComponent* comp = desc->AddComponent<tbd::TransformComponent>("TransformComponent");
         comp->GetTransformation()->SetTranslate(0, 2, 15);
-        comp->GetTransformation()->SetRotateX(-XM_PIDIV2*0.25);
+        comp->GetTransformation()->SetRotateX(-XM_PIDIV2*0.25f);
 
         tbd::RenderComponent* renderComp = desc->AddComponent<tbd::RenderComponent>("RenderComponent");
         tbd::CudaTransformationNode* node = new tbd::CudaTransformationNode(&Trans1, &CreateGrid);
@@ -639,7 +666,7 @@ namespace tbd
         tbd::ActorDescription ldesc = app::g_pApp->GetLogic()->GetActorFactory()->CreateActorDescription();
 
         tbd::LightComponent* lightComponent = ldesc->AddComponent<tbd::LightComponent>("LightComponent");
-        lightComponent->m_type = "Point";
+        lightComponent->m_type = "point";
         lightComponent->m_color.x = 0.5f + 2 * rand() / (FLOAT)RAND_MAX;
         lightComponent->m_color.y = 0.5f + 2 * rand() / (FLOAT)RAND_MAX;
         lightComponent->m_color.z = 0.5f + 2 * rand() / (FLOAT)RAND_MAX;
@@ -660,7 +687,7 @@ namespace tbd
         ldesc = app::g_pApp->GetLogic()->GetActorFactory()->CreateActorDescription();
 
         lightComponent = ldesc->AddComponent<tbd::LightComponent>("LightComponent");
-        lightComponent->m_type = "Point";
+        lightComponent->m_type = "point";
         lightComponent->m_color.x = 0.5f + 2 * rand() / (FLOAT)RAND_MAX;
         lightComponent->m_color.y = 0.5f + 2 * rand() / (FLOAT)RAND_MAX;
         lightComponent->m_color.z = 0.5f + 2 * rand() / (FLOAT)RAND_MAX;
@@ -677,7 +704,7 @@ namespace tbd
         ldesc = app::g_pApp->GetLogic()->GetActorFactory()->CreateActorDescription();
 
         lightComponent = ldesc->AddComponent<tbd::LightComponent>("LightComponent");
-        lightComponent->m_type = "Point";
+        lightComponent->m_type = "point";
         lightComponent->m_color.x = 0.5f + 2 * rand() / (FLOAT)RAND_MAX;
         lightComponent->m_color.y = 0.5f + 2 * rand() / (FLOAT)RAND_MAX;
         lightComponent->m_color.z = 0.5f + 2 * rand() / (FLOAT)RAND_MAX;
@@ -694,7 +721,7 @@ namespace tbd
         ldesc = app::g_pApp->GetLogic()->GetActorFactory()->CreateActorDescription();
 
         lightComponent = ldesc->AddComponent<tbd::LightComponent>("LightComponent");
-        lightComponent->m_type = "Point";
+        lightComponent->m_type = "point";
         lightComponent->m_color.x = 0.5f + 2 * rand() / (FLOAT)RAND_MAX;
         lightComponent->m_color.y = 0.5f + 2 * rand() / (FLOAT)RAND_MAX;
         lightComponent->m_color.z = 0.5f + 2 * rand() / (FLOAT)RAND_MAX;
@@ -852,7 +879,7 @@ namespace tbd
             ldesc->AddComponent<tbd::PickableComponent>(tbd::PickableComponent::COMPONENT_ID);
 
             tbd::LightComponent* lightComponent = ldesc->AddComponent<tbd::LightComponent>("LightComponent");
-            lightComponent->m_type = "Point";
+            lightComponent->m_type = "point";
             lightComponent->m_color.x = 0.5f + 2 * rand() / (FLOAT)RAND_MAX;
             lightComponent->m_color.y = 0.5f + 2 * rand() / (FLOAT)RAND_MAX;
             lightComponent->m_color.z = 0.5f + 2 * rand() / (FLOAT)RAND_MAX;

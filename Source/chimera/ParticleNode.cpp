@@ -124,45 +124,48 @@ namespace tbd
 
     VOID ParticleNode::VOnRestore(tbd::SceneGraph* graph)
     {
-        util::AxisAlignedBB aabb;
-        FLOAT bounds = 50;
-        aabb.AddPoint(util::Vec3(-bounds, -bounds, -bounds));
-        aabb.AddPoint(util::Vec3(+bounds, bounds, +bounds));
-        aabb.Construct();
-        
-        tbd::BaseEmitter* emitter;// = new SurfaceEmitter("torus.obj", util::Vec3(0,0.1f,0), (UINT)(1.5f * (FLOAT)(1 << 19)), 0, 15000);
-            
-        emitter = new tbd::BoxEmitter(util::Vec3(0.5f, 0.1f, 0.5f), util::Vec3(0,0.1f,0), 192 * 200, 0, 15); //6000 ((FLOAT)(1 << 8)
+        if(m_pParticleSystem == NULL || !m_pParticleSystem->IsReady())
+        {
+            util::AxisAlignedBB aabb;
+            FLOAT bounds = 50;
+            aabb.AddPoint(util::Vec3(-bounds, -bounds, -bounds));
+            aabb.AddPoint(util::Vec3(+bounds, bounds, +bounds));
+            aabb.Construct();
 
-        m_pParticleSystem = std::shared_ptr<tbd::ParticleSystem>(new tbd::ParticleSystem(emitter));
+            tbd::BaseEmitter* emitter;// = new SurfaceEmitter("torus.obj", util::Vec3(0,0.1f,0), (UINT)(1.5f * (FLOAT)(1 << 19)), 0, 15000);
 
-        tbd::BaseModifier* mod = new tbd::Gravity(-9.81f, 1);
+            emitter = new tbd::BoxEmitter(util::Vec3(0.5f, 0.1f, 0.5f), util::Vec3(0,0.1f,0), 192 * 1000, 0, 3); //6000 ((FLOAT)(1 << 8)
 
-        m_pParticleSystem->AddModifier(mod);
+            m_pParticleSystem = std::shared_ptr<tbd::ParticleSystem>(new tbd::ParticleSystem(emitter));
 
-        //mod = new tbd::Turbulence(2, 9.81f);
+            tbd::BaseModifier* mod = new tbd::Gravity(-9.81f, 1);
 
-        //m_pParticleSystem->AddModifier(mod);
+            m_pParticleSystem->AddModifier(mod);
 
-        m_pParticleSystem->AddModifier(new tbd::GravityField(util::Vec3(10,10,-10), 1, 1, eAttract));
+            //mod = new tbd::Turbulence(2, 9.81f);
 
-        m_pParticleSystem->AddModifier(new tbd::GravityField(util::Vec3(10,10,10), 1, 5, eRepel));
+            //m_pParticleSystem->AddModifier(mod);
 
-        m_pParticleSystem->AddModifier(new tbd::VelocityDamper(0.995f));
+            m_pParticleSystem->AddModifier(new tbd::GravityField(util::Vec3(10,10,-10), 1, 1, eAttract));
 
-        m_pParticleSystem->AddModifier(new GradientField());
+            m_pParticleSystem->AddModifier(new tbd::GravityField(util::Vec3(10,10,10), 1, 5, eRepel));
 
-        m_pParticleSystem->SetAxisAlignedBB(aabb);
+            m_pParticleSystem->AddModifier(new tbd::VelocityDamper(0.995f));
 
-        m_pParticleSystem->SetTranslation(this->m_transformation->GetTransformation()->GetTranslation());
+            m_pParticleSystem->AddModifier(new GradientField());
 
-        //unique name
-        std::stringstream ss;
-        ss << "particlesystem";
-        ss << m_actorId;
-        app::g_pApp->GetHumanView()->GetVRamManager()->AppendAndCreateHandle(ss.str(), m_pParticleSystem);
+            m_pParticleSystem->SetAxisAlignedBB(aabb);
 
-        m_timer.Reset();
+            m_pParticleSystem->SetTranslation(this->m_transformation->GetTransformation()->GetTranslation());
+
+            //unique name
+            std::stringstream ss;
+            ss << "particlesystem";
+            ss << m_actorId;
+            app::g_pApp->GetHumanView()->GetVRamManager()->AppendAndCreateHandle(ss.str(), m_pParticleSystem);
+
+            //m_timer.Reset();
+        }
     }
 
     VOID ParticleNode::VOnActorMoved(VOID)

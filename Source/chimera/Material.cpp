@@ -4,6 +4,11 @@
 
 namespace tbd 
 {
+    Material::Material(VOID) : m_specular(0.0f,0.0f,0.0f,0), m_diffuse(0.0f, 0.0f, 0.0f,0.0f), m_ambient(0.5f,0.5f,0.5f,0), m_specCoef(1), m_reflectance(0), m_texScale(1), m_hasNormal(FALSE), m_textureDiffuse("default.png") 
+    {
+
+    }
+
     Material::Material(CONST Material& mat)
     {
         m_ambient = mat.m_ambient;

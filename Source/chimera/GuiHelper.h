@@ -34,7 +34,7 @@ namespace tbd
                 Dimension dim;
                 dim.x = 0;//(INT)(0.4 * d3d::g_width);
                 dim.y = 0;
-                dim.w = (INT)(0.25 * d3d::g_width);
+                dim.w = (INT)(0.25 * app::g_pApp->GetWindowWidth());
                 dim.h = 70;
                 m_eventHisto.VSetDimension(dim);
                 m_eventHisto.VSetAlpha(0.5f);

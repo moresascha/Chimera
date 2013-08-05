@@ -221,12 +221,17 @@ namespace proc
         handles[1] = m_closeHandle;
         while(IsAlive())
         {
-            DWORD event = WaitForMultipleObjects(2, handles, FALSE, INFINITE);
-            if(event == -1)
+            DWORD event = -1;// = WaitForMultipleObjects(2, handles, FALSE, INFINITE);
+			while(event == -1)
+			{
+				event = WaitForMultipleObjects(2, handles, FALSE, INFINITE);
+				//Sleep(16);
+			}
+            /*if(event == -1)
             {
                 Fail();
                 return;
-            }
+            } */
             if(IsAlive() && (event == WAIT_OBJECT_0 || (event == WAIT_OBJECT_0 + 1)))
             {
                 VOnDirModification();

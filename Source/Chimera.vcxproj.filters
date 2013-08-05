@@ -189,9 +189,6 @@
     <ClInclude Include="chimera\Plane.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="chimera\PointLightNode.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="chimera\Process.h">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -208,9 +205,6 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="chimera\RenderTarget.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="chimera\resource.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="chimera\Resources.h">
@@ -294,7 +288,10 @@
     <ClInclude Include="resource.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="resource1.h">
+    <ClInclude Include="chimera\PointlightNode.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="chimera\SpotlightNode.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
@@ -461,9 +458,6 @@
     <ClCompile Include="chimera\Picker.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="chimera\PointLightNode.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="chimera\Process.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -539,6 +533,12 @@
     <ClCompile Include="chimera\VRamManager.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="chimera\PointlightNode.cpp">
+      <Filter>Header Files</Filter>
+    </ClCompile>
+    <ClCompile Include="chimera\SpotlightNode.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <None Include="chimera\GeometryTransformation.cu">
@@ -596,6 +596,9 @@
       <Filter>Resource Files</Filter>
     </None>
     <None Include="..\Assets\icon\icon.ico">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="..\Assets\shader\SpotLightShadowMap.hlsl">
       <Filter>Resource Files</Filter>
     </None>
   </ItemGroup>

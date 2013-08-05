@@ -173,7 +173,7 @@ namespace d3d
         std::wstring m_file;
         std::string m_name;
 
-        ShaderProgram(LPCSTR name, LPCTSTR file, LPCSTR functionVS, LPCSTR functionPS, LPCSTR functionGS);
+        ShaderProgram(LPCSTR name, LPCTSTR file, LPCSTR functionVS, LPCSTR functionPS, LPCSTR functionGS = NULL);
 
         static std::map<std::string, std::shared_ptr<ShaderProgram>>* g_spPrograms;
 
@@ -195,7 +195,7 @@ namespace d3d
         static VOID Destroy(VOID);
         ~ShaderProgram(VOID);
 
-        static std::shared_ptr<ShaderProgram> CreateProgram(LPCSTR name, LPCTSTR file, LPCSTR functionVS, LPCSTR functionPS, LPCSTR functionGS);
+        static std::shared_ptr<ShaderProgram> CreateProgram(LPCSTR name, LPCTSTR file, LPCSTR functionVS, LPCSTR functionPS, LPCSTR functionGS = NULL);
         static std::shared_ptr<ShaderProgram> GetProgram(LPCSTR name);
         static CONST std::map<std::string, std::shared_ptr<ShaderProgram>>* GetPrograms(VOID) { return g_spPrograms; }
     };

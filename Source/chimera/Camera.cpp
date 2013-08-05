@@ -347,6 +347,21 @@ namespace util
         FPSCamera::Move(m_headShake);
     }
 
+    VOID CharacterHeadShake::Rotate(FLOAT dPhi, FLOAT dTheta) 
+    {
+        CharacterCamera::Rotate(dPhi, dTheta);
+
+        FLOAT sinPhi = sin(this->m_Phi);
+        FLOAT cosPhi = cos(this->m_Phi);
+
+        m_modViewDir.Set(sinPhi, 0, cosPhi);
+    }
+
+    CONST util::Vec3& CharacterHeadShake::GetViewDirXZ(VOID)
+    {
+        return m_modViewDir;
+    }
+
     StaticCamera::StaticCamera(UINT width, UINT height, FLOAT zNear, FLOAT zFar) : FPSCamera(width, height, zNear, zFar)
     {
 

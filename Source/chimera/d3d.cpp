@@ -6,13 +6,13 @@
 
 #ifdef _DEBUG
     #pragma comment(lib, "d3d11.lib")
-    #pragma comment(lib, "D3DX11.lib")
+    #pragma comment(lib, "d3dcompiler.lib")
 #else
     #pragma comment(lib, "d3d11.lib")
-    #pragma comment(lib, "D3DX11.lib")
+    #pragma comment(lib, "d3dcompiler.lib")
 #endif
 
-namespace d3d 
+namespace d3d  
 {
     ID3D11Texture2D *g_pBackBuffer = 0;
     ID3D11Texture2D *g_pDepthStencilBuffer = 0;
@@ -41,13 +41,13 @@ namespace d3d
     UINT g_quality = 0;
 
 
-    HRESULT Init(WNDPROC wndProc, CONST HINSTANCE hInstance, LPCWSTR title, CONST UINT width, CONST UINT height, CONST BOOL fullscreen) 
+    HRESULT Init(WNDPROC wndProc, CONST HINSTANCE hInstance, LPCWSTR title, UINT width, UINT height) 
     {
 
         util::InitGdiplus();
 
         _CreateWindow(wndProc, hInstance, title, width, height);
-
+        
         g_width = width;
         g_height = height;
 
@@ -61,7 +61,7 @@ namespace d3d
         desc.OutputWindow = g_hWnd;
         desc.SampleDesc.Count = g_samples;
         desc.SampleDesc.Quality = g_quality;
-        desc.Windowed = !fullscreen;
+        desc.Windowed = TRUE;//!fullscreen;
         desc.BufferDesc.Height = height;
         desc.BufferDesc.Width = width;
         desc.Flags = DXGI_SWAP_CHAIN_FLAG_ALLOW_MODE_SWITCH;
@@ -77,7 +77,7 @@ namespace d3d
          UINT flags = 0;
 
     #ifdef _DEBUG
-        // flags |= D3D11_CREATE_DEVICE_DEBUG;
+         //flags |= D3D11_CREATE_DEVICE_DEBUG;
     #endif
 
          CHECK__(D3D11CreateDeviceAndSwapChain(NULL,
@@ -92,7 +92,7 @@ namespace d3d
                                               &g_pDevice,
                                               &level,
                                               &g_pContext));
-     
+
          switch(level) 
          {
               case D3D_FEATURE_LEVEL_10_0 : 
@@ -260,6 +260,14 @@ namespace d3d
         return g_width;
     }
 
+    VOID GetFullscreenSize(UINT* width, UINT* height)
+    {
+        RECT r;
+        GetWindowRect(GetDesktopWindow(), &r);
+        *height = r.bottom;
+        *width = r.right;
+    }
+
     VOID ReleaseBackbuffer(VOID) 
     {
         SAFE_RELEASE(g_pBackBuffer);
@@ -338,22 +346,28 @@ namespace d3d
         d3d::g_pContext->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
     }
 
-    VOID Resize(UINT width, UINT height)
+    VOID Resize(UINT width, UINT height, BOOL fullscreen)
     {
         if(d3d::g_pSwapChain) 
         {
+            if(fullscreen)
+            {
+                GetFullscreenSize(&width, &height);
+            }
+
             ReleaseBackbuffer();
-            g_pSwapChain->ResizeBuffers(0, 0, 0, DXGI_FORMAT_UNKNOWN, DXGI_SWAP_CHAIN_FLAG_ALLOW_MODE_SWITCH);
+            g_pSwapChain->ResizeBuffers(1, width, height, DXGI_FORMAT_UNKNOWN, DXGI_SWAP_CHAIN_FLAG_ALLOW_MODE_SWITCH);
+            g_pSwapChain->SetFullscreenState(fullscreen, NULL);
             CreateBackbuffer(width, height);
             D3D11_VIEWPORT port;
-             port.MinDepth = 0;
-             port.MaxDepth = 1;
-             port.TopLeftX = 0;
-             port.TopLeftY = 0;
-             port.Width = (FLOAT)width;
-             port.Height = (FLOAT)height;
+            port.MinDepth = 0;
+            port.MaxDepth = 1;
+            port.TopLeftX = 0;
+            port.TopLeftY = 0;
+            port.Width = (FLOAT)width;
+            port.Height = (FLOAT)height;
     
-             UINT ports = 1;
+            UINT ports = 1;
             g_pContext->RSSetViewports(ports, &port);
 
             g_width = width;

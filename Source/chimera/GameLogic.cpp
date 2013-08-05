@@ -322,7 +322,7 @@ namespace tbd
             if(physxCmp)
             {
                 //std::shared_ptr<tbd::CameraComponent> camCmp = actor->GetComponent<tbd::CameraComponent>(tbd::CameraComponent::COMPONENT_ID).lock();
-                m_pPhysics->VMoveKinematic(actor, data->m_translation, data->m_rotation, 0.5f, data->IsDeltaMove());
+                m_pPhysics->VMoveKinematic(actor, data->m_translation, data->m_rotation, 0.5f, data->IsDeltaMove(), data->m_isJump);
                 //DEBUG_OUT("moving...");
             }
             else
@@ -344,8 +344,7 @@ namespace tbd
                         transformation->SetTranslate(translation.x, translation.y, translation.z);
                     }
                 }
-                event::IEventPtr aMoved(new event::ActorMovedEvent(actor));
-                event::IEventManager::Get()->VQueueEvent(aMoved);
+                QUEUE_EVENT(new event::ActorMovedEvent(actor));
             }
         }
     }

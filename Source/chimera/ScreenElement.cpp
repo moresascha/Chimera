@@ -48,10 +48,10 @@ namespace tbd
 
     VOID ScreenElement::VSetDimension(CONST Dimension& dim)
     {
-        m_dimension.x = dim.x;
-        m_dimension.y = dim.y;
-        m_dimension.w = dim.w;
-        m_dimension.h = dim.h;
+        m_dimensionPercent.x = dim.x / (FLOAT)app::g_pApp->GetWindowWidth();
+        m_dimensionPercent.y = dim.y / (FLOAT)app::g_pApp->GetWindowHeight();
+        m_dimensionPercent.w = dim.w / (FLOAT)app::g_pApp->GetWindowWidth();
+        m_dimensionPercent.h = dim.h / (FLOAT)app::g_pApp->GetWindowHeight();
     }
 
     UINT ScreenElement::VGetHeight(VOID) CONST
@@ -103,6 +103,10 @@ namespace tbd
 
     BOOL ScreenElement::VOnRestore(VOID)
     {
+        m_dimension.x = (UINT)(m_dimensionPercent.x * d3d::GetWindowWidth());
+        m_dimension.y = (UINT)(m_dimensionPercent.y * d3d::GetWindowHeight());
+        m_dimension.w = (UINT)(m_dimensionPercent.w * d3d::GetWindowWidth());
+        m_dimension.h = (UINT)(m_dimensionPercent.h * d3d::GetWindowHeight());
         return TRUE;
     }
 
@@ -145,11 +149,10 @@ namespace tbd
     
     BOOL ScreenElementContainer::VOnRestore(VOID)
     {
-        /**TBD_FOR(m_components)
-
+        TBD_FOR(m_components)
         {
-        it->second->VOnAttach();
-        } */
+            it->second->VOnRestore();
+        }
         return TRUE;
     }
 
@@ -211,15 +214,10 @@ namespace tbd
         app::g_pApp->GetHumanView()->GetRenderer()->PopRasterizerState();
     }
 
-    VOID RenderScreen::VSetDimension(CONST Dimension& dim)
-    {
-        m_pSettings->SetDimension(dim);
-        m_dimension = dim;
-    }
-
     BOOL RenderScreen::VOnRestore(VOID)
     {
-        return m_pSettings->VOnRestore();
+        ScreenElement::VOnRestore();
+        return m_pSettings->VOnRestore(m_dimension.w, m_dimension.h);
     }
 
     RenderScreen::~RenderScreen(VOID)
@@ -227,23 +225,38 @@ namespace tbd
 
     }
 
+    RendertargetScreen::RendertargetScreen(d3d::RenderTarget* target) : m_pTarget(target)
+    {
+    }
+
+    VOID RendertargetScreen::VDraw(VOID)
+    {
+        d3d::BindBackbuffer();
+
+        app::g_pApp->GetHumanView()->GetRenderer()->SetSampler(d3d::eDiffuseColorSampler, m_pTarget->GetShaderRessourceView());
+
+        assert(((m_dimension.w > 0) && (m_dimension.h > 0)));
+
+        d3d::DrawScreenQuad(m_dimension.x, m_dimension.y, m_dimension.w, m_dimension.h);
+
+        app::g_pApp->GetHumanView()->GetRenderer()->SetSampler(d3d::eDiffuseColorSampler, NULL);
+    }
+
+    RendertargetScreen::~RendertargetScreen(VOID)
+    {
+
+    }
+
+    //---
     DefShaderRenderScreen::DefShaderRenderScreen(UINT target) : RenderScreen(NULL), m_target(target)
     {
-
-    }
-
-    VOID DefShaderRenderScreen::VSetDimension(CONST Dimension& dim)
-    {
-        m_dimension = dim;
-    }
-
-    BOOL DefShaderRenderScreen::VOnRestore(VOID)
-    {
-        return TRUE;
+        m_pSettings = std::shared_ptr<tbd::AlbedoSettings>(new tbd::AlbedoSettings());
     }
 
     VOID DefShaderRenderScreen::VDraw(VOID)
     {
+        m_pSettings->VRender();
+
         d3d::BindBackbuffer();
 
         app::g_pApp->GetHumanView()->GetRenderer()->SetSampler(d3d::eDiffuseColorSampler, 
@@ -252,6 +265,8 @@ namespace tbd
         assert(((m_dimension.w > 0) && (m_dimension.h > 0)));
 
         d3d::DrawScreenQuad(m_dimension.x, m_dimension.y, m_dimension.w, m_dimension.h);
+
+        app::g_pApp->GetHumanView()->GetRenderer()->SetSampler(d3d::eDiffuseColorSampler, NULL);
     }
 
     DefShaderRenderScreen::~DefShaderRenderScreen(VOID)
@@ -266,7 +281,8 @@ namespace tbd
 
     BOOL DefShaderRenderScreenContainer::VOnRestore(VOID)
     {
-        m_settings->VOnRestore();
+        LOG_CRITICAL_ERROR("todo");
+        m_settings->VOnRestore(d3d::GetWindowWidth(), d3d::GetWindowHeight());
         TBD_FOR(m_screens)
         {
             (*it)->VOnRestore();

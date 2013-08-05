@@ -29,7 +29,7 @@ VertexOutput RenderCubeMap_VS(VertexInput input)
 {
     VertexOutput op;
     op.position = mul(g_model, float4(input.position, 1));
-    op.pos2light = g_pointLightPos.xyz - op.position.xyz;
+    op.pos2light = g_lightPos.xyz - op.position.xyz;
     return op;
 }
 
@@ -37,7 +37,7 @@ VertexOutput RenderCubeMap_VS(VertexInput input)
 void RenderCubeMap_GS(triangle VertexOutput input[3], inout TriangleStream<GeoOutput> outstream)
 {
     GeoOutput op;
-    float4x4 trans = {1,0,0,-g_pointLightPos.x, 0,1,0,-g_pointLightPos.y, 0,0,1,-g_pointLightPos.z, 0,0,0,1};
+    float4x4 trans = {1,0,0,-g_lightPos.x, 0,1,0,-g_lightPos.y, 0,0,1,-g_lightPos.z, 0,0,0,1};
 
     [unroll]
     for(int j = 0; j < 6; ++j)
@@ -73,7 +73,7 @@ VertexOutput RenderCubeMapParticles_VS(VertexInput_Particles input)
 {
     VertexOutput op;
     op.position = mul(g_model, float4(input.position, 1)) + float4(input.translation, 0);
-    op.pos2light = g_pointLightPos.xyz - op.position.xyz;
+    op.pos2light = g_lightPos.xyz - op.position.xyz;
     return op;
 }
 
@@ -91,6 +91,6 @@ VertexOutput RenderCubeMapInstanced_VS(VertexInput_Instanced input)
 {
     VertexOutput op;
     op.position = mul(g_model, float4(input.position + input.instancedTranslation, 1));
-    op.pos2light = g_pointLightPos.xyz - op.position.xyz;
+    op.pos2light = g_lightPos.xyz - op.position.xyz;
     return op;
 }

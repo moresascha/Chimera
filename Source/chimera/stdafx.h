@@ -15,6 +15,7 @@
 #include <Windows.h>
 #include <windowsx.h>
 #include <gdiplus.h>
+#include <memory>
 
 #ifndef SHR_NEW
 #define SHR_NEW new(_NORMAL_BLOCK,__FILE__,__LINE__)
@@ -27,7 +28,7 @@
 #include <assert.h>
 //#include <memory>
 
-#include <xnamath.h>
+#include <DirectXMath.h>
 #include <iostream>
 #include <string>
 #include <list>

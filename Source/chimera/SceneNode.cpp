@@ -207,6 +207,10 @@ namespace tbd
             m_actorId = id;
             this->m_actor = app::g_pApp->GetLogic()->VFindActor(m_actorId);
             this->m_transformation = m_actor->GetComponent<tbd::TransformComponent>(tbd::TransformComponent::COMPONENT_ID).lock();
+            if(!m_transformation)
+            {
+                LOG_CRITICAL_ERROR("Actor has no Transformcomponent");
+            }
             event::EventListener listener = fastdelegate::MakeDelegate(this, &SceneNode::ActorMovedDelegate);
             app::g_pApp->GetEventMgr()->VAddEventListener(listener, event::ActorMovedEvent::TYPE);
         }

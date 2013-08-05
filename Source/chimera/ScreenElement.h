@@ -1,6 +1,12 @@
 #pragma once
 #include "stdafx.h"
 #include "Vec4.h"
+
+namespace d3d
+{
+    class RenderTarget;
+}
+
 namespace tbd
 {
     struct Dimension
@@ -24,6 +30,20 @@ namespace tbd
             y = dim.y;
             w = dim.w;
             h = dim.h;
+        }
+    };
+
+    struct _Percentages
+    {
+        FLOAT x;
+        FLOAT y;
+        FLOAT w;
+        FLOAT h;
+
+        _Percentages(VOID)
+        {
+            x = y = 0;
+            w = h = 1;
         }
     };
 
@@ -79,6 +99,7 @@ namespace tbd
     class ScreenElement : public IScreenElement
     {
     protected:
+        _Percentages m_dimensionPercent;
         Dimension m_dimension;
         util::Color m_color;
         BOOL m_isEnable;
@@ -154,13 +175,11 @@ namespace tbd
 
     class RenderScreen : public ScreenElement
     {
-    private:
+    protected:
         std::shared_ptr<IGraphicsSettings> m_pSettings;
 
     public:
         RenderScreen(std::shared_ptr<IGraphicsSettings> settings);
-
-        virtual VOID VSetDimension(CONST Dimension& dim);
 
         virtual BOOL VOnRestore(VOID);
 
@@ -171,16 +190,24 @@ namespace tbd
         ~RenderScreen(VOID);
     };
 
+    class RendertargetScreen : public ScreenElement
+    {
+    private:
+        d3d::RenderTarget* m_pTarget;
+    public:
+        RendertargetScreen(d3d::RenderTarget* target);
+
+        VOID VDraw(VOID);
+
+        ~RendertargetScreen(VOID);
+    };
+
     class DefShaderRenderScreen : public RenderScreen
     {
     private:
         UINT m_target;
     public:
         DefShaderRenderScreen(UINT target);
-
-        BOOL VOnRestore(VOID);
-
-        VOID VSetDimension(CONST Dimension& dim);
 
         VOID VDraw(VOID);
 

@@ -1,6 +1,6 @@
 #pragma once
 
-#define CLAMP(x, low, high)  (((x) > (high)) ? (high) : (((x) < (low)) ? (low) : (x)))
+#define CLAMP(x, low, high)  ((x) = (((x) > (high)) ? (high) : (((x) < (low)) ? (low) : (x))))
 #define DEGREE_TO_RAD(__deg_) (FLOAT)(((__deg_) / 180.0 * XM_PI))
 #define RAD_TO_DEGREE(__deg_) (FLOAT)(((__deg_) * 180.0 / XM_PI))
 

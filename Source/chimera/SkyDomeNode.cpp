@@ -22,7 +22,7 @@ namespace tbd
 
     VOID SkyDomeNode::VOnRestore(tbd::SceneGraph* graph)
     {
-        m_actor->GetComponent<tbd::TransformComponent>(tbd::TransformComponent::COMPONENT_ID).lock()->GetTransformation()->Scale(400);
+        m_actor->GetComponent<tbd::TransformComponent>(tbd::TransformComponent::COMPONENT_ID).lock()->GetTransformation()->SetScale(400);
         m_textureHandle = std::static_pointer_cast<d3d::Texture2D>(app::g_pApp->GetHumanView()->GetVRamManager()->GetHandle(m_TextureRes));
     }
 

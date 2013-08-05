@@ -62,7 +62,7 @@ PixelOutput Particle_PS(PixelInput input)
        f = 2 * tc.x * tc.x + 2 * tc.x * tc.y + tc.y * tc.y - 1;
     }
 
-    if(input.alive < 0.5 || f > 0)
+    if(input.alive < 0.5 || tc.x*tc.x + tc.y*tc.y > 1)//|| f > 0)
     {
         discard;
     }
@@ -74,8 +74,8 @@ PixelOutput Particle_PS(PixelInput input)
     op.worldPosDepth.w = length(input.worldView.xyz);
 
     op.normal = float4(0,0,0,0);
-    half scale = 2;
-    half4 color = scale * half4(2,1,1,1);
+    half scale = 1;
+    half4 color = scale * half4(1,2,2,1); 
     op.diffMaterialSpecR = half4(1,1,1,1);
     op.ambientMaterialSpecG = half4(1,1,1,1);
     op.diffuseColorSpecB = half4(color);

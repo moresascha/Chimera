@@ -2,6 +2,7 @@
 #include "stdafx.h"
 #include <vector>
 #include <sstream>
+
 #pragma comment (lib, "Gdiplus.lib")
 
 namespace util

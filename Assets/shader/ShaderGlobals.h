@@ -4,6 +4,7 @@
 #define CASCADES_COUNT 3
 
 #define PI 3.1415926535897
+#define PIDIV2 PI/2.0f
 
 SamplerState g_samPoint
 {
@@ -46,10 +47,10 @@ cbuffer CubeMapViewMaticesBuffer : register(b4)
     matrix g_cubeViewMatrices[6];
 }
 
-cbuffer PointLightBuffer : register(b5)
+cbuffer LightSettingsBuffer : register(b5)
 {
-    float4 g_pointLightColorRadius;
-    float4 g_pointLightPos;
+    float4 g_lightColorRadius;
+    float4 g_lightPos;
 }
 
 cbuffer FontBuffer : register(b6)
@@ -91,7 +92,7 @@ cbuffer CSMLightingBuffer : register(b12)
     matrix g_lightView;
     matrix g_IlightView;
     matrix g_lightProjection[CASCADES_COUNT];
-    float4 g_lightPos;
+    float4 g_CSMlightPos;
     float4 g_distances;
 }
 

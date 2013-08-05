@@ -130,6 +130,8 @@ namespace tbd
 
             VOID AppendText(CONST std::string& text);
 
+            CONST std::vector<TextLine> GetTextLines(VOID) CONST;
+
             VOID SetTextColor(CONST util::Vec4& color);
 
             VOID ClearText(VOID);
@@ -184,8 +186,11 @@ namespace tbd
             GuiTextComponent* m_pTextLabel;
             GuiTextComponent* m_pAutoComplete;
             INT m_currentHistoryLine;
+            INT m_currentAutoCompleteIndex;
 
             VOID ComputeInput(UINT CONST code);
+
+            VOID SetAutoComplete(VOID);
 
         public:
             GuiConsole(VOID);

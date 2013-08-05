@@ -18,6 +18,7 @@
 #include "Camera.h"
 #include "GuiComponent.h"
 #include "Sound.h"
+#include "SpotlightNode.h"
 
 namespace tbd
 {
@@ -68,6 +69,16 @@ namespace tbd
     tbd::VRamManager* HumanGameView::GetVRamManager(VOID) CONST
     {
         return app::g_pApp->GetVRamManager();
+    }
+
+    VOID HumanGameView::Resize(UINT w, UINT h, BOOL fullscreen)
+    {
+        if(d3d::g_pSwapChain) 
+        {
+            d3d::Resize(w, h, fullscreen);
+            VOnRestore();
+            app::g_pApp->GetInputHandler()->VSetCurserOffsets(fullscreen ? 0 : 8 , fullscreen ? 0 : 30); //todo, get systemmetrics
+        }
     }
 
     VOID HumanGameView::ActorMovedDelegate(event::IEventPtr eventData)  
@@ -140,7 +151,20 @@ namespace tbd
         {
             std::shared_ptr<tbd::LightComponent> comp = actor->GetComponent<tbd::LightComponent>(tbd::LightComponent::COMPONENT_ID).lock();
 
-            std::shared_ptr<tbd::PointLightNode> node = std::shared_ptr<tbd::PointLightNode>(new tbd::PointLightNode(actor->GetId()));
+            std::shared_ptr<tbd::SceneNode> node;
+
+            if(comp->m_type == "point")
+            {
+                node = std::shared_ptr<tbd::PointlightNode>(new tbd::PointlightNode(actor->GetId()));
+            }
+            else if(comp->m_type == "spot")
+            {
+                node = std::shared_ptr<tbd::SpotlightNode>(new tbd::SpotlightNode(actor->GetId()));
+            }
+            else
+            {
+                LOG_CRITICAL_ERROR_A("Unknown lighttype: %s", comp->m_type);
+            }
 
             m_pSceneGraph->AddChild(pCastEventData->m_actorId, node);
 
@@ -166,6 +190,7 @@ namespace tbd
     VOID HumanGameView::AddScreenElement(tbd::IScreenElement* element)
     {
         m_screenElements.push_back(element);
+        element->VOnRestore();
     }
 
     tbd::IScreenElement* HumanGameView::GetScreenElementByName(LPCSTR name)
@@ -232,6 +257,7 @@ namespace tbd
     VOID HumanGameView::AddScene(tbd::RenderScreen* screen)
     {
         m_scenes.push_back(screen);
+        screen->VOnRestore();
         if(!m_currentScene)
         {
             ActivateScene(screen->VGetName());
@@ -264,6 +290,23 @@ namespace tbd
 
     HRESULT HumanGameView::VOnRestore()
     {
+        TBD_FOR(m_scenes)
+        {
+            (*it)->VOnRestore();
+        }
+
+        TBD_FOR(m_screenElements)
+        {
+            (*it)->VOnRestore();
+        }
+
+        if(m_pGui)
+        {
+            m_pGui->VOnRestore();
+        }
+
+        m_pSceneGraph->OnRestore();
+
         return S_OK;
     }
 
@@ -305,7 +348,7 @@ namespace tbd
         dim.x = 0;
         dim.y = 0;
         dim.w = d3d::g_width;
-        dim.h = (UINT)(d3d::g_height * 0.4);
+        dim.h = (INT)(d3d::g_height * 0.4f);
         console->VSetAlpha(0.5f);
         console->VSetBackgroundColor(0.25f,0.25f,0.25f);
         console->VSetDimension(dim);
@@ -331,15 +374,6 @@ namespace tbd
 
         listener = fastdelegate::MakeDelegate(&m_soundEngine, &tbd::SoundEngine::NewComponentDelegate);
         event::IEventManager::Get()->VAddEventListener(listener, event::NewComponentCreatedEvent::TYPE);
-
-        TBD_FOR(m_screenElements)
-        {
-            (*it)->VOnRestore();
-        }
-        TBD_FOR(m_scenes)
-        {
-            (*it)->VOnRestore();
-        }
 
         IGameView::VOnAttach(viewId, actor);
     }

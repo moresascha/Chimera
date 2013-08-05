@@ -8,6 +8,7 @@
 
 namespace tbd 
 {
+    #define KEY_TAB 0x09
     #define KEY_0 0x30
     #define KEY_1 0x31
     #define KEY_2 0x32

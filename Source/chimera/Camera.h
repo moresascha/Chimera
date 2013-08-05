@@ -29,6 +29,8 @@ namespace util
 
         virtual CONST Vec3& GetViewDir(VOID) = 0;
 
+        virtual CONST Vec3& GetViewDirXZ(VOID) = 0;
+
         virtual CONST Vec3& GetSideDir(VOID) = 0;
 
         virtual CONST Vec3& GetUpDir(VOID) = 0;
@@ -152,6 +154,11 @@ namespace util
             return this->m_viewDir;
         }
 
+        virtual CONST Vec3& GetViewDirXZ(VOID) 
+        {
+            return this->m_viewDir;
+        }
+
         CONST Vec3& GetSideDir(VOID)
         {
             return m_sideDir;
@@ -262,9 +269,12 @@ namespace util
         util::Timer m_timer;
         util::Vec3 m_headShake;
         util::Vec3 m_lastPos;
+        util::Vec3 m_modViewDir;
     public:
         CharacterHeadShake(UINT width, UINT height, FLOAT zNear, FLOAT zFar);
         VOID MoveToPosition(CONST util::Vec3& pos);
+        CONST Vec3& GetViewDirXZ(VOID);
+        VOID Rotate(FLOAT dPhi, FLOAT dTheta);
     };
 
     class StaticCamera : public FPSCamera

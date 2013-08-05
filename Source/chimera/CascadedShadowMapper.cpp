@@ -88,7 +88,7 @@ namespace d3d
         FLOAT l = 0;
         for(UCHAR i = 0; i < m_cascades; ++i)
         {
-            l += pow(factor, i);
+            l += (FLOAT)pow(factor, i);
         }
         FLOAT t = 1.0f / l;
         FLOAT sum = 0;

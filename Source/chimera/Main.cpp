@@ -16,11 +16,7 @@
 #include "Maze.h"
 #include "Spline.h"
 
-#define MAX_LOADSTRING 100
 #undef FULL_SCREEN    
-// Global Variables:
-TCHAR szTitle[MAX_LOADSTRING];                         // The title bar text
-TCHAR szWindowClass[MAX_LOADSTRING];               // the main window class name
 
 int APIENTRY _tWinMain(HINSTANCE hInstance,
                      HINSTANCE hPrevInstance,
@@ -36,26 +32,15 @@ int APIENTRY _tWinMain(HINSTANCE hInstance,
     UNREFERENCED_PARAMETER(hPrevInstance);
     UNREFERENCED_PARAMETER(lpCmdLine);
 
-    /*util::UniformBSpline s;
-    
-    s.AddPoint(util::Vec3(-10,10,0));
-    s.AddPoint(util::Vec3(0,10,10));
-    s.AddPoint(util::Vec3(+10,10,0));
-    s.AddPoint(util::Vec3(0,10,-10));
-
-    s.AddPoint(util::Vec3(0,10,10));
-    s.AddPoint(util::Vec3(+10,10,0));
-    s.AddPoint(util::Vec3(0,10,-10));
-
-    s.Create(); */
-
     app::GameApp* g_pApp = new app::BasicApp(); //packman::Packman();//
     LPCWSTR APPNAME;
+
 #ifdef _DEBUG
     APPNAME = L"Chimera (Debugx64)";
 #else
     APPNAME = L"Chimera (Releasex64)";
 #endif
+
     g_pApp->Init(hInstance, APPNAME, "../Assets/", "log.log");
 
     //post init pre run code here

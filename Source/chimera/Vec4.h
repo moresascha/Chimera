@@ -1,8 +1,7 @@
 #pragma once
 #include "stdafx.h"
 #include <sstream>
-//using namespace DirectX;
-
+using namespace DirectX; 
 namespace util 
 {
     class DLL_EXPORT Vec4

@@ -31,7 +31,7 @@ namespace tbd
     public:
         IGraphicSetting(LPCSTR settingName) : m_name(settingName) {}
         virtual VOID VRender(VOID) = 0;
-        virtual BOOL VOnRestore(CONST Dimension& dim) = 0;
+        virtual BOOL VOnRestore(UINT w, UINT h) = 0;
         LPCSTR GetName(VOID) { return m_name.c_str(); }
         virtual ~IGraphicSetting(VOID) {}
     };
@@ -45,7 +45,7 @@ namespace tbd
     public:
         ShaderPathSetting(UINT path, LPCSTR programName, LPCSTR settingName);
         VOID VRender(VOID);
-        BOOL VOnRestore(CONST Dimension& dim);
+        BOOL VOnRestore(UINT w, UINT h);
     };
 
     class GloablLightingSetting : public IGraphicSetting
@@ -55,7 +55,7 @@ namespace tbd
     public:
         GloablLightingSetting(VOID);
         VOID VRender(VOID);
-        BOOL VOnRestore(CONST Dimension& dim);
+        BOOL VOnRestore(UINT w, UINT h);
     };
 
     class LightingSetting : public IGraphicSetting
@@ -65,7 +65,7 @@ namespace tbd
     public:
         LightingSetting(VOID) : IGraphicSetting("Lighting") {}
         VOID VRender(VOID);
-        BOOL VOnRestore(CONST Dimension& dim) { return TRUE; }
+        BOOL VOnRestore(UINT w, UINT h) { return TRUE; }
     };
 
     class CSMSetting : public IGraphicSetting
@@ -75,7 +75,7 @@ namespace tbd
     public:
         CSMSetting(VOID) : IGraphicSetting("CSM"), m_pCSM(NULL) {}
         VOID VRender(VOID);
-        BOOL VOnRestore(CONST Dimension& dim);
+        BOOL VOnRestore(UINT w, UINT h);
         ~CSMSetting(VOID);
     };
 
@@ -90,7 +90,7 @@ namespace tbd
         VOID VRender(VOID);
         VOID SetPreResult(d3d::RenderTarget* pPreResult);
         VOID SetScene(d3d::RenderTarget* pScene);
-        BOOL VOnRestore(CONST Dimension& dim);
+        BOOL VOnRestore(UINT w, UINT h);
         ~PostFXSetting(VOID);
     };
 
@@ -106,7 +106,7 @@ namespace tbd
     public:
         EditModeSetting(VOID);
         VOID VRender(VOID);
-        BOOL VOnRestore(CONST Dimension& dim) { return TRUE; }
+        BOOL VOnRestore(UINT w, UINT h) { return TRUE; }
     };
 
     class ProfileSetting : public IGraphicSetting
@@ -121,20 +121,17 @@ namespace tbd
     public:
         ProfileSetting(IGraphicSetting* setting);
         VOID VRender(VOID);
-        BOOL VOnRestore(CONST Dimension& dim);
+        BOOL VOnRestore(UINT w, UINT h);
         LPCSTR GetText(VOID);
         ~ProfileSetting(VOID);
     };
 
     class IGraphicsSettings
     {
-    protected:
-        tbd::Dimension m_dim;
     public:
         IGraphicsSettings(VOID);
-        VOID SetDimension(CONST tbd::Dimension& dim);
         virtual VOID VRender(VOID) = 0;
-        virtual BOOL VOnRestore(VOID) = 0;
+        virtual BOOL VOnRestore(UINT w, UINT h) = 0;
         virtual VOID VOnActivate(VOID) = 0;
         virtual d3d::RenderTarget* VGetResult(VOID) = 0;
         virtual ~IGraphicsSettings(VOID) {}
@@ -148,13 +145,14 @@ namespace tbd
         IGraphicSetting* m_pPostFX;
         d3d::RenderTarget* m_pScene;
         d3d::RenderTarget* m_pPreResult;
+        UINT m_lastW, m_lastH;
     public:
         GraphicsSettings(VOID);
         VOID AddSetting(IGraphicSetting* setting, SettingType type);
         VOID SetPostFX(IGraphicSetting* setting);
         VOID VOnActivate(VOID);
         virtual VOID VRender(VOID);
-        virtual BOOL VOnRestore(VOID);
+        virtual BOOL VOnRestore(UINT w, UINT h);
 
         IGraphicSetting* GetSetting(LPCSTR name);
 
@@ -209,18 +207,6 @@ namespace tbd
         BOOL VOnRestore(VOID);
         d3d::RenderTarget* VGetResult(VOID);
     };
-
-    class SimpleSettings : public GraphicsSettings
-    {
-    private:
-        BOOL m_wireFrame;
-    public:
-        SimpleSettings(BOOL wireFrame = FALSE) : m_wireFrame(wireFrame) {}
-        VOID VRender(VOID);
-        BOOL VOnRestore(VOID);
-        d3d::RenderTarget* VGetResult(VOID);
-    };
-
     class WireFrameFilledSettings : public GraphicsSettings
     {
     private:
@@ -232,4 +218,12 @@ namespace tbd
         d3d::RenderTarget* VGetResult(VOID);
     };
     */
+
+    class AlbedoSettings : public GraphicsSettings
+    {
+    public:
+        AlbedoSettings(VOID);
+        VOID VRender(VOID);
+    };
+
 }

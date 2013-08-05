@@ -90,7 +90,7 @@ namespace d3d
         XMFLOAT4X4 m_views[6];
     };
 
-    struct _PointLightBuffer
+    struct _LightSettingsBuffer
     {
         XMFLOAT4 m_colorNRadiusW;
         XMFLOAT4 m_position;
@@ -257,7 +257,7 @@ namespace d3d
 
         VOID SetCubeMapViews(CONST util::Mat4 mats[6]);
 
-        VOID SetPointLightSettings(CONST util::Vec4& color, CONST util::Vec3& position, FLOAT radius);
+        VOID SetLightSettings(CONST util::Vec4& color, CONST util::Vec3& position, FLOAT radius);
 
         VOID SetCSMSettings(CONST util::Mat4& view, CONST util::Mat4& iView, CONST util::Mat4 projection[3], CONST util::Vec3& lightPos, CONST FLOAT distances[3]);
 
