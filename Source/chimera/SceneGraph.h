@@ -47,6 +47,8 @@ public:
 
     BOOL IsVisibilityReset(VOID);
 
+    std::shared_ptr<tbd::ISceneNode> FindActorNode(ActorId id);
+
     VOID SetCamera(std::shared_ptr<util::ICamera> camera);
 
     std::shared_ptr<tbd::ISceneNode> RayCast(CONST util::Vec3& position, CONST util::Vec3& direction);

@@ -79,7 +79,8 @@ namespace tbd
     BOOL ActorController::VOnMousePressed(INT x, INT y, INT button) { return FALSE; } //remove?
     BOOL ActorController::VOnMouseMoved(INT x, INT y, INT dx, INT dy) 
     {
-        event::IEventPtr event(new event::MoveActorEvent(this->m_actor->GetId(), util::Vec3(), util::Vec3(2 * dx * 1e-3f, 2 * dy * 1e-3f, 0)));
+        LOG_CRITICAL_ERROR("this does currently not work");
+        event::IEventPtr event(new event::MoveActorEvent(this->m_actor->GetId(), util::Vec3(2 * dx * 1e-3f, 2 * dy * 1e-3f, 0)));
         event::IEventManager::Get()->VQueueEvent(event);
         this->m_lastPosX = x;
         this->m_lastPosY = y;
@@ -225,7 +226,11 @@ namespace tbd
         }
         
         std::shared_ptr<tbd::TransformComponent> comp = m_actor->GetComponent<tbd::TransformComponent>(tbd::TransformComponent::COMPONENT_ID).lock();
-        comp->GetTransformation()->Rotate(2 * dx * 1e-3f, 2 * dy * 1e-3f, 0);
+        comp->m_phi -= -2 * dx * 1e-3f;
+        comp->m_theta += 2 * dy * 1e-3f;
+        //todo
+        /*comp->GetTransformation()->RotateX(-2 * dx * 1e-3f);
+        comp->GetTransformation()->RotateY(2 * dy * 1e-3f); */
         event::IEventPtr event(new event::ActorMovedEvent(this->m_actor));
         event::IEventManager::Get()->VQueueEvent(event);
 
@@ -277,7 +282,7 @@ namespace tbd
             //deltaX.Add(deltaY);
             deltaX.Add(deltaZ);
 
-            QUEUE_EVENT(new event::MoveActorEvent(this->m_actor->GetId(), deltaX, util::Vec3()));
+            QUEUE_EVENT(new event::MoveActorEvent(this->m_actor->GetId(), deltaX));
         }
 
         return TRUE;

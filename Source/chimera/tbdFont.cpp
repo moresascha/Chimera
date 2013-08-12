@@ -351,6 +351,7 @@ namespace tbd
                     nposx,  nposy, 0, u0, v0,
                     nposx1, nposy, 0, u1, v0,
                 };
+
                 /*
                 FLOAT localVertices[20] = 
                 {

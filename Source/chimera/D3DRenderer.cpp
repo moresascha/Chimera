@@ -378,6 +378,11 @@ namespace d3d
 
     VOID D3DRenderer::SetLightSettings(CONST util::Vec4& color, CONST util::Vec3& position, FLOAT radius)
     {
+        SetLightSettings(color, position, position, radius, 0.f, 1.f);
+    }
+
+    VOID D3DRenderer::SetLightSettings(CONST util::Vec4& color, CONST util::Vec3& position, CONST util::Vec3& viewDir, FLOAT radius, FLOAT angel, FLOAT intensity)
+    {
         _LightSettingsBuffer* plb = (_LightSettingsBuffer*)this->m_constBuffer[ePointLightBuffer]->Map();
         plb->m_colorNRadiusW.x = color.x;
         plb->m_colorNRadiusW.y = color.y;
@@ -386,7 +391,11 @@ namespace d3d
         plb->m_position.x = position.x;
         plb->m_position.y = position.y;
         plb->m_position.z = position.z;
-        plb->m_position.w = 1;
+        plb->m_position.w = intensity;
+        plb->m_viewDirNAngel.x = viewDir.x;
+        plb->m_viewDirNAngel.y = viewDir.y;
+        plb->m_viewDirNAngel.z = viewDir.z;
+        plb->m_viewDirNAngel.w = angel;
         this->m_constBuffer[ePointLightBuffer]->Unmap();
     }
 

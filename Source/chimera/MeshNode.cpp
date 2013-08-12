@@ -97,7 +97,7 @@ namespace tbd
     {
         //if(this->m_transformation)
         {
-            m_transformedBBPoint = util::Mat4::Transform(*this->m_transformation->GetTransformation(), m_mesh->GetAABB().GetMiddle());
+            m_transformedBBPoint = util::Mat4::Transform(*GetTransformation(), m_mesh->GetAABB().GetMiddle());
         }
     }
 
@@ -110,7 +110,7 @@ namespace tbd
             {
                 m_mesh->Update();
                 util::AxisAlignedBB& aabb = m_mesh->GetAABB();
-                FLOAT scale = m_transformation->GetTransformation()->GetScale().x;
+                FLOAT scale = GetTransformation()->GetScale().x;
                 BOOL in = graph->GetFrustum()->IsInside(m_transformedBBPoint, scale * aabb.GetRadius());
                 return in;
             }
@@ -140,7 +140,7 @@ namespace tbd
                 {
                 case eDRAW_TO_SHADOW_MAP: 
                     {
-                        DrawToShadowMap(m_geo, m_mesh, m_transformation->GetTransformation());
+                        DrawToShadowMap(m_geo, m_mesh, GetTransformation());
                         /*app::g_pApp->GetHumanView()->GetRenderer()->VPushWorldTransform(*m_transformation->GetTransformation());
                         m_geo->Bind();
                         for(auto it = m_mesh->GetIndexBufferIntervals().begin(); it != m_mesh->GetIndexBufferIntervals().end(); ++it)
@@ -154,17 +154,17 @@ namespace tbd
                     } break;
                 case eDRAW_BOUNDING_DEBUG :
                     {
-                        DrawSphere(m_transformation->GetTransformation(), m_mesh->GetAABB());
+                        DrawSphere(GetTransformation(), m_mesh->GetAABB());
                     } break;
 
                 case eDRAW_PICKING :
                     {
-                        DrawPicking(m_actor, m_transformation->GetTransformation(), m_mesh, m_geo);
+                        DrawPicking(m_actor, GetTransformation(), m_mesh, m_geo);
                     } break;
 
                 case eDRAW_DEBUG_INFOS : 
                     {
-                        tbd::DrawActorInfos(m_actor, this->m_transformation->GetTransformation(), graph->GetCamera());
+                        tbd::DrawActorInfos(m_actor, GetTransformation(), graph->GetCamera());
                     } break;
                 }
             }
@@ -181,7 +181,7 @@ namespace tbd
 
     VOID MeshNode::DrawToAlbedo(VOID)
     {
-        app::g_pApp->GetHumanView()->GetRenderer()->VPushWorldTransform(*m_transformation->GetTransformation());
+        app::g_pApp->GetHumanView()->GetRenderer()->VPushWorldTransform(*GetTransformation());
         m_geo->Bind();
         app::g_pApp->GetHumanView()->GetRenderer()->SetActorId(this->m_actor->GetId());
 

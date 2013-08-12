@@ -30,12 +30,12 @@ namespace tbd
                 case eDRAW_TO_SHADOW_MAP_INSTANCED : 
                     {
                         m_geo->SetInstanceBuffer(m_pInstanceHandle->GetBuffer());
-                        DrawToShadowMap(m_geo, m_mesh, m_transformation->GetTransformation());
+                        DrawToShadowMap(m_geo, m_mesh, GetTransformation());
                         m_geo->SetInstanceBuffer(NULL);
                     } break;
                 case eDRAW_BOUNDING_DEBUG : 
                     {
-                        DrawSphere(m_transformation->GetTransformation(), m_aabb);
+                        DrawSphere(GetTransformation(), m_aabb);
                     } break;
                 }
             }
@@ -72,7 +72,7 @@ namespace tbd
 
     VOID InstancedMeshNode::VOnActorMoved(VOID)
     {
-        m_transformedBBPoint = util::Mat4::Transform(*this->m_transformation->GetTransformation(), m_aabb.GetMiddle());
+        m_transformedBBPoint = util::Mat4::Transform(*GetTransformation(), m_aabb.GetMiddle());
     }
 
     VOID InstancedMeshNode::VOnRestore(tbd::SceneGraph* graph)

@@ -189,7 +189,7 @@ namespace d3d
     }
 
     Geometry::Geometry(BOOL ownsInstanceBuffer /* = false */) 
-        : m_pVertexBuffer(NULL), m_pIndexBuffer(NULL), m_ownsInstanceBuffer(ownsInstanceBuffer), m_pInstanceBuffer(NULL), m_elementCount(0)
+        : m_pVertexBuffer(NULL), m_pIndexBuffer(NULL), m_ownsInstanceBuffer(ownsInstanceBuffer), m_pInstanceBuffer(NULL), m_elementCount(0), m_initialized(FALSE)
     {
         m_pDrawer = DEFAULT_DRAWER;
     }

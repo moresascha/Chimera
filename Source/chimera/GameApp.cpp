@@ -57,9 +57,9 @@ namespace app
 
     VOID PostInitMessage(LPCSTR message)
     {
-        float c[] = {0,0,0,0};
+        CONST FLOAT c[] = {0,0,0,0};
         d3d::g_pContext->ClearRenderTargetView(d3d::g_pBackBufferView, c);
-        app::g_pApp->GetFontManager()->RenderText(message, 12.0f / (FLOAT)d3d::g_width, 12.0f / (FLOAT)d3d::g_height);
+        app::g_pApp->GetFontManager()->RenderText(message, 12.0f / (FLOAT)app::g_pApp->GetWindowWidth(), 12.0f / (FLOAT)app::g_pApp->GetWindowHeight());
         d3d::g_pSwapChain->Present(0, 0);
     }
 
@@ -152,7 +152,7 @@ namespace app
         }
 
         //clear screen to black TODO: some image?
-        float c[] = {0,0,0,0};
+        CONST FLOAT c[] = {0,0,0,0};
         d3d::g_pContext->ClearRenderTargetView(d3d::g_pBackBufferView, c);
         d3d::g_pContext->ClearDepthStencilView(d3d::g_pDepthStencilView, D3D11_CLEAR_STENCIL | D3D11_CLEAR_DEPTH, 1, 1);
         d3d::g_pSwapChain->Present(0, 0);

@@ -107,7 +107,7 @@ namespace util
 
         inline Vec4 Normalize() {
             XMVECTOR tmp = XMVector4Normalize(XMLoadFloat4(&m_v));
-              m_v = GetFromVector4(tmp);
+            m_v = GetFromVector4(tmp);
             return *this;
         }
 
@@ -128,7 +128,7 @@ namespace util
 
         inline VOID Print(VOID) CONST 
         {
-            DEBUG_OUT_A("Vec4 (%f, %f, %f, %f)", this->m_v.x, this->m_v.y, this->m_v.z, this->m_v.w);
+            DEBUG_OUT_A("Vec4 (%f, %f, %f, %f)\n", this->m_v.x, this->m_v.y, this->m_v.z, this->m_v.w);
         }
 
         inline static float GetDot(CONST Vec4& v0, CONST Vec4& v1) {

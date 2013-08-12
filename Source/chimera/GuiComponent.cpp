@@ -376,16 +376,15 @@ namespace tbd
 
         GuiTextInput::GuiTextInput(VOID) : m_time(0), m_drawCurser(FALSE), m_curserPos(0), m_textColor(1,1,1,1)
         {
+            tbd::KeyboardButtonPressedListener l0 = fastdelegate::MakeDelegate(this, &GuiTextInput::ComputeInput);
+            tbd::KeyboardButtonRepeatListener l1 = fastdelegate::MakeDelegate(this, &GuiTextInput::ComputeInput);
+            AddKeyPressedListener(l0);
+            AddKeyRepeatListener(l1);
         }
 
         BOOL GuiTextInput::VOnRestore(VOID)
         {
             D3DGuiComponent::VOnRestore();
-            tbd::KeyboardButtonPressedListener l0 = fastdelegate::MakeDelegate(this, &GuiTextInput::ComputeInput);
-            tbd::KeyboardButtonRepeatListener l1 = fastdelegate::MakeDelegate(this, &GuiTextInput::ComputeInput);
-            this->AddKeyPressedListener(l0);
-            this->AddKeyRepeatListener(l1);
-
             return TRUE;
         }
 
@@ -443,7 +442,7 @@ namespace tbd
         VOID GuiTextInput::ComputeInput(UINT CONST code)
         {
             CHAR c = GetCharFromVK(code);
-
+            
             if(c >= 0x21 && c <= 0x7E)
             {
                 if(c >= 0x41 && c <= 0x5A)
@@ -513,6 +512,12 @@ namespace tbd
 
             m_pAutoComplete = new GuiTextComponent();
             AddComponent("autocomplete", m_pAutoComplete);
+
+            tbd::KeyboardButtonPressedListener l0 = fastdelegate::MakeDelegate(this, &GuiConsole::ComputeInput);
+            tbd::KeyboardButtonRepeatListener l1 = fastdelegate::MakeDelegate(this, &GuiConsole::ComputeInput);
+
+            m_pTextInput->AddKeyPressedListener(l0);
+            m_pTextInput->AddKeyRepeatListener(l1);
         }
 
         VOID GuiConsole::AppendText(CONST std::string& text)
@@ -520,14 +525,14 @@ namespace tbd
             m_pTextLabel->AppendText(text);
         }
 
+        VOID GuiConsole::VDraw(VOID)
+        {
+            ScreenElementContainer::VDraw();
+        }
+
         //Todo: create factory
         BOOL GuiConsole::VOnRestore(VOID)
         {
-            tbd::KeyboardButtonPressedListener l0 = fastdelegate::MakeDelegate(this, &GuiConsole::ComputeInput);
-            tbd::KeyboardButtonRepeatListener l1 = fastdelegate::MakeDelegate(this, &GuiConsole::ComputeInput);
-            
-            m_pTextInput->AddKeyPressedListener(l0);
-            m_pTextInput->AddKeyRepeatListener(l1);
             m_pTextInput->SetOnReturnDeactivate(FALSE);
             m_pTextInput->VSetAlpha(0.85f);
 

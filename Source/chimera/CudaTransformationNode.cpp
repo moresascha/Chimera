@@ -186,7 +186,7 @@ namespace tbd
 
     BOOL CudaTransformationNode::VIsVisible(tbd::SceneGraph* graph)
     {
-        util::Vec3 middle = util::Mat4::Transform(*m_transformation->GetTransformation(), m_aabb.GetMiddle());
+        util::Vec3 middle = util::Mat4::Transform(*GetTransformation(), m_aabb.GetMiddle());
         BOOL in = graph->GetFrustum()->IsInside(middle, m_aabb.GetRadius());
         return in;
     }
@@ -210,13 +210,13 @@ namespace tbd
             {
             case eDRAW_TO_SHADOW_MAP: 
                 {
-                    app::g_pApp->GetHumanView()->GetRenderer()->VPushWorldTransform(*m_transformation->GetTransformation());
+                    app::g_pApp->GetHumanView()->GetRenderer()->VPushWorldTransform(*GetTransformation());
                     m_pHandle->m_pGeo->Bind();
                     m_pHandle->m_pGeo->Draw();
                 } break;
             case eDRAW_TO_ALBEDO :
                 {
-                    app::g_pApp->GetHumanView()->GetRenderer()->VPushWorldTransform(*m_transformation->GetTransformation());
+                    app::g_pApp->GetHumanView()->GetRenderer()->VPushWorldTransform(*GetTransformation());
                     app::g_pApp->GetRenderer()->VPushMaterial(m_material);
                     app::g_pApp->GetHumanView()->GetRenderer()->SetDiffuseSampler(m_pDiffuseTextureHandle->GetShaderResourceView());
 
@@ -234,7 +234,7 @@ namespace tbd
                 } break;
             case eDRAW_BOUNDING_DEBUG :
                 {
-                DrawSphere(m_transformation->GetTransformation(), m_aabb);
+                DrawSphere(GetTransformation(), m_aabb);
                 } break;
             case eDRAW_PICKING :
                 {
@@ -242,7 +242,7 @@ namespace tbd
                 } break;
             case eDRAW_DEBUG_INFOS : 
                 {
-                    tbd::DrawActorInfos(m_actor, this->m_transformation->GetTransformation(), graph->GetCamera());
+                    tbd::DrawActorInfos(m_actor, GetTransformation(), graph->GetCamera());
                 } break;
             }
         }
@@ -390,7 +390,7 @@ namespace tbd
         {
         case eDRAW_TO_ALBEDO_INSTANCED:
         {
-            util::Mat4 mat = *m_transformation->GetTransformation();
+            util::Mat4 mat = *GetTransformation();
             mat.Scale(0.05f);
             mat.Translate(1,2,1);
             app::g_pApp->GetHumanView()->GetRenderer()->VPushWorldTransform(mat);

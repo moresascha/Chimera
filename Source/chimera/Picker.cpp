@@ -88,6 +88,11 @@ namespace tbd
         return TRUE;
     }
 
+    d3d::RenderTarget* ActorPicker::GetTarget(VOID)
+    {
+        return m_renderTarget;
+    }
+
     ActorPicker::~ActorPicker(VOID)
     {
         SAFE_DELETE(m_renderTarget);

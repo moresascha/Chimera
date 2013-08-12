@@ -14,7 +14,7 @@ namespace tbd
 {
 
   class ActorComponent;
-
+  class Actor;
   class _ActorDescription {
       friend class ActorFactory;
   private:    

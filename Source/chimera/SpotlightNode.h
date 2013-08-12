@@ -15,6 +15,8 @@ namespace tbd
         d3d::ShaderProgram* m_drawShadow;
         d3d::ShaderProgram* m_drawShadowInstanced;
         d3d::ShaderProgram* m_drawLighting;
+        util::Vec3 m_middle;
+        FLOAT m_distance;
 
     public:
         static d3d::RenderTarget* g_pShadowRenderTarget;

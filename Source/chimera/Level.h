@@ -136,5 +136,5 @@ namespace tbd
 
     std::shared_ptr<tbd::Actor> CreateSphere(CONST util::Vec3& pos, BaseLevel* level);
     VOID CreateStaticPlane(BaseLevel* level);
-    VOID CreateCube(CONST util::Vec3& pos, BaseLevel* level);
+    std::shared_ptr<tbd::Actor> CreateCube(CONST util::Vec3& pos, BaseLevel* level);
 }

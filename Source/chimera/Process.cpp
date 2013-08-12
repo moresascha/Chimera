@@ -221,18 +221,13 @@ namespace proc
         handles[1] = m_closeHandle;
         while(IsAlive())
         {
-            DWORD event = -1;// = WaitForMultipleObjects(2, handles, FALSE, INFINITE);
-			while(event == -1)
-			{
-				event = WaitForMultipleObjects(2, handles, FALSE, INFINITE);
-				//Sleep(16);
-			}
-            /*if(event == -1)
+            DWORD event = WaitForMultipleObjects(2, handles, FALSE, INFINITE);
+            if(event == -1)
             {
                 Fail();
                 return;
-            } */
-            if(IsAlive() && (event == WAIT_OBJECT_0 || (event == WAIT_OBJECT_0 + 1)))
+            }
+            if(IsAlive() && (event == WAIT_OBJECT_0 || (event == (WAIT_OBJECT_0 + 1))))
             {
                 VOnDirModification();
                 FindNextChangeNotification(m_fileHandle);
@@ -245,6 +240,10 @@ namespace proc
         RealtimeProcess::VOnInit();
         std::wstring s(m_dir.begin(), m_dir.end());
         m_fileHandle = FindFirstChangeNotification(s.c_str(), FALSE, FILE_NOTIFY_CHANGE_LAST_WRITE);
+        if(INVALID_HANDLE_VALUE == m_fileHandle)
+        {
+            LOG_CRITICAL_ERROR("FindFirstChangeNotification failed hard");
+        }
         m_closeHandle = CreateEvent(NULL, FALSE, FALSE, NULL);
     }
 

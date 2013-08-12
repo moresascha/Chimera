@@ -9,12 +9,13 @@
 #include "D3DRenderer.h"
 #include "GameLogic.h"
 #include "Camera.h"
+#include "math.h"
 
 namespace tbd
 {
     d3d::RenderTarget* SpotlightNode::g_pShadowRenderTarget = NULL;
 
-    SpotlightNode::SpotlightNode(ActorId actorid) : SceneNode(actorid)
+    SpotlightNode::SpotlightNode(ActorId actorid) : SceneNode(actorid), m_distance(0)
     {
         std::shared_ptr<tbd::Actor> actor = app::g_pApp->GetLogic()->VFindActor(actorid);
         this->m_lightComponent = m_actor->GetComponent<tbd::LightComponent>(tbd::LightComponent::COMPONENT_ID).lock();
@@ -23,7 +24,9 @@ namespace tbd
         m_drawShadowInstanced = d3d::ShaderProgram::GetProgram("SpotLightShadowMapInstanced").get();
         m_drawLighting = d3d::ShaderProgram::GetProgram("SpotLight").get();
 
-        m_pCamera = new util::FPSCamera(512, 512, 1e-2f, m_transformation->GetTransformation()->GetScale().x);
+        UINT wh = app::g_pApp->GetConfig()->GetInteger("iSpotLightSMSize");
+
+        m_pCamera = new util::Camera(wh, wh, 1e-2f, GetTransformation()->GetScale().x);
         
         VOnActorMoved();
     }
@@ -31,11 +34,14 @@ namespace tbd
     VOID SpotlightNode::VOnActorMoved(VOID)
     {
         SceneNode::VOnActorMoved();
-        m_pCamera->SetPerspectiveProjection(1.0f, XM_PIDIV2, 0.01f, m_transformation->GetTransformation()->GetScale().x);
-        
-        m_pCamera->LookAt(m_transformation->GetTransformation()->GetTranslation(), util::Vec3(0,0,0));
-        /*m_pCamera->SetEyePos(m_transformation->GetTransformation()->GetTranslation());
-        m_pCamera->SetRotation(m_transformation->GetTransformation()->GetRotation().x, m_transformation->GetTransformation()->GetRotation().y); */
+        m_pCamera->SetPerspectiveProjection(1.0f, DEGREE_TO_RAD(m_lightComponent->m_angle), 0.01f, GetTransformation()->GetScale().x);
+        m_pCamera->SetEyePos(GetTransformation()->GetTranslation());
+        m_pCamera->SetRotation(GetTransformation()->GetPYR().y, GetTransformation()->GetPYR().x);
+        m_middle = GetTransformation()->GetTranslation();
+        FLOAT c = cos(m_pCamera->GetFoV() / 2.0f); //Todo: need a tighter bb here
+        FLOAT h = GetTransformation()->GetScale().x / c;
+        m_distance = h / 2.0f;
+        m_middle = m_middle + (m_pCamera->GetViewDir() * m_distance);
     }
 
     VOID SpotlightNode::VOnRestore(tbd::SceneGraph* graph)
@@ -45,7 +51,7 @@ namespace tbd
 
     BOOL SpotlightNode::VIsVisible(SceneGraph* graph)
     {
-        return TRUE;//graph->GetFrustum()->IsInside(m_transformation->GetTransformation()->GetTranslation(),  m_transformation->GetTransformation()->GetScale().x);
+        return graph->GetFrustum()->IsInside(m_middle,  m_distance);
     }
 
     UINT SpotlightNode::VGetRenderPaths(VOID)
@@ -63,16 +69,20 @@ namespace tbd
                 {
                     return;
                 }
-               
+
                 m_drawShadow->Bind();
                 d3d::D3DRenderer* renderer = app::g_pApp->GetHumanView()->GetRenderer();
                 renderer->VPushViewTransform(m_pCamera->GetView(), m_pCamera->GetIView(), m_pCamera->GetEyePos());
-                renderer->VPushProjectionTransform(m_pCamera->GetProjection(), m_transformation->GetTransformation()->GetScale().x);
+                renderer->VPushProjectionTransform(m_pCamera->GetProjection(), GetTransformation()->GetScale().x);
 
-				renderer->SetLightSettings(m_lightComponent->m_color, m_transformation->GetTransformation()->GetTranslation(), m_transformation->GetTransformation()->GetScale().x);
+				renderer->SetLightSettings(m_lightComponent->m_color, GetTransformation()->GetTranslation(), 
+                    m_pCamera->GetViewDir(),
+                    GetTransformation()->GetScale().x, DEGREE_TO_RAD(m_lightComponent->m_angle), m_lightComponent->m_intensity);
 
                 g_pShadowRenderTarget->Bind();
                 g_pShadowRenderTarget->Clear();
+
+                renderer->PushRasterizerState(d3d::g_pRasterizerStateBackFaceSolid);
 
                 graph->PushFrustum(&m_pCamera->GetFrustum());
 
@@ -83,6 +93,8 @@ namespace tbd
                 graph->OnRender(tbd::eDRAW_TO_SHADOW_MAP_INSTANCED);
 
                 graph->PopFrustum();
+
+                renderer->PopRasterizerState();
 
                 renderer->ActivateCurrentRendertarget();
 
@@ -98,36 +110,33 @@ namespace tbd
                 renderer->VPopViewTransform();
                 renderer->VPopProjectionTransform();
 
+                renderer->SetSampler(d3d::eDiffuseColorSampler, NULL); //todo
+
             } break;
 
         case eDRAW_BOUNDING_DEBUG :
             {
-                app::g_pApp->GetHumanView()->GetRenderer()->SetNormalMapping(FALSE);
-                app::g_pApp->GetHumanView()->GetRenderer()->VPushWorldTransform(*m_transformation->GetTransformation());
-                d3d::ConstBuffer* buffer = app::g_pApp->GetHumanView()->GetRenderer()->GetBuffer(d3d::eBoundingGeoBuffer);
-                XMFLOAT4* f  = (XMFLOAT4*)buffer->Map();
-                f->x = 1;//m_transformation->GetTransformation()->GetScale().x;
-                f->y = 0;
-                f->z = 0;
-                f->w = 0;
-                buffer->Unmap();
-                GeometryFactory::GetSphere()->Bind();
-                GeometryFactory::GetSphere()->Draw();
+                util::Mat4 t;
+                t.SetTranslate(m_middle.x, m_middle.y, m_middle.z);
+                DrawSphere(&t, m_distance);
             } break;
 
         case eDRAW_PICKING : 
             {
-                util::Mat4 m = *m_transformation->GetTransformation();
+                util::Mat4 m = *GetTransformation();
                 m.SetScale(1);
                 DrawPickingSphere(m_actor, &m, 1);
             } break;
 
         case eDRAW_EDIT_MODE :
             {
-                util::Mat4 m = *m_transformation->GetTransformation();
-                m.SetScale(1);
-                DrawAnchorSphere(m_actor, &m, 1);
-                DrawFrustum(m_pCamera->GetFrustum());
+                if(!HasParent())
+                {
+                    util::Mat4 m = *GetTransformation();
+                    m.SetScale(1);
+                    DrawAnchorSphere(m_actor, &m, 1); 
+                    DrawFrustum(m_pCamera->GetFrustum());
+                }
             } break;
 
         case eDRAW_DEBUG_INFOS : 
@@ -135,7 +144,7 @@ namespace tbd
                 std::stringstream ss;
                 ss << "SpotLight_";
                 ss << m_actorId;
-                DrawInfoTextOnScreen(graph->GetCamera().get(), m_transformation->GetTransformation(), ss.str());
+                DrawInfoTextOnScreen(graph->GetCamera().get(), GetTransformation(), ss.str());
                 break;
             }
         }
@@ -152,7 +161,7 @@ namespace tbd
     {
         g_pShadowRenderTarget = new d3d::RenderTarget();
 
-        UINT shadowMapSize = 512;//app::g_pApp->GetConfig()->GetInteger("iPointLightSMSize");
+        UINT shadowMapSize = app::g_pApp->GetConfig()->GetInteger("iSpotLightSMSize");
 
         if(!g_pShadowRenderTarget->OnRestore(shadowMapSize, shadowMapSize, DXGI_FORMAT_R32_FLOAT, TRUE))
         {

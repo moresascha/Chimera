@@ -17,7 +17,7 @@ namespace tbd
 
     }
 
-    VOID Actor::Update(ULONG millis) 
+    VOID Actor::Update(ULONG millis)
     {
         for(auto it = this->m_components.begin(); it != this->m_components.end(); ++it)
         {
@@ -48,7 +48,6 @@ namespace tbd
 
     VOID Actor::AddComponent(std::shared_ptr<tbd::ActorComponent> pComponent) 
     {
-
         auto it = this->m_components.find(pComponent->GetComponentId());
         if(it != this->m_components.end())
         {

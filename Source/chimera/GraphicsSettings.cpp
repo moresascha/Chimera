@@ -302,8 +302,6 @@ namespace tbd
         if(!m_pPreResult)
         {
             m_pPreResult = new d3d::RenderTarget();
-
-            m_pPreResult->OnRestore(m_lastW, m_lastH, DXGI_FORMAT_R32G32B32A32_FLOAT);
         }
     }
 
@@ -462,11 +460,11 @@ namespace tbd
         AddSetting(new tbd::ShaderPathSetting(tbd::eDRAW_PARTICLE_EFFECTS, "Particles", "particles"), tbd::eAlbedo);
         AddSetting(new tbd::ShaderPathSetting(tbd::eDRAW_SKY, "Sky", "sky"), tbd::eAlbedo);
 
-        //AddSetting(new tbd::CSMSetting(), tbd::eLighting);
+        AddSetting(new tbd::CSMSetting(), tbd::eLighting);
         AddSetting(new tbd::GloablLightingSetting(), tbd::eLighting);
         AddSetting(new tbd::LightingSetting(), tbd::eLighting);
 
-        //SetPostFX(new tbd::PostFXSetting());
+        SetPostFX(new tbd::PostFXSetting());
     }
 
     ProfileGraphicsSettings::ProfileGraphicsSettings(VOID)
@@ -631,6 +629,17 @@ namespace tbd
             (*it)->VRender();
         }
         app::g_pApp->GetHumanView()->GetRenderer()->VPostRender();
+    }
+
+    BoundingGeoDebugSettings::BoundingGeoDebugSettings(VOID)
+    {
+        AddSetting(new tbd::ShaderPathSetting(tbd::eDRAW_TO_ALBEDO, "DefShader", "albedo"), tbd::eAlbedo);
+        AddSetting(new tbd::ShaderPathSetting(tbd::eDRAW_TO_ALBEDO_INSTANCED, "DefShaderInstanced", "albedoInstanced"), tbd::eAlbedo);
+        AddSetting(new tbd::ShaderPathSetting(tbd::eDRAW_PARTICLE_EFFECTS, "Particles", "particles"), tbd::eAlbedo);
+        AddSetting(new tbd::BoundingGeoSetting(), tbd::eAlbedo);
+
+        AddSetting(new tbd::GloablLightingSetting(), tbd::eLighting);
+        AddSetting(new tbd::LightingSetting(), tbd::eLighting);
     }
 
     /*

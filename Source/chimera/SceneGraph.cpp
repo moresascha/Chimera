@@ -118,6 +118,11 @@ namespace tbd
         m_visibiltyReset = TRUE;
     }
 
+    std::shared_ptr<tbd::ISceneNode> SceneGraph::FindActorNode(ActorId id)
+    {
+        return m_root->VFindActor(id);
+    }
+
     SceneGraph::~SceneGraph(VOID) 
     {
 

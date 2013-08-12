@@ -31,7 +31,7 @@ namespace tbd
         level->VAddActor(desc);
     }
 
-    VOID CreateCube(CONST util::Vec3& pos, BaseLevel* level)
+    std::shared_ptr<tbd::Actor> CreateCube(CONST util::Vec3& pos, BaseLevel* level)
     {
         tbd::ActorDescription desc = app::g_pApp->GetLogic()->GetActorFactory()->CreateActorDescription();
 
@@ -43,11 +43,13 @@ namespace tbd
 
         tbd::PhysicComponent* physicComponent = desc->AddComponent<tbd::PhysicComponent>("PhysicComponent");
         physicComponent->m_dim.x = 2; physicComponent->m_dim.z = 2; physicComponent->m_dim.y = 2;
-        physicComponent->m_material = "static";
+        physicComponent->m_material = "kinematic";
         physicComponent->m_shapeType = "box";
         physicComponent->m_radius = 1;
 
-        level->VAddActor(desc);
+        desc->AddComponent<tbd::PickableComponent>(tbd::PickableComponent::COMPONENT_ID);
+
+        return level->VAddActor(desc);
     }
 
     std::shared_ptr<tbd::Actor> CreateSphere(CONST util::Vec3& pos, BaseLevel* level)
@@ -67,6 +69,43 @@ namespace tbd
         physicComponent->m_radius = 1;
 
         return level->VAddActor(desc);
+    }
+
+    std::shared_ptr<tbd::Actor> CreateMesh(CONST util::Vec3& pos, BaseLevel* level, LPCSTR meshFile, LPCSTR physicShape, LPCSTR material)
+    {
+        tbd::ActorDescription desc = app::g_pApp->GetLogic()->GetActorFactory()->CreateActorDescription();
+
+        tbd::TransformComponent* comp = desc->AddComponent<tbd::TransformComponent>("TransformComponent");
+        comp->GetTransformation()->SetTranslate(pos.x, pos.y, pos.z);
+
+        tbd::RenderComponent* renderComp = desc->AddComponent<tbd::RenderComponent>("RenderComponent");
+        renderComp->m_meshFile = meshFile;
+
+        tbd::PhysicComponent* physicComponent = desc->AddComponent<tbd::PhysicComponent>("PhysicComponent");
+        physicComponent->m_dim.x = 2; physicComponent->m_dim.z = 2; physicComponent->m_dim.y = 2;
+        physicComponent->m_material = material;
+        physicComponent->m_shapeType = physicShape;
+        physicComponent->m_radius = 1;
+
+        return level->VAddActor(desc);
+    }
+
+    std::shared_ptr<tbd::Actor> CreatePointlight(util::Vec3& pos, BaseLevel* level, util::Vec4& color, FLOAT radius, FLOAT intensity)
+    {
+        tbd::ActorDescription desc = app::g_pApp->GetLogic()->GetActorFactory()->CreateActorDescription();
+
+        tbd::LightComponent* lightComponent = desc->AddComponent<tbd::LightComponent>("LightComponent");
+        lightComponent->m_type = "point";
+        lightComponent->m_color = color;
+        lightComponent->m_intensity = intensity;
+
+        tbd::TransformComponent* comp = desc->AddComponent<tbd::TransformComponent>("TransformComponent");
+        comp->GetTransformation()->SetTranslate(pos.x, pos.y, pos.z);
+        comp->GetTransformation()->SetScale(radius);
+
+        std::shared_ptr<tbd::Actor> actor = level->VAddActor(desc);
+
+        return actor;
     }
 
     BaseLevel::BaseLevel(CONST std::string& file, tbd::ActorFactory* factory) : m_file(file), m_name("unnamed"), m_pActorFactory(factory)
@@ -310,6 +349,25 @@ namespace tbd
             }
         } 
 
+        INT w = 2;
+        INT h = 2;
+        INT s = 10;
+        for(INT i = 0; i <= w; ++i)
+        {
+            for(INT j = 0; j <= h; ++j)
+            {
+                CreatePointlight(util::Vec3(-s*w/2 + s * i, 3 + 15 * rand() / (FLOAT)RAND_MAX, -s*h/2 + s * j), this, util::Color(1,1,1,1), 15, 0.25f + rand() / (FLOAT)RAND_MAX);
+            }
+        }
+
+        for(INT i = 0; i < 20; ++i)
+        {
+            FLOAT x = -s  + 2 * s * rand() / (FLOAT)RAND_MAX;
+            FLOAT y = 3 + 15 * rand() / (FLOAT)RAND_MAX;
+            FLOAT z = -s + 2 * s * rand() / (FLOAT)RAND_MAX;
+            CreateCube(util::Vec3(x,y,z), this);
+        }
+        
         /*
         desc = app::g_pApp->GetLogic()->GetActorFactory()->CreateActorDescription();
         tbd::TransformComponent* tcomp = desc->AddComponent<tbd::TransformComponent>(tbd::TransformComponent::COMPONENT_ID);
@@ -342,7 +400,7 @@ namespace tbd
         desc = m_pActorFactory->CreateActorDescription();
         tcomp = desc->AddComponent<tbd::TransformComponent>(tbd::TransformComponent::COMPONENT_ID);
         tcomp->GetTransformation()->SetTranslate(0,0,0);
-
+        tcomp->GetTransformation()->SetScale(2.0f);
         renderCmp = desc->AddComponent<tbd::RenderComponent>(tbd::RenderComponent::COMPONENT_ID);
         renderCmp->m_meshFile = "halfbox.obj";
 
@@ -351,24 +409,75 @@ namespace tbd
         phxCmp->m_shapeType = "static_mesh";
         phxCmp->m_meshFile = "halfbox.obj";
         phxCmp->m_material = "static";
+        VAddActor(desc);
+        
+        util::Vec3 p(0,1,10);
+        std::shared_ptr<tbd::Actor> a;// = CreateCube(p, this);
+
+        desc = app::g_pApp->GetLogic()->GetActorFactory()->CreateActorDescription();
+
+        tbd::TransformComponent* comp = desc->AddComponent<tbd::TransformComponent>("TransformComponent");
+
+        util::Vec3 pos(0,1,17);
+
+        comp->GetTransformation()->SetTranslate(pos.x, pos.y, pos.z);
+
+
+        tbd::RenderComponent* renderComp = desc->AddComponent<tbd::RenderComponent>("RenderComponent");
+        renderComp->m_meshFile = "box.obj";
+
+        tbd::PhysicComponent* physicComponent = desc->AddComponent<tbd::PhysicComponent>("PhysicComponent");
+        physicComponent->m_dim.x = 2; physicComponent->m_dim.z = 2; physicComponent->m_dim.y = 2;
+        physicComponent->m_material = "static";
+        physicComponent->m_shapeType = "box";
+        physicComponent->m_radius = 1;
+
+        desc->AddComponent<tbd::PickableComponent>(tbd::PickableComponent::COMPONENT_ID);
+
         //VAddActor(desc);
+
+        //spotlight thingie
+
+        desc = app::g_pApp->GetLogic()->GetActorFactory()->CreateActorDescription();
+        
+        desc->AddComponent<tbd::PickableComponent>(tbd::PickableComponent::COMPONENT_ID);
+
+        comp = desc->AddComponent<tbd::TransformComponent>("TransformComponent");
+        comp->GetTransformation()->SetTranslate(0, 2, 2);
+
+        renderComp = desc->AddComponent<tbd::RenderComponent>("RenderComponent");
+        renderComp->m_meshFile = "spot.obj";
+
+        physicComponent = desc->AddComponent<tbd::PhysicComponent>("PhysicComponent");
+        physicComponent->m_material = "dynamic";
+        physicComponent->m_shapeType = "sphere";
+        physicComponent->m_radius = 1;
+
+        a = VAddActor(desc);
 
         desc = m_pActorFactory->CreateActorDescription();
 
         tbd::LightComponent* lightComponent = desc->AddComponent<tbd::LightComponent>("LightComponent");
         lightComponent->m_type = "spot";
-        lightComponent->m_color.x = 0.5f + 2 * rand() / (FLOAT)RAND_MAX;
-        lightComponent->m_color.y = 0.5f + 2 * rand() / (FLOAT)RAND_MAX;
-        lightComponent->m_color.z = 0.5f + 2 * rand() / (FLOAT)RAND_MAX;
+        lightComponent->m_color.x = 1;//0.5f + 2 * rand() / (FLOAT)RAND_MAX;
+        lightComponent->m_color.y = 0.5f;//0.5f + 2 * rand() / (FLOAT)RAND_MAX;
+        lightComponent->m_color.z = 0;//0.5f + 2 * rand() / (FLOAT)RAND_MAX;
         lightComponent->m_color.w = 1;
+        lightComponent->m_angle = 70;
+        lightComponent->m_intensity = 24;
 
         tcomp = desc->AddComponent<tbd::TransformComponent>(tbd::TransformComponent::COMPONENT_ID);
-        tcomp->GetTransformation()->SetTranslate(0,5,-5);
-        tcomp->GetTransformation()->SetScale(30);
+        tcomp->GetTransformation()->SetScale(50);
+        tcomp->GetTransformation()->RotateX(-XM_PIDIV2);
+        tcomp->GetTransformation()->Translate(0, 0, 0);
 
-         desc->AddComponent<tbd::PickableComponent>(tbd::PickableComponent::COMPONENT_ID);
+        //desc->AddComponent<tbd::PickableComponent>(tbd::PickableComponent::COMPONENT_ID);
+
+        tbd::ParentComponent* pc = desc->AddComponent<tbd::ParentComponent>("ParentComponent");
+        pc->m_parentId = a->GetId();
 
         VAddActor(desc);
+
         /*desc = m_pActorFactory->CreateActorDescription();
         tcomp = desc->AddComponent<tbd::TransformComponent>(tbd::TransformComponent::COMPONENT_ID);
         tcomp->GetTransformation()->SetTranslate(0,0,10);
@@ -465,25 +574,25 @@ namespace tbd
                 
                 if(i == 0 && j % 2 == 0)
                 {
-                    tbd::ActorDescription desc = app::g_pApp->GetLogic()->GetActorFactory()->CreateActorDescription();
+                tbd::ActorDescription desc = app::g_pApp->GetLogic()->GetActorFactory()->CreateActorDescription();
 
-                    tbd::LightComponent* lightComponent = desc->AddComponent<tbd::LightComponent>("LightComponent");
-                    lightComponent->m_type = "Point";
-                    lightComponent->m_color.x = 0.5f + 2 * rand() / (FLOAT)RAND_MAX;
-                    lightComponent->m_color.y = 0.5f + 2 * rand() / (FLOAT)RAND_MAX;
-                    lightComponent->m_color.z = 0.5f + 2 * rand() / (FLOAT)RAND_MAX;
-                    lightComponent->m_color.w = 1;
+                tbd::LightComponent* lightComponent = desc->AddComponent<tbd::LightComponent>("LightComponent");
+                lightComponent->m_type = "Point";
+                lightComponent->m_color.x = 0.5f + 2 * rand() / (FLOAT)RAND_MAX;
+                lightComponent->m_color.y = 0.5f + 2 * rand() / (FLOAT)RAND_MAX;
+                lightComponent->m_color.z = 0.5f + 2 * rand() / (FLOAT)RAND_MAX;
+                lightComponent->m_color.w = 1;
 
-                    tbd::TransformComponent* comp = desc->AddComponent<tbd::TransformComponent>("TransformComponent");
-                    comp->GetTransformation()->SetTranslate(offset.x, offset.y + 9, offset.z + scale * pz + scale*0.5f);
-                    comp->GetTransformation()->SetScale(30.0f);
-                    //lights
-                    std::shared_ptr<tbd::Actor> actor = VAddActor(desc);
-                    CONST util::Vec3& start = comp->GetTransformation()->GetTranslation();
-                    util::Vec3 end = start + util::Vec3((FLOAT)(gridSize * (scale-1)), 0, 0);
-                    FLOAT timeLength = 10000;
-                    FLOAT startTime = rand() / (FLOAT)RAND_MAX * timeLength;
-                    BOOL a = rand() / (FLOAT)RAND_MAX < 0.5f;
+                tbd::TransformComponent* comp = desc->AddComponent<tbd::TransformComponent>("TransformComponent");
+                comp->GetTransformation()->SetTranslate(offset.x, offset.y + 9, offset.z + scale * pz + scale*0.5f);
+                comp->GetTransformation()->SetScale(30.0f);
+                //lights
+                std::shared_ptr<tbd::Actor> actor = VAddActor(desc);
+                CONST util::Vec3& start = comp->GetTransformation()->GetTranslation();
+                util::Vec3 end = start + util::Vec3((FLOAT)(gridSize * (scale-1)), 0, 0);
+                FLOAT timeLength = 10000;
+                FLOAT startTime = rand() / (FLOAT)RAND_MAX * timeLength;
+                BOOL a = rand() / (FLOAT)RAND_MAX < 0.5f;
                 }
             } 
         }*/

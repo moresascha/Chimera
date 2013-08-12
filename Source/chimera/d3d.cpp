@@ -45,9 +45,9 @@ namespace d3d
     {
 
         util::InitGdiplus();
-
-        _CreateWindow(wndProc, hInstance, title, width, height);
         
+        _CreateWindow(wndProc, hInstance, title, width, height);
+
         g_width = width;
         g_height = height;
 
@@ -61,7 +61,7 @@ namespace d3d
         desc.OutputWindow = g_hWnd;
         desc.SampleDesc.Count = g_samples;
         desc.SampleDesc.Quality = g_quality;
-        desc.Windowed = TRUE;//!fullscreen;
+        desc.Windowed = TRUE;
         desc.BufferDesc.Height = height;
         desc.BufferDesc.Width = width;
         desc.Flags = DXGI_SWAP_CHAIN_FLAG_ALLOW_MODE_SWITCH;
@@ -329,7 +329,7 @@ namespace d3d
          CHECK__(g_pDevice->CreateDepthStencilView(g_pDepthStencilBuffer, &dsVDesc, &g_pDepthStencilView));
 
          //m_pContext->OMSetRenderTargets(1, &m_pBackBufferView, m_pDepthStencilView);
-        //SetDefaultRendertarget();
+         BindBackbuffer();
     }
 
     VOID SetDefaultStates(VOID) 
@@ -354,11 +354,21 @@ namespace d3d
             {
                 GetFullscreenSize(&width, &height);
             }
-
+            
             ReleaseBackbuffer();
-            g_pSwapChain->ResizeBuffers(1, width, height, DXGI_FORMAT_UNKNOWN, DXGI_SWAP_CHAIN_FLAG_ALLOW_MODE_SWITCH);
-            g_pSwapChain->SetFullscreenState(fullscreen, NULL);
+
+            CHECK__(g_pSwapChain->ResizeBuffers(1, width, height, DXGI_FORMAT_UNKNOWN, DXGI_SWAP_CHAIN_FLAG_ALLOW_MODE_SWITCH));
+            CHECK__(g_pSwapChain->SetFullscreenState(fullscreen, NULL));
+            DXGI_MODE_DESC desc;
+            ZeroMemory(&desc, sizeof(DXGI_MODE_DESC));
+            desc.Format = DXGI_FORMAT_UNKNOWN;
+            desc.Height = height;
+            desc.Width = width;
+
+            CHECK__(g_pSwapChain->ResizeTarget(&desc));
+
             CreateBackbuffer(width, height);
+
             D3D11_VIEWPORT port;
             port.MinDepth = 0;
             port.MaxDepth = 1;
@@ -442,6 +452,7 @@ namespace d3d
 
     VOID Release(VOID) 
     {
+        g_pSwapChain->SetFullscreenState(FALSE, NULL);
         SAFE_RELEASE(g_pSwapChain);
         ReleaseBackbuffer();
         SAFE_RELEASE(m_pNoDepthNoStencilState);

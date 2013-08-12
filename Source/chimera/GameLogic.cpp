@@ -322,28 +322,98 @@ namespace tbd
             if(physxCmp)
             {
                 //std::shared_ptr<tbd::CameraComponent> camCmp = actor->GetComponent<tbd::CameraComponent>(tbd::CameraComponent::COMPONENT_ID).lock();
-                m_pPhysics->VMoveKinematic(actor, data->m_translation, data->m_rotation, 0.5f, data->IsDeltaMove(), data->m_isJump);
-                //DEBUG_OUT("moving...");
+                util::Vec4* rotatioQuat = NULL;
+                util::Vec3* axis = NULL;
+                util::Vec3* translation = NULL;
+                if(data->m_hasRotation)
+                {
+                    if(data->m_hasQuatRotation)
+                    {
+                        rotatioQuat = &data->m_quatRotation;
+                    }
+                    else if(data->m_hasAxisRotation)
+                    {
+                        axis = &data->m_axis;
+                    }
+                    else
+                    {
+                        LOG_CRITICAL_ERROR("A rotation is set but no type of rotation!");
+                    }
+                }
+                if(data->m_hasTranslation)
+                {
+                    translation = &data->m_translation;
+                }
+                if(rotatioQuat)
+                {
+                    m_pPhysics->VMoveKinematic(actor, translation, rotatioQuat, 0.5f, data->IsDeltaMove(), data->m_isJump);
+                }
+                else if(axis)
+                {
+                    m_pPhysics->VMoveKinematic(actor, translation, axis, data->m_angle, 0.5f, data->IsDeltaMove(), data->m_isJump);
+                }
+                else if(translation)
+                {
+                    m_pPhysics->VMoveKinematic(actor, translation, NULL, 0.5f, data->IsDeltaMove(), data->m_isJump);
+                }
             }
             else
             {
                 std::shared_ptr<tbd::TransformComponent> comp = actor->GetComponent<tbd::TransformComponent>(tbd::TransformComponent::COMPONENT_ID).lock();
                 if(comp)
                 {
-                    util::Vec3& translation = data->m_translation;
-                    util::Vec3& rotation = data->m_rotation;
                     util::Mat4* transformation = comp->GetTransformation();
+ 
                     if(data->IsDeltaMove())
                     {
-                        transformation->Rotate(rotation.x, rotation.y, rotation.z);
-                        transformation->Translate(translation.x, translation.y, translation.z);
+                        if(data->m_hasRotation)
+                        {
+                            if(data->m_hasQuatRotation)
+                            {
+                                transformation->RotateQuat(data->m_quatRotation);
+                            }
+                            else if(data->m_hasAxisRotation)
+                            {
+                                transformation->Rotate(data->m_axis, data->m_angle);
+                            }
+                            else
+                            {
+                                LOG_CRITICAL_ERROR("A rotation is set but no type of rotation!");
+                            }
+                        }
+
+                        if(data->m_hasTranslation)
+                        {
+                            util::Vec3& translation = data->m_translation;
+                            transformation->Translate(translation.x, translation.y, translation.z);
+                        }
                     }
                     else
                     {
-                        transformation->SetRotation(rotation.x, rotation.y, rotation.z);
-                        transformation->SetTranslate(translation.x, translation.y, translation.z);
+                        if(data->m_hasRotation)
+                        {
+                            if(data->m_hasQuatRotation)
+                            {
+                                transformation->SetRotateQuat(data->m_quatRotation);
+                            }
+                            else if(data->m_hasAxisRotation)
+                            {
+                                transformation->SetRotation(data->m_axis, data->m_angle);
+                            }
+                            else
+                            {
+                                LOG_CRITICAL_ERROR("A rotation is set but no type of rotation!");
+                            }
+                        }
+
+                        if(data->m_hasTranslation)
+                        {
+                            util::Vec3& translation = data->m_translation;
+                            transformation->SetTranslate(translation.x, translation.y, translation.z);
+                        }
                     }
                 }
+
                 QUEUE_EVENT(new event::ActorMovedEvent(actor));
             }
         }

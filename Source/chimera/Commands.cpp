@@ -261,10 +261,24 @@ namespace tbd
 
     namespace commands
     {
+        LPCSTR KEY_DOWN_STR = "down";
+        LPCSTR KEY_RELEASED_STR = "released";
+        LPCSTR KEY_PRESSEN_STR = "pressed";
+
+        std::string CleanCommand(std::vector<std::string>& v)
+        {
+            std::string cmd;
+            for(int i = 1; i < v.size(); ++i)
+            {
+                cmd += v[i] + " ";
+            }
+            return cmd;
+        }
+
         BOOL Bind(Command& cmd)
         {
             std::string keyStr = cmd.GetNextCharStr();
-            
+            CHECK_COMMAND(cmd);
             CHAR key;
             if(keyStr.size() <= 1)
             {
@@ -283,10 +297,38 @@ namespace tbd
             }
             
             std::string command = cmd.GetRemainingString();
+            CHECK_COMMAND(cmd);
+
+            std::vector<std::string> split;
+            util::split(command, ' ', split);
             INT vk = GetVKFromchar(key);
             
             std::shared_ptr<tbd::ActorController> controller = std::static_pointer_cast<tbd::ActorController>(app::g_pApp->GetLogic()->VFindGameView("GameController"));
-            controller->RegisterKeyCommand(vk, command);
+
+            if(split.size() > 0 )
+            {
+                if(!strcmp(split[0].c_str(), KEY_DOWN_STR))
+                {
+                    controller->RegisterKeyDownCommand(vk, CleanCommand(split));
+                }
+                else if(!strcmp(split[0].c_str(), KEY_RELEASED_STR))
+                {
+                    controller->RegisterKeyReleasedCommand(vk, CleanCommand(split));
+                }
+                else if(!strcmp(split[0].c_str(), KEY_PRESSEN_STR))
+                {
+                    controller->RegisterKeyPressedCommand(vk, CleanCommand(split));
+                }
+                else
+                {
+                    controller->RegisterKeyCommand(vk, command);
+                }
+            }
+            else
+            {
+                return FALSE;
+            }
+            
             return TRUE;
         }
 

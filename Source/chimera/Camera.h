@@ -88,7 +88,7 @@ namespace util
     class PerspectiveHandler;
     class OrhtographicHandler;
 
-    class DLL_EXPORT FPSCamera : public ICamera
+    class DLL_EXPORT Camera : public ICamera
     {
         friend class PerspectiveHandler;
         friend class OrthographicHandler;
@@ -121,8 +121,7 @@ namespace util
         tbd::Frustum m_frustum;
 
     public:
-
-        FPSCamera(UINT width, UINT height, FLOAT zNear, FLOAT zFar);
+        Camera(UINT width, UINT height, FLOAT zNear, FLOAT zFar);
 
         CONST Mat4& GetView(VOID) 
         {
@@ -248,7 +247,15 @@ namespace util
 
         tbd::Frustum& GetFrustum(VOID);
 
-        virtual ~FPSCamera(VOID);
+        virtual ~Camera(VOID);
+    };
+
+    class FPSCamera : public Camera
+    {
+    public:
+        FPSCamera(UINT width, UINT height, FLOAT zNear, FLOAT zFar);
+        virtual VOID Rotate(FLOAT dPhi, FLOAT dTheta);
+        virtual ~FPSCamera();
     };
 
     class CharacterCamera : public FPSCamera

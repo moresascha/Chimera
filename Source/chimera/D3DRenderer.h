@@ -94,6 +94,7 @@ namespace d3d
     {
         XMFLOAT4 m_colorNRadiusW;
         XMFLOAT4 m_position;
+        XMFLOAT4 m_viewDirNAngel;
     };
 
     struct _LightingBuffer
@@ -258,6 +259,8 @@ namespace d3d
         VOID SetCubeMapViews(CONST util::Mat4 mats[6]);
 
         VOID SetLightSettings(CONST util::Vec4& color, CONST util::Vec3& position, FLOAT radius);
+
+        VOID SetLightSettings(CONST util::Vec4& color, CONST util::Vec3& position, CONST util::Vec3& viewDir, FLOAT radius, FLOAT angel, FLOAT intensity);
 
         VOID SetCSMSettings(CONST util::Mat4& view, CONST util::Mat4& iView, CONST util::Mat4 projection[3], CONST util::Vec3& lightPos, CONST FLOAT distances[3]);
 

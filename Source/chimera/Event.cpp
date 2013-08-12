@@ -18,11 +18,83 @@ namespace event
     CONST EventType ApplyForceEvent::TYPE = 0x158be54a;
     CONST EventType ApplyTorqueEvent::TYPE = 0x1d17f65;
     CONST EventType TriggerEvent::TYPE = 0xa25e9d66;
+    CONST EventType SetParentActorEvent::TYPE = 0xa5fd2f77;
 
     SetSunPositionEvent::SetSunPositionEvent(FLOAT x, FLOAT y, FLOAT z)
     {
         m_position.x = x;
         m_position.y = y;
         m_position.z = z;
+    }
+
+    MoveActorEvent::MoveActorEvent(ActorId id, util::Vec3 translation, util::Vec4 quat, BOOL isDeltaMove) 
+        : 
+        m_id(id),
+        m_translation(translation), 
+        m_quatRotation(quat),
+        m_isDelta(isDeltaMove),
+        m_hasRotation(TRUE),
+        m_isJump(FALSE),
+        m_hasQuatRotation(TRUE),
+        m_hasAxisRotation(FALSE),
+        m_hasTranslation(TRUE)
+    {
+
+    }
+
+    MoveActorEvent::MoveActorEvent(ActorId id, util::Vec3 translation, util::Vec3 axis, FLOAT angle, BOOL isDeltaMove)
+        : 
+        m_id(id),
+        m_translation(translation), 
+        m_axis(axis),
+        m_angle(angle),
+        m_isJump(FALSE),
+        m_isDelta(isDeltaMove),
+        m_hasRotation(TRUE),
+        m_hasQuatRotation(FALSE),
+        m_hasAxisRotation(TRUE),
+        m_hasTranslation(TRUE)
+    {
+
+    }
+
+    MoveActorEvent::MoveActorEvent(ActorId id, util::Vec3 translation, BOOL isDeltaMove)
+        : 
+        m_id(id),
+        m_translation(translation), 
+        m_isDelta(isDeltaMove),
+        m_isJump(FALSE),
+        m_hasRotation(FALSE),
+        m_hasTranslation(TRUE)
+    {
+
+    }
+
+    MoveActorEvent::MoveActorEvent(ActorId id, util::Vec4 quat, BOOL isDeltaMove)
+        : 
+        m_id(id),
+        m_quatRotation(quat), 
+        m_isDelta(isDeltaMove),
+        m_isJump(FALSE),
+        m_hasQuatRotation(TRUE),
+        m_hasRotation(TRUE),
+        m_hasTranslation(FALSE)
+    {
+
+    }
+
+    MoveActorEvent::MoveActorEvent(ActorId id, util::Vec3 axis, FLOAT angle, BOOL isDeltaMove)
+        : 
+        m_id(id),
+        m_isDelta(isDeltaMove),
+        m_isJump(FALSE),
+        m_axis(axis),
+        m_angle(angle),
+        m_hasRotation(TRUE),
+        m_hasQuatRotation(FALSE),
+        m_hasAxisRotation(TRUE),
+        m_hasTranslation(FALSE)
+    {
+
     }
 };

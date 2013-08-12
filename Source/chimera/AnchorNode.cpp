@@ -25,7 +25,7 @@ namespace tbd
                         aabb.AddPoint(util::Vec3(-1,-1,-1));
                         aabb.AddPoint(util::Vec3(1,1,1));
                         aabb.Construct();
-                        DrawPickingCube(m_actor, m_transformation->GetTransformation(), aabb);
+                        DrawPickingCube(m_actor, GetTransformation(), aabb);
                     } break;
                 case eDRAW_EDIT_MODE :
                     {
@@ -37,7 +37,7 @@ namespace tbd
                         aabb.AddPoint(util::Vec3(-1,-1,-1));
                         aabb.AddPoint(util::Vec3(1,1,1));
                         aabb.Construct();
-                        DrawBox(m_transformation->GetTransformation(), aabb);
+                        DrawBox(GetTransformation(), aabb);
                         if(m_drawMode == eWire)
                         {
                             app::g_pApp->GetHumanView()->GetRenderer()->PopRasterizerState();
@@ -52,7 +52,7 @@ namespace tbd
                 {
                 case eDRAW_PICKING :
                     {
-                        DrawPickingSphere(m_actor, m_transformation->GetTransformation(), m_radius);
+                        DrawPickingSphere(m_actor, GetTransformation(), m_radius);
                     } break;
                 case eDRAW_EDIT_MODE :
                     {
@@ -60,7 +60,7 @@ namespace tbd
                         {
                             app::g_pApp->GetHumanView()->GetRenderer()->PushRasterizerState(d3d::g_pRasterizerStateWrireframe);
                         }
-                        DrawAnchorSphere(m_actor, m_transformation->GetTransformation(), m_radius);
+                        DrawAnchorSphere(m_actor, GetTransformation(), m_radius);
                         if(m_drawMode == eWire)
                         {
                             app::g_pApp->GetHumanView()->GetRenderer()->PopRasterizerState();
@@ -68,7 +68,7 @@ namespace tbd
                     } break;
                 case eDRAW_DEBUG_INFOS :
                     {
-                        DrawInfoTextOnScreen(graph->GetCamera().get(), m_transformation->GetTransformation(), m_info);
+                        DrawInfoTextOnScreen(graph->GetCamera().get(), GetTransformation(), m_info);
                     } break;
                 }
             } break; 

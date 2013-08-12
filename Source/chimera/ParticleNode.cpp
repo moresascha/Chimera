@@ -30,7 +30,7 @@ namespace tbd
             case eDRAW_EDIT_MODE : 
                 {
 
-                    DrawAnchorSphere(m_actor, m_transformation->GetTransformation(), 0.25f);
+                    DrawAnchorSphere(m_actor, GetTransformation(), 0.25f);
                     /*
                     app::g_pApp->GetHumanView()->GetRenderer()->SetNormalMapping(FALSE);
                     util::Mat4 m(*m_transformation->GetTransformation());
@@ -47,12 +47,12 @@ namespace tbd
                 }
             case eDRAW_PICKING :
                 {
-                    DrawPickingSphere(m_actor, m_transformation->GetTransformation(), 1);
+                    DrawPickingSphere(m_actor, GetTransformation(), 1);
                     //DrawPickingCube(m_actor, m_transformation->GetTransformation(), m_pParticleSystem->GetAxisAlignedBB());
                 } break;
             case eDRAW_BOUNDING_DEBUG : 
                 {
-                    DrawBox(m_transformation->GetTransformation(), m_pParticleSystem->GetAxisAlignedBB());
+                    DrawBox(GetTransformation(), m_pParticleSystem->GetAxisAlignedBB());
                 } break;
                 /*
             case eDRAW_TO_SHADOW_MAP :
@@ -75,7 +75,7 @@ namespace tbd
                 } */
             case eDRAW_DEBUG_INFOS:
                 {
-                    DrawActorInfos(m_actor, m_transformation->GetTransformation(), graph->GetCamera());
+                    DrawActorInfos(m_actor, GetTransformation(), graph->GetCamera());
                 } break;
             case eDRAW_PARTICLE_EFFECTS : 
             {
@@ -156,7 +156,7 @@ namespace tbd
 
             m_pParticleSystem->SetAxisAlignedBB(aabb);
 
-            m_pParticleSystem->SetTranslation(this->m_transformation->GetTransformation()->GetTranslation());
+            m_pParticleSystem->SetTranslation(GetTransformation()->GetTranslation());
 
             //unique name
             std::stringstream ss;
@@ -170,8 +170,8 @@ namespace tbd
 
     VOID ParticleNode::VOnActorMoved(VOID)
     {
-        m_transformedBBPoint = util::Mat4::Transform(*this->m_transformation->GetTransformation(), m_pParticleSystem->GetAxisAlignedBB().GetMiddle());
-        m_pParticleSystem->SetTranslation(this->m_transformation->GetTransformation()->GetTranslation());
+        m_transformedBBPoint = util::Mat4::Transform(*GetTransformation(), m_pParticleSystem->GetAxisAlignedBB().GetMiddle());
+        m_pParticleSystem->SetTranslation(GetTransformation()->GetTranslation());
     }
 
     UINT ParticleNode::VGetRenderPaths(VOID)

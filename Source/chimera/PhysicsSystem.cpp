@@ -410,52 +410,71 @@ namespace logic
         m_controller[id] = c;
     }
 
-    VOID PhysX::VMoveKinematic(std::shared_ptr<tbd::Actor> actor, CONST util::Vec3& posDelta, CONST util::Vec3& rotationDelta, FLOAT deltaMillis, BOOL isDeltaMove, BOOL isJump) 
+    VOID PhysX::VMoveKinematic(std::shared_ptr<tbd::Actor> actor, CONST util::Vec3* pos, CONST util::Vec3* axis, FLOAT angle, FLOAT deltaMillis, BOOL isDeltaMove, BOOL isJump) 
+    {
+        XMVECTOR quat = XMQuaternionRotationNormal(XMLoadFloat3(&axis->m_v), angle);
+        util::Vec4 q;
+        XMStoreFloat4(&q.m_v, quat);
+        VMoveKinematic(actor, pos, &q, deltaMillis, isDeltaMove, isJump);
+    }
+
+    VOID PhysX::VMoveKinematic(std::shared_ptr<tbd::Actor> actor, CONST util::Vec3* pos, CONST util::Vec4* quat, FLOAT deltaMillis, BOOL isDeltaMove, BOOL isJump)
     {
         auto it = m_controller.find(actor->GetId());
-        if(it != m_controller.end())
+        if(it != m_controller.end() && pos)
         {
             Controller_& conroller = it->second;
             
-            if(isJump)
+            if(pos)
             {
-                conroller.Jump(posDelta.y);
-            }
+                if(isJump)
+                {
+                    conroller.Jump(pos->y);
+                }
 
-            conroller.Move(posDelta.x, posDelta.z, deltaMillis);
+                conroller.Move(pos->x, pos->z, deltaMillis);
+            }
         }
         else
         {
-            physx::PxActor* a = m_actorIdToPxActorMap[actor->GetId()].front(); //Todo: Fix instanced actors? or should they reamain static anyway
+            physx::PxActor* a = m_actorIdToPxActorMap[actor->GetId()].front(); //Todo: Fix instanced actors? or should they remain static anyway
             if(a)
             {
-                //LOG_ERROR("not yet implemented!");
                 if(a->isRigidDynamic())
                 {
                     physx::PxRigidDynamic* ad = (physx::PxRigidDynamic*)a;
                     physx::PxTransform trans = ad->getGlobalPose();
                     if(isDeltaMove)
                     {
-                        trans.p.x += posDelta.x;
-                        trans.p.y += posDelta.y;
-                        trans.p.z += posDelta.z;
+                        if(pos)
+                        {
+                            trans.p.x += pos->x;
+                            trans.p.y += pos->y;
+                            trans.p.z += pos->z;
+                        }
 
-                        XMVECTOR v1 = XMQuaternionRotationRollPitchYaw(rotationDelta.x, rotationDelta.y, rotationDelta.z);
-                        physx::PxQuat q(v1.m128_f32[0], v1.m128_f32[1], v1.m128_f32[2], v1.m128_f32[3]);
-                        trans.q *= q;
+                        if(quat)
+                        {
+                            physx::PxQuat q(quat->x, quat->y, quat->z, quat->w);
+                            trans.q *= q;
+                        }
                     }
                     else
                     {
-                        trans.p.x = posDelta.x;
-                        trans.p.y = posDelta.y;
-                        trans.p.z = posDelta.z;
+                        if(pos)
+                        {
+                            trans.p.x = pos->x;
+                            trans.p.y = pos->y;
+                            trans.p.z = pos->z;
+                        }
 
-                        XMVECTOR v1 = XMQuaternionRotationRollPitchYaw(rotationDelta.x, rotationDelta.y, rotationDelta.z);
-
-                        trans.q.x = v1.m128_f32[0];
-                        trans.q.y = v1.m128_f32[1];
-                        trans.q.z = v1.m128_f32[2];
-                        trans.q.w = v1.m128_f32[3];
+                        if(quat)
+                        {
+                            trans.q.x = quat->x;
+                            trans.q.y = quat->y;
+                            trans.q.z = quat->z;
+                            trans.q.w = quat->w;
+                        }
                     }
                     if(ad->getRigidDynamicFlags() & physx::PxRigidDynamicFlag::eKINEMATIC)
                     {
@@ -469,25 +488,6 @@ namespace logic
                         ad->setLinearVelocity(physx::PxVec3(0,0,0));
                     }
                 }
-                /*
-                if(a->isRigidStatic())
-                {
-                    physx::PxRigidStatic* ad = (physx::PxRigidStatic*)a;
-                    physx::PxTransform trans = ad->getGlobalPose();
-                    if(isDeltaMove)
-                    {
-                        trans.p.x += posDelta.x;
-                        trans.p.y += posDelta.y;
-                        trans.p.z += posDelta.z;
-                    }
-                    else
-                    {
-                        trans.p.x = posDelta.x;
-                        trans.p.y = posDelta.y;
-                        trans.p.z = posDelta.z;
-                    }
-                    ad->setGlobalPose(trans);
-                }  */
             }
         }
     }
@@ -499,7 +499,6 @@ namespace logic
 
     physx::PxActor* PhysX::AddActor(physx::PxGeometry& geo, std::shared_ptr<tbd::Actor> actor, CONST util::Vec3& offsetPosition, std::string& mat, FLOAT density)
     {
-
         Material& material = CheckMaterial(mat);
 
         std::shared_ptr<tbd::TransformComponent> comp = actor->GetComponent<tbd::TransformComponent>(tbd::TransformComponent::COMPONENT_ID).lock();
@@ -568,7 +567,11 @@ namespace logic
 
             if(controller == m_controller.end())
             {
-                comp->GetTransformation()->SetRotateQuat(t.actor2World.q.x, t.actor2World.q.y,  t.actor2World.q.z, t.actor2World.q.w);
+                //const physx::PxF32 eps = 0.001f;
+                //if(t.actor2World.q.x > eps || t.actor2World.q.y > eps || t.actor2World.q.z > eps || t.actor2World.q.w > eps)
+                {
+                    comp->GetTransformation()->SetRotateQuat(t.actor2World.q.x, t.actor2World.q.y,  t.actor2World.q.z, t.actor2World.q.w);
+                }
             }
             /*else
             {
@@ -594,7 +597,7 @@ namespace logic
         {
             return;
         }
-        m_lastMillis = time;
+        m_lastMillis = min(1.0 / 60.0, time);
         this->m_pScene->simulate(time);
         time = 0;
     }
@@ -820,7 +823,6 @@ namespace logic
 
             m_p0 = m_p1;
             m_p1 = p;
-            
             m_controller->move(physx::PxVec3(0, m_p1 - m_p0, 0), 0.0f, deltaMillis, physx::PxControllerFilters(), NULL);
         }
         else

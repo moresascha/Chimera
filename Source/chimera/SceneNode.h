@@ -72,6 +72,8 @@ namespace tbd
 
         virtual VOID VAddChild(std::shared_ptr<ISceneNode> child) = 0;
 
+        virtual VOID VOnParentChanged(VOID) = 0;
+
         virtual BOOL VIsVisible(SceneGraph* graph) = 0;
 
         virtual BOOL VRemoveChild(std::shared_ptr<ISceneNode> child) = 0;
@@ -84,6 +86,8 @@ namespace tbd
 
         virtual VOID VOnUpdate(ULONG millis, SceneGraph* graph) = 0;
 
+        virtual std::shared_ptr<tbd::ISceneNode> VFindActor(ActorId id) = 0;
+
         virtual ~ISceneNode(VOID) {}
     };
 
@@ -92,13 +96,18 @@ namespace tbd
     private:
         BOOL m_wasVisibleOnLastTraverse;
         BOOL m_forceVisibleCheck;
+        std::shared_ptr<tbd::TransformComponent> m_transformation;
+        std::shared_ptr<tbd::TransformComponent> m_wParentTransformation;
     protected:
         ActorId m_actorId;
         std::shared_ptr<tbd::Actor> m_actor;
-        std::list<std::shared_ptr<ISceneNode>> m_childs;
+        std::vector<std::shared_ptr<ISceneNode>> m_childs;
         util::AxisAlignedBB m_aabb;
         SceneNode* m_parent;
-        std::shared_ptr<tbd::TransformComponent> m_transformation;
+
+        util::Mat4* GetTransformation(VOID);
+
+        BOOL HasParent(VOID);
 
     public:
         SceneNode(ActorId ActorId);
@@ -114,6 +123,8 @@ namespace tbd
         VOID VForceVisibilityCheck(VOID);
 
         ActorId VGetActorId(VOID);
+
+        VOID VOnParentChanged(VOID);
 
         virtual VOID VPreRender(tbd::SceneGraph* graph);
 
@@ -144,6 +155,8 @@ namespace tbd
         virtual VOID VOnActorMoved(VOID) {}
 
         virtual UINT VGetRenderPaths(VOID);
+
+        std::shared_ptr<tbd::ISceneNode> VFindActor(ActorId id);
 
         virtual ~SceneNode(VOID);
     };

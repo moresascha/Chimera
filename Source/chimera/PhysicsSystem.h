@@ -35,7 +35,9 @@ namespace logic
 
         virtual VOID VApplyTorque(CONST util::Vec3& dir, FLOAT newtons, std::shared_ptr<tbd::Actor> actor) = 0;
 
-        virtual VOID VMoveKinematic(std::shared_ptr<tbd::Actor> actor, CONST util::Vec3& pos, CONST util::Vec3& rotation, FLOAT deltaMillis, BOOL isDeltaMove, BOOL isJump = FALSE) = 0;
+        virtual VOID VMoveKinematic(std::shared_ptr<tbd::Actor> actor, CONST util::Vec3* pos, CONST util::Vec4* quat, FLOAT deltaMillis, BOOL isDeltaMove, BOOL isJump = FALSE) = 0;
+
+        virtual VOID VMoveKinematic(std::shared_ptr<tbd::Actor> actor, CONST util::Vec3* pos, CONST util::Vec3* axis, FLOAT angle, FLOAT deltaMillis, BOOL isDeltaMove, BOOL isJump = FALSE) = 0;
 
         virtual VOID VDebugRender(VOID) { }
 
@@ -226,7 +228,9 @@ namespace logic
 
         VOID VCreateCharacterController(ActorId id, CONST util::Vec3& pos, FLOAT radius, FLOAT height);
 
-        VOID VMoveKinematic(std::shared_ptr<tbd::Actor> actor, CONST util::Vec3& posDelta, CONST util::Vec3& rotationDelta, FLOAT deltaMillis, BOOL isDeltaMove, BOOL isJump = FALSE);
+        VOID VMoveKinematic(std::shared_ptr<tbd::Actor> actor, CONST util::Vec3* pos, CONST util::Vec4* quat, FLOAT deltaMillis, BOOL isDeltaMove, BOOL isJump = FALSE);
+
+        VOID VMoveKinematic(std::shared_ptr<tbd::Actor> actor, CONST util::Vec3* pos, CONST util::Vec3* axis, FLOAT angle, FLOAT deltaMillis, BOOL isDeltaMove, BOOL isJump = FALSE);
 
         VOID VDebugRender(VOID);
 

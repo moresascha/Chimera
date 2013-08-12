@@ -26,6 +26,14 @@ namespace gameinput
 
     BOOL ApplyPlayerForce(tbd::Command& cmd);
 
+    BOOL RotatXPickedActor(tbd::Command& cmd);
+    
+    BOOL RotatYPickedActor(tbd::Command& cmd);
+
+    BOOL RotatZPickedActor(tbd::Command& cmd);
+
+    BOOL ToggleRotationDir(tbd::Command& cmd);
+
     BOOL ApplyForce(tbd::Command& cmd);
 
     BOOL ApplyTorque(tbd::Command& cmd);

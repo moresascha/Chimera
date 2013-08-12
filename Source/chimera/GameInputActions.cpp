@@ -18,8 +18,60 @@ namespace gameinput
     FLOAT m_actorPlaceScale = 4;
     ActorId m_toModify = INVALID_ACTOR_ID;
     BOOL m_kinematicPhysical = TRUE;
+    INT g_rotationDir = 1;
 
     VOID PlayTestSound();
+
+    BOOL CreateSpotlightThing(tbd::Command& cmd)
+    {
+        std::shared_ptr<tbd::CameraComponent> camera = app::g_pApp->GetHumanView()->GetTarget()->GetComponent<tbd::CameraComponent>(tbd::CameraComponent::COMPONENT_ID).lock();
+        CONST util::Vec3& dir = camera->GetCamera()->GetViewDir();
+        util::Vec3 pos = camera->GetCamera()->GetEyePos();
+
+        tbd::ActorDescription desc = app::g_pApp->GetLogic()->GetActorFactory()->CreateActorDescription();
+
+        desc->AddComponent<tbd::PickableComponent>(tbd::PickableComponent::COMPONENT_ID);
+
+        pos = pos + dir * 3;
+
+        tbd::TransformComponent* comp = desc->AddComponent<tbd::TransformComponent>("TransformComponent");
+        comp->GetTransformation()->SetTranslate(pos);
+
+        tbd::RenderComponent * renderComp = desc->AddComponent<tbd::RenderComponent>("RenderComponent");
+        renderComp->m_meshFile = "spot.obj";
+
+        tbd::PhysicComponent* physicComponent = desc->AddComponent<tbd::PhysicComponent>("PhysicComponent");
+        physicComponent->m_material = "dynamic";
+        physicComponent->m_shapeType = "sphere";
+        physicComponent->m_radius = 1;
+
+        std::shared_ptr<tbd::Actor> a = app::g_pApp->GetLogic()->VCreateActor(desc);
+
+        desc = app::g_pApp->GetLogic()->GetActorFactory()->CreateActorDescription();
+
+        tbd::LightComponent* lightComponent = desc->AddComponent<tbd::LightComponent>("LightComponent");
+        lightComponent->m_type = "spot";
+        lightComponent->m_color.x = 1;//0.5f + 2 * rand() / (FLOAT)RAND_MAX;
+        lightComponent->m_color.y = 0.5f;//0.5f + 2 * rand() / (FLOAT)RAND_MAX;
+        lightComponent->m_color.z = 0;//0.5f + 2 * rand() / (FLOAT)RAND_MAX;
+        lightComponent->m_color.w = 1;
+        lightComponent->m_angle = 70;
+        lightComponent->m_intensity = 24;
+
+        comp = desc->AddComponent<tbd::TransformComponent>(tbd::TransformComponent::COMPONENT_ID);
+        comp->GetTransformation()->SetScale(50);
+        comp->GetTransformation()->RotateX(-XM_PIDIV2);
+        comp->GetTransformation()->Translate(0, 0, 0);
+
+        //desc->AddComponent<tbd::PickableComponent>(tbd::PickableComponent::COMPONENT_ID);
+
+        tbd::ParentComponent* pc = desc->AddComponent<tbd::ParentComponent>("ParentComponent");
+        pc->m_parentId = a->GetId();
+
+        app::g_pApp->GetLogic()->VCreateActor(desc);
+
+        return TRUE;
+    }
 
     BOOL SetRenderMode(tbd::Command& cmd)
     {
@@ -114,11 +166,14 @@ namespace gameinput
     {
         std::shared_ptr<tbd::CameraComponent> camera = app::g_pApp->GetHumanView()->GetTarget()->GetComponent<tbd::CameraComponent>(tbd::CameraComponent::COMPONENT_ID).lock();
         CONST util::Vec3& dir = camera->GetCamera()->GetViewDir();
+
+        util::Vec3 tdir = dir;
+        tdir.Scale(0.25f);
         std::stringstream ss;
         ss << "force ";
-        ss << dir.x << " ";
-        ss << dir.y << " ";
-        ss << dir.z;
+        ss << tdir.x << " ";
+        ss << tdir.y << " ";
+        ss << tdir.z;
         app::g_pApp->GetLogic()->GetCommandInterpreter()->CallCommand(ss.str().c_str());
         
         ss.str("");
@@ -202,6 +257,8 @@ namespace gameinput
         std::string meshFile = cmd.GetNextCharStr();
         std::string shapetype = cmd.GetNextCharStr();
 
+        CHECK_COMMAND(cmd);
+
         tbd::Resource r(meshFile);
         if(!app::g_pApp->GetCache()->HasResource(r))
         {
@@ -224,7 +281,7 @@ namespace gameinput
         physicComponent->m_dim.x = 2; physicComponent->m_dim.z = 2; physicComponent->m_dim.y = 2;
         physicComponent->m_material = m_kinematicPhysical ? "kinematic" : "dynamic";
         physicComponent->m_shapeType = shapetype;
-        physicComponent->m_radius = 1;
+        physicComponent->m_radius = 1; 
 
         desc->AddComponent<tbd::PickableComponent>("PickableComponent");
 
@@ -307,9 +364,56 @@ namespace gameinput
             transDir.Scale(m_actorPlaceScale);
             trans = camera->GetCamera()->GetEyePos() + transDir;// - targetTrans;
 
-            event::IEventPtr event(new event::MoveActorEvent(m_toModify, trans, util::Vec3(), FALSE));
+            std::shared_ptr<tbd::Actor> target = app::g_pApp->GetLogic()->VFindActor(m_toModify);
+            if(target)
+            {
+                std::shared_ptr<tbd::TransformComponent> tc = target->GetComponent<tbd::TransformComponent>(tbd::TransformComponent::COMPONENT_ID).lock();
+                event::IEventPtr event(new event::MoveActorEvent(m_toModify, trans, FALSE));
+                event::IEventManager::Get()->VQueueEvent(event);
+            }
+        }
+    }
+
+    VOID RotateActor(util::Vec3& axis, FLOAT angle)
+    {
+        if(m_toModify != INVALID_ACTOR_ID)
+        {
+            event::IEventPtr event(new event::MoveActorEvent(m_toModify, axis, g_rotationDir * angle));
             event::IEventManager::Get()->VQueueEvent(event);
         }
+    }
+
+    BOOL ToggleRotationDir(tbd::Command& cmd)
+    {
+        g_rotationDir *= -1;
+        return TRUE;
+    }
+
+    BOOL RotatXPickedActor(tbd::Command& cmd)
+    {
+        FLOAT rx = cmd.GetNextFloat();
+        CHECK_COMMAND(cmd);
+        util::Vec3 r(1, 0, 0);
+        RotateActor(r, rx);
+        return TRUE;
+    }
+
+    BOOL RotatYPickedActor(tbd::Command& cmd)
+    {
+        FLOAT ry = cmd.GetNextFloat();
+        CHECK_COMMAND(cmd);
+        util::Vec3 r(0, 1, 0);
+        RotateActor(r, ry);
+        return TRUE;
+    }
+
+    BOOL RotatZPickedActor(tbd::Command& cmd)
+    {
+        FLOAT rz = cmd.GetNextFloat();
+        CHECK_COMMAND(cmd);
+        util::Vec3 r(0, 0, 1);
+        RotateActor(r, rz);
+        return TRUE;
     }
 
     BOOL FlushVRam(tbd::Command& cmd)
@@ -332,8 +436,13 @@ namespace gameinput
             transDir.Scale(m_actorPlaceScale);
             trans = camera->GetCamera()->GetEyePos() + transDir;// - targetTrans;
 
-            event::IEventPtr event(new event::MoveActorEvent(m_toModify, trans, util::Vec3(), FALSE));
-            event::IEventManager::Get()->VQueueEvent(event);
+            std::shared_ptr<tbd::Actor> target = app::g_pApp->GetLogic()->VFindActor(m_toModify);
+            if(target)
+            {
+                std::shared_ptr<tbd::TransformComponent> tc = target->GetComponent<tbd::TransformComponent>(tbd::TransformComponent::COMPONENT_ID).lock();
+                event::IEventPtr event(new event::MoveActorEvent(m_toModify, trans, FALSE));
+                event::IEventManager::Get()->VQueueEvent(event);
+            }
         }
     }
 
@@ -367,7 +476,7 @@ namespace gameinput
         CHECK_COMMAND(cmd);
 
         ActorId id = app::g_pApp->GetHumanView()->GetTarget()->GetId();
-        event::MoveActorEvent* me = new event::MoveActorEvent(id, util::Vec3(0, height, 0), util::Vec3());
+        event::MoveActorEvent* me = new event::MoveActorEvent(id, util::Vec3(0, height, 0));
         me->m_isJump = TRUE;
         QUEUE_EVENT(me);
         return TRUE;
@@ -558,8 +667,8 @@ namespace gameinput
         UINT h = 0;
         if(!fs)
         {
-            w = 1024;
-            h = 768;
+            w = app::g_pApp->GetConfig()->GetInteger("iWidth");
+            h = app::g_pApp->GetConfig()->GetInteger("iHeight");
         }
         app::g_pApp->GetHumanView()->Resize(w, h, fs);
 
@@ -581,6 +690,12 @@ namespace gameinput
         interpreter.RegisterCommand("drawCP", DrawCP);
         interpreter.RegisterCommand("loadlevel", LoadLevel);
         interpreter.RegisterCommand("fullscreen", SetFullscreen);
+
+        interpreter.RegisterCommand("rotateX", RotatXPickedActor);
+        interpreter.RegisterCommand("rotateY", RotatYPickedActor);
+        interpreter.RegisterCommand("rotateZ", RotatZPickedActor);
+        interpreter.RegisterCommand("toggleRotationDir", ToggleRotationDir);
+        interpreter.RegisterCommand("sl", CreateSpotlightThing);
         
         interpreter.RegisterCommand("toggleCamera", ToogleCamera);
         interpreter.RegisterCommand("spawnz", SpawnSpheres);

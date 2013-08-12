@@ -9,7 +9,9 @@ namespace util
     {
     public:
         XMFLOAT3 m_v;
-
+        static CONST util::Vec3 X_AXIS;
+        static CONST util::Vec3 Y_AXIS;
+        static CONST util::Vec3 Z_AXIS;
         Vec3() {
               m_v = GetFromVector3(XMVectorZero());
         }
@@ -168,6 +170,14 @@ namespace util
             Vec3 v(*this);
             v.Scale(-1.f);
             return v;
+        }
+
+        Vec3& operator= (CONST Vec3& vec)
+        {
+            m_v.x = vec.m_v.x;
+            m_v.y = vec.m_v.y;
+            m_v.z = vec.m_v.z;
+            return *this;
         }
 
         inline VOID Print(VOID) CONST {

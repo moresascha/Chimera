@@ -184,6 +184,12 @@ namespace tbd
         VOID VRender(VOID);
     };
 
+    class BoundingGeoDebugSettings : public GraphicsSettings
+    {
+    public:
+        BoundingGeoDebugSettings(VOID);
+    };
+
     /*
     class DebugGraphicsSettings : public GraphicsSettings
     {

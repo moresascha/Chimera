@@ -197,6 +197,8 @@ namespace tbd
             
             VOID VSetActive(BOOL active);
 
+            VOID VDraw(VOID);
+
             BOOL VOnRestore(VOID);
 
             VOID AppendText(CONST std::string& text);

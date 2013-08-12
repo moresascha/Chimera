@@ -64,13 +64,27 @@ namespace event
     {
 
     public:
-        static const EventType TYPE;
-        MoveActorEvent(ActorId id, util::Vec3 translation, util::Vec3 rotation, BOOL isDeltaMove = TRUE) : m_id(id), m_translation(translation), m_rotation(rotation) , m_isDelta(isDeltaMove), m_isJump(FALSE) {}
+        static CONST EventType TYPE;
+        
+        MoveActorEvent(ActorId id, util::Vec3 translation, util::Vec4 quat, BOOL isDeltaMove = TRUE);
+        MoveActorEvent(ActorId id, util::Vec3 translation, util::Vec3 axis, FLOAT angle, BOOL isDeltaMove = TRUE);
+        MoveActorEvent(ActorId id, util::Vec3 translation, BOOL isDeltaMove = TRUE);
+        MoveActorEvent(ActorId id, util::Vec4 quat, BOOL isDeltaMove = TRUE);
+        MoveActorEvent(ActorId id, util::Vec3 axis, FLOAT angel, BOOL isDeltaMove = TRUE);
+        
         ActorId m_id;
         util::Vec3 m_translation;
-        util::Vec3 m_rotation;
+        util::Vec4 m_quatRotation;
+        util::Vec3 m_axis;
+        FLOAT m_angle;
+        
         BOOL m_isDelta;
         BOOL m_isJump;
+
+        BOOL m_hasRotation;
+        BOOL m_hasQuatRotation;
+        BOOL m_hasAxisRotation;
+        BOOL m_hasTranslation;
 
         BOOL IsDeltaMove(VOID)
         {
@@ -87,7 +101,7 @@ namespace event
     {
 
     public:
-        static const EventType TYPE;
+        static CONST EventType TYPE;
         std::shared_ptr<tbd::Actor> m_actor;
 
         ActorMovedEvent(std::shared_ptr<tbd::Actor> actor) : m_actor(actor) {}
@@ -113,7 +127,7 @@ namespace event
     class NewComponentCreatedEvent : public Event 
     {
     public:
-        static const EventType TYPE;
+        static CONST EventType TYPE;
         ComponentId m_id;
         ActorId m_actorId;
         NewComponentCreatedEvent(ComponentId id, ActorId actorId) : m_id(id), m_actorId(actorId) {}
@@ -147,7 +161,7 @@ namespace event
     class DeleteActorEvent : public Event 
     {
     public:
-        static const EventType TYPE;
+        static CONST EventType TYPE;
         ActorId m_id;
         DeleteActorEvent(ActorId id) : m_id(id) {}
         EventType VGetEventType(VOID) { return TYPE; }
@@ -171,7 +185,7 @@ namespace event
     class ActorDeletedEvent : public Event
     {
     public:
-        static const EventType TYPE;
+        static CONST EventType TYPE;
         ActorId m_id;
         ActorDeletedEvent(ActorId id) : m_id(id) {}
         EventType VGetEventType(VOID) { return TYPE; }
@@ -182,7 +196,7 @@ namespace event
     {
 
     public:
-        static const EventType TYPE;
+        static CONST EventType TYPE;
 
         ActorId m_id;
 
@@ -201,7 +215,7 @@ namespace event
     class LoadingLevelEvent : public Event
     {
     public:
-        static const EventType TYPE;
+        static CONST EventType TYPE;
 
         std::string m_name;
 
@@ -215,7 +229,7 @@ namespace event
     class LevelLoadedEvent : public Event
     {
     public:
-        static const EventType TYPE;
+        static CONST EventType TYPE;
 
         std::string m_name;
 
@@ -229,7 +243,7 @@ namespace event
     class CollisionEvent : public Event
     {
     public:
-        static const EventType TYPE;
+        static CONST EventType TYPE;
         ActorId m_actor0;
         ActorId m_actor1;
         CONST CHAR* VGetName(VOID) { return "CollisionEvent"; }
@@ -239,7 +253,7 @@ namespace event
     class ApplyForceEvent : public Event
     {
     public:
-        static const EventType TYPE;
+        static CONST EventType TYPE;
         ApplyForceEvent(VOID) : m_newtons(1) {}
         std::shared_ptr<tbd::Actor> m_actor;
         util::Vec3 m_dir;
@@ -251,7 +265,7 @@ namespace event
     class ApplyTorqueEvent : public Event
     {
     public:
-        static const EventType TYPE;
+        static CONST EventType TYPE;
         ApplyTorqueEvent(VOID) : m_newtons(1) {}
         std::shared_ptr<tbd::Actor> m_actor;
         util::Vec3 m_torque;
@@ -263,10 +277,20 @@ namespace event
     class TriggerEvent : public Event
     {
     public:
-        static const EventType TYPE;
+        static CONST EventType TYPE;
         ActorId m_didTriggerActor;
         ActorId m_triggerActor;
         CONST CHAR* VGetName(VOID) { return "TriggerEvent"; }
+        EventType VGetEventType(VOID) { return TYPE; }
+    };
+
+    class SetParentActorEvent : public Event
+    {
+    public:
+        ActorId m_actor;
+        ActorId m_parentActor;
+        static CONST EventType TYPE;
+        CONST CHAR* VGetName(VOID) { return "SetParentActorEvent"; }
         EventType VGetEventType(VOID) { return TYPE; }
     };
 };

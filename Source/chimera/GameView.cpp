@@ -85,14 +85,13 @@ namespace tbd
     {
         std::shared_ptr<event::ActorMovedEvent> movedEvent = std::static_pointer_cast<event::ActorMovedEvent>(eventData);
         
-        if(movedEvent->m_actor->GetId() == this->m_actor->GetId())
+        if(movedEvent->m_actor->GetId() == m_actor->GetId())
         {
             std::shared_ptr<tbd::TransformComponent> comp = m_actor->GetComponent<tbd::TransformComponent>(tbd::TransformComponent::COMPONENT_ID).lock();
             CONST util::Vec3& trans = comp->GetTransformation()->GetTranslation();
-            util::Vec3 rot;
 
-            comp->GetTransformation()->GetPitchYawRoll(rot);
-            m_pSceneGraph->GetCamera()->SetRotation(rot.x, rot.y);
+            //            m_pSceneGraph->GetCamera()->SetRotation()comp->GetTransformation()->GetPYR().x, comp->GetTransformation()->GetPYR().y); TODO
+            m_pSceneGraph->GetCamera()->SetRotation(comp->m_phi, comp->m_theta);
 
             m_pSceneGraph->GetCamera()->MoveToPosition(trans);
 
@@ -163,7 +162,7 @@ namespace tbd
             }
             else
             {
-                LOG_CRITICAL_ERROR_A("Unknown lighttype: %s", comp->m_type);
+                LOG_CRITICAL_ERROR_A("Unknown lighttype: %s", comp->m_type.c_str());
             }
 
             m_pSceneGraph->AddChild(pCastEventData->m_actorId, node);
@@ -220,6 +219,27 @@ namespace tbd
     VOID HumanGameView::LoadingLevelDelegate(event::IEventPtr pEventData)
     {
         
+    }
+
+    VOID HumanGameView::SetParentDelegate(event::IEventPtr pEventData)
+    {
+        //if(pEventData->VGetEventType() == event::SetParentActorEvent::TYPE) needed?
+        {
+            std::shared_ptr<event::SetParentActorEvent> e = std::static_pointer_cast<event::SetParentActorEvent>(pEventData);
+            ActorId actor = e->m_actor;
+            ActorId parent = e->m_parentActor;
+
+            std::shared_ptr<tbd::ISceneNode> p = m_pSceneGraph->FindActorNode(parent);
+            std::shared_ptr<tbd::ISceneNode> a = m_pSceneGraph->FindActorNode(actor);
+            if(p)
+            {
+                p->VAddChild(a);
+            }
+            else
+            {
+                LOG_CRITICAL_ERROR("SetParentFailed - No Actor found");
+            }
+        }
     }
 
     VOID HumanGameView::ToggleConsole(VOID)
@@ -328,6 +348,8 @@ namespace tbd
 
         listener = fastdelegate::MakeDelegate(this, &HumanGameView::DeleteActorDelegate);
         event::IEventManager::Get()->VAddEventListener(listener, event::DeleteActorEvent::TYPE);
+
+        ADD_EVENT_LISTENER(this, &HumanGameView::SetParentDelegate, event::SetParentActorEvent::TYPE);
 
         m_pSceneGraph->SetCamera(std::shared_ptr<util::ICamera>(new util::FPSCamera(GetRenderer()->VGetWidth(), GetRenderer()->VGetHeight(), 1e-2f, 1e3f)));
 
@@ -478,6 +500,8 @@ namespace tbd
 
             listener = fastdelegate::MakeDelegate(&m_soundEngine, &tbd::SoundEngine::NewComponentDelegate);
             event::IEventManager::Get()->VRemoveEventListener(listener, event::NewComponentCreatedEvent::TYPE);
+
+            REMOVE_EVENT_LISTENER(this, &HumanGameView::SetParentDelegate, event::SetParentActorEvent::TYPE);
         }
 
         TBD_FOR(m_screenElements)

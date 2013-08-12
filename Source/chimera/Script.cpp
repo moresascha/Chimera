@@ -117,7 +117,8 @@ namespace tbd
                 {
                     isDelta = luadelta.GetBoolean();
                 }
-                QUEUE_EVENT(new event::MoveActorEvent(id, position, rotation, isDelta));
+                LOG_CRITICAL_ERROR("this doesnt work anymore!");
+                //QUEUE_EVENT(new event::MoveActorEvent(id, position, rotation, isDelta));
             }
 
             VOID RegisterEventListener(EventType type, LuaPlus::LuaObject funciton)

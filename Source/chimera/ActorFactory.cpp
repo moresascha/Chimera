@@ -75,7 +75,7 @@ namespace tbd
         CreateActorComponentsProcess(std::shared_ptr<tbd::Actor> actor) : m_actor(actor) 
         {
             std::shared_ptr<WaitForComponentsToGethandled> proc = std::shared_ptr<WaitForComponentsToGethandled>(new WaitForComponentsToGethandled(actor));
-            this->VSetChild(proc);
+            VSetChild(proc);
         }
 
         VOID VThreadProc(VOID)
@@ -132,6 +132,11 @@ namespace tbd
         return new SoundEmitterComponent;
     }
 
+    ActorComponent* CreateParentComponent(VOID)
+    {
+        return new ParentComponent;
+    }
+
     ActorId ActorFactory::m_lastActorId = 0;
 
     ActorFactory::ActorFactory(VOID) 
@@ -159,6 +164,9 @@ namespace tbd
 
         m_creators["SoundEmitterComponent"] = CreateSoundEmitterComponent;
         m_creatorsId[SoundEmitterComponent::COMPONENT_ID] = CreateSoundEmitterComponent;
+
+        m_creators["ParentComponent"] = CreateParentComponent;
+        m_creatorsId[ParentComponent::COMPONENT_ID] = CreateParentComponent;
     }
 
     VOID ActorFactory::AddComponentCreator(ActorComponentCreator creator, LPCSTR name, ComponentId id)

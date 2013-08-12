@@ -52,6 +52,7 @@ namespace tbd
         m_dimensionPercent.y = dim.y / (FLOAT)app::g_pApp->GetWindowHeight();
         m_dimensionPercent.w = dim.w / (FLOAT)app::g_pApp->GetWindowWidth();
         m_dimensionPercent.h = dim.h / (FLOAT)app::g_pApp->GetWindowHeight();
+        ScreenElement::VOnRestore();
     }
 
     UINT ScreenElement::VGetHeight(VOID) CONST
@@ -149,6 +150,7 @@ namespace tbd
     
     BOOL ScreenElementContainer::VOnRestore(VOID)
     {
+        ScreenElement::VOnRestore();
         TBD_FOR(m_components)
         {
             it->second->VOnRestore();

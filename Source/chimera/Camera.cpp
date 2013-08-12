@@ -9,13 +9,13 @@ namespace util
     class IProjectionTypeHandler
     {
     public:
-        virtual VOID VComputeProjection(FPSCamera* camera) = 0;
+        virtual VOID VComputeProjection(Camera* camera) = 0;
     };
 
     class PerspectiveHandler : public IProjectionTypeHandler
     {
     public:
-        VOID VComputeProjection(FPSCamera* camera)
+        VOID VComputeProjection(Camera* camera)
         {
             float invTan = 1.0f / tan(camera->m_FoV * 0.5f);
 
@@ -46,7 +46,7 @@ namespace util
     class OrthographicHandler : public IProjectionTypeHandler
     {
     public:
-        VOID VComputeProjection(FPSCamera* camera)
+        VOID VComputeProjection(Camera* camera)
         {
             XMMATRIX mat = XMMatrixOrthographicLH(camera->m_width, camera->m_height, camera->GetNear(), camera->GetFar());
             XMFLOAT4X4 matf;
@@ -59,7 +59,7 @@ namespace util
     class OrthographicOffCenterHandler : public IProjectionTypeHandler
     {
     public:
-        VOID VComputeProjection(FPSCamera* camera)
+        VOID VComputeProjection(Camera* camera)
         {
             XMMATRIX mat = XMMatrixOrthographicOffCenterLH(camera->m_left, camera->m_right, camera->m_down, camera->m_up, camera->GetNear(), camera->GetFar());
             XMFLOAT4X4 matf;
@@ -69,7 +69,7 @@ namespace util
         }
     };
 
-    FPSCamera::FPSCamera(UINT width, UINT height, FLOAT zNear, FLOAT zFar) 
+    Camera::Camera(UINT width, UINT height, FLOAT zNear, FLOAT zFar) 
     {
         m_height = (FLOAT)height;
         m_width = (FLOAT)width;
@@ -89,11 +89,11 @@ namespace util
         this->ComputeView();
     }
 
-    VOID FPSCamera::Move(CONST Vec3& dt) {
+    VOID Camera::Move(CONST Vec3& dt) {
          this->Move(dt.x, dt.y, dt.z);
     }
 
-    VOID FPSCamera::Move(FLOAT dx, FLOAT dy, FLOAT dz) {
+    VOID Camera::Move(FLOAT dx, FLOAT dy, FLOAT dz) {
          Vec3 deltaX(this->m_sideDir);
          deltaX.Scale(dx);
 
@@ -111,10 +111,9 @@ namespace util
          this->ComputeView();
     }
 
-    VOID FPSCamera::Rotate(FLOAT dPhi, FLOAT dTheta) {
+    VOID Camera::Rotate(FLOAT dPhi, FLOAT dTheta) {
          this->m_Phi += dPhi;
          this->m_Theta += dTheta;
-         this->m_Theta = CLAMP(this->m_Theta, -XM_PIDIV2, XM_PIDIV2);
 
          FLOAT sinPhi = sin(this->m_Phi);
          FLOAT cosPhi = cos(this->m_Phi);
@@ -128,21 +127,21 @@ namespace util
          this->ComputeView();
     }
 
-    VOID FPSCamera::MoveToPosition(CONST util::Vec3& pos) 
+    VOID Camera::MoveToPosition(CONST util::Vec3& pos) 
     {
         Vec3 delta = pos - this->m_lastSetPostition;
         Move(delta);
         this->m_lastSetPostition = pos;
     }
 
-    VOID FPSCamera::SetRotation(FLOAT phi, FLOAT theta) 
+    VOID Camera::SetRotation(FLOAT phi, FLOAT theta) 
     {
         this->m_Phi = 0;
         this->m_Theta = 0;
         Rotate(phi, theta);
     }
 
-    VOID FPSCamera::LookAt(CONST util::Vec3& eyePos, CONST util::Vec3& at)
+    VOID Camera::LookAt(CONST util::Vec3& eyePos, CONST util::Vec3& at)
     {
         /*
         XMVECTOR v = {0,1,0};
@@ -167,17 +166,17 @@ namespace util
         SetRotation(phi, theta);
     }
 
-    VOID FPSCamera::SetEyePos(CONST util::Vec3& pos)
+    VOID Camera::SetEyePos(CONST util::Vec3& pos)
     {
         m_eyePos = pos;
         ComputeView();
     }
 
-    VOID FPSCamera::ComputeProjection(VOID) {
+    VOID Camera::ComputeProjection(VOID) {
         m_handler->VComputeProjection(this);
     }
 
-    VOID FPSCamera::ComputeView(VOID) 
+    VOID Camera::ComputeView(VOID) 
     {
          Vec3 zAxis = Vec3::GetNormalize(this->m_viewDir);
          Vec3 yAxis(this->m_upDir);
@@ -233,7 +232,7 @@ namespace util
          this->m_viewProjection = util::Mat4::Mul(m_projection, m_view);
     }
 
-    VOID FPSCamera::SetProjectionType(ProjectionType type)
+    VOID Camera::SetProjectionType(ProjectionType type)
     {
         SAFE_DELETE(m_handler);
         switch(type)
@@ -258,12 +257,12 @@ namespace util
         }
     }
 
-    tbd::Frustum& FPSCamera::GetFrustum(VOID)
+    tbd::Frustum& Camera::GetFrustum(VOID)
     {
         return m_frustum;
     }
 
-    VOID FPSCamera::SetPerspectiveProjection(FLOAT aspect, FLOAT fov, FLOAT fnear, FLOAT ffar)
+    VOID Camera::SetPerspectiveProjection(FLOAT aspect, FLOAT fov, FLOAT fnear, FLOAT ffar)
     {
         m_FoV = fov;
         m_Aspect = aspect;
@@ -273,7 +272,7 @@ namespace util
         ComputeProjection();
     }
 
-    VOID FPSCamera::SetOrthographicProjection(FLOAT width, FLOAT height, FLOAT fnear, FLOAT ffar)
+    VOID Camera::SetOrthographicProjection(FLOAT width, FLOAT height, FLOAT fnear, FLOAT ffar)
     {
         m_width = width;
         m_height = height;
@@ -283,7 +282,7 @@ namespace util
         ComputeProjection();
     }
 
-    VOID FPSCamera::SetOrthographicProjectionOffCenter(FLOAT left, FLOAT right, FLOAT down, FLOAT up, FLOAT fNear, FLOAT fFar)
+    VOID Camera::SetOrthographicProjectionOffCenter(FLOAT left, FLOAT right, FLOAT down, FLOAT up, FLOAT fNear, FLOAT fFar)
     {
         m_left = left;
         m_right = right;
@@ -295,9 +294,29 @@ namespace util
         ComputeProjection();
     }
 
-    FPSCamera::~FPSCamera(VOID) 
+    Camera::~Camera(VOID) 
     {
         SAFE_DELETE(m_handler);
+    }
+
+    FPSCamera::FPSCamera(UINT width, UINT height, FLOAT zNear, FLOAT zFar) :  Camera(width, height, zNear, zFar)
+    {
+
+    }
+
+    VOID FPSCamera::Rotate(FLOAT dPhi, FLOAT dTheta)
+    {
+       FLOAT newPhi = m_Phi + dPhi;
+       FLOAT newTheta = m_Theta + dTheta;
+       newTheta = CLAMP(newTheta, -XM_PIDIV2, XM_PIDIV2);
+       m_Phi = 0;
+       m_Theta = 0;
+       Camera::Rotate(newPhi, newTheta);
+    }
+
+    FPSCamera::~FPSCamera(VOID)
+    {
+
     }
 
     CharacterCamera::CharacterCamera(UINT width, UINT height, FLOAT zNear, FLOAT zFar) : FPSCamera(width, height, zNear, zFar), m_yOffset(0)

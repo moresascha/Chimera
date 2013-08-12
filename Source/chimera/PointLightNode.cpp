@@ -30,7 +30,7 @@ namespace tbd
     VOID PointlightNode::VOnActorMoved(VOID)
     {
         SceneNode::VOnActorMoved();
-        XMMATRIX mat = XMMatrixPerspectiveFovLH(XM_PIDIV2, 1.0f, 0.01f, m_transformation->GetTransformation()->GetScale().x);
+        XMMATRIX mat = XMMatrixPerspectiveFovLH(XM_PIDIV2, 1.0f, 0.01f, GetTransformation()->GetScale().x);
         XMStoreFloat4x4(&m_projection.m_m, mat);
     }
 
@@ -50,7 +50,7 @@ namespace tbd
 
         m_mats[5] = util::Mat4::createLookAtLH(lightPos, util::Vec3(0,0,-1), util::Vec3(0,1,0)); //back
 
-        XMMATRIX mat = XMMatrixPerspectiveFovLH(XM_PIDIV2, 1.0f, 0.01f, m_transformation->GetTransformation()->GetScale().x);
+        XMMATRIX mat = XMMatrixPerspectiveFovLH(XM_PIDIV2, 1.0f, 0.01f, GetTransformation()->GetScale().x);
         XMStoreFloat4x4(&m_projection.m_m, mat);
         //m_projection = util::Mat4::CreatePerspectiveLH(XM_PIDIV2, 1.0f, 0.01f, m_lightComponent->m_radius);
         /*
@@ -68,7 +68,7 @@ namespace tbd
 
     BOOL PointlightNode::VIsVisible(SceneGraph* graph)
     {
-        return graph->GetFrustum()->IsInside(m_transformation->GetTransformation()->GetTranslation(),  m_transformation->GetTransformation()->GetScale().x);
+        return graph->GetFrustum()->IsInside(GetTransformation()->GetTranslation(),  GetTransformation()->GetScale().x);
     }
 
     UINT PointlightNode::VGetRenderPaths(VOID)
@@ -89,15 +89,15 @@ namespace tbd
 
                 m_drawShadow->Bind();
                 d3d::D3DRenderer* renderer = app::g_pApp->GetHumanView()->GetRenderer();
-                renderer->VPushProjectionTransform(m_projection, m_transformation->GetTransformation()->GetScale().x);
+                renderer->VPushProjectionTransform(m_projection, GetTransformation()->GetScale().x);
                 renderer->SetCubeMapViews(m_mats);
-                renderer->SetLightSettings(m_lightComponent->m_color, m_transformation->GetTransformation()->GetTranslation(), m_transformation->GetTransformation()->GetScale().x);
+                renderer->SetLightSettings(m_lightComponent->m_color, GetTransformation()->GetTranslation(), util::Vec3(), GetTransformation()->GetScale().x, 0, m_lightComponent->m_intensity);
 
                 renderer->SetPointLightShadowCubeMapSampler(NULL);
                 g_pCubeMapRenderTarget->Bind();
                 g_pCubeMapRenderTarget->Clear();
                 //m_frustum.Transform(*m_transformation->GetTransformation());
-                g_frustum.SetParams(m_transformation->GetTransformation()->GetScale().x, m_transformation->GetTransformation()->GetTranslation());
+                g_frustum.SetParams(GetTransformation()->GetScale().x, GetTransformation()->GetTranslation());
                 graph->PushFrustum(&g_frustum);
 
                 //d3d::GetContext()->RSSetState(d3d::g_pRasterizerStateBackFaceSolid);
@@ -127,7 +127,7 @@ namespace tbd
         case eDRAW_BOUNDING_DEBUG :
             {
                 app::g_pApp->GetHumanView()->GetRenderer()->SetNormalMapping(FALSE);
-                app::g_pApp->GetHumanView()->GetRenderer()->VPushWorldTransform(*m_transformation->GetTransformation());
+                app::g_pApp->GetHumanView()->GetRenderer()->VPushWorldTransform(*GetTransformation());
                 d3d::ConstBuffer* buffer = app::g_pApp->GetHumanView()->GetRenderer()->GetBuffer(d3d::eBoundingGeoBuffer);
                 XMFLOAT4* f  = (XMFLOAT4*)buffer->Map();
                 f->x = 1;//m_transformation->GetTransformation()->GetScale().x;
@@ -141,14 +141,14 @@ namespace tbd
 
         case eDRAW_PICKING : 
             {
-                util::Mat4 m = *m_transformation->GetTransformation();
+                util::Mat4 m = *GetTransformation();
                 m.SetScale(1);
                 DrawPickingSphere(m_actor, &m, 1);
             } break;
 
         case eDRAW_EDIT_MODE :
             {
-                util::Mat4 m = *m_transformation->GetTransformation();
+                util::Mat4 m = *GetTransformation();
                 m.SetScale(1);
                 DrawAnchorSphere(m_actor, &m, 1);
             } break;
@@ -158,7 +158,7 @@ namespace tbd
                 std::stringstream ss;
                 ss << "PointLight_";
                 ss << m_actorId;
-                DrawInfoTextOnScreen(graph->GetCamera().get(), m_transformation->GetTransformation(), ss.str());
+                DrawInfoTextOnScreen(graph->GetCamera().get(), GetTransformation(), ss.str());
                 break;
             }
         }

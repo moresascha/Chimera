@@ -185,7 +185,7 @@ PixelOutput GlobalLighting_PS(PixelInput input)
             computeCSMContr(op.color, input.texCoord, normal);
         }
 
-        op.color += float4(ambientMat * diffuse,0);
+        op.color += float4(ambientMat * diffuse, 0);
     } 
     else
     {
@@ -285,6 +285,9 @@ PixelOutput PointLighting_PS(PixelInput input)
 
     color = lightColor * (specular * specularMat + diffuseMat * diffuse * diffuseColor);
     
+    float intensityScale = g_lightPos.w;
+    intensity *= intensityScale;
+
     color *= intensity; // * fShadow;
 
     op.color = float4(color, 1);
@@ -320,18 +323,19 @@ PixelOutput SpotLighting_PS(PixelInput input)
 
     float distSquared = dot(d, d);
 
-    float3 dir = normalize(-lightPos);
+    float3 dir = normalize(g_lightViewDirAngel.xyz);
+    float angel = g_lightViewDirAngel.w;
 
-    if(distSquared > 2 * length*length) 
+    /*if(distSquared > length*length) 
     {
         discard;
-    }
+    } */
     
     float3 lightToPos = normalize(world - lightPos);
     float lpd = max(dot(lightToPos, dir),0);
     float a = acos(lpd);
 
-    if(a > PIDIV2 * 0.5)
+    if(a > angel * 0.5)
     {
         discard;
     }
@@ -342,8 +346,8 @@ PixelOutput SpotLighting_PS(PixelInput input)
     tc = float2(tc.x, 1-tc.y);
 
     float shadowSample = g_diffuseColor.Sample(g_samplerClamp, tc).r;
-    float bias = 0.15;//0.005 * tan(acos(dot(-lightToPos, normal)));//0.15
-    //bias = saturate(bias);
+    float bias = 0.15;
+    
     int shadow = shadowSample < (distSquared - bias) ? 1 : 0;
 
     if(shadow)
@@ -377,8 +381,11 @@ PixelOutput SpotLighting_PS(PixelInput input)
 
     float specular = s * pow(saturate(dot(reflectVec, posToEye)), 32) + (1-s);
 
-    float intensity = (PIDIV2 * 0.5 - a) * (length * length / (2.5*distSquared));
+    float intensity = (angel * 0.5 - a) * (1  - distSquared / (length * length));
 
+    intensity = intensity < 0 ? 0 : intensity;
+    float intensityScale = g_lightPos.w;
+    intensity *= intensityScale;
     float3 color = 0;
 
     color = lightColor * (specular * specularMat + diffuseMat * diffuse * diffuseColor);

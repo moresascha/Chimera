@@ -8,10 +8,11 @@
 #include "GameView.h"
 #include "D3DRenderer.h"
 #include "Camera.h"
+#include "Process.h"
+#include "Event.h"
 
 namespace tbd 
 {
-
     CONST ComponentId TransformComponent::COMPONENT_ID = 0xdb756713;
     CONST ComponentId RenderComponent::COMPONENT_ID = 0x8beb1acc;
     CONST ComponentId CameraComponent::COMPONENT_ID = 0xb8a716ca;
@@ -20,6 +21,7 @@ namespace tbd
     CONST ComponentId PickableComponent::COMPONENT_ID = 0xd295188c;
     CONST ComponentId ParticleComponent::COMPONENT_ID = 0x746a7b4a;
     CONST ComponentId SoundEmitterComponent::COMPONENT_ID = 0x568a0c05;
+    CONST ComponentId ParentComponent::COMPONENT_ID = 0xde7b06f1;
 
     ActorComponent::ActorComponent(VOID) : m_waitTillHandled(FALSE), m_handle(NULL)
     {
@@ -60,6 +62,11 @@ namespace tbd
 
     }
 
+    TransformComponent::TransformComponent(VOID) : m_phi(0), m_theta(0)
+    {
+
+    }
+
     BOOL TransformComponent::VInit(tinyxml2::XMLElement* pData) 
     {
         tinyxml2::XMLElement* trans = pData->FirstChildElement("Position");
@@ -81,7 +88,8 @@ namespace tbd
             RETURN_IF_FAILED(tinyxml2::XML_NO_ATTRIBUTE != rot->QueryFloatAttribute("x", &x));
             RETURN_IF_FAILED(tinyxml2::XML_NO_ATTRIBUTE != rot->QueryFloatAttribute("y", &y));
             RETURN_IF_FAILED(tinyxml2::XML_NO_ATTRIBUTE != rot->QueryFloatAttribute("z", &z));
-            m_transformation.SetRotation((FLOAT)DEGREE_TO_RAD(x), (FLOAT)DEGREE_TO_RAD(y), (FLOAT)DEGREE_TO_RAD(z));
+            //m_transformation.SetRotation((FLOAT)DEGREE_TO_RAD(x), (FLOAT)DEGREE_TO_RAD(y), (FLOAT)DEGREE_TO_RAD(z));
+            LOG_CRITICAL_ERROR("asd");
         }
 
         return TRUE;
@@ -99,7 +107,7 @@ namespace tbd
 
         tinyxml2::XMLElement* rotation = pData->NewElement("Rotation");
         util::Vec3 pyr;
-        m_transformation.GetPitchYawRoll(pyr);
+        LOG_CRITICAL_ERROR("ASD");
         rotation->SetAttribute("x", RAD_TO_DEGREE(pyr.x));
         rotation->SetAttribute("y", RAD_TO_DEGREE(pyr.y));
         rotation->SetAttribute("z", RAD_TO_DEGREE(pyr.z));
@@ -412,5 +420,71 @@ namespace tbd
         //warum up cache
         tbd::Resource r(m_soundFile);
         app::g_pApp->GetCache()->GetHandle(r);
+    }
+
+    class SetParentWaitProcess : public proc::Process
+    {
+    private:
+        ActorId m_actor;
+        ActorId m_parent;
+        BOOL m_gotActor;
+        BOOL m_gotParent;
+
+        VOID EventListener(event::IEventPtr event)
+        {
+            if(event->VGetEventType() == event::ActorCreatedEvent::TYPE)
+            {
+                std::shared_ptr<event::ActorCreatedEvent> e = std::static_pointer_cast<event::ActorCreatedEvent>(event);
+                if(!m_gotActor)
+                {
+                    m_gotActor = e->m_id == m_actor;
+                }
+                if(!m_gotParent)
+                {
+                    m_gotParent = e->m_id == m_parent;
+                }
+            }
+        }
+
+    public:
+        SetParentWaitProcess(ActorId actor, ActorId parent) : m_actor(actor), m_parent(parent), m_gotActor(FALSE), m_gotParent(FALSE)
+        {
+
+        }
+
+        VOID VOnInit(VOID)
+        {
+            ADD_EVENT_LISTENER(this, &SetParentWaitProcess::EventListener, event::ActorCreatedEvent::TYPE);
+        }
+        VOID VOnAbort(VOID)
+        {
+            REMOVE_EVENT_LISTENER(this, &SetParentWaitProcess::EventListener, event::ActorCreatedEvent::TYPE);
+        }
+        VOID VOnFail(VOID)
+        {
+            REMOVE_EVENT_LISTENER(this, &SetParentWaitProcess::EventListener, event::ActorCreatedEvent::TYPE);
+        }
+        VOID VOnSuccess(VOID)
+        {
+            REMOVE_EVENT_LISTENER(this, &SetParentWaitProcess::EventListener, event::ActorCreatedEvent::TYPE);
+        }
+
+        VOID VOnUpdate(ULONG deltaMillis)
+        {
+            if(m_gotActor && m_gotParent)
+            {
+                event::SetParentActorEvent* spe = new event::SetParentActorEvent();
+                spe->m_actor = m_actor;
+                spe->m_parentActor = m_parent;
+                QUEUE_EVENT(spe);
+                Succeed();
+            }
+        }
+    };
+
+    VOID ParentComponent::VPostInit(VOID)
+    {
+        std::shared_ptr<tbd::Actor> a = m_owner.lock();
+        app::g_pApp->GetLogic()->GetProcessManager()->Attach(std::shared_ptr<SetParentWaitProcess>(new SetParentWaitProcess(a->GetId(), m_parentId)));
     }
 }

@@ -1,17 +1,15 @@
-﻿Build started 04.08.2013 16:22:03.
-     1>Project "E:\Dropbox\VisualStudio\Chimera\Source\Chimera.vcxproj" on node 2 (CudaBuild target(s)).
-     1>AddCudaCompileDeps:
-       Skipping target "AddCudaCompileDeps" because all output files are up-to-date with respect to the input files.
-       AddCudaCompilePropsDeps:
-       Skipping target "AddCudaCompilePropsDeps" because all output files are up-to-date with respect to the input files.
-       CudaBuild:
-         Compiling CUDA source file chimera\Particles.cu...
-         cmd.exe /C "C:\Users\Sascha\AppData\Local\Temp\tmp7debd9a9bb3946dfa9cef255c1ee928d.cmd"
-         "C:\Program Files\NVIDIA GPU Computing Toolkit\CUDA\v5.5\bin\nvcc.exe" -gencode=arch=compute_10,code=\"sm_10,compute_10\" --use-local-env --cl-version 2012 -ccbin "C:\Program Files (x86)\Microsoft Visual Studio 11.0\VC\bin\x86_amd64"  -I../Include -I"C:\Program Files\NVIDIA GPU Computing Toolkit\CUDA\v5.5\include"  -G  --keep --keep-dir E:\Dropbox\VisualStudio\Chimera\Source\..\Tmp\Chimerax64Debug\ -maxrregcount=0  --machine 64 -ptx -cudart static  -o .\chimera\ptx\Particles.ptx "E:\Dropbox\VisualStudio\Chimera\Source\chimera\Particles.cu"
+﻿Build started 12.08.2013 22:28:16.
+     1>Project "E:\Dropbox\VisualStudio\Chimera\Source\Chimera.vcxproj" on node 2 (Clean target(s)).
+     1>_PrepareForClean:
+         Deleting file "E:\Dropbox\VisualStudio\Chimera\Source\..\Tmp\Chimerax64Debug\Chimera.lastbuildstate".
+       CudaClean:
+         cmd.exe /C "C:\Users\Sascha\AppData\Local\Temp\tmp84949940eb904000b367c75b214a1d44.cmd"
+         "C:\Program Files\NVIDIA GPU Computing Toolkit\CUDA\v5.5\bin\nvcc.exe" -ccbin "C:\Program Files (x86)\Microsoft Visual Studio 11.0\VC\bin\x86_amd64"  -I../Include -I"C:\Program Files\NVIDIA GPU Computing Toolkit\CUDA\v5.5\include"  -G  --keep --keep-dir E:\Dropbox\VisualStudio\Chimera\Source\..\Tmp\Chimerax64Debug\ -maxrregcount=0  --machine 64 -ptx   -o .\chimera\ptx\Particles.ptx "E:\Dropbox\VisualStudio\Chimera\Source\chimera\Particles.cu" -clean
          
-         E:\Dropbox\VisualStudio\Chimera\Source>"C:\Program Files\NVIDIA GPU Computing Toolkit\CUDA\v5.5\bin\nvcc.exe" -gencode=arch=compute_10,code=\"sm_10,compute_10\" --use-local-env --cl-version 2012 -ccbin "C:\Program Files (x86)\Microsoft Visual Studio 11.0\VC\bin\x86_amd64"  -I../Include -I"C:\Program Files\NVIDIA GPU Computing Toolkit\CUDA\v5.5\include"  -G  --keep --keep-dir E:\Dropbox\VisualStudio\Chimera\Source\..\Tmp\Chimerax64Debug\ -maxrregcount=0  --machine 64 -ptx -cudart static  -o .\chimera\ptx\Particles.ptx "E:\Dropbox\VisualStudio\Chimera\Source\chimera\Particles.cu" 
-     1>Done Building Project "E:\Dropbox\VisualStudio\Chimera\Source\Chimera.vcxproj" (CudaBuild target(s)).
+         E:\Dropbox\VisualStudio\Chimera\Source>"C:\Program Files\NVIDIA GPU Computing Toolkit\CUDA\v5.5\bin\nvcc.exe" -ccbin "C:\Program Files (x86)\Microsoft Visual Studio 11.0\VC\bin\x86_amd64"  -I../Include -I"C:\Program Files\NVIDIA GPU Computing Toolkit\CUDA\v5.5\include"  -G  --keep --keep-dir E:\Dropbox\VisualStudio\Chimera\Source\..\Tmp\Chimerax64Debug\ -maxrregcount=0  --machine 64 -ptx   -o .\chimera\ptx\Particles.ptx "E:\Dropbox\VisualStudio\Chimera\Source\chimera\Particles.cu" -clean 
+         Deleting file "E:\Dropbox\VisualStudio\Chimera\Source\..\Tmp\Chimerax64Debug\chimera\Particles.cu.deps".
+     1>Done Building Project "E:\Dropbox\VisualStudio\Chimera\Source\Chimera.vcxproj" (Clean target(s)).
 
 Build succeeded.
 
-Time Elapsed 00:00:04.28
+Time Elapsed 00:00:03.64

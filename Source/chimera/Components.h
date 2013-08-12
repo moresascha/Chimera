@@ -57,11 +57,17 @@ namespace tbd
     public:
         CONST static ComponentId COMPONENT_ID;
 
+        FLOAT m_phi;
+        FLOAT m_theta;
+
+        TransformComponent(VOID);
+
         BOOL VInit(tinyxml2::XMLElement* pData);
 
         util::Mat4* GetTransformation(VOID) {
             return &m_transformation;
         }
+
         VOID VSave(tinyxml2::XMLDocument* pData) CONST;
         ComponentId GetComponentId(VOID) CONST { return COMPONENT_ID; }
 
@@ -156,11 +162,11 @@ namespace tbd
     public:
         std::string m_type;
         util::Vec4 m_color;
-        FLOAT m_phi;
-        FLOAT m_theta;
+        FLOAT m_angle;
+        FLOAT m_intensity;
         BOOL m_activated;
 
-        LightComponent(VOID)
+        LightComponent(VOID) : m_angle(0), m_activated(TRUE), m_intensity(1)
         {
             WaitTillHandled();
         }
@@ -209,5 +215,17 @@ namespace tbd
         VOID VSave(tinyxml2::XMLDocument* pData) CONST;
         VOID VCreateResources(VOID);
         LPCSTR VGetName(VOID) { return "SoundEmitterComponent"; }
+    };
+
+    class ParentComponent : public ActorComponent
+    {
+    public:
+        ActorId m_parentId;
+    public:
+        ActorId GetParent(VOID) { return m_parentId; }
+        CONST static ComponentId COMPONENT_ID;
+        LPCSTR VGetName(VOID) { return "ParentComponent"; }
+        ComponentId GetComponentId(VOID) CONST { return COMPONENT_ID; }
+        VOID VPostInit(VOID);
     };
 }

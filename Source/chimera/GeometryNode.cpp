@@ -35,13 +35,13 @@ namespace tbd
         {
         case eDRAW_TO_SHADOW_MAP: 
             {
-                app::g_pApp->GetHumanView()->GetRenderer()->VPushWorldTransform(*m_transformation->GetTransformation());
+                app::g_pApp->GetHumanView()->GetRenderer()->VPushWorldTransform(*GetTransformation());
                 m_pGeometry->Bind();
                 m_pGeometry->Draw();
             } break;
         case eDRAW_TO_ALBEDO :
             {
-                app::g_pApp->GetHumanView()->GetRenderer()->VPushWorldTransform(*m_transformation->GetTransformation());
+                app::g_pApp->GetHumanView()->GetRenderer()->VPushWorldTransform(*GetTransformation());
                 app::g_pApp->GetRenderer()->SetDefaultTexture();
                 app::g_pApp->GetRenderer()->VPushMaterial(*m_pMaterial);
                 app::g_pApp->GetHumanView()->GetRenderer()->SetNormalMapping(FALSE);
@@ -50,7 +50,7 @@ namespace tbd
             } break;
         case eDRAW_BOUNDING_DEBUG :
             {
-                DrawSphere(m_transformation->GetTransformation(), m_aabb);
+                DrawSphere(GetTransformation(), m_aabb);
             } break;
         case eDRAW_PICKING :
             {
@@ -58,7 +58,7 @@ namespace tbd
             } break;
         case eDRAW_DEBUG_INFOS : 
             {
-                tbd::DrawActorInfos(m_actor, this->m_transformation->GetTransformation(), graph->GetCamera());
+                tbd::DrawActorInfos(m_actor, GetTransformation(), graph->GetCamera());
             } break;
         }
     }

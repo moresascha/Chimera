@@ -38,6 +38,11 @@ namespace app
         screen = new tbd::RenderScreen(pgs);
         screen->VSetName("profile");
         m_pHumanView->AddScene(screen);
+
+        std::shared_ptr<tbd::BoundingGeoDebugSettings> bgs = std::shared_ptr<tbd::BoundingGeoDebugSettings>(new tbd::BoundingGeoDebugSettings());
+        screen = new tbd::RenderScreen(bgs);
+        screen->VSetName("bounding");
+        m_pHumanView->AddScene(screen);
 #else
 
         tbd::DefShaderRenderScreen* screen = new tbd::DefShaderRenderScreen(d3d::Diff_DiffuseColorSpecBTarget);
@@ -45,7 +50,7 @@ namespace app
         m_pHumanView->AddScene(screen);
 
 #endif
-
+        tbd::Dimension dim;
         /*std::shared_ptr<tbd::DebugGraphicsSettings> dgs = std::shared_ptr<tbd::DebugGraphicsSettings>(new tbd::DebugGraphicsSettings());
         screen = new tbd::RenderScreen(dgs);
         screen->VSetName("debug");
@@ -99,16 +104,6 @@ namespace app
         dim.h = d3d::g_height / 4;
         screen->VSetDimension(dim);
         m_pHumanView->AddScreenElement(screen); */
-
-        tbd::RendertargetScreen* shadowMap = new tbd::RendertargetScreen(tbd::SpotlightNode::g_pShadowRenderTarget);
-        tbd::Dimension dim;
-        dim.x = 0;
-        dim.y = 0;
-        dim.w = d3d::g_width / 4;
-        dim.h = d3d::g_height / 4;
-        shadowMap->VSetDimension(dim);
-        m_pHumanView->AddScreenElement(shadowMap);
-        m_pHumanView->SetName("Shadowmap");
 
 
         std::shared_ptr<tbd::Actor> camera = m_pLogic->VCreateActor("camera.xml");
@@ -172,6 +167,16 @@ namespace app
         crossHair->SetTexture("crosshair_cross.png");
         c->AddComponent("CH", crossHair);
 
+        /*tbd::ActorPicker* ap = (tbd::ActorPicker*)app::g_pApp->GetHumanView()->GetPicker();
+        tbd::RendertargetScreen* shadowMap = new tbd::RendertargetScreen(ap->GetTarget());
+
+        dim.x = 0;
+        dim.y = 0;
+        dim.w = d3d::g_width / 4;
+        dim.h = d3d::g_height / 4;
+        shadowMap->VSetDimension(dim);
+        m_pHumanView->AddScreenElement(shadowMap);
+        m_pHumanView->SetName("tmpmap"); */
         
         //c->AddComponent("histogram", histo);
 

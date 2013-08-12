@@ -58,7 +58,7 @@ namespace tbd
         app::g_pApp->GetHumanView()->GetRenderer()->SetNormalMapping(FALSE);
         app::g_pApp->GetHumanView()->GetRenderer()->VPushWorldTransform(*matrix);
         d3d::ConstBuffer* buffer = app::g_pApp->GetHumanView()->GetRenderer()->GetBuffer(d3d::eBoundingGeoBuffer);
-        XMFLOAT4* f  = (XMFLOAT4*)buffer->Map();
+        XMFLOAT4* f = (XMFLOAT4*)buffer->Map();
         f->x = radius;
         f->y = 0;
         f->z = 0;
@@ -73,7 +73,7 @@ namespace tbd
         app::g_pApp->GetHumanView()->GetRenderer()->SetNormalMapping(FALSE);
         app::g_pApp->GetHumanView()->GetRenderer()->VPushWorldTransform(*matrix);
         d3d::ConstBuffer* buffer = app::g_pApp->GetHumanView()->GetRenderer()->GetBuffer(d3d::eBoundingGeoBuffer);
-        XMFLOAT4* f  = (XMFLOAT4*)buffer->Map();
+        XMFLOAT4* f = (XMFLOAT4*)buffer->Map();
         f->x = aabb.GetRadius();
         f->y = aabb.GetMiddle().x;
         f->z = aabb.GetMiddle().y;
@@ -190,12 +190,13 @@ namespace tbd
         app::g_pApp->GetHumanView()->GetRenderer()->PopRasterizerState();
     }
 
-    SceneNode::SceneNode(ActorId actorId) : m_actorId(actorId), m_wasVisibleOnLastTraverse(FALSE), m_forceVisibleCheck(FALSE)
+    SceneNode::SceneNode(ActorId actorId) : m_actorId(actorId), m_wasVisibleOnLastTraverse(FALSE), m_forceVisibleCheck(FALSE), m_parent(NULL)
     {
         VSetActor(actorId);
+        m_wParentTransformation = std::shared_ptr<tbd::TransformComponent>(new tbd::TransformComponent());
     }
 
-    SceneNode::SceneNode(VOID) 
+    SceneNode::SceneNode(VOID) : m_parent(NULL)
     {
 
     }
@@ -221,6 +222,7 @@ namespace tbd
         this->m_childs.push_back(child);
         std::shared_ptr<SceneNode> kid = std::static_pointer_cast<SceneNode>(child);
         kid->m_parent = this;
+        child->VOnParentChanged();
     }
 
     UINT SceneNode::VGetRenderPaths(VOID)
@@ -320,6 +322,11 @@ namespace tbd
         return m_wasVisibleOnLastTraverse;
     }
 
+    BOOL SceneNode::HasParent(VOID)
+    {
+        return m_parent != NULL && m_parent->VGetActorId() != INVALID_ACTOR_ID;
+    }
+
     VOID SceneNode::VSetVisibilityOnLastTraverse(BOOL visible)
     {
         m_wasVisibleOnLastTraverse = visible;
@@ -350,7 +357,68 @@ namespace tbd
         {
             VForceVisibilityCheck();
             VOnActorMoved();
+
+            TBD_FOR(m_childs)
+            {
+                (*it)->VOnParentChanged();
+            }
         }
+    }
+
+    util::Mat4* SceneNode::GetTransformation(VOID)
+    {
+        if(HasParent())
+        {
+            return m_wParentTransformation->GetTransformation();
+        }
+        return m_transformation->GetTransformation();
+    }
+
+    VOID SceneNode::VOnParentChanged(VOID)
+    {
+        if(HasParent())
+        {
+            util::Mat4* pt = m_parent->GetTransformation();
+            util::Mat4* t = m_transformation->GetTransformation();
+            
+            util::Mat4* pwt = m_wParentTransformation->GetTransformation();
+
+            *pwt = *pt;
+
+            pwt->RotateQuat(t->GetRotation());
+
+            pwt->Translate(t->GetTranslation());
+
+            pwt->Scale(t->GetScale());
+
+            VOnActorMoved();
+        }
+        TBD_FOR(m_childs)
+        {
+            VOnParentChanged();
+        }
+    }
+
+    std::shared_ptr<tbd::ISceneNode> SceneNode::VFindActor(ActorId id)
+    {
+        TBD_FOR(m_childs)
+        {
+            std::shared_ptr<ISceneNode> node = *it;
+            if(node->VGetActorId() == id)
+            {
+                return *it;
+            }
+        }
+        TBD_FOR(m_childs)
+        {
+            std::shared_ptr<ISceneNode> node = *it;
+            std::shared_ptr<ISceneNode> pNode = node->VFindActor(id);
+            if(pNode)
+            {
+                pNode;
+            }
+        }
+        return NULL;
     }
 
     SceneNode::~SceneNode(VOID)

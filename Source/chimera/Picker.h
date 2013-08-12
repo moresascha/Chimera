@@ -42,6 +42,8 @@ namespace tbd
         }
         
         BOOL VCreate(VOID);
+
+        d3d::RenderTarget* GetTarget(VOID);
         
         VOID VPostRender(VOID);
 

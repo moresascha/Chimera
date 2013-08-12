@@ -287,8 +287,8 @@
     <IntDir>$(SolutionDir)..\Tmp\$(ProjectName)$(PlatformName)$(Configuration)\</IntDir>
     <OutDir>$(SolutionDir)..\Bin\$(PlatformName)$(Configuration)\</OutDir>
     <TargetName>$(ProjectName)$(PlatformName)$(Configuration)</TargetName>
-    <IncludePath>$(CUDA_PATH_V42)include;$(DXSDK_DIR)Include;$(IncludePath)</IncludePath>
-    <LibraryPath>$(LibraryPath);$(DXSDK_DIR)Lib\$(Platform)</LibraryPath>
+    <IncludePath>$(CUDA_PATH_V42)include;$(IncludePath)</IncludePath>
+    <LibraryPath>$(LibraryPath);</LibraryPath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <IncludePath>$(CUDA_PATH_V42)include;$(DXSDK_DIR)Include;$(IncludePath)</IncludePath>
