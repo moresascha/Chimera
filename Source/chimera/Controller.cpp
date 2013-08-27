@@ -6,6 +6,7 @@
 #include "Camera.h"
 #include <math.h>
 #include "GameLogic.h"
+#include "math.h"
 
 namespace tbd
 {
@@ -228,9 +229,18 @@ namespace tbd
         std::shared_ptr<tbd::TransformComponent> comp = m_actor->GetComponent<tbd::TransformComponent>(tbd::TransformComponent::COMPONENT_ID).lock();
         comp->m_phi -= -2 * dx * 1e-3f;
         comp->m_theta += 2 * dy * 1e-3f;
-        //todo
-        /*comp->GetTransformation()->RotateX(-2 * dx * 1e-3f);
-        comp->GetTransformation()->RotateY(2 * dy * 1e-3f); */
+
+        FLOAT t = CLAMP(comp->m_theta, -XM_PIDIV2, XM_PIDIV2);
+
+        util::Mat4 m;
+        m.SetRotateX(t);
+
+        util::Mat4 m1;
+        m1.SetRotateY(comp->m_phi);
+
+        XMVECTOR q = XMQuaternionMultiply(XMLoadFloat4(&m.GetRotation().m_v), XMLoadFloat4(&m1.GetRotation().m_v));        
+        comp->GetTransformation()->SetRotateQuat(q.m128_f32[0], q.m128_f32[1], q.m128_f32[2], q.m128_f32[3]);
+
         event::IEventPtr event(new event::ActorMovedEvent(this->m_actor));
         event::IEventManager::Get()->VQueueEvent(event);
 

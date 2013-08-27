@@ -33,9 +33,7 @@ namespace tbd
           }
           std::shared_ptr<tbd::ActorComponent>& acomp = std::shared_ptr<tbd::ActorComponent>((it->second)());
           m_components.push_back(acomp);
-
-          //std::shared_ptr<ComponentType> pSub();
-          return (ComponentType*)acomp.get();//std::tr1::static_pointer_cast<ComponentType>(acomp);
+          return (ComponentType*)acomp.get();
       }
 
       template<class ComponentType>

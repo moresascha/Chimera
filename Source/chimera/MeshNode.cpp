@@ -116,7 +116,8 @@ namespace tbd
             }
             else
             {
-                m_mesh = std::static_pointer_cast<tbd::Mesh>(app::g_pApp->GetCache()->GetHandle(m_ressource));
+                //m_mesh = std::static_pointer_cast<tbd::Mesh>(app::g_pApp->GetCache()->GetHandle(m_ressource));
+                VOnRestore(graph);
             }
         }
         else
@@ -133,9 +134,8 @@ namespace tbd
         if(m_geo->IsReady())
         {
             m_geo->Update();
-            if(m_mesh->IsReady())
+            if(m_mesh->IsReady() && m_materials->IsReady())
             {
-                m_mesh->Update();
                 switch(path)
                 {
                 case eDRAW_TO_SHADOW_MAP: 
@@ -170,7 +170,7 @@ namespace tbd
             }
             else
             {
-                m_mesh = std::static_pointer_cast<tbd::Mesh>(app::g_pApp->GetCache()->GetHandleAsync(m_ressource));
+                VOnRestore(graph); 
             }
         }
         else

@@ -4,13 +4,11 @@
 #include "Event.h"
 #include "Vec3.h"
 
-namespace tbd
+namespace tbd 
 {
     class Mesh;
-}
-
-namespace logic 
-{
+    class ResHandle;
+    class PhysicComponent;
     class IPhysicsSystem
     {
     public:
@@ -25,7 +23,7 @@ namespace logic
 
         virtual VOID VCreateTrigger(FLOAT radius, std::shared_ptr<tbd::Actor> actor) = 0;
 
-        virtual VOID VCreateTriangleMesh(std::shared_ptr<tbd::Actor> actor, CONST tbd::Mesh* mesh, CONST util::Vec3& offsetPosition, std::string& material) = 0;
+        virtual VOID VCreateTriangleMesh(std::shared_ptr<tbd::Actor> actor, CONST tbd::Mesh* mesh, CONST util::Vec3& offsetPosition, std::string& material, std::string & shapeType) = 0;
 
         virtual VOID VCreateCharacterController(ActorId id, CONST util::Vec3& pos, FLOAT radius, FLOAT height) = 0;
 
@@ -121,25 +119,29 @@ namespace logic
         ~Allocator(VOID) {}
     };
 
-    struct Material 
+    namespace px
     {
-        FLOAT m_staticFriction;
-        FLOAT m_dynamicFriction;
-        FLOAT m_restitution;
-        FLOAT m_mass;
-        FLOAT m_angulardamping;
-        //FLOAT m_
-        physx::PxMaterial* m_material;
-        Material(FLOAT staticFriction, FLOAT dynamicFriction, FLOAT restitution, FLOAT mass, FLOAT angularDamping, physx::PxPhysics* physx) : 
-        m_staticFriction(staticFriction), m_dynamicFriction(dynamicFriction), m_restitution(restitution), m_mass(mass), m_angulardamping(angularDamping) {
+        struct Material 
+        {
+            FLOAT m_staticFriction;
+            FLOAT m_dynamicFriction;
+            FLOAT m_restitution;
+            FLOAT m_mass;
+            FLOAT m_angulardamping;
+            //FLOAT m_
+            physx::PxMaterial* m_material;
+            Material(FLOAT staticFriction, FLOAT dynamicFriction, FLOAT restitution, FLOAT mass, FLOAT angularDamping, physx::PxPhysics* physx) : 
+                m_staticFriction(staticFriction), m_dynamicFriction(dynamicFriction), m_restitution(restitution), m_mass(mass), m_angulardamping(angularDamping) {
 
-            m_material = physx->createMaterial(staticFriction, dynamicFriction, restitution);
-        }
+                    m_material = physx->createMaterial(staticFriction, dynamicFriction, restitution);
+            }
 
-        Material(VOID) : m_material(NULL) {}
+            Material(VOID) : m_material(NULL) {}
 
-        ~Material(VOID) { }
-    };
+            ~Material(VOID) { }
+        };
+    }
+
 
     class PhysX : public IPhysicsSystem 
     {
@@ -179,6 +181,7 @@ namespace logic
         std::map<ActorId, Controller_> m_controller;
         std::map<ActorId, std::vector<physx::PxActor*>> m_actorIdToPxActorMap;
         std::map<physx::PxActor*, ActorId> m_pxActorToActorId;
+        std::map<std::string, ActorId> m_resourceToActor;
 
         DefaultFilterCallback* m_pDefaultFilterCallback;
         ErrorCallback m_errorCallback;
@@ -190,7 +193,7 @@ namespace logic
 
         physx::PxActor* AddActor(physx::PxGeometry& geo, std::shared_ptr<tbd::Actor> actor, CONST util::Vec3& offsetPosition, std::string& material, FLOAT density);
 
-        Material& CheckMaterial(std::string material) {
+        px::Material& CheckMaterial(std::string material) {
 
             auto it = this->m_materials.find(material);
 
@@ -202,7 +205,12 @@ namespace logic
             return it->second;
         }
 
-        std::map<std::string, Material> m_materials;
+        std::map<std::string, px::Material> m_materials;
+
+        VOID CreateTriangleConcaveMesh(std::shared_ptr<tbd::Actor> actor, CONST tbd::Mesh* mesh, CONST util::Vec3& position, std::string& material);
+        VOID CreateTriangleConvexMesh(std::shared_ptr<tbd::Actor> actor, CONST tbd::Mesh* mesh, CONST util::Vec3& position, std::string& material);
+
+        VOID CreateFromActor(std::shared_ptr<tbd::Actor> actor);
 
     public:
 
@@ -216,7 +224,7 @@ namespace logic
 
         VOID VCreateCube(CONST util::Vec3& dimension, std::shared_ptr<tbd::Actor> actor, CONST util::Vec3& offsetPosition, std::string& material);
 
-        VOID VCreateTriangleMesh(std::shared_ptr<tbd::Actor> actor, CONST tbd::Mesh* mesh, CONST util::Vec3& position, std::string& material);
+        VOID VCreateTriangleMesh(std::shared_ptr<tbd::Actor> actor, CONST tbd::Mesh* mesh, CONST util::Vec3& position, std::string& material, std::string& shapeType);
 
         VOID VCreateTrigger(FLOAT radius, std::shared_ptr<tbd::Actor> actor);
 
@@ -242,7 +250,7 @@ namespace logic
 
         VOID ApplyForceTorqueDelegate(event::IEventPtr data);
 
-        //TODO VOID ComponentRemovedDelegate(event::IEventPtr data);
+        VOID OnResourceChanged(event::IEventPtr data);
 
         ~PhysX(VOID);
     };

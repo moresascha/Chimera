@@ -395,3 +395,4 @@ PixelOutput SpotLighting_PS(PixelInput input)
     op.color = float4(color, 1);
     return op;
 }
+

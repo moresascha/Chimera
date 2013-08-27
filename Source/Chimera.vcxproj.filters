@@ -39,9 +39,6 @@
     <ClInclude Include="chimera\Camera.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="chimera\CameraDebugNode.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="chimera\CameraTracking.h">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -320,9 +317,6 @@
     <ClCompile Include="chimera\Camera.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="chimera\CameraDebugNode.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="chimera\CameraTracking.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -533,10 +527,16 @@
     <ClCompile Include="chimera\VRamManager.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="chimera\PointlightNode.cpp">
-      <Filter>Header Files</Filter>
-    </ClCompile>
     <ClCompile Include="chimera\SpotlightNode.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="chimera\CameraNode.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="chimera\LevelManager.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="chimera\PointlightNode.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

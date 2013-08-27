@@ -322,7 +322,7 @@ namespace tbd
     ParticlePosition* SurfaceEmitter::CreateParticles(VOID)
     {
         std::shared_ptr<tbd::Mesh> mesh = std::static_pointer_cast<tbd::Mesh>(app::g_pApp->GetCache()->GetHandle(m_meshFile));
-        CONST std::vector<tbd::Face>& faces = mesh->GetFaces();
+        CONST std::list<tbd::Face>& faces = mesh->GetFaces();
         ParticlePosition* poses = new ParticlePosition[m_particleCount];
         srand(10);
         for(UINT i = 0; i < m_particleCount; ++i)
@@ -331,9 +331,11 @@ namespace tbd
             util::Vec3 v1;
             util::Vec3 v2;
 
-            UINT index = (UINT)((rand() / (FLOAT)RAND_MAX) * (mesh->GetFaces().size() - 1));
+            INT index = (INT)((rand() / (FLOAT)RAND_MAX) * (mesh->GetFaces().size() - 1));
             //DEBUG_OUT_A("%d, %d", index, mesh->GetFaces().size());
-            Face f = faces[index];
+            std::list<Face>::const_iterator it = faces.begin();
+            std::advance(it, index);
+            Face f = *it;
 
             if(f.m_triples.size() == 3)
             {

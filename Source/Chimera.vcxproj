@@ -28,7 +28,6 @@
     <ClInclude Include="chimera\BasicApp.h" />
     <ClInclude Include="chimera\ByteStream.h" />
     <ClInclude Include="chimera\Camera.h" />
-    <ClInclude Include="chimera\CameraDebugNode.h" />
     <ClInclude Include="chimera\CameraTracking.h" />
     <ClInclude Include="chimera\CascadedShadowMapper.h" />
     <ClInclude Include="chimera\Commands.h" />
@@ -122,7 +121,7 @@
     <ClCompile Include="chimera\BasicApp.cpp" />
     <ClCompile Include="chimera\ByteStream.cpp" />
     <ClCompile Include="chimera\Camera.cpp" />
-    <ClCompile Include="chimera\CameraDebugNode.cpp" />
+    <ClCompile Include="chimera\CameraNode.cpp" />
     <ClCompile Include="chimera\CameraTracking.cpp" />
     <ClCompile Include="chimera\CascadedShadowMapper.cpp" />
     <ClCompile Include="chimera\Commands.cpp" />
@@ -151,6 +150,7 @@
     <ClCompile Include="chimera\Input.cpp" />
     <ClCompile Include="chimera\InstancedMeshNode.cpp" />
     <ClCompile Include="chimera\Level.cpp" />
+    <ClCompile Include="chimera\LevelManager.cpp" />
     <ClCompile Include="chimera\LoaderImp.cpp" />
     <ClCompile Include="chimera\Logger.cpp" />
     <ClCompile Include="chimera\LuaHelper.cpp" />

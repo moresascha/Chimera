@@ -162,7 +162,7 @@ VOID RenderTarget::Clear(VOID)
 
     if(this->m_pDepthStencilView)
     {
-        d3d::GetContext()->ClearDepthStencilView(this->m_pDepthStencilView, D3D11_CLEAR_STENCIL | D3D11_CLEAR_DEPTH, 1, 1);
+        d3d::GetContext()->ClearDepthStencilView(this->m_pDepthStencilView, D3D11_CLEAR_STENCIL | D3D11_CLEAR_DEPTH, 1, 0);
     }
 }
 

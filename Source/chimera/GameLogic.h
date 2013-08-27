@@ -21,8 +21,8 @@ namespace tbd
         IGameLogic(VOID) {}
         virtual BOOL VInit(VOID) = 0;
         virtual VOID VOnUpdate(ULONG millis) = 0;
-        virtual std::shared_ptr<tbd::Actor> VCreateActor(LPCSTR resource) = 0;
-        virtual std::shared_ptr<tbd::Actor> VCreateActor(tbd::ActorDescription desc) = 0;
+        virtual std::shared_ptr<tbd::Actor> VCreateActor(LPCSTR resource, BOOL appendToLevel = FALSE) = 0;
+        virtual std::shared_ptr<tbd::Actor> VCreateActor(tbd::ActorDescription desc, BOOL appendToLevel = FALSE) = 0;
         virtual VOID VRemoveActor(ActorId id) = 0;
         virtual std::shared_ptr<tbd::Actor> VFindActor(ActorId id) = 0;
         virtual std::shared_ptr<tbd::Actor> VFindActor(LPCSTR name) = 0;
@@ -44,7 +44,7 @@ namespace tbd
     protected:
         proc::ProcessManager* m_pProcessManager;
 
-        logic::IPhysicsSystem* m_pPhysics;
+        tbd::IPhysicsSystem* m_pPhysics;
         
         tbd::CommandInterpreter* m_pCmdInterpreter;
 
@@ -61,6 +61,8 @@ namespace tbd
         UINT m_levelActorsCount;
 
         tbd::ILevel* m_pLevel;
+
+        tbd::LevelManager* m_pLevelManager;
 
         enum GameState m_gameState;
 
@@ -83,15 +85,17 @@ namespace tbd
 
         VOID VOnUpdate(ULONG millis);
 
-        std::shared_ptr<tbd::Actor> VCreateActor(CONST CHAR* resource);
+        std::shared_ptr<tbd::Actor> VCreateActor(CONST CHAR* resource, BOOL appendToLevel = FALSE);
 
-        std::shared_ptr<tbd::Actor> VCreateActor(tbd::ActorDescription desc);
+        std::shared_ptr<tbd::Actor> VCreateActor(tbd::ActorDescription desc, BOOL appendToLevel = FALSE);
    
         VOID VRemoveActor(ActorId id);
 
         VOID VOnRender(VOID);
 
         tbd::CommandInterpreter* GetCommandInterpreter(VOID) { return m_pCmdInterpreter; }
+
+        tbd::LevelManager* GetLevelManager(VOID) { return m_pLevelManager; }
 
         GameState GetGameState(VOID) { return m_gameState; }
 
@@ -107,7 +111,7 @@ namespace tbd
 
         UINT GetLevelActorCount(VOID) CONST;
 
-        logic::IPhysicsSystem* GetPhysics(VOID) { return m_pPhysics; }
+        tbd::IPhysicsSystem* GetPhysics(VOID) { return m_pPhysics; }
 
         VOID MoveActorDelegate(event::IEventPtr eventData);
 
@@ -116,6 +120,8 @@ namespace tbd
         VOID DeleteActorDelegate(event::IEventPtr eventData);
 
         VOID ActorCreatedDelegate(event::IEventPtr eventData);
+
+        VOID LoadLevelDelegate(event::IEventPtr eventData);
 
         VOID LevelLoadedDelegate(event::IEventPtr eventData);
 

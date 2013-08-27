@@ -224,7 +224,7 @@ PixelOutput ToneMap(PixelInput input)
         color.y = color.z = color.x = s;
     } */
    
-    op.color = color;
+    op.color = color;//pow(abs(color), 1.0 / 2.2);
     return op;
 }
 
@@ -258,7 +258,8 @@ PixelOutput LightScattering(PixelInput input)
         illumDecay *= decay;
     }
     
-    op.color = color;// + float4(input.texCoord.xy,0,0);
+    op.color = color;
 
     return op;
 }
+

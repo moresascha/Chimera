@@ -57,7 +57,11 @@ namespace tbd
                 AppendText(ss.str());
                 ss.str("");
 
-                ss << "View: ";
+                ss << d3d::GetAdapterName();
+                AppendText(ss.str());
+                ss.str("");
+
+                ss << "Position: ";
                 ss << app::g_pApp->GetHumanView()->GetTarget()->GetName();
                 ss << " (";
                 ss << tc->GetTransformation()->GetTranslation().x;
@@ -69,19 +73,19 @@ namespace tbd
                 AppendText(ss.str());
                 ss.str("");
 
-                ss << "CacheLoad=";
+                ss << "CacheLoad: ";
                 ss << app::g_pApp->GetCache()->GetWorkload();
                 ss << "%";
                 AppendText(ss.str());
                 ss.str("");
 
-                ss << "VRamLoad=";
+                ss << "VRamLoad: ";
                 ss << app::g_pApp->GetHumanView()->GetVRamManager()->GetWorkload();
                 ss << "%";
                 AppendText(ss.str());
                 ss.str("");
 
-                ss << "LastEventsFired=";
+                ss << "LastEventsFired ";
                 ss << app::g_pApp->GetEventMgr()->LastEventsFired();
                 AppendText(ss.str());
                 ss.str("");

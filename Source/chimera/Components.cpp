@@ -10,6 +10,8 @@
 #include "Camera.h"
 #include "Process.h"
 #include "Event.h"
+#include "GameView.h"
+#include "SceneGraph.h"
 
 namespace tbd 
 {
@@ -20,7 +22,7 @@ namespace tbd
     CONST ComponentId LightComponent::COMPONENT_ID = 0x1b5b0ea4;
     CONST ComponentId PickableComponent::COMPONENT_ID = 0xd295188c;
     CONST ComponentId ParticleComponent::COMPONENT_ID = 0x746a7b4a;
-    CONST ComponentId SoundEmitterComponent::COMPONENT_ID = 0x568a0c05;
+    CONST ComponentId SoundComponent::COMPONENT_ID = 0x568a0c05;
     CONST ComponentId ParentComponent::COMPONENT_ID = 0xde7b06f1;
 
     ActorComponent::ActorComponent(VOID) : m_waitTillHandled(FALSE), m_handle(NULL)
@@ -57,7 +59,7 @@ namespace tbd
         return TRUE;
     }
 
-    VOID ParticleComponent::VSave(tinyxml2::XMLDocument* pData) CONST
+    VOID ParticleComponent::VSave(tinyxml2::XMLElement* pData) CONST
     {
 
     }
@@ -84,35 +86,55 @@ namespace tbd
 
         if(rot)
         {
-            FLOAT x, y, z;
+            FLOAT x, y, z, w;
             RETURN_IF_FAILED(tinyxml2::XML_NO_ATTRIBUTE != rot->QueryFloatAttribute("x", &x));
             RETURN_IF_FAILED(tinyxml2::XML_NO_ATTRIBUTE != rot->QueryFloatAttribute("y", &y));
             RETURN_IF_FAILED(tinyxml2::XML_NO_ATTRIBUTE != rot->QueryFloatAttribute("z", &z));
-            //m_transformation.SetRotation((FLOAT)DEGREE_TO_RAD(x), (FLOAT)DEGREE_TO_RAD(y), (FLOAT)DEGREE_TO_RAD(z));
-            LOG_CRITICAL_ERROR("asd");
+            RETURN_IF_FAILED(tinyxml2::XML_NO_ATTRIBUTE != rot->QueryFloatAttribute("w", &w));
+            m_transformation.SetRotateQuat(x, y, z, w);
+        }
+
+        tinyxml2::XMLElement* scale = pData->FirstChildElement("Scale");
+
+        if(scale)
+        {
+            FLOAT x, y, z;
+            RETURN_IF_FAILED(tinyxml2::XML_NO_ATTRIBUTE != scale->QueryFloatAttribute("x", &x));
+            RETURN_IF_FAILED(tinyxml2::XML_NO_ATTRIBUTE != scale->QueryFloatAttribute("y", &y));
+            RETURN_IF_FAILED(tinyxml2::XML_NO_ATTRIBUTE != scale->QueryFloatAttribute("z", &z));
+            m_transformation.SetScale(x, y, z);
         }
 
         return TRUE;
     }
 
-    VOID TransformComponent::VSave(tinyxml2::XMLDocument* pData) CONST
+    VOID TransformComponent::VSave(tinyxml2::XMLElement* pData) CONST
     {
-
-        tinyxml2::XMLElement* transform = pData->NewElement("TransformComponent");
-        tinyxml2::XMLElement* position = pData->NewElement("Position");
+        tinyxml2::XMLDocument* doc = pData->GetDocument();
+        tinyxml2::XMLElement* transform = doc->NewElement("TransformComponent");
+        tinyxml2::XMLElement* position = doc->NewElement("Position");
 
         position->SetAttribute("x", m_transformation.GetTranslation().x);
         position->SetAttribute("y", m_transformation.GetTranslation().y);
         position->SetAttribute("z", m_transformation.GetTranslation().z);
 
-        tinyxml2::XMLElement* rotation = pData->NewElement("Rotation");
-        util::Vec3 pyr;
-        LOG_CRITICAL_ERROR("ASD");
-        rotation->SetAttribute("x", RAD_TO_DEGREE(pyr.x));
-        rotation->SetAttribute("y", RAD_TO_DEGREE(pyr.y));
-        rotation->SetAttribute("z", RAD_TO_DEGREE(pyr.z));
+        tinyxml2::XMLElement* rotation = doc->NewElement("Rotation");
+
+        CONST util::Vec4& rot = m_transformation.GetRotation();
+
+        rotation->SetAttribute("x", rot.x);
+        rotation->SetAttribute("y", rot.y);
+        rotation->SetAttribute("z", rot.z);
+        rotation->SetAttribute("w", rot.w);
+
+        tinyxml2::XMLElement* scale = doc->NewElement("Scale");
+        scale->SetAttribute("x", m_transformation.GetScale().x);
+        scale->SetAttribute("y", m_transformation.GetScale().y);
+        scale->SetAttribute("z", m_transformation.GetScale().z);
 
         transform->LinkEndChild(position);
+
+        transform->LinkEndChild(scale);
 
         transform->LinkEndChild(rotation);
 
@@ -220,21 +242,43 @@ namespace tbd
 
         tinyxml2::XMLElement* type = pData->FirstChildElement("Type");
 
-        if(type)
+        if(type->GetText())
         {
             m_type = type->GetText();
+        }
+
+        tinyxml2::XMLElement* info = pData->FirstChildElement("Info");
+
+        if(info->GetText())
+        {
+            m_info = info->GetText();
         }
 
         return TRUE;
     }
 
-    VOID RenderComponent::VSave(tinyxml2::XMLDocument* pData) CONST
+    VOID RenderComponent::VSave(tinyxml2::XMLElement* pData) CONST
     {
-        tinyxml2::XMLElement* cmp = pData->NewElement("RenderComponent");
-        tinyxml2::XMLElement* source = pData->NewElement("MeshFile");
-        tinyxml2::XMLText* text = pData->NewText(m_meshFile.m_name.c_str());
+        tinyxml2::XMLDocument* doc = pData->GetDocument();
+        tinyxml2::XMLElement* cmp = doc->NewElement("RenderComponent");
+        tinyxml2::XMLElement* source = doc->NewElement("MeshFile");
+        tinyxml2::XMLText* text = doc->NewText(m_meshFile.m_name.c_str());
+
         cmp->LinkEndChild(source);
         source->LinkEndChild(text);
+
+        source = doc->NewElement("Type");
+        text = doc->NewText(m_type.c_str());
+
+        cmp->LinkEndChild(source);
+        source->LinkEndChild(text);
+
+        source = doc->NewElement("Info");
+        text = doc->NewText(m_info.c_str());
+
+        cmp->LinkEndChild(source);
+        source->LinkEndChild(text);
+
         pData->LinkEndChild(cmp);
     }
 
@@ -252,7 +296,12 @@ namespace tbd
          tinyxml2::XMLElement* shape = pData->FirstChildElement("Shape");
          RETURN_IF_FAILED(shape);
 
-         m_shapeType = shape->GetText();
+         m_shapeStyle = shape->GetText();
+
+         if(shape->Attribute("type"))
+         {
+             m_shapeType = shape->Attribute("type");
+         }
 
          tinyxml2::XMLElement* dim = pData->FirstChildElement("Dimension");
 
@@ -285,30 +334,34 @@ namespace tbd
          return TRUE;
     }
 
-    VOID PhysicComponent::VSave(tinyxml2::XMLDocument* pData) CONST
+    VOID PhysicComponent::VSave(tinyxml2::XMLElement* pData) CONST
     {
-        tinyxml2::XMLElement* cmp = pData->NewElement("PhysicComponent");
+        tinyxml2::XMLDocument* doc = pData->GetDocument();
 
-        tinyxml2::XMLElement* elem = pData->NewElement("Material");
-        tinyxml2::XMLText* text = pData->NewText(m_material.c_str());
+        tinyxml2::XMLElement* cmp = doc->NewElement("PhysicComponent");
+
+        tinyxml2::XMLElement* elem = doc->NewElement("Material");
+        tinyxml2::XMLText* text = doc->NewText(m_material.c_str());
         elem->LinkEndChild(text);
         cmp->LinkEndChild(elem);
 
-        elem = pData->NewElement("Shape");
-        text = pData->NewText(m_shapeType.c_str());
+        elem = doc->NewElement("Shape");
+        elem->SetAttribute("type", m_shapeType.c_str());
+        text = doc->NewText(m_shapeStyle.c_str());
         elem->LinkEndChild(text);
         cmp->LinkEndChild(elem);
 
-        elem = pData->NewElement("MeshFile");
-        text = pData->NewText(m_meshFile.m_name.c_str());
+        elem = doc->NewElement("MeshFile");
+        text = doc->NewText(m_meshFile.m_name.c_str());
         elem->LinkEndChild(text);
         cmp->LinkEndChild(elem);
 
-        elem = pData->NewElement("Dimension");
+        elem = doc->NewElement("Dimension");
 
         elem->SetAttribute("x", m_dim.x);
         elem->SetAttribute("y", m_dim.y);
         elem->SetAttribute("z", m_dim.z);
+        elem->SetAttribute("radius", m_radius);
         cmp->LinkEndChild(elem);
         pData->LinkEndChild(cmp);
     }
@@ -341,53 +394,62 @@ namespace tbd
         m_color.z = (FLOAT) b / 255.0f;
         m_color.w = 1;
 
-        /*tinyxml2::XMLElement* rad = pData->FirstChildElement("Radius");
-        RETURN_IF_FAILED(rad);
-        DOUBLE radius = atof(rad->GetText());
-        if(radius == 0.0) return FALSE;
-        m_radius = (FLOAT)radius; */
+        tinyxml2::XMLElement* a = pData->FirstChildElement("Angle");
+        m_angle = (FLOAT)atof(a->GetText());
+
+        a = pData->FirstChildElement("Intensity");
+        m_intensity = (FLOAT)atof(a->GetText());
+
         return TRUE;
     }
 
-    VOID LightComponent::VSave(tinyxml2::XMLDocument* pData) CONST
+    VOID LightComponent::VSave(tinyxml2::XMLElement* pData) CONST
     {
-        
-        tinyxml2::XMLElement* cmp = pData->NewElement("LightComponent");
+        tinyxml2::XMLDocument* doc = pData->GetDocument();
+        tinyxml2::XMLElement* cmp = doc->NewElement("LightComponent");
         //cmp->
-        tinyxml2::XMLElement* elem = pData->NewElement("Type");
-        tinyxml2::XMLText* text = pData->NewText(m_type.c_str());
+        tinyxml2::XMLElement* elem = doc->NewElement("Type");
+        tinyxml2::XMLText* text = doc->NewText(m_type.c_str());
 
         elem->LinkEndChild(text);
         cmp->LinkEndChild(elem);
 
-        elem = pData->NewElement("Color");
+        elem = doc->NewElement("Color");
         elem->SetAttribute("r", m_color.x * 255);
         elem->SetAttribute("g", m_color.y * 255);
         elem->SetAttribute("b", m_color.z * 255);
         cmp->LinkEndChild(elem);
 
-        /*elem = new tinyxml2::XMLElement("Radius");
+        elem = doc->NewElement("Angle");
         std::stringstream ss;
-        ss << m_radius;
-        text = new TiXmlText(ss.str().c_str()); */
-        
+        ss << m_angle;
+        text = doc->NewText(ss.str().c_str());
         elem->LinkEndChild(text);
         cmp->LinkEndChild(elem);
+
+        elem = doc->NewElement("Intensity");
+        ss.str("");
+        ss << m_intensity;
+        text = doc->NewText(ss.str().c_str());
+        elem->LinkEndChild(text);
+        cmp->LinkEndChild(elem);
+
         pData->LinkEndChild(cmp);
     }
 
-    VOID PickableComponent::VSave(tinyxml2::XMLDocument* pData) CONST
+    VOID PickableComponent::VSave(tinyxml2::XMLElement* pData) CONST
     {
-        tinyxml2::XMLElement* elem = pData->NewElement("PickableComponent");
+        tinyxml2::XMLDocument* doc = pData->GetDocument();
+        tinyxml2::XMLElement* elem = doc->NewElement("PickableComponent");
         pData->LinkEndChild(elem);
     }
 
-    SoundEmitterComponent::SoundEmitterComponent(VOID) : m_loop(FALSE), m_soundFile("Unknown")
+    SoundComponent::SoundComponent(VOID) : m_loop(FALSE), m_soundFile("Unknown"), m_emitter(FALSE)
     {
         WaitTillHandled();
     }
 
-    BOOL SoundEmitterComponent::VInit(tinyxml2::XMLElement* pData)
+    BOOL SoundComponent::VInit(tinyxml2::XMLElement* pData)
     {
         tinyxml2::XMLElement* file = pData->FirstChildElement("SoundFile");
         RETURN_IF_FAILED(file);
@@ -407,15 +469,18 @@ namespace tbd
             LOG_CRITICAL_ERROR("radius 0");
         }
 
+        tinyxml2::XMLElement* emit = pData->FirstChildElement("Emitter");
+        m_emitter = emit->GetText() == "false";
+
         return TRUE;
     }
 
-    VOID SoundEmitterComponent::VSave(tinyxml2::XMLDocument* pData) CONST
+    VOID SoundComponent::VSave(tinyxml2::XMLElement* pData) CONST
     {
 
     }
 
-    VOID SoundEmitterComponent::VCreateResources(VOID)
+    VOID SoundComponent::VCreateResources(VOID)
     {
         //warum up cache
         tbd::Resource r(m_soundFile);
@@ -471,7 +536,7 @@ namespace tbd
 
         VOID VOnUpdate(ULONG deltaMillis)
         {
-            if(m_gotActor && m_gotParent)
+            if(m_gotActor && m_gotParent || app::g_pApp->GetHumanView()->GetSceneGraph()->FindActorNode(m_actor) && app::g_pApp->GetHumanView()->GetSceneGraph()->FindActorNode(m_parent))
             {
                 event::SetParentActorEvent* spe = new event::SetParentActorEvent();
                 spe->m_actor = m_actor;
@@ -486,5 +551,16 @@ namespace tbd
     {
         std::shared_ptr<tbd::Actor> a = m_owner.lock();
         app::g_pApp->GetLogic()->GetProcessManager()->Attach(std::shared_ptr<SetParentWaitProcess>(new SetParentWaitProcess(a->GetId(), m_parentId)));
+    }
+
+    BOOL ParentComponent::VInit(tinyxml2::XMLElement* pData)
+    {
+
+        return TRUE;
+    }
+
+    VOID ParentComponent::VSave(tinyxml2::XMLElement* pData) CONST
+    {
+
     }
 }

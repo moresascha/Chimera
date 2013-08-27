@@ -91,4 +91,10 @@ namespace event
         event::IEventPtr event(_eventPtr); \
         event::IEventManager::Get()->VQueueEvent(event); \
     }
+
+#define QUEUE_EVENT_TSAVE(_eventPtr) \
+    { \
+    event::IEventPtr event(_eventPtr); \
+    event::IEventManager::Get()->VQueueEventThreadSave(event); \
+    }
 };

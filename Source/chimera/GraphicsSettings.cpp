@@ -113,7 +113,7 @@ namespace tbd
 
     VOID LightingSetting::VRender(VOID)
     {
-        d3d::GetContext()->OMSetDepthStencilState(d3d::m_pDepthNoStencilState, 0);
+        //d3d::GetContext()->OMSetDepthStencilState(d3d::m_pDepthNoStencilState, 0);
         app::g_pApp->GetHumanView()->GetSceneGraph()->OnRender(tbd::eDRAW_LIGHTING);
     }
     
@@ -394,7 +394,7 @@ namespace tbd
     {
         app::g_pApp->GetHumanView()->GetRenderer()->GetDeferredShader()->ClearAndBindRenderTargets();
 
-        d3d::GetContext()->OMSetDepthStencilState(d3d::m_pDepthNoStencilState, 0);
+        d3d::GetContext()->OMSetDepthStencilState(d3d::m_pDepthWriteStencilState, -1);
 
         TBD_FOR(m_albedoSettings)
         {
@@ -413,6 +413,8 @@ namespace tbd
             m_pScene->Bind();
         }*/
 
+        d3d::GetContext()->OMSetDepthStencilState(d3d::m_pDepthNoStencilState, 0);
+
         app::g_pApp->GetHumanView()->GetRenderer()->PushRasterizerState(d3d::g_pRasterizerStateFrontFaceSolid);
 
         TBD_FOR(m_lightSettings)
@@ -420,7 +422,6 @@ namespace tbd
             (*it)->VRender();
         }
 
-        d3d::GetContext()->OMSetDepthStencilState(d3d::m_pNoDepthNoStencilState, 0);
         app::g_pApp->GetHumanView()->GetRenderer()->VPostRender();
 
         if(m_pPostFX) //TODO
@@ -594,11 +595,6 @@ namespace tbd
 
     VOID EditorGraphicsSettings::VRender(VOID)
     {
-        app::g_pApp->GetHumanView()->GetRenderer()->PushRasterizerState(d3d::g_pRasterizerStateFrontFaceSolid);
-        app::g_pApp->GetHumanView()->GetPicker()->VRender();
-        app::g_pApp->GetHumanView()->GetPicker()->VPostRender();
-        app::g_pApp->GetHumanView()->GetRenderer()->PopRasterizerState();
-
         DefaultGraphicsSettings::VRender();
 
         app::g_pApp->GetHumanView()->GetSceneGraph()->OnRender(tbd::eDRAW_DEBUG_INFOS);

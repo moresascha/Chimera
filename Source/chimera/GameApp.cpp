@@ -119,7 +119,7 @@ namespace app
         m_updateInterval = ival;
         m_updateFreqMillis = 1000.0 / (DOUBLE)m_updateInterval;
 
-        DI di; //to avoid crashes, this does nothing than not throwing an NULL pointer...
+        DI di; //to avoid crashes, this does nothing than not throwing a NULL pointer...
         m_pInput = &di;
 
         //Logger::s_pLogMgr->SetWriteCallBack(LogToIDEConsole);
@@ -130,6 +130,7 @@ namespace app
             return FALSE;
         }
 
+        BOOL fullscreen = m_config.GetBool("bFullscreen");
         UINT width = (UINT)m_config.GetInteger("iWidth");
         UINT height = (UINT)m_config.GetInteger("iHeight");
 
@@ -137,12 +138,6 @@ namespace app
         {
             LOG_CRITICAL_ERROR("Failed to init Direct3D");
             return FALSE;
-        }
-
-        BOOL fullscreen = m_config.GetBool("bFullscreen");
-        if(fullscreen)
-        {
-            d3d::Resize(0,0, fullscreen);
         }
 
         if(!cudah::Init(d3d::g_pDevice))
@@ -369,6 +364,10 @@ namespace app
         CreateShaderWatcher<d3d::VertexShader>();
         CreateShaderWatcher<d3d::PixelShader>();
         CreateShaderWatcher<d3d::GeometryShader>();
+
+        ADD_EVENT_LISTENER(m_pCache, &tbd::ResourceCache::OnResourceChanged, event::ResourceChangedEvent::TYPE);
+        ADD_EVENT_LISTENER(GetHumanView()->GetVRamManager(), &tbd::VRamManager::OnResourceChanged, event::ResourceChangedEvent::TYPE);
+        ADD_EVENT_LISTENER((tbd::PhysX*)GetLogic()->GetPhysics(), &tbd::PhysX::OnResourceChanged, event::ResourceChangedEvent::TYPE);
 #endif
 
         app::PostInitMessage("Loading Commands ...");
@@ -385,6 +384,8 @@ namespace app
 
         //Logger::s_pLogMgr->SetWriteCallBack(LogToConsole);
 
+        d3d::SetFullscreenState(fullscreen, width, height);
+
         return TRUE;
     }
 
@@ -392,7 +393,7 @@ namespace app
     {
         return d3d::g_hWnd;
     }
-
+    static BOOL s_mimnimized = FALSE;
     VOID GameApp::Run(VOID)
     {
         MSG msg;
@@ -430,10 +431,12 @@ namespace app
                 {
                     g_pApp->End();
                 }
+                if(!s_mimnimized) //todo
+                {
+                    g_pApp->Render();
 
-                g_pApp->Render();
-
-                g_pApp->GetHumanView()->GetRenderer()->VPresent();
+                    g_pApp->GetHumanView()->GetRenderer()->VPresent();   
+                }
             }
         }
     }
@@ -540,10 +543,14 @@ namespace app
         {
         case WM_SIZE:
             {
-                UINT w = LOWORD(lParam);
-                UINT h = HIWORD(lParam);
-                BOOL fullscreen = (wParam == SIZE_MAXIMIZED);
-                //app::g_pApp->GetHumanView()->Resize(w, h, fullscreen); todo
+				if(app::g_pApp->IsRunning())
+				{
+					UINT w = LOWORD(lParam);
+					UINT h = HIWORD(lParam);
+                    s_mimnimized = wParam == SIZE_MINIMIZED;
+                    if(!s_mimnimized)
+					app::g_pApp->GetHumanView()->Resize(w, h);
+				}
             } break;
 
         case WM_MOUSEMOVE:

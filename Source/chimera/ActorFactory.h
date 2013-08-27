@@ -22,8 +22,8 @@ namespace tbd
         virtual std::shared_ptr<tbd::ActorComponent> CreateComponent(tinyxml2::XMLElement* pData);
     public:
         ActorFactory(VOID);
-        std::shared_ptr<tbd::Actor> CreateActor(CONST CHAR* ressource);
-        std::shared_ptr<tbd::Actor> CreateActor(tinyxml2::XMLElement* pData);
+        std::shared_ptr<tbd::Actor> CreateActor(CONST CHAR* ressource, std::vector<std::shared_ptr<tbd::Actor>>& actors);
+        std::shared_ptr<tbd::Actor> CreateActor(tinyxml2::XMLElement* pData, std::vector<std::shared_ptr<tbd::Actor>>& actors);
         std::shared_ptr<tbd::Actor> CreateActor(ActorDescription actorDesc);
         ActorDescription CreateActorDescription(VOID) { return ActorDescription(new _ActorDescription(this)); }
         VOID ReplaceComponent(std::shared_ptr<tbd::Actor> actor, tinyxml2::XMLElement* pData);

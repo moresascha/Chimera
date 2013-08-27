@@ -5,7 +5,8 @@
 #include "D3DRenderer.h"
 #include "Camera.h"
 #include "DebugStartup.h"
-#include "SpotlightNode.h"
+#include "Components.h"
+#include "util.h"
 
 namespace app
 {
@@ -20,15 +21,13 @@ namespace app
 
         m_pHumanView = new tbd::HumanGameView();
 
-
-
 #ifndef FAST_STARTUP
 
         std::shared_ptr<tbd::DefaultGraphicsSettings> gs = std::shared_ptr<tbd::DefaultGraphicsSettings>(new tbd::DefaultGraphicsSettings());
         tbd::RenderScreen* screen = new tbd::RenderScreen(gs);
         screen->VSetName("default");
         m_pHumanView->AddScene(screen);
-
+        
         std::shared_ptr<tbd::EditorGraphicsSettings> egs = std::shared_ptr<tbd::EditorGraphicsSettings>(new tbd::EditorGraphicsSettings());
         screen = new tbd::RenderScreen(egs);
         screen->VSetName("editor");
@@ -107,8 +106,26 @@ namespace app
 
 
         std::shared_ptr<tbd::Actor> camera = m_pLogic->VCreateActor("camera.xml");
-        
         camera->SetName("player");
+#ifndef FAST_STARTUP
+        //flashlight
+        tbd::ActorDescription desc = GetLogic()->GetActorFactory()->CreateActorDescription();
+        tbd::LightComponent* lightComponent = desc->AddComponent<tbd::LightComponent>("LightComponent");
+        lightComponent->m_type = "spot";
+        lightComponent->m_color.x = 1;
+        lightComponent->m_color.y = 1;
+        lightComponent->m_color.z = 1;
+        lightComponent->m_color.w = 1;
+        lightComponent->m_angle = 60;
+        lightComponent->m_intensity = 15;
+        tbd::TransformComponent* tcomp = desc->AddComponent<tbd::TransformComponent>(tbd::TransformComponent::COMPONENT_ID);
+        tcomp->GetTransformation()->SetScale(20);
+        tcomp->GetTransformation()->Translate(0, 1.5f, 0);
+        tbd::ParentComponent* pc = desc->AddComponent<tbd::ParentComponent>("ParentComponent");
+        pc->m_parentId = camera->GetId();
+        m_pLogic->VCreateActor(desc);
+        //flashlight end
+#endif // !FAST_STARTUP
 
         std::shared_ptr<tbd::CameraComponent> cameraComp = camera->GetComponent<tbd::CameraComponent>(tbd::CameraComponent::COMPONENT_ID).lock();
         
@@ -182,7 +199,8 @@ namespace app
 
         //tbd::BaseLevel* level = new tbd::BSplinePatchLevel("patch1", m_pLogic->GetActorFactory());
         //tbd::BaseLevel* level = new tbd::TransformShowRoom("patch0", m_pLogic->GetActorFactory());
-        tbd::BaseLevel* level = new tbd::RandomLevel("rnd", m_pLogic->GetActorFactory());
-        m_pLogic->VLoadLevel(level);
+        
+        tbd::BaseLevel* level = new tbd::GroupedObjLevel("grouped", m_pLogic->GetActorFactory()); m_pLogic->VLoadLevel(level);
+        //m_pLogic->VLoadLevel("test.xml");
     }
 }

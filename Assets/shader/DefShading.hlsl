@@ -130,7 +130,9 @@ PixelOutput DefShading_PS(PixelInput input)
 
     //op.normal.w = dot(normalize(g_lightPos.xyz), iNormal); //peter panning hack sucks balls
 
-    tex = tex * tex; //gamma (2.0) correction 
+    tex = tex * tex;//pow(abs(tex), 2.2);// * tex;//pow(tex, 1.0 / 2.0);// * tex; //gamma (2.0) correction 
+
+   // tex = op.normal;
 
     op.worldPosDepth = input.world;
     op.worldPosDepth.w = length(input.worldView.xyz);
@@ -145,8 +147,8 @@ PixelOutput DefShading_PS(PixelInput input)
     op.reflectionStr = (half)g_reflectanceMaterial;
 
     float scale = 0.1;
-    op.ambientMaterialSpecG += half4((g_selectedActorId.x == g_actorId.x) * scale, 0, 0, 0);
-    op.diffuseColorSpecB += half4((g_selectedActorId.x == g_actorId.x) * scale, 0, 0, 0);
+    //op.ambientMaterialSpecG += half4((g_selectedActorId.x == g_actorId.x) * scale, 0, 0, 0);
+    //op.diffuseColorSpecB += half4((g_selectedActorId.x == g_actorId.x) * scale, 0, 0, 0);
 
     return op;
 }

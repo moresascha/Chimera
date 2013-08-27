@@ -8,6 +8,7 @@
 #include "ProcessManager.h"
 #include "GameLogic.h"
 #include "Components.h"
+#include "Event.h"
 namespace tbd
 {
 
@@ -76,6 +77,7 @@ namespace tbd
         {
             std::shared_ptr<WaitForComponentsToGethandled> proc = std::shared_ptr<WaitForComponentsToGethandled>(new WaitForComponentsToGethandled(actor));
             VSetChild(proc);
+            SetPriority(THREAD_PRIORITY_HIGHEST);
         }
 
         VOID VThreadProc(VOID)
@@ -129,7 +131,7 @@ namespace tbd
 
     ActorComponent* CreateSoundEmitterComponent(VOID)
     {
-        return new SoundEmitterComponent;
+        return new SoundComponent;
     }
 
     ActorComponent* CreateParentComponent(VOID)
@@ -162,8 +164,8 @@ namespace tbd
         m_creators["ParticleComponent"] = CreateParticleComponent;
         m_creatorsId[ParticleComponent::COMPONENT_ID] = CreateParticleComponent;
 
-        m_creators["SoundEmitterComponent"] = CreateSoundEmitterComponent;
-        m_creatorsId[SoundEmitterComponent::COMPONENT_ID] = CreateSoundEmitterComponent;
+        m_creators["SoundComponent"] = CreateSoundEmitterComponent;
+        m_creatorsId[SoundComponent::COMPONENT_ID] = CreateSoundEmitterComponent;
 
         m_creators["ParentComponent"] = CreateParentComponent;
         m_creatorsId[ParentComponent::COMPONENT_ID] = CreateParentComponent;
@@ -189,7 +191,7 @@ namespace tbd
         return actor; 
     }
 
-    std::shared_ptr<tbd::Actor> ActorFactory::CreateActor(tinyxml2::XMLElement* pData) 
+    std::shared_ptr<tbd::Actor> ActorFactory::CreateActor(tinyxml2::XMLElement* pData, std::vector<std::shared_ptr<tbd::Actor>>& actors) 
     {
         if(!pData)
         {
@@ -207,33 +209,45 @@ namespace tbd
 
         for(tinyxml2::XMLElement* pNode = pData->FirstChildElement(); pNode; pNode = pNode->NextSiblingElement())
         {
-            std::shared_ptr<tbd::ActorComponent> pComponent(CreateComponent(pNode));
-            if(pComponent)
+            std::string name(pNode->Value());
+            if(name == "Actor")
             {
-                pActor->AddComponent(pComponent);
-
-                pComponent->SetOwner(pActor);
+                std::shared_ptr<tbd::Actor> child = CreateActor(pNode, actors);
+                std::shared_ptr<tbd::ParentComponent> pcmp = std::shared_ptr<tbd::ParentComponent>(new tbd::ParentComponent());
+                pcmp->m_parentId = pActor->GetId();
+                child->AddComponent(pcmp);
+                pcmp->SetOwner(child);
             }
             else
             {
-                return NULL;
+                std::shared_ptr<tbd::ActorComponent> pComponent(CreateComponent(pNode));
+                if(pComponent)
+                {
+                    pActor->AddComponent(pComponent);
+
+                    pComponent->SetOwner(pActor);
+                }
+                else
+                {
+                    return NULL;
+                }
             }
         }
         std::shared_ptr<proc::Process> proc = std::shared_ptr<proc::Process>(new CreateActorComponentsProcess(pActor));
         app::g_pApp->GetLogic()->GetProcessManager()->AttachWithScheduler(proc);
         pActor->PostInit();
-
+        actors.push_back(pActor);
         return pActor;
     }
 
-    std::shared_ptr<tbd::Actor> ActorFactory::CreateActor(CONST CHAR* ressource) 
+    std::shared_ptr<tbd::Actor> ActorFactory::CreateActor(CONST CHAR* ressource, std::vector<std::shared_ptr<tbd::Actor>>& actors) 
     {
         tinyxml2::XMLDocument doc;
         tbd::Resource r(ressource);
         std::shared_ptr<tbd::ResHandle> handle = app::g_pApp->GetCache()->GetHandle(r);
         doc.Parse(handle->Buffer());
         tinyxml2::XMLElement* root = doc.RootElement();
-        return CreateActor(root);
+        return CreateActor(root, actors);
     }
 
     std::shared_ptr<tbd::ActorComponent> ActorFactory::CreateComponent(tinyxml2::XMLElement* pData) 

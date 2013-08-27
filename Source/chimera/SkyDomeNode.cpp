@@ -40,6 +40,7 @@ namespace tbd
                     tc->GetTransformation()->SetTranslate(cam->GetEyePos().x, cam->GetEyePos().y, cam->GetEyePos().z);
                     app::g_pApp->GetHumanView()->GetRenderer()->VPushWorldTransform(*tc->GetTransformation());
                     app::g_pApp->GetHumanView()->GetRenderer()->SetSampler(d3d::eDiffuseColorSampler, m_textureHandle->GetShaderResourceView());
+                    d3d::GetContext()->OMSetDepthStencilState(d3d::m_pDepthCmpStencilState, 0);
                     GeometryFactory::GetSkyDome()->Bind();
                     GeometryFactory::GetSkyDome()->Draw();
                 }

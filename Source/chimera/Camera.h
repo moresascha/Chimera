@@ -71,6 +71,8 @@ namespace util
 
         virtual VOID SetRotation(FLOAT phi, FLOAT theta) {}
 
+        virtual VOID FromViewUp(CONST util::Vec3& up, CONST util::Vec3& dir) {}
+
         virtual VOID VSetYOffset(FLOAT offset) { }
 
         virtual VOID SetPerspectiveProjection(FLOAT aspect, FLOAT fov, FLOAT fnear, FLOAT ffar) {}
@@ -185,6 +187,8 @@ namespace util
         virtual VOID Rotate(FLOAT dPhi, FLOAT dTheta);
 
         virtual VOID LookAt(CONST util::Vec3& eyePos, CONST util::Vec3& at);
+
+        VOID FromViewUp(CONST util::Vec3& viewDir, CONST util::Vec3& viewUp);
 
         VOID SetPerspectiveProjection(FLOAT aspect, FLOAT fov, FLOAT fnear, FLOAT ffar);
 

@@ -19,6 +19,8 @@ namespace event
     CONST EventType ApplyTorqueEvent::TYPE = 0x1d17f65;
     CONST EventType TriggerEvent::TYPE = 0xa25e9d66;
     CONST EventType SetParentActorEvent::TYPE = 0xa5fd2f77;
+    CONST EventType LoadLevelEvent::TYPE = 0x2d40e793;
+    CONST EventType ResourceChangedEvent::TYPE = 0xec7c39db;
 
     SetSunPositionEvent::SetSunPositionEvent(FLOAT x, FLOAT y, FLOAT z)
     {

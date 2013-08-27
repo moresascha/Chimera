@@ -2,6 +2,7 @@
 #include "Mat4.h"
 #include "Vec3.h"
 #include "Vec4.h"
+#include "math.h"
 
 namespace util 
 {
@@ -52,40 +53,75 @@ namespace util
         Update();
     }
 
-    CONST Vec3& Mat4::GetPYR(VOID)
+    Vec3 Mat4::GetPYR(VOID) CONST
     {
-        FLOAT heading = 0;
-        FLOAT attitude = 0;
-        FLOAT bank = 0;
-        DOUBLE test = m_rotation.x*m_rotation.y + m_rotation.z*m_rotation.w;
+        FLOAT roll = 0;
+        FLOAT pitch = 0;
+        FLOAT yaw = 0;
+        DOUBLE test = m_rotation.x * m_rotation.y + m_rotation.z * m_rotation.w;
 
-        /*if (test > 0.499) 
+        /*
+        if (test > 0.499) 
         { // singularity at north pole
-            heading = 2 * atan2(m_rotation.x,m_rotation.w);
-            attitude = XM_PI/2;
+            heading = 2 * atan2(m_rotation.y, m_rotation.x);
+            attitude = XM_PIDIV2;
             bank = 0;
         } 
         else if (test < -0.499) 
         { // singularity at south pole
-            heading = -2 * atan2(m_rotation.x,m_rotation.w);
+            heading = -2 * atan2(m_rotation.y, m_rotation.x);
             attitude = -XM_PI/2;
             bank = 0;
-        }
+        } 
         else */
         {
-            FLOAT sqx = m_rotation.x*m_rotation.x;
-            FLOAT sqy = m_rotation.y*m_rotation.y;
-            FLOAT sqz = m_rotation.z*m_rotation.z;
-
-            heading = atan2(2*m_rotation.y*m_rotation.w-2*m_rotation.x*m_rotation.z , 1 - 2*sqy - 2*sqz);
-            attitude = asin(2*(FLOAT)test);
-            bank = atan2(2*m_rotation.x*m_rotation.w-2*m_rotation.y*m_rotation.z , 1 - 2*sqx - 2*sqz);
+            FLOAT sqx = m_rotation.x * m_rotation.x;
+            FLOAT sqy = m_rotation.y * m_rotation.y;
+            FLOAT sqz = m_rotation.z * m_rotation.z;
+            FLOAT sqw = m_rotation.w * m_rotation.w;
+            roll  = atan2(2 * m_rotation.x * m_rotation.y + 2 * m_rotation.z * m_rotation.w, 1 - 2 * sqy - 2 * sqz);
+            pitch = asin(2 * m_rotation.x * m_rotation.z - 2 * m_rotation.w * m_rotation.y);
+            yaw   = atan2(2 * m_rotation.x * m_rotation.w + 2 * m_rotation.y * m_rotation.z, 1 - 2 * sqz - 2 * sqw);
         }
+        util::Vec3 pyr;
+        pyr.z = roll;
+        pyr.y = pitch;
+        pyr.x = -yaw;
+        return pyr;
+    }
 
-        m_pyr.y = heading;
-        m_pyr.z = attitude;
-        m_pyr.x = bank;
-        return m_pyr;
+    util::Vec3 Mat4::GetPhiTheta(VOID) CONST
+    {
+        util::Vec4 t = m_rotation;
+        t.w = 0;
+        if(t.Length() > 0)
+        {
+            util::Vec3 pt;
+            XMVECTOR v;
+            FLOAT angle;
+            //XMQuaternionToAxisAngle(&v, &angle, XMLoadFloat4(&m_rotation.m_v));
+            //v.m128_f32[1] = 0;
+            util::Vec3 up(0,1,0);
+            up = Mat4::Transform(*this, up);
+            up.Normalize();
+            DEBUG_OUT("---\n");
+            
+            up.Print();
+            pt.x = 2 * acos(up.y);
+            DEBUG_OUT_A("%f\n", RAD_TO_DEGREE(pt.x));
+            /*util::Vec3 r(1,0,0);
+            r = Mat4::Transform(*this, r);
+            r.Normalize();
+            v = XMLoadFloat3(&(r.m_v));
+            xa = XMVector3AngleBetweenVectors(v, XMLoadFloat3(&Vec3::X_AXIS.m_v));
+            pt.y = 2 * xa.m128_f32[0]; */
+            pt.Print();
+            return pt;
+        }
+        else
+        {
+            return util::Vec3();
+        }
     }
 
     VOID Mat4::RotateQuat(CONST util::Vec4& quat)
@@ -104,7 +140,7 @@ namespace util
     VOID Mat4::Rotate(CONST util::Vec3& axis, FLOAT angel) 
     {
         XMVECTOR q = XMQuaternionRotationNormal(XMLoadFloat3(&axis.m_v), angel);
-        XMVECTOR result = XMQuaternionMultiply(q, XMLoadFloat4(&m_rotation.m_v));
+        XMVECTOR result = XMQuaternionMultiply(XMLoadFloat4(&m_rotation.m_v), q);
         XMFLOAT4 sq;
         XMStoreFloat4(&sq, result);
         SetRotateQuat(sq.x, sq.y, sq.z, sq.w);

@@ -273,7 +273,7 @@ namespace d3d
 
     VOID Geometry::Draw(UINT start, UINT count)
     {
-        m_pDrawer->VDraw(this, m_elementCount, 0, 0);
+        m_pDrawer->VDraw(this, count, start, 0);
         /*if(m_pInstanceBuffer)
         {
 
@@ -381,5 +381,6 @@ namespace d3d
 
     Geometry::~Geometry(VOID) 
     {
+        VDestroy();
     }
 }

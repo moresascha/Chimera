@@ -85,6 +85,7 @@ namespace tbd
         this->m_camera = camera;
         m_frustumStack.Clear();
         this->m_camera->SetAspect(app::g_pApp->GetWindowWidth(), app::g_pApp->GetWindowHeight());
+        m_root->VForceVisibilityCheck();
     }
 
     CONST tbd::Frustum* SceneGraph::GetFrustum(VOID)

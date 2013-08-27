@@ -29,6 +29,11 @@ namespace tbd
         std::shared_ptr<tbd::Actor> actor0 = app::g_pApp->GetLogic()->VFindActor(id0);
         std::shared_ptr<tbd::Actor> actor1 = app::g_pApp->GetLogic()->VFindActor(id1);
 
+        if(!actor0 || !actor1)
+        {
+            return;
+        }
+
         std::shared_ptr<tbd::PhysicComponent> actor0pc = actor0->GetComponent<tbd::PhysicComponent>(tbd::PhysicComponent::COMPONENT_ID).lock();
         std::shared_ptr<tbd::PhysicComponent> actor1pc = actor1->GetComponent<tbd::PhysicComponent>(tbd::PhysicComponent::COMPONENT_ID).lock();
 
@@ -72,9 +77,9 @@ namespace tbd
         std::shared_ptr<event::NewComponentCreatedEvent> pCastEventData = std::static_pointer_cast<event::NewComponentCreatedEvent>(event);
         std::shared_ptr<tbd::Actor> actor = app::g_pApp->GetLogic()->VFindActor(pCastEventData->m_actorId);
 
-        if(pCastEventData->m_id == tbd::SoundEmitterComponent::COMPONENT_ID)
+        if(pCastEventData->m_id == tbd::SoundComponent::COMPONENT_ID)
         {
-            std::shared_ptr<tbd::SoundEmitterComponent> comp = actor->GetComponent<tbd::SoundEmitterComponent>(tbd::SoundEmitterComponent::COMPONENT_ID).lock();
+            std::shared_ptr<tbd::SoundComponent> comp = actor->GetComponent<tbd::SoundComponent>(tbd::SoundComponent::COMPONENT_ID).lock();
             if(!actor->HasComponent<tbd::TransformComponent>(tbd::TransformComponent::COMPONENT_ID))
             {
                 LOG_CRITICAL_ERROR("actor needs a transformcomponent");
@@ -83,7 +88,15 @@ namespace tbd
 
             tbd::Resource r(comp->m_soundFile);
             std::shared_ptr<tbd::ResHandle> handle = app::g_pApp->GetCache()->GetHandle(r);
-            std::shared_ptr<proc::SoundEmitterProcess> proc = std::shared_ptr<proc::SoundEmitterProcess>(new proc::SoundEmitterProcess(actor, transform, handle, comp->m_radius, 0, 0, comp->m_loop));
+            std::shared_ptr<proc::SoundProcess> proc;
+            if(comp->m_emitter)
+            {
+                proc = std::shared_ptr<proc::SoundEmitterProcess>(new proc::SoundEmitterProcess(actor, transform, handle, comp->m_radius, 0, 0, comp->m_loop));
+            }
+            else
+            {
+                proc = std::shared_ptr<proc::SoundProcess>(new proc::SoundProcess(handle, 0, 100, comp->m_loop));
+            }
             app::g_pApp->GetLogic()->AttachProcess(proc);
             comp->VSetHandled();
         }

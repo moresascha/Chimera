@@ -117,10 +117,12 @@ namespace tbd
             
                 m_drawLighting->Bind();
 
+                d3d::GetContext()->OMSetDepthStencilState(d3d::m_pNoDepthNoStencilState, 0);
                 d3d::GetContext()->OMSetBlendState(d3d::g_pBlendStateBlendAdd, NULL, 0xffffff);
                 GeometryFactory::GetGlobalScreenQuad()->Bind();
                 GeometryFactory::GetGlobalScreenQuad()->Draw();
                 d3d::GetContext()->OMSetBlendState(d3d::g_pBlendStateNoBlending, NULL, 0xffffff);
+                d3d::GetContext()->OMSetDepthStencilState(d3d::m_pDepthNoStencilState, 0);
 
             } break;
 

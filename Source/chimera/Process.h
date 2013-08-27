@@ -14,7 +14,7 @@ namespace tbd
     class Actor;
     class ISoundBuffer;
     class TransformComponent;
-    class SoundEmitterComponent;
+    class SoundComponent;
     class LightComponent;
     class ResHandle;
 }

@@ -267,17 +267,26 @@ namespace tbd
         }
     }
 
+    VOID SceneNode::VSetParent(ISceneNode* parent)
+    {
+        m_parent = parent;
+    }
+
     BOOL SceneNode::VRemoveChild(ActorId actorId) 
     {
         if(this->m_actorId == actorId)
         {
+            for(auto it = m_childs.begin(); it != m_childs.end(); ++it)
+            {
+                (*it)->VSetParent(m_parent);
+                m_parent->VAddChild(*it);
+            }
             return TRUE;
         }
         for(auto it = m_childs.begin(); it != m_childs.end(); ++it)
         {
             if((*it)->VRemoveChild(actorId))
             {
-                m_childs.erase(it);
                 return TRUE;
             }
         }
@@ -325,6 +334,11 @@ namespace tbd
     BOOL SceneNode::HasParent(VOID)
     {
         return m_parent != NULL && m_parent->VGetActorId() != INVALID_ACTOR_ID;
+    }
+
+    std::vector<std::shared_ptr<ISceneNode>>& SceneNode::GetChilds(VOID)
+    {
+        return m_childs;
     }
 
     VOID SceneNode::VSetVisibilityOnLastTraverse(BOOL visible)

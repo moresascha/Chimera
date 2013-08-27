@@ -3,6 +3,11 @@
 #include <time.h>
 #include "Resources.h"
 #include "Locker.h"
+
+namespace event
+{
+    class IEvent;
+}
 namespace tbd 
 {
 
@@ -16,19 +21,16 @@ namespace tbd
         LONG m_lastUsage;
         BOOL m_created;
         VRamResource m_resource;
-        VOID SetResource(std::string& name)
-        {
-            m_resource = VRamResource(name);
-        }
+        //std::shared_ptr<tbd::ResHandle> m_handle;
+        VOID SetResource(std::string& name);
     public:
-        VRamHandle(VOID) : m_lastUsage(0) , m_created(FALSE)  {}
-
+        VRamHandle(VOID);
         virtual BOOL VCreate(VOID) = 0;
         virtual VOID VDestroy() = 0;
         virtual UINT VGetByteCount(VOID) CONST = 0;
 
         VOID SetCreated(BOOL created) { m_created = created; };
-        BOOL IsReady(VOID) CONST {return m_created; }
+        BOOL IsReady(VOID) CONST;
         VOID Update(VOID) { m_lastUsage = clock(); }
         LONG GetLastUsageTime() CONST { return m_lastUsage; }
         VRamResource& GetResource(VOID) { return m_resource; }
@@ -63,12 +65,14 @@ namespace tbd
         FLOAT m_updateFrequency;
         ULONG m_time;
         util::Locker m_locker;
-        std::map<std::string, std::shared_ptr<VRamHandle>> m_ressources;
+        std::map<std::string, std::shared_ptr<VRamHandle>> m_resources;
         std::map<std::string, IVRamHandleCreator*> m_creators;
         std::map<std::string, util::Locker*> m_locks;
 
         std::shared_ptr<VRamHandle> _GetHandle(CONST VRamResource& ressource, BOOL async);
         VOID Update(std::shared_ptr<VRamHandle> ressource);
+
+        VOID Reload(std::shared_ptr<VRamHandle> handle);
 
     public:
         VRamManager(UINT mb);
@@ -90,6 +94,8 @@ namespace tbd
         VOID RegisterHandleCreator(LPCSTR suffix, IVRamHandleCreator* creator);
 
         std::shared_ptr<VRamHandle> GetHandleAsync(CONST VRamResource& ressource);
+
+        VOID OnResourceChanged(std::shared_ptr<event::IEvent> event);
 
         VOID AppendAndCreateHandle(std::string& name, std::shared_ptr<VRamHandle> handle);
 

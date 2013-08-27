@@ -46,9 +46,10 @@ namespace tbd
 
     class ISceneNode
     {
-
     public:
         ISceneNode(VOID) {}
+
+        virtual util::Mat4* GetTransformation(VOID) = 0;
 
         virtual VOID VSetVisibilityOnLastTraverse(BOOL visible) = 0;
 
@@ -59,6 +60,8 @@ namespace tbd
         virtual VOID VForceVisibilityCheck(VOID) = 0;
 
         virtual VOID VPreRender(SceneGraph* graph) = 0;
+
+        virtual VOID VSetParent(ISceneNode* parent) = 0;
 
         virtual VOID VRender(SceneGraph* graph, tbd::RenderPath& path) = 0;
 
@@ -84,6 +87,8 @@ namespace tbd
 
         virtual ActorId VGetActorId(VOID) = 0;
 
+        virtual std::vector<std::shared_ptr<ISceneNode>>& GetChilds(VOID) = 0;
+
         virtual VOID VOnUpdate(ULONG millis, SceneGraph* graph) = 0;
 
         virtual std::shared_ptr<tbd::ISceneNode> VFindActor(ActorId id) = 0;
@@ -103,9 +108,7 @@ namespace tbd
         std::shared_ptr<tbd::Actor> m_actor;
         std::vector<std::shared_ptr<ISceneNode>> m_childs;
         util::AxisAlignedBB m_aabb;
-        SceneNode* m_parent;
-
-        util::Mat4* GetTransformation(VOID);
+        ISceneNode* m_parent;
 
         BOOL HasParent(VOID);
 
@@ -114,7 +117,11 @@ namespace tbd
 
         SceneNode(VOID);
 
+        util::Mat4* GetTransformation(VOID);
+
         VOID VSetActor(ActorId id);
+
+        VOID VSetParent(ISceneNode* parent);
 
         BOOL VWasVisibleOnLastTraverse(VOID);
 
@@ -125,6 +132,8 @@ namespace tbd
         ActorId VGetActorId(VOID);
 
         VOID VOnParentChanged(VOID);
+
+        std::vector<std::shared_ptr<ISceneNode>>& GetChilds(VOID);
 
         virtual VOID VPreRender(tbd::SceneGraph* graph);
 
@@ -245,13 +254,13 @@ namespace tbd
         UINT VGetRenderPaths(VOID);
     };
 
-    class CameraDebugNode : public SceneNode
+    class CameraNode : public SceneNode
     {
     private:
         std::shared_ptr<util::ICamera> m_pCamera;
 
     public:
-        CameraDebugNode(ActorId id);
+        CameraNode(ActorId id);
 
         VOID _VRender(tbd::SceneGraph* graph, tbd::RenderPath& path);
 

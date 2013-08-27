@@ -2,6 +2,7 @@
 #include "stdafx.h"
 #include <vector>
 #include <sstream>
+#include <random>
 
 #pragma comment (lib, "Gdiplus.lib")
 
@@ -29,4 +30,18 @@ namespace util
     std::vector<std::string> split(const std::string &s, char delim);
 
     std::wstring string2wstring(const std::string& s);
+
+    BOOL CheckIfFileExists(LPCSTR file);
+
+    class cmRNG
+    {
+    private:
+        INT m_seed;
+        std::default_random_engine m_generator;
+        std::uniform_int_distribution<UINT> m_distribution;
+    public:
+        cmRNG(INT seed = 0);
+        FLOAT NextFloat(VOID);
+        UINT NextInt(VOID);
+    };
 };

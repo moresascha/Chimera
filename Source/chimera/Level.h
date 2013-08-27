@@ -6,12 +6,44 @@
 
 namespace tbd
 {
+    class ILevel;
+    class ISaveXLevel
+    {
+    public:
+        virtual BOOL VSaveLevel(ILevel* level, LPCSTR file) = 0;
+    };
+
+    class SaveXMLLevel : public ISaveXLevel
+    {
+    public:
+        BOOL VSaveLevel(ILevel* level, LPCSTR file);
+    };
+
+    enum SaveLevelFormat
+    {
+        eXML,
+        eCNT
+    };
+
+    class LevelManager
+    {
+    private:
+        ISaveXLevel* m_formatSaver[eCNT];
+    public:
+        LevelManager(VOID);
+        ~LevelManager(VOID);
+    };
+
     class ILevel
     {
     public:
         virtual BOOL VLoad(BOOL block) = 0;
 
         virtual VOID VUnload(VOID) = 0;
+
+        virtual CONST std::string& VGetName(VOID) = 0;
+
+        virtual CONST std::string& VGetFile(VOID) = 0;
 
         virtual BOOL VSave(LPCSTR file = NULL) = 0;
 
@@ -24,6 +56,8 @@ namespace tbd
         virtual VOID VRemoveActor(ActorId id) = 0;
 
         virtual std::shared_ptr<tbd::Actor> VFindActor(ActorId id) = 0;
+
+        virtual std::map<ActorId, std::shared_ptr<tbd::Actor>>& VGetActors(VOID) = 0;
 
         virtual ~ILevel(VOID) {}
     };
@@ -43,12 +77,12 @@ namespace tbd
 
         BaseLevel::BaseLevel(CONST std::string& file, tbd::ActorFactory* factory);
 
-        CONST std::string& GetName(VOID)
+        CONST std::string& VGetName(VOID)
         {
             return m_name;
         }
 
-        CONST std::string& GetFile(VOID)
+        CONST std::string& VGetFile(VOID)
         {
             return m_file;
         }
@@ -61,6 +95,11 @@ namespace tbd
         VOID SetName(CONST std::string& name)
         {
             m_name = name;
+        }
+
+        std::map<ActorId, std::shared_ptr<tbd::Actor>>& VGetActors(VOID)
+        {
+            return m_actors;
         }
 
         UINT VGetActorsCount(VOID);
@@ -101,6 +140,14 @@ namespace tbd
 
         BOOL VLoad(BOOL block);
 
+        BOOL VSave(LPCSTR file = NULL);
+    };
+
+    class GroupedObjLevel : public BaseLevel
+    {
+    public:
+        GroupedObjLevel(LPCSTR file, tbd::ActorFactory* factory);
+        BOOL VLoad(BOOL block);
         BOOL VSave(LPCSTR file = NULL);
     };
 

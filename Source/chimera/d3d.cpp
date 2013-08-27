@@ -7,13 +7,18 @@
 #ifdef _DEBUG
     #pragma comment(lib, "d3d11.lib")
     #pragma comment(lib, "d3dcompiler.lib")
+    #pragma comment(lib, "dxgi.lib")
 #else
     #pragma comment(lib, "d3d11.lib")
     #pragma comment(lib, "d3dcompiler.lib")
+    #pragma comment(lib, "dxgi.lib")
 #endif
 
 namespace d3d  
 {
+    IDXGIFactory* g_pSwapChainFactory = 0;
+    IDXGIAdapter* g_pAdapter = 0;
+
     ID3D11Texture2D *g_pBackBuffer = 0;
     ID3D11Texture2D *g_pDepthStencilBuffer = 0;
     IDXGISwapChain* g_pSwapChain = 0;
@@ -22,6 +27,8 @@ namespace d3d
     ID3D11RenderTargetView* g_pBackBufferView = 0;
     ID3D11DepthStencilView* g_pDepthStencilView = 0;
     ID3D11DepthStencilState* m_pDepthNoStencilState = 0;
+    ID3D11DepthStencilState* m_pDepthCmpStencilState = 0;
+    ID3D11DepthStencilState* m_pDepthWriteStencilState = 0;
     ID3D11DepthStencilState* m_pNoDepthNoStencilState = 0;
     ID3D11RasterizerState* g_pRasterizerStateFrontFaceSolid = 0;
     ID3D11RasterizerState* g_pRasterizerStateNoCullingSolid = 0;
@@ -40,11 +47,162 @@ namespace d3d
     UINT g_samples = 1;
     UINT g_quality = 0;
 
+    std::string* g_adapterName = 0;
+
+    LPCSTR DXGI_FORMAT_STR[] = 
+    {    
+        "DXGI_FORMAT_UNKNOWN",
+        "DXGI_FORMAT_R32G32B32A32_TYPELESS",
+        "DXGI_FORMAT_R32G32B32A32_FLOAT",
+        "DXGI_FORMAT_R32G32B32A32_UINT",
+        "DXGI_FORMAT_R32G32B32A32_SINT",
+        "DXGI_FORMAT_R32G32B32_TYPELESS",
+        "DXGI_FORMAT_R32G32B32_FLOAT",
+        "DXGI_FORMAT_R32G32B32_UINT",
+        "DXGI_FORMAT_R32G32B32_SINT",
+        "DXGI_FORMAT_R16G16B16A16_TYPELESS",
+        "DXGI_FORMAT_R16G16B16A16_FLOAT",
+        "DXGI_FORMAT_R16G16B16A16_UNORM",
+        "DXGI_FORMAT_R16G16B16A16_UINT",
+        "DXGI_FORMAT_R16G16B16A16_SNORM",
+        "DXGI_FORMAT_R16G16B16A16_SINT",
+        "DXGI_FORMAT_R32G32_TYPELESS",
+        "DXGI_FORMAT_R32G32_FLOAT",
+        "DXGI_FORMAT_R32G32_UINT",
+        "DXGI_FORMAT_R32G32_SINT",
+        "DXGI_FORMAT_R32G8X24_TYPELESS",
+        "DXGI_FORMAT_D32_FLOAT_S8X24_UINT",
+        "DXGI_FORMAT_R32_FLOAT_X8X24_TYPELESS",
+        "DXGI_FORMAT_X32_TYPELESS_G8X24_UINT",
+        "DXGI_FORMAT_R10G10B10A2_TYPELESS",
+        "DXGI_FORMAT_R10G10B10A2_UNORM",
+        "DXGI_FORMAT_R10G10B10A2_UINT",
+        "DXGI_FORMAT_R11G11B10_FLOAT",
+        "DXGI_FORMAT_R8G8B8A8_TYPELESS",
+        "DXGI_FORMAT_R8G8B8A8_UNORM",
+        "DXGI_FORMAT_R8G8B8A8_UNORM_SRGB",
+        "DXGI_FORMAT_R8G8B8A8_UINT",
+        "DXGI_FORMAT_R8G8B8A8_SNORM",
+        "DXGI_FORMAT_R8G8B8A8_SINT",
+        "DXGI_FORMAT_R16G16_TYPELESS",
+        "DXGI_FORMAT_R16G16_FLOAT",
+        "DXGI_FORMAT_R16G16_UNORM",
+        "DXGI_FORMAT_R16G16_UINT",
+        "DXGI_FORMAT_R16G16_SNORM",
+        "DXGI_FORMAT_R16G16_SINT",
+        "DXGI_FORMAT_R32_TYPELESS",
+        "DXGI_FORMAT_D32_FLOAT",
+        "DXGI_FORMAT_R32_FLOAT",
+        "DXGI_FORMAT_R32_UINT",
+        "DXGI_FORMAT_R32_SINT",
+        "DXGI_FORMAT_R24G8_TYPELESS",
+        "DXGI_FORMAT_D24_UNORM_S8_UINT",
+        "DXGI_FORMAT_R24_UNORM_X8_TYPELESS",
+        "DXGI_FORMAT_X24_TYPELESS_G8_UINT",
+        "DXGI_FORMAT_R8G8_TYPELESS",
+        "DXGI_FORMAT_R8G8_UNORM",
+        "DXGI_FORMAT_R8G8_UINT",
+        "DXGI_FORMAT_R8G8_SNORM",
+        "DXGI_FORMAT_R8G8_SINT",
+        "DXGI_FORMAT_R16_TYPELESS",
+        "DXGI_FORMAT_R16_FLOAT",
+        "DXGI_FORMAT_D16_UNORM",
+        "DXGI_FORMAT_R16_UNORM",
+        "DXGI_FORMAT_R16_UINT",
+        "DXGI_FORMAT_R16_SNORM",
+        "DXGI_FORMAT_R16_SINT",
+        "DXGI_FORMAT_R8_TYPELESS",
+        "DXGI_FORMAT_R8_UNORM",
+        "DXGI_FORMAT_R8_UINT",
+        "DXGI_FORMAT_R8_SNORM",
+        "DXGI_FORMAT_R8_SINT",
+        "DXGI_FORMAT_A8_UNORM",
+        "DXGI_FORMAT_R1_UNORM",
+        "DXGI_FORMAT_R9G9B9E5_SHAREDEXP",
+        "DXGI_FORMAT_R8G8_B8G8_UNORM",
+        "DXGI_FORMAT_G8R8_G8B8_UNORM",
+        "DXGI_FORMAT_BC1_TYPELESS",
+        "DXGI_FORMAT_BC1_UNORM",
+        "DXGI_FORMAT_BC1_UNORM_SRGB",
+        "DXGI_FORMAT_BC2_TYPELESS",
+        "DXGI_FORMAT_BC2_UNORM",
+        "DXGI_FORMAT_BC2_UNORM_SRGB",
+        "DXGI_FORMAT_BC3_TYPELESS",
+        "DXGI_FORMAT_BC3_UNORM",
+        "DXGI_FORMAT_BC3_UNORM_SRGB",
+        "DXGI_FORMAT_BC4_TYPELESS",
+        "DXGI_FORMAT_BC4_UNORM",
+        "DXGI_FORMAT_BC4_SNORM",
+        "DXGI_FORMAT_BC5_TYPELESS",
+        "DXGI_FORMAT_BC5_UNORM",
+        "DXGI_FORMAT_BC5_SNORM",
+        "DXGI_FORMAT_B5G6R5_UNORM",
+        "DXGI_FORMAT_B5G5R5A1_UNORM",
+        "DXGI_FORMAT_B8G8R8A8_UNORM",
+        "DXGI_FORMAT_B8G8R8X8_UNORM",
+        "DXGI_FORMAT_R10G10B10_XR_BIAS_A2_UNORM",
+        "DXGI_FORMAT_B8G8R8A8_TYPELESS",
+        "DXGI_FORMAT_B8G8R8A8_UNORM_SRGB",
+        "DXGI_FORMAT_B8G8R8X8_TYPELESS",
+        "DXGI_FORMAT_B8G8R8X8_UNORM_SRGB",
+        "DXGI_FORMAT_BC6H_TYPELESS",
+        "DXGI_FORMAT_BC6H_UF16",
+        "DXGI_FORMAT_BC6H_SF16",
+        "DXGI_FORMAT_BC7_TYPELESS",
+        "DXGI_FORMAT_BC7_UNORM",
+        "DXGI_FORMAT_BC7_UNORM_SRGB",
+        "DXGI_FORMAT_AYUV",
+        "DXGI_FORMAT_Y410",
+        "DXGI_FORMAT_Y416",
+        "DXGI_FORMAT_NV12",
+        "DXGI_FORMAT_P010",
+        "DXGI_FORMAT_P016",
+        "DXGI_FORMAT_420_OPAQUE",
+        "DXGI_FORMAT_YUY2",
+        "DXGI_FORMAT_Y210",
+        "DXGI_FORMAT_Y216",
+        "DXGI_FORMAT_NV11",
+        "DXGI_FORMAT_AI44",
+        "DXGI_FORMAT_IA44",
+        "DXGI_FORMAT_P8",
+        "DXGI_FORMAT_A8P8",
+        "DXGI_FORMAT_B4G4R4A4_UNORM",
+        "DXGI_FORMAT_FORCE_UINT" 
+    };
+
+    VOID DisplayMode::Print(VOID)
+    {
+        DEBUG_OUT_A("Widht=%d Height=%d Refreshrate=(%d %d) Format=%s\n", 
+            mode.Width, mode.Height, mode.RefreshRate.Numerator, mode.RefreshRate.Denominator, DXGI_FORMAT_STR[mode.Format]);
+    }
+
 
     HRESULT Init(WNDPROC wndProc, CONST HINSTANCE hInstance, LPCWSTR title, UINT width, UINT height) 
     {
-
         util::InitGdiplus();
+
+        DXGI_MODE_DESC md;
+        ZeroMemory(&md, sizeof(DXGI_MODE_DESC));
+        md.Format = DXGI_FORMAT_R8G8B8A8_UNORM;
+        md.Height = height;
+        md.Width = width;
+        md.RefreshRate.Denominator = 60000;
+        md.RefreshRate.Numerator = 1000;
+
+        CHECK__(CreateDXGIFactory(__uuidof(IDXGIFactory), (void**)&g_pSwapChainFactory));
+        CHECK__(g_pSwapChainFactory->EnumAdapters(0, &g_pAdapter));
+
+        DXGI_ADAPTER_DESC adapterDesc;
+        g_pAdapter->GetDesc(&adapterDesc);
+
+        WCHAR* d = adapterDesc.Description;
+        std::wstring ws = d;
+        g_adapterName = new std::string(ws.begin(), ws.end());
+
+        DisplayMode fit = GetClosestDisplayMode(md);
+
+        width = fit.mode.Width;
+        height = fit.mode.Height;
         
         _CreateWindow(wndProc, hInstance, title, width, height);
 
@@ -54,9 +212,9 @@ namespace d3d
         DXGI_SWAP_CHAIN_DESC desc;
         ZeroMemory(&desc, sizeof(DXGI_SWAP_CHAIN_DESC));
         desc.BufferCount = 1;
-        desc.BufferDesc.Format = DXGI_FORMAT_R8G8B8A8_UNORM;
-        desc.BufferDesc.RefreshRate.Numerator = 60;
-        desc.BufferDesc.RefreshRate.Denominator = 1;
+        desc.BufferDesc.Format = DXGI_FORMAT_B8G8R8A8_UNORM;
+        desc.BufferDesc.RefreshRate.Numerator = fit.mode.RefreshRate.Numerator;
+        desc.BufferDesc.RefreshRate.Denominator = fit.mode.RefreshRate.Denominator;
         desc.BufferUsage = DXGI_USAGE_RENDER_TARGET_OUTPUT; 
         desc.OutputWindow = g_hWnd;
         desc.SampleDesc.Count = g_samples;
@@ -66,9 +224,9 @@ namespace d3d
         desc.BufferDesc.Width = width;
         desc.Flags = DXGI_SWAP_CHAIN_FLAG_ALLOW_MODE_SWITCH;
 
-         D3D_FEATURE_LEVEL level;
+        D3D_FEATURE_LEVEL level;
 
-         D3D_FEATURE_LEVEL pLevel[] = {
+        D3D_FEATURE_LEVEL pLevel[] = {
               D3D_FEATURE_LEVEL_11_0,
               D3D_FEATURE_LEVEL_10_1,
               D3D_FEATURE_LEVEL_10_0,
@@ -77,7 +235,7 @@ namespace d3d
          UINT flags = 0;
 
     #ifdef _DEBUG
-         //flags |= D3D11_CREATE_DEVICE_DEBUG;
+        //flags |= D3D11_CREATE_DEVICE_DEBUG;
     #endif
 
          CHECK__(D3D11CreateDeviceAndSwapChain(NULL,
@@ -92,7 +250,7 @@ namespace d3d
                                               &g_pDevice,
                                               &level,
                                               &g_pContext));
-
+         
          switch(level) 
          {
               case D3D_FEATURE_LEVEL_10_0 : 
@@ -131,8 +289,36 @@ namespace d3d
          dsDesc.StencilEnable = FALSE;
          
          CHECK__(g_pDevice->CreateDepthStencilState(&dsDesc, &m_pDepthNoStencilState));
-    
+
+         dsDesc.StencilEnable = TRUE;
+         dsDesc.StencilWriteMask = 0xFF;
+         dsDesc.StencilReadMask = 0xFF;
+
+         dsDesc.FrontFace.StencilFailOp = D3D11_STENCIL_OP_KEEP;
+         dsDesc.FrontFace.StencilDepthFailOp = D3D11_STENCIL_OP_KEEP;
+         dsDesc.FrontFace.StencilPassOp = D3D11_STENCIL_OP_INCR;
+         dsDesc.FrontFace.StencilFunc = D3D11_COMPARISON_ALWAYS;
+
+         dsDesc.BackFace.StencilFailOp = D3D11_STENCIL_OP_KEEP;
+         dsDesc.BackFace.StencilDepthFailOp = D3D11_STENCIL_OP_KEEP;
+         dsDesc.BackFace.StencilPassOp = D3D11_STENCIL_OP_INCR; 
+         dsDesc.BackFace.StencilFunc = D3D11_COMPARISON_ALWAYS;
+
+         CHECK__(g_pDevice->CreateDepthStencilState(&dsDesc, &m_pDepthWriteStencilState));
+
+         dsDesc.FrontFace.StencilFailOp = D3D11_STENCIL_OP_KEEP;
+         dsDesc.FrontFace.StencilDepthFailOp = D3D11_STENCIL_OP_KEEP;
+         dsDesc.FrontFace.StencilPassOp = D3D11_STENCIL_OP_INCR;
+         dsDesc.FrontFace.StencilFunc = D3D11_COMPARISON_EQUAL;
+
+         dsDesc.BackFace.StencilFailOp = D3D11_STENCIL_OP_KEEP;
+         dsDesc.BackFace.StencilDepthFailOp = D3D11_STENCIL_OP_KEEP;
+         dsDesc.BackFace.StencilPassOp = D3D11_STENCIL_OP_INCR;
+         dsDesc.BackFace.StencilFunc = D3D11_COMPARISON_EQUAL;
+         CHECK__(g_pDevice->CreateDepthStencilState(&dsDesc, &m_pDepthCmpStencilState));
+
          dsDesc.DepthEnable = FALSE;
+         dsDesc.StencilEnable = FALSE;
          CHECK__(g_pDevice->CreateDepthStencilState(&dsDesc, &m_pNoDepthNoStencilState));
 
          D3D11_BLEND_DESC blendDesc;
@@ -250,6 +436,40 @@ namespace d3d
          return TRUE;
     }
 
+    LPCSTR GetAdapterName(VOID)
+    {
+        return g_adapterName->c_str();
+    }
+
+    VOID GetDisplayModeList(DisplayModeList& modes)
+    {
+        IDXGIOutput* output;
+        CHECK__(g_pAdapter->EnumOutputs(0, &output));
+
+        UINT n;
+        output->GetDisplayModeList(DXGI_FORMAT_R8G8B8A8_UNORM, 0, &n, NULL);
+
+        DXGI_MODE_DESC* mds = new DXGI_MODE_DESC[n];
+        output->GetDisplayModeList(DXGI_FORMAT_R8G8B8A8_UNORM, 0, &n, mds);
+
+        TBD_FOR_INT(n)
+        {
+            DisplayMode m = mds[i];
+            modes.modeList.push_back(m);
+        }
+
+        SAFE_ARRAY_DELETE(mds);
+    }
+
+    DisplayMode GetClosestDisplayMode(CONST DisplayMode& mode)
+    {
+        IDXGIOutput* output;
+        CHECK__(g_pAdapter->EnumOutputs(0, &output));
+        DisplayMode dm;
+        CHECK__(output->FindClosestMatchingMode(&mode.mode, &dm.mode, g_pDevice));
+        return dm;
+    }
+
     UINT GetWindowHeight(VOID)
     {
         return g_height;
@@ -270,10 +490,11 @@ namespace d3d
 
     VOID ReleaseBackbuffer(VOID) 
     {
-        SAFE_RELEASE(g_pBackBuffer);
-        SAFE_RELEASE(g_pBackBufferView);
+		g_pContext->OMSetRenderTargets(0, 0, 0);
         SAFE_RELEASE(g_pDepthStencilBuffer);
         SAFE_RELEASE(g_pDepthStencilView);
+        SAFE_RELEASE(g_pBackBuffer);
+        SAFE_RELEASE(g_pBackBufferView);
     }
 
     VOID BindBackbuffer(VOID) 
@@ -303,7 +524,6 @@ namespace d3d
 
     VOID CreateBackbuffer(UINT width, UINT height) 
     {
-
          g_pSwapChain->GetBuffer(0, __uuidof(ID3D11Texture2D), (LPVOID*)&g_pBackBuffer);
 
          CHECK__(g_pDevice->CreateRenderTargetView(g_pBackBuffer, NULL, &g_pBackBufferView));
@@ -337,7 +557,7 @@ namespace d3d
         g_pContext->PSSetSamplers(0, 4, g_pSamplerStates);
         g_pContext->VSSetSamplers(0, 4, g_pSamplerStates);
         g_pContext->RSSetState(g_pRasterizerStateFrontFaceSolid);
-        g_pContext->OMSetDepthStencilState(m_pDepthNoStencilState, 0);
+        g_pContext->OMSetDepthStencilState(m_pDepthWriteStencilState, 0);
         g_pContext->OMSetBlendState(g_pBlendStateNoBlending, NULL, 0xffffff);
         //g_pContext->OMSetRenderTargets(1, &g_pBackBufferView, g_pDepthStencilView);
         BindBackbuffer();
@@ -346,26 +566,54 @@ namespace d3d
         d3d::g_pContext->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
     }
 
-    VOID Resize(UINT width, UINT height, BOOL fullscreen)
+    BOOL GetFullscreenState(VOID)
+    {
+        BOOL state;
+        CHECK__(d3d::g_pSwapChain->GetFullscreenState(&state, NULL));
+        return state;
+    }
+
+    VOID SetFullscreenState(BOOL fs, UINT width, UINT height)
+    {
+        if(fs == GetFullscreenState())
+        {
+            return;
+        }
+
+        if(fs)
+        {
+            GetFullscreenSize(&width, &height);
+        }
+
+        DXGI_MODE_DESC desc;
+        ZeroMemory(&desc, sizeof(DXGI_MODE_DESC));
+        desc.Format = DXGI_FORMAT_UNKNOWN;
+        desc.Height = height;
+        desc.Width = width;
+        desc.RefreshRate.Denominator = 10000;
+        desc.RefreshRate.Numerator = 60000;
+
+        DisplayMode mode = desc;
+        DisplayMode closest = GetClosestDisplayMode(mode);
+
+        CHECK__(g_pSwapChain->ResizeTarget(&closest.mode));
+
+        CHECK__(d3d::g_pSwapChain->SetFullscreenState(fs, NULL));
+
+        closest.mode.RefreshRate.Denominator = 0;
+        closest.mode.RefreshRate.Numerator = 0;
+
+        CHECK__(g_pSwapChain->ResizeTarget(&closest.mode));
+    }
+
+    VOID Resize(UINT width, UINT height)
     {
         if(d3d::g_pSwapChain) 
         {
-            if(fullscreen)
-            {
-                GetFullscreenSize(&width, &height);
-            }
-            
+
             ReleaseBackbuffer();
 
-            CHECK__(g_pSwapChain->ResizeBuffers(1, width, height, DXGI_FORMAT_UNKNOWN, DXGI_SWAP_CHAIN_FLAG_ALLOW_MODE_SWITCH));
-            CHECK__(g_pSwapChain->SetFullscreenState(fullscreen, NULL));
-            DXGI_MODE_DESC desc;
-            ZeroMemory(&desc, sizeof(DXGI_MODE_DESC));
-            desc.Format = DXGI_FORMAT_UNKNOWN;
-            desc.Height = height;
-            desc.Width = width;
-
-            CHECK__(g_pSwapChain->ResizeTarget(&desc));
+            CHECK__(g_pSwapChain->ResizeBuffers(0, width, height, DXGI_FORMAT_UNKNOWN, DXGI_SWAP_CHAIN_FLAG_ALLOW_MODE_SWITCH));
 
             CreateBackbuffer(width, height);
 
@@ -452,10 +700,15 @@ namespace d3d
 
     VOID Release(VOID) 
     {
+        SAFE_DELETE(g_adapterName);
+        SAFE_RELEASE(g_pSwapChainFactory);
+        SAFE_RELEASE(g_pAdapter);
         g_pSwapChain->SetFullscreenState(FALSE, NULL);
         SAFE_RELEASE(g_pSwapChain);
         ReleaseBackbuffer();
         SAFE_RELEASE(m_pNoDepthNoStencilState);
+        SAFE_RELEASE(m_pDepthCmpStencilState);
+        SAFE_RELEASE(m_pDepthWriteStencilState);
         SAFE_RELEASE(m_pDepthNoStencilState);
         SAFE_RELEASE(g_pBackBuffer);
         SAFE_RELEASE(g_pBlendStateNoBlending);

@@ -10,10 +10,12 @@
 #include "Camera.h"
 #include "D3DRenderer.h"
 #include "CudaTransformationNode.h"
+#include "SceneGraph.h"
+#include "SceneNode.h"
 
 namespace gameinput
 {
-    BOOL m_editMode = FALSE;
+    BOOL m_editMode = TRUE;
     BOOL m_bMovePicked = FALSE;
     FLOAT m_actorPlaceScale = 4;
     ActorId m_toModify = INVALID_ACTOR_ID;
@@ -21,6 +23,23 @@ namespace gameinput
     INT g_rotationDir = 1;
 
     VOID PlayTestSound();
+
+    BOOL ToggleFlashlight(tbd::Command& cmd)
+    {
+        std::shared_ptr<tbd::Actor> a = app::g_pApp->GetHumanView()->GetTarget();
+        std::shared_ptr<tbd::ISceneNode> node = app::g_pApp->GetHumanView()->GetSceneGraph()->FindActorNode(a->GetId());
+        if(node && node->GetChilds().size() > 0)
+        {
+            std::shared_ptr<tbd::ISceneNode>& child = node->GetChilds()[0];
+            std::shared_ptr<tbd::Actor> light = app::g_pApp->GetLogic()->VFindActor(child->VGetActorId());
+            if(light->HasComponent<tbd::LightComponent>(tbd::LightComponent::COMPONENT_ID))
+            {
+                std::shared_ptr<tbd::LightComponent> flashLight = light->GetComponent<tbd::LightComponent>(tbd::LightComponent::COMPONENT_ID).lock();
+                flashLight->m_activated = !flashLight->m_activated;
+            }
+        }
+        return TRUE;
+    }
 
     BOOL CreateSpotlightThing(tbd::Command& cmd)
     {
@@ -38,14 +57,14 @@ namespace gameinput
         comp->GetTransformation()->SetTranslate(pos);
 
         tbd::RenderComponent * renderComp = desc->AddComponent<tbd::RenderComponent>("RenderComponent");
-        renderComp->m_meshFile = "spot.obj";
+        renderComp->m_meshFile = "spottwotest.obj";
 
         tbd::PhysicComponent* physicComponent = desc->AddComponent<tbd::PhysicComponent>("PhysicComponent");
         physicComponent->m_material = "dynamic";
-        physicComponent->m_shapeType = "sphere";
+        physicComponent->m_shapeStyle = "sphere";
         physicComponent->m_radius = 1;
 
-        std::shared_ptr<tbd::Actor> a = app::g_pApp->GetLogic()->VCreateActor(desc);
+        std::shared_ptr<tbd::Actor> a = app::g_pApp->GetLogic()->VCreateActor(desc, TRUE);
 
         desc = app::g_pApp->GetLogic()->GetActorFactory()->CreateActorDescription();
 
@@ -55,7 +74,7 @@ namespace gameinput
         lightComponent->m_color.y = 0.5f;//0.5f + 2 * rand() / (FLOAT)RAND_MAX;
         lightComponent->m_color.z = 0;//0.5f + 2 * rand() / (FLOAT)RAND_MAX;
         lightComponent->m_color.w = 1;
-        lightComponent->m_angle = 70;
+        lightComponent->m_angle = 55;
         lightComponent->m_intensity = 24;
 
         comp = desc->AddComponent<tbd::TransformComponent>(tbd::TransformComponent::COMPONENT_ID);
@@ -68,7 +87,30 @@ namespace gameinput
         tbd::ParentComponent* pc = desc->AddComponent<tbd::ParentComponent>("ParentComponent");
         pc->m_parentId = a->GetId();
 
-        app::g_pApp->GetLogic()->VCreateActor(desc);
+        app::g_pApp->GetLogic()->VCreateActor(desc, TRUE);
+
+        desc = app::g_pApp->GetLogic()->GetActorFactory()->CreateActorDescription();
+
+        lightComponent = desc->AddComponent<tbd::LightComponent>("LightComponent");
+        lightComponent->m_type = "spot";
+        lightComponent->m_color.x = 1;//0.5f + 2 * rand() / (FLOAT)RAND_MAX;
+        lightComponent->m_color.y = 0.5f;//0.5f + 2 * rand() / (FLOAT)RAND_MAX;
+        lightComponent->m_color.z = 0;//0.5f + 2 * rand() / (FLOAT)RAND_MAX;
+        lightComponent->m_color.w = 1;
+        lightComponent->m_angle = 55;
+        lightComponent->m_intensity = 24;
+
+        comp = desc->AddComponent<tbd::TransformComponent>(tbd::TransformComponent::COMPONENT_ID);
+        comp->GetTransformation()->SetScale(50);
+        comp->GetTransformation()->RotateX(XM_PIDIV2);
+        comp->GetTransformation()->Translate(0, 0, 0);
+
+        //desc->AddComponent<tbd::PickableComponent>(tbd::PickableComponent::COMPONENT_ID);
+
+        pc = desc->AddComponent<tbd::ParentComponent>("ParentComponent");
+        pc->m_parentId = a->GetId();
+
+        app::g_pApp->GetLogic()->VCreateActor(desc, TRUE);
 
         return TRUE;
     }
@@ -87,7 +129,7 @@ namespace gameinput
         }
         else
         {
-            m_editMode = FALSE;
+            m_editMode = TRUE;
         }
         app::g_pApp->GetHumanView()->ActivateScene(mode.c_str());
         return TRUE;
@@ -149,6 +191,11 @@ namespace gameinput
 
     BOOL PickActor(tbd::Command& cmd)
     {
+        app::g_pApp->GetHumanView()->GetRenderer()->PushRasterizerState(d3d::g_pRasterizerStateFrontFaceSolid);
+        app::g_pApp->GetHumanView()->GetPicker()->VRender();
+        app::g_pApp->GetHumanView()->GetPicker()->VPostRender();
+        app::g_pApp->GetHumanView()->GetRenderer()->PopRasterizerState();
+
         if(app::g_pApp->GetHumanView()->GetPicker()->VHasPicked() && app::g_pApp->GetHumanView()->GetPicker()->VPick() != m_toModify)
         {
             m_toModify = app::g_pApp->GetHumanView()->GetPicker()->VPick();
@@ -255,7 +302,8 @@ namespace gameinput
         tbd::ActorDescription desc = app::g_pApp->GetLogic()->GetActorFactory()->CreateActorDescription();
 
         std::string meshFile = cmd.GetNextCharStr();
-        std::string shapetype = cmd.GetNextCharStr();
+        std::string shapeType = "convex";
+        std::string shapeStyle = "mesh";
 
         CHECK_COMMAND(cmd);
 
@@ -279,9 +327,11 @@ namespace gameinput
 
         tbd::PhysicComponent* physicComponent = desc->AddComponent<tbd::PhysicComponent>("PhysicComponent");
         physicComponent->m_dim.x = 2; physicComponent->m_dim.z = 2; physicComponent->m_dim.y = 2;
-        physicComponent->m_material = m_kinematicPhysical ? "kinematic" : "dynamic";
-        physicComponent->m_shapeType = shapetype;
+        physicComponent->m_material = "dynamic";//m_kinematicPhysical ? "kinematic" : "dynamic";
+        physicComponent->m_shapeStyle = shapeStyle;
+        physicComponent->m_shapeType = shapeType;
         physicComponent->m_radius = 1; 
+        physicComponent->m_meshFile = meshFile;
 
         desc->AddComponent<tbd::PickableComponent>("PickableComponent");
 
@@ -312,7 +362,7 @@ namespace gameinput
             tbd::PhysicComponent* physicComponent = desc->AddComponent<tbd::PhysicComponent>("PhysicComponent");
             physicComponent->m_dim.x = 2; physicComponent->m_dim.z = 2; physicComponent->m_dim.y = 2;
             physicComponent->m_material = "bouncy";
-            physicComponent->m_shapeType = "sphere";
+            physicComponent->m_shapeStyle = "sphere";
             physicComponent->m_radius = 1;
         }
 
@@ -544,7 +594,7 @@ namespace gameinput
             tbd::PhysicComponent* physicComponent = desc->AddComponent<tbd::PhysicComponent>("PhysicComponent");
             physicComponent->m_dim.x = 2; physicComponent->m_dim.z = 2; physicComponent->m_dim.y = 2;
             physicComponent->m_material = disDas < 0.5 ? "dynamic" : "bouncy";
-            physicComponent->m_shapeType = disDas < 0.5 ? "box" : "sphere";
+            physicComponent->m_shapeStyle = disDas < 0.5 ? "box" : "sphere";
             physicComponent->m_radius = 1;
 
             desc->AddComponent<tbd::PickableComponent>("PickableComponent");
@@ -596,68 +646,6 @@ namespace gameinput
         return TRUE;
     }
 
-    BOOL LoadLevel(tbd::Command& cmd)
-    {
-        std::string name = cmd.GetNextCharStr();
-        CHECK_COMMAND(cmd);
-        
-        if(name == "l0")
-        {
-            tbd::BaseLevel* level = new tbd::TransformShowRoom("patch0", app::g_pApp->GetLogic()->GetActorFactory());
-            app::g_pApp->GetLogic()->VLoadLevel(level);
-        } 
-        else if(name == "l1")
-        {
-            tbd::BaseLevel* level = new tbd::BSplinePatchLevel("patch0", app::g_pApp->GetLogic()->GetActorFactory());
-            app::g_pApp->GetLogic()->VLoadLevel(level);
-        }
-
-        return TRUE;
-    }
-
-    BOOL RunProc(tbd::Command& cmd)
-    {
-        std::string cmdStr = cmd.GetRemainingString();
-        
-        CHECK_COMMAND(cmd);
-
-        STARTUPINFO si;
-        ZeroMemory(&si, sizeof(si));
-        AllocConsole();
-
-        si.cb = sizeof(si);
-
-        PROCESS_INFORMATION pi;
-        ZeroMemory(&pi, sizeof(pi));
-
-        SECURITY_ATTRIBUTES sa;
-        ZeroMemory(&sa, sizeof(sa));
-        sa.nLength = sizeof(sa);
-        sa.lpSecurityDescriptor = NULL;
-        sa.bInheritHandle = TRUE;
-
-        std::wstring ws(cmdStr.begin(), cmdStr.end());
-        LPTSTR szCmdline = _tcsdup(ws.c_str());
-
-        if(!CreateProcess(NULL, szCmdline, &sa, NULL, FALSE, 0, NULL, NULL, &si, &pi))
-        {
-            return FALSE;
-        }
-
-        WaitForSingleObject(pi.hProcess, INFINITE);
-
-        DWORD exitCode;
-        GetExitCodeProcess(pi.hProcess, &exitCode);
-
-        FreeConsole();
-
-        CloseHandle(pi.hProcess);
-        CloseHandle(pi.hThread);
-
-        free(szCmdline);
-
-        return exitCode;
-    }
 
     BOOL SetFullscreen(tbd::Command& cmd)
     {
@@ -670,7 +658,8 @@ namespace gameinput
             w = app::g_pApp->GetConfig()->GetInteger("iWidth");
             h = app::g_pApp->GetConfig()->GetInteger("iHeight");
         }
-        app::g_pApp->GetHumanView()->Resize(w, h, fs);
+
+        d3d::SetFullscreenState(fs, w, h);
 
         return TRUE;
     }
@@ -678,6 +667,11 @@ namespace gameinput
     //set actions here
     VOID RegisterCommands(tbd::ActorController& controller, tbd::CommandInterpreter& interpreter)
     {
+
+        interpreter.RegisterCommand("sc0", SetCascadeCam0);
+        interpreter.RegisterCommand("sc1", SetCascadeCam1);
+        interpreter.RegisterCommand("sc2", SetCascadeCam2);
+
         interpreter.RegisterCommand("pick", PickActor);
         interpreter.RegisterCommand("spotlight", SpawnSpotLight);
         interpreter.RegisterCommand("physical", ToggleActorPropPhysical);
@@ -688,8 +682,8 @@ namespace gameinput
         interpreter.RegisterCommand("spawn", SpawnBasicMeshActor);
         interpreter.RegisterCommand("rasterstate", SetRasterState, "rasterstate [wire, nocull, fronfaces, backfaces]");
         interpreter.RegisterCommand("drawCP", DrawCP);
-        interpreter.RegisterCommand("loadlevel", LoadLevel);
         interpreter.RegisterCommand("fullscreen", SetFullscreen);
+        interpreter.RegisterCommand("toggleFL", ToggleFlashlight);
 
         interpreter.RegisterCommand("rotateX", RotatXPickedActor);
         interpreter.RegisterCommand("rotateY", RotatYPickedActor);
@@ -703,7 +697,6 @@ namespace gameinput
         interpreter.RegisterCommand("force", ApplyForce, "force x y z [n]");
         interpreter.RegisterCommand("torque", ApplyTorque, "torque x y z [n]");
         interpreter.RegisterCommand("pforce", ApplyPlayerForce, "pforce n");
-        interpreter.RegisterCommand("runproc", RunProc);
         controller.SetMouseScrollAction(MouseWheelActorPositionModify);
 
         ADD_EVENT_LISTENER_STATIC(&MovePicked, event::ActorMovedEvent::TYPE);

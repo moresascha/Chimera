@@ -11,6 +11,7 @@
 #include "GeometryFactory.h"
 #include "Process.h"
 #include "CameraTracking.h"
+#include <fstream>
 
 namespace tbd
 {
@@ -26,7 +27,7 @@ namespace tbd
         tbd::PhysicComponent* physicComponent = desc->AddComponent<tbd::PhysicComponent>("PhysicComponent");
         physicComponent->m_dim.x = 2; physicComponent->m_dim.z = 2; physicComponent->m_dim.y = 2;
         physicComponent->m_material = "static";
-        physicComponent->m_shapeType = "plane";
+        physicComponent->m_shapeStyle = "plane";
 
         level->VAddActor(desc);
     }
@@ -44,7 +45,7 @@ namespace tbd
         tbd::PhysicComponent* physicComponent = desc->AddComponent<tbd::PhysicComponent>("PhysicComponent");
         physicComponent->m_dim.x = 2; physicComponent->m_dim.z = 2; physicComponent->m_dim.y = 2;
         physicComponent->m_material = "kinematic";
-        physicComponent->m_shapeType = "box";
+        physicComponent->m_shapeStyle = "box";
         physicComponent->m_radius = 1;
 
         desc->AddComponent<tbd::PickableComponent>(tbd::PickableComponent::COMPONENT_ID);
@@ -65,7 +66,7 @@ namespace tbd
         tbd::PhysicComponent* physicComponent = desc->AddComponent<tbd::PhysicComponent>("PhysicComponent");
         physicComponent->m_dim.x = 2; physicComponent->m_dim.z = 2; physicComponent->m_dim.y = 2;
         physicComponent->m_material = "kinematic";
-        physicComponent->m_shapeType = "sphere";
+        physicComponent->m_shapeStyle = "sphere";
         physicComponent->m_radius = 1;
 
         return level->VAddActor(desc);
@@ -84,7 +85,7 @@ namespace tbd
         tbd::PhysicComponent* physicComponent = desc->AddComponent<tbd::PhysicComponent>("PhysicComponent");
         physicComponent->m_dim.x = 2; physicComponent->m_dim.z = 2; physicComponent->m_dim.y = 2;
         physicComponent->m_material = material;
-        physicComponent->m_shapeType = physicShape;
+        physicComponent->m_shapeStyle = physicShape;
         physicComponent->m_radius = 1;
 
         return level->VAddActor(desc);
@@ -143,7 +144,7 @@ namespace tbd
             m_idsToLoad.erase(it);
             if(m_idsToLoad.empty())
             {
-                event::IEventPtr levelLoadedEvent(new event::LevelLoadedEvent(std::string(GetName())));
+                event::IEventPtr levelLoadedEvent(new event::LevelLoadedEvent(std::string(VGetName())));
                 event::IEventManager::Get()->VQueueEventThreadSave(levelLoadedEvent);
             }
         }
@@ -189,24 +190,31 @@ namespace tbd
         {
             LOG_CRITICAL_ERROR("TiXmlElement cant be NULL");
         }
-        std::shared_ptr<tbd::Actor> actor = m_pActorFactory->CreateActor(pNode);
-        if(actor)
+        std::shared_ptr<tbd::Actor> actor = NULL;
+        std::shared_ptr<tbd::Actor> parent = NULL;
+        std::vector<std::shared_ptr<tbd::Actor>> actors;
+        parent = m_pActorFactory->CreateActor(pNode, actors);
+        TBD_FOR(actors)
         {
+            actor = *it;
             this->m_actors[actor->GetId()] = actor;
             this->m_idsToLoad.push_back(actor->GetId());
-            return actor;
         }
-        LOG_CRITICAL_ERROR("Failed to create actor");
-        return std::shared_ptr<tbd::Actor>();
+        return parent;
     }
 
     BOOL XMLLevel::VLoad(BOOL block)
     {
         tinyxml2::XMLDocument doc;
 
-        tbd::Resource r(app::g_pApp->GetConfig()->GetString("sLevelPath") + GetFile().c_str());
+        tbd::Resource r(app::g_pApp->GetConfig()->GetString("sLevelPath") + VGetFile().c_str());
 
         std::shared_ptr<tbd::ResHandle> handle = app::g_pApp->GetCache()->GetHandle(r);
+
+        if(!handle)
+        {
+            return FALSE;
+        }
 
         doc.Parse((CHAR*)handle->Buffer());
 
@@ -215,55 +223,16 @@ namespace tbd
 
         for(tinyxml2::XMLElement* pNode = root->FirstChildElement(); pNode; pNode = pNode->NextSiblingElement())
         {
-            CONST CHAR* file = pNode->Attribute("file");
-            if(file)
-            {
-                LOG_CRITICAL_ERROR("not supported yet!");
-                /*std::shared_ptr<tbd::Actor> actor = VAddActor(file);
-                m_idsToLoad.push_back(actor->GetId());
-                for(TiXmlElement* comps = pNode->FirstChildElement(); comps; comps = comps->NextSiblingElement())
-                {
-                    m_actorFactory.ReplaceComponent(actor, comps);
-                } */
-            }
-            else
-            {
-                VAddActor(pNode);
-            }
+            VAddActor(pNode);
         }
 
-        doc.Clear();
         return TRUE;
     }
 
     BOOL XMLLevel::VSave(LPCSTR file)
     {
-        
-        tinyxml2::XMLDocument doc;
-        /*
-        TiXmlDeclaration* dec = new TiXmlDeclaration("1.0", "", "");
-        TiXmlElement* root = new TiXmlElement("Level");
-        doc.LinkEndChild(dec);
-        for(auto it = m_actors.begin(); it != m_actors.end(); ++it)
-        {
-            tbd::Actor* actor = it->second.get();
-
-            TiXmlElement* xmlactor = new TiXmlElement("Actor");
-            root->LinkEndChild(xmlactor);
-
-            for(auto it2 = actor->GetComponents()->begin(); it2 != actor->GetComponents()->end(); ++it2)
-            {
-                it2->second->VSave(xmlactor);
-            }
-        }
-        doc.LinkEndChild(root);
-        std::string s;
-        s += app::g_pApp->GetCache()->GetFile().VGetName();
-        s += "/";
-        s += app::g_pApp->GetConfig()->GetString("sLevelPath");
-        s += GetFile().c_str(); */
-
-        return TRUE;//doc.SaveFile(file != NULL ? file : s.c_str());
+        SaveXMLLevel save;
+        return save.VSaveLevel(this, file);
     }
 
     RandomLevel::RandomLevel(CONST std::string& file, tbd::ActorFactory* factory) : BaseLevel(file, factory)
@@ -335,7 +304,7 @@ namespace tbd
     BOOL RandomLevel::VLoad(BOOL block)
     {
         CreateStaticPlane(this);
-        
+
         for(CHAR i = 0; i < 1; ++i)
         {
             for(CHAR j = 0; j < 1; ++j)
@@ -349,25 +318,19 @@ namespace tbd
             }
         } 
 
-        INT w = 2;
-        INT h = 2;
-        INT s = 10;
-        for(INT i = 0; i <= w; ++i)
-        {
-            for(INT j = 0; j <= h; ++j)
-            {
-                CreatePointlight(util::Vec3(-s*w/2 + s * i, 3 + 15 * rand() / (FLOAT)RAND_MAX, -s*h/2 + s * j), this, util::Color(1,1,1,1), 15, 0.25f + rand() / (FLOAT)RAND_MAX);
-            }
-        }
+        //CreatePointlight(util::Vec3(0, 7, 0), this, util::Color(1,1,1,1), 40, 0.5f);
 
-        for(INT i = 0; i < 20; ++i)
+        FLOAT s = 10;
+
+        for(INT i = 0; i < 0; ++i)
         {
             FLOAT x = -s  + 2 * s * rand() / (FLOAT)RAND_MAX;
             FLOAT y = 3 + 15 * rand() / (FLOAT)RAND_MAX;
             FLOAT z = -s + 2 * s * rand() / (FLOAT)RAND_MAX;
             CreateCube(util::Vec3(x,y,z), this);
         }
-        
+
+                
         /*
         desc = app::g_pApp->GetLogic()->GetActorFactory()->CreateActorDescription();
         tbd::TransformComponent* tcomp = desc->AddComponent<tbd::TransformComponent>(tbd::TransformComponent::COMPONENT_ID);
@@ -395,19 +358,18 @@ namespace tbd
         tbd::RenderComponent* renderCmp = desc->AddComponent<tbd::RenderComponent>(tbd::RenderComponent::COMPONENT_ID);
         renderCmp->m_type = "skydome";
         renderCmp->m_info = "skydome3.jpg";
-        //VAddActor(desc);
+        VAddActor(desc);
 
         desc = m_pActorFactory->CreateActorDescription();
         tcomp = desc->AddComponent<tbd::TransformComponent>(tbd::TransformComponent::COMPONENT_ID);
-        tcomp->GetTransformation()->SetTranslate(0,0,0);
-        tcomp->GetTransformation()->SetScale(2.0f);
+        tcomp->GetTransformation()->SetTranslate(0,-2,10);
+        tcomp->GetTransformation()->SetScale(1.0f);
         renderCmp = desc->AddComponent<tbd::RenderComponent>(tbd::RenderComponent::COMPONENT_ID);
-        renderCmp->m_meshFile = "halfbox.obj";
-
+        renderCmp->m_meshFile = "terrain.obj";
 
         tbd::PhysicComponent* phxCmp = desc->AddComponent<tbd::PhysicComponent>(tbd::PhysicComponent::COMPONENT_ID);
-        phxCmp->m_shapeType = "static_mesh";
-        phxCmp->m_meshFile = "halfbox.obj";
+        phxCmp->m_shapeStyle = "static_mesh";
+        phxCmp->m_meshFile = "terrain.obj";
         phxCmp->m_material = "static";
         VAddActor(desc);
         
@@ -429,7 +391,7 @@ namespace tbd
         tbd::PhysicComponent* physicComponent = desc->AddComponent<tbd::PhysicComponent>("PhysicComponent");
         physicComponent->m_dim.x = 2; physicComponent->m_dim.z = 2; physicComponent->m_dim.y = 2;
         physicComponent->m_material = "static";
-        physicComponent->m_shapeType = "box";
+        physicComponent->m_shapeStyle = "box";
         physicComponent->m_radius = 1;
 
         desc->AddComponent<tbd::PickableComponent>(tbd::PickableComponent::COMPONENT_ID);
@@ -446,14 +408,16 @@ namespace tbd
         comp->GetTransformation()->SetTranslate(0, 2, 2);
 
         renderComp = desc->AddComponent<tbd::RenderComponent>("RenderComponent");
-        renderComp->m_meshFile = "spot.obj";
+        renderComp->m_meshFile = "spottwotest.obj";
 
         physicComponent = desc->AddComponent<tbd::PhysicComponent>("PhysicComponent");
         physicComponent->m_material = "dynamic";
-        physicComponent->m_shapeType = "sphere";
+        physicComponent->m_shapeStyle = "sphere";
         physicComponent->m_radius = 1;
 
         a = VAddActor(desc);
+
+        a->SetName("spotlightsphere");
 
         desc = m_pActorFactory->CreateActorDescription();
 
@@ -463,7 +427,7 @@ namespace tbd
         lightComponent->m_color.y = 0.5f;//0.5f + 2 * rand() / (FLOAT)RAND_MAX;
         lightComponent->m_color.z = 0;//0.5f + 2 * rand() / (FLOAT)RAND_MAX;
         lightComponent->m_color.w = 1;
-        lightComponent->m_angle = 70;
+        lightComponent->m_angle = 55;
         lightComponent->m_intensity = 24;
 
         tcomp = desc->AddComponent<tbd::TransformComponent>(tbd::TransformComponent::COMPONENT_ID);
@@ -474,6 +438,29 @@ namespace tbd
         //desc->AddComponent<tbd::PickableComponent>(tbd::PickableComponent::COMPONENT_ID);
 
         tbd::ParentComponent* pc = desc->AddComponent<tbd::ParentComponent>("ParentComponent");
+        pc->m_parentId = a->GetId();
+
+        VAddActor(desc);
+
+        desc = m_pActorFactory->CreateActorDescription();
+
+        lightComponent = desc->AddComponent<tbd::LightComponent>("LightComponent");
+        lightComponent->m_type = "spot";
+        lightComponent->m_color.x = 1;//0.5f + 2 * rand() / (FLOAT)RAND_MAX;
+        lightComponent->m_color.y = 0.5f;//0.5f + 2 * rand() / (FLOAT)RAND_MAX;
+        lightComponent->m_color.z = 0;//0.5f + 2 * rand() / (FLOAT)RAND_MAX;
+        lightComponent->m_color.w = 1;
+        lightComponent->m_angle = 55;
+        lightComponent->m_intensity = 24;
+
+        tcomp = desc->AddComponent<tbd::TransformComponent>(tbd::TransformComponent::COMPONENT_ID);
+        tcomp->GetTransformation()->SetScale(50);
+        tcomp->GetTransformation()->RotateX(XM_PIDIV2);
+        tcomp->GetTransformation()->Translate(0, 0, 0);
+
+        //desc->AddComponent<tbd::PickableComponent>(tbd::PickableComponent::COMPONENT_ID);
+
+        pc = desc->AddComponent<tbd::ParentComponent>("ParentComponent");
         pc->m_parentId = a->GetId();
 
         VAddActor(desc);
@@ -602,7 +589,8 @@ namespace tbd
 
     BOOL RandomLevel::VSave(LPCSTR file)
     {
-        return TRUE;
+        SaveXMLLevel save;
+        return save.VSaveLevel(this, file);
     }
     //---------------
 
@@ -1040,5 +1028,58 @@ namespace tbd
     {
         REMOVE_EVENT_LISTENER(this, &BSplinePatchLevel::OnControlPointMove, event::ActorMovedEvent::TYPE);
         SAFE_ARRAY_DELETE(m_controlPoints);
+    }
+
+    GroupedObjLevel::GroupedObjLevel(LPCSTR file, tbd::ActorFactory* factory) : BaseLevel(file, factory)
+    {
+
+    }
+
+    BOOL GroupedObjLevel::VSave(LPCSTR file /* = NULL */)
+    {
+        SaveXMLLevel save;
+        return save.VSaveLevel(this, file);
+    }
+
+    BOOL GroupedObjLevel::VLoad(BOOL block)
+    {
+        CreateStaticPlane(this);
+
+        ActorDescription desc = m_pActorFactory->CreateActorDescription();
+        tbd::TransformComponent* tcomp = desc->AddComponent<tbd::TransformComponent>(tbd::TransformComponent::COMPONENT_ID);
+        tcomp->GetTransformation()->SetTranslate(0,0,0);
+
+        tbd::RenderComponent* renderCmp = desc->AddComponent<tbd::RenderComponent>(tbd::RenderComponent::COMPONENT_ID);
+        renderCmp->m_type = "skydome";
+        renderCmp->m_info = "skydome3.jpg";
+        VAddActor(desc);
+
+        std::string dir = "../Assets/" + app::g_pApp->GetConfig()->GetString("sMeshPath") + VGetFile();
+        std::string objList = dir + "/filelist.txt";
+        std::ifstream stream(objList.c_str());
+
+        std::string meshFile;
+        while(stream.good())
+        {
+            std::getline(stream, meshFile); 
+            
+            if(meshFile.size() == 0) continue;
+
+            desc = m_pActorFactory->CreateActorDescription();
+            tbd::TransformComponent* comp = desc->AddComponent<tbd::TransformComponent>("TransformComponent");
+            tbd::RenderComponent* renderComp = desc->AddComponent<tbd::RenderComponent>("RenderComponent");
+            renderComp->m_meshFile = VGetFile() + "/" + meshFile;
+
+            tbd::PhysicComponent* physicComponent = desc->AddComponent<tbd::PhysicComponent>("PhysicComponent");
+            physicComponent->m_dim.x = 2; physicComponent->m_dim.z = 2; physicComponent->m_dim.y = 2;
+            physicComponent->m_material = "static";
+            physicComponent->m_shapeStyle = "mesh";
+            physicComponent->m_shapeType = "concave";
+            physicComponent->m_radius = 1; 
+            physicComponent->m_meshFile = VGetFile() + "/" + meshFile;
+
+            VAddActor(desc);
+        }
+        return TRUE;
     }
 }

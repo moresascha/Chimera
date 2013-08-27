@@ -152,7 +152,7 @@ namespace tbd
 
         VOID SetParentDelegate(event::IEventPtr pEventData);
 
-        VOID Resize(UINT w, UINT h, BOOL fullscreen);
+        VOID Resize(UINT w, UINT h);
 
         virtual ~HumanGameView(VOID);
     };

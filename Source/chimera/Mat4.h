@@ -32,7 +32,7 @@ namespace util
             m_m = v;
         }
 
-        CONST Vec3& GetPYR(VOID);
+        Vec3 GetPYR(VOID) CONST;
 
         VOID RotateX(FLOAT deltaAngle);
 
@@ -114,6 +114,8 @@ namespace util
         {
             return m_scale;
         }
+
+        util::Vec3 GetPhiTheta(VOID) CONST;
 
         VOID Update(VOID);
 

@@ -141,6 +141,14 @@ namespace util
         Rotate(phi, theta);
     }
 
+    VOID Camera::FromViewUp(CONST util::Vec3& viewDir, CONST util::Vec3& viewUp)
+    {
+        m_upDir = viewUp;
+        m_viewDir = viewDir;
+        m_sideDir = util::Vec3::GetCross(m_upDir, m_upDir);
+        ComputeView();
+    }
+
     VOID Camera::LookAt(CONST util::Vec3& eyePos, CONST util::Vec3& at)
     {
         /*

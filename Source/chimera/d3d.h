@@ -11,7 +11,7 @@ namespace d3d
 #ifdef _DEBUG
     #define CHECK__(__error) \
         if(FAILED(__error)) { \
-            LOG_ERROR_A("D3D Error: %d", __error); \
+            LOG_ERROR_A("D3D Error: %d\n", __error); \
         }
 #else
     #define CHECK__(__error) __error
@@ -26,6 +26,8 @@ namespace d3d
     extern ID3D11RenderTargetView* g_pBackBufferView;
     extern ID3D11DepthStencilView* g_pDepthStencilView;
     extern ID3D11DepthStencilState* m_pDepthNoStencilState;
+    extern ID3D11DepthStencilState* m_pDepthWriteStencilState;
+    extern ID3D11DepthStencilState* m_pDepthCmpStencilState;
     extern ID3D11DepthStencilState* m_pNoDepthNoStencilState;
     extern ID3D11RasterizerState* g_pRasterizerStateBackFaceSolid;
     extern ID3D11RasterizerState* g_pRasterizerStateFrontFaceSolid;
@@ -45,6 +47,45 @@ namespace d3d
 
     extern UINT g_samples;
     extern UINT g_quality;
+
+    struct DisplayMode
+    {
+        DXGI_MODE_DESC mode;
+
+        DisplayMode(VOID)
+        {
+            ZeroMemory(&mode, sizeof(DXGI_MODE_DESC));
+        }
+
+        DisplayMode(CONST DisplayMode& cpy)
+        {
+            mode = cpy.mode;
+        }
+
+        DisplayMode(CONST DXGI_MODE_DESC& cpy)
+        {
+            mode = cpy;
+        }
+
+        DisplayMode& operator=(CONST DisplayMode& m)
+        {
+            mode = m.mode;
+            return *this;
+        }
+
+        DisplayMode& operator=(CONST DXGI_MODE_DESC& m)
+        {
+            mode = m;
+            return *this;
+        }
+
+        VOID Print(VOID);
+    };
+
+    struct DisplayModeList
+    {
+        std::vector<DisplayMode> modeList;
+    };
 
     HRESULT Init(WNDPROC wndProc, CONST HINSTANCE hInstance, CONST LPCWSTR title, UINT width, UINT height);
 
@@ -66,9 +107,19 @@ namespace d3d
 
     VOID ClearBackBuffer(CONST FLOAT color[4]);
 
-    VOID Resize(UINT w, UINT h, BOOL fullscreen);
+    VOID Resize(UINT w, UINT h);
+
+    VOID SetFullscreenState(BOOL fs, UINT width = 0, UINT height = 0);
+
+    BOOL GetFullscreenState(VOID);
 
     VOID GetFullscreenSize(UINT* width, UINT* height);
+
+    VOID GetDisplayModeList(DisplayModeList& modes);
+
+    LPCSTR GetAdapterName(VOID);
+
+    DisplayMode GetClosestDisplayMode(CONST DisplayMode& toMatch);
 
     VOID CreateBackbuffer(UINT width, UINT height);
 

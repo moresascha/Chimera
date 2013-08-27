@@ -10,7 +10,9 @@ namespace tbd
         UINT position;
         UINT texCoord;
         UINT normal;
-        Triple() : position(0), texCoord(0), normal(0) { }
+        ULONG hash;
+        UINT index;
+        Triple() : position(0), texCoord(0), normal(0), hash(0), index(0) { }
 
         BOOL Triple::operator==(const Triple& t0)
         {
@@ -46,7 +48,7 @@ namespace tbd
         friend class ObjLoader;
 
     private:
-        std::vector<tbd::Face> m_faces;
+        std::list<tbd::Face> m_faces;
         std::vector<tbd::IndexBufferInterval> m_indexIntervals;
         tbd::Resource m_materials;
         FLOAT* m_vertices;
@@ -74,7 +76,7 @@ namespace tbd
 
         CONST FLOAT* GetVertices(VOID) CONST { return m_vertices; }
 
-        CONST std::vector<tbd::Face>& GetFaces(VOID) CONST { return m_faces; }
+        CONST std::list<tbd::Face>& GetFaces(VOID) CONST { return m_faces; }
 
         util::AxisAlignedBB& GetAABB(VOID) { return m_aabb; }
 

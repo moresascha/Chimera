@@ -36,7 +36,7 @@ namespace tbd
     public:
         ActorComponent(VOID);
         virtual BOOL VInit(tinyxml2::XMLElement* pData) { return TRUE; }
-        virtual VOID VSave(tinyxml2::XMLDocument* pData) CONST {}
+        virtual VOID VSave(tinyxml2::XMLElement* pData) CONST {}
         virtual VOID VPostInit(VOID);
         virtual VOID VUpdate(ULONG millis) {}
         virtual VOID VDestroy(VOID) {}
@@ -68,7 +68,7 @@ namespace tbd
             return &m_transformation;
         }
 
-        VOID VSave(tinyxml2::XMLDocument* pData) CONST;
+        VOID VSave(tinyxml2::XMLElement* pData) CONST;
         ComponentId GetComponentId(VOID) CONST { return COMPONENT_ID; }
 
         LPCSTR VGetName(VOID) { return "TransformComponent"; }
@@ -100,7 +100,7 @@ namespace tbd
 
         BOOL VInit(tinyxml2::XMLElement* pData);
 
-        VOID VSave(tinyxml2::XMLDocument* pData) CONST;
+        VOID VSave(tinyxml2::XMLElement* pData) CONST;
 
         ComponentId GetComponentId(VOID) CONST { return COMPONENT_ID; }
 
@@ -130,6 +130,7 @@ namespace tbd
     {
 
     public:
+        std::string m_shapeStyle;
         std::string m_shapeType;
         std::string m_material;
 
@@ -147,7 +148,7 @@ namespace tbd
 
         BOOL VInit(tinyxml2::XMLElement* pData);
 
-        VOID VSave(tinyxml2::XMLDocument* pData) CONST;
+        VOID VSave(tinyxml2::XMLElement* pData) CONST;
 
         ComponentId GetComponentId(VOID) CONST { return COMPONENT_ID; }
 
@@ -175,7 +176,7 @@ namespace tbd
 
         BOOL VInit(tinyxml2::XMLElement* pData);
 
-        VOID VSave(tinyxml2::XMLDocument* pData) CONST;
+        VOID VSave(tinyxml2::XMLElement* pData) CONST;
 
         ComponentId GetComponentId(VOID) CONST { return COMPONENT_ID; }
 
@@ -188,7 +189,7 @@ namespace tbd
         CONST static ComponentId COMPONENT_ID;
         ComponentId GetComponentId(VOID) CONST { return COMPONENT_ID; }
         BOOL VInit(tinyxml2::XMLElement* pData) { return TRUE; }
-        VOID VSave(tinyxml2::XMLDocument* pData) CONST;
+        VOID VSave(tinyxml2::XMLElement* pData) CONST;
         LPCSTR VGetName(VOID) { return "PickableComponent"; }
     };
 
@@ -198,23 +199,24 @@ namespace tbd
         CONST static ComponentId COMPONENT_ID;
         ComponentId GetComponentId(VOID) CONST { return COMPONENT_ID; }
         BOOL VInit(tinyxml2::XMLElement* pData);
-        VOID VSave(tinyxml2::XMLDocument* pData) CONST;
+        VOID VSave(tinyxml2::XMLElement* pData) CONST;
         LPCSTR VGetName(VOID) { return "ParticleComponent"; }
     };
 
-    class SoundEmitterComponent : public ActorComponent
+    class SoundComponent : public ActorComponent
     {
     public:
-        SoundEmitterComponent(VOID);
+        SoundComponent(VOID);
         std::string m_soundFile;
         FLOAT m_radius;
+        BOOL m_emitter;
         BOOL m_loop;
         CONST static ComponentId COMPONENT_ID;
         ComponentId GetComponentId(VOID) CONST { return COMPONENT_ID; }
         BOOL VInit(tinyxml2::XMLElement* pData);
-        VOID VSave(tinyxml2::XMLDocument* pData) CONST;
+        VOID VSave(tinyxml2::XMLElement* pData) CONST;
         VOID VCreateResources(VOID);
-        LPCSTR VGetName(VOID) { return "SoundEmitterComponent"; }
+        LPCSTR VGetName(VOID) { return "SoundComponent"; }
     };
 
     class ParentComponent : public ActorComponent
@@ -225,6 +227,8 @@ namespace tbd
         ActorId GetParent(VOID) { return m_parentId; }
         CONST static ComponentId COMPONENT_ID;
         LPCSTR VGetName(VOID) { return "ParentComponent"; }
+        BOOL VInit(tinyxml2::XMLElement* pData);
+        VOID VSave(tinyxml2::XMLElement* pData) CONST;
         ComponentId GetComponentId(VOID) CONST { return COMPONENT_ID; }
         VOID VPostInit(VOID);
     };

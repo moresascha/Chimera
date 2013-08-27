@@ -35,8 +35,19 @@ namespace tbd
     {
         SceneNode::VOnActorMoved();
         m_pCamera->SetPerspectiveProjection(1.0f, DEGREE_TO_RAD(m_lightComponent->m_angle), 0.01f, GetTransformation()->GetScale().x);
+        
+        util::Vec4 up(0,1,0,0);
+        util::Vec4 dir(0,0,1,0);
+        up = util::Mat4::Transform(*GetTransformation(), up);
+        dir = util::Mat4::Transform(*GetTransformation(), dir);
+        up.Normalize();
+        dir.Normalize();
+        m_pCamera->FromViewUp(util::Vec3(dir.x,dir.y,dir.z), util::Vec3(up.x,up.y,up.z));
+
         m_pCamera->SetEyePos(GetTransformation()->GetTranslation());
-        m_pCamera->SetRotation(GetTransformation()->GetPYR().y, GetTransformation()->GetPYR().x);
+
+        //m_pCamera->SetRotation(GetTransformation()->GetPYR().y, GetTransformation()->GetPYR().x);
+        
         m_middle = GetTransformation()->GetTranslation();
         FLOAT c = cos(m_pCamera->GetFoV() / 2.0f); //Todo: need a tighter bb here
         FLOAT h = GetTransformation()->GetScale().x / c;
@@ -82,8 +93,6 @@ namespace tbd
                 g_pShadowRenderTarget->Bind();
                 g_pShadowRenderTarget->Clear();
 
-                renderer->PushRasterizerState(d3d::g_pRasterizerStateBackFaceSolid);
-
                 graph->PushFrustum(&m_pCamera->GetFrustum());
 
                 graph->OnRender(tbd::eDRAW_TO_SHADOW_MAP);
@@ -94,18 +103,18 @@ namespace tbd
 
                 graph->PopFrustum();
 
-                renderer->PopRasterizerState();
-
                 renderer->ActivateCurrentRendertarget();
 
                 renderer->SetSampler(d3d::eDiffuseColorSampler, g_pShadowRenderTarget->GetShaderRessourceView()); //todo
 
                 m_drawLighting->Bind();
 
+                d3d::GetContext()->OMSetDepthStencilState(d3d::m_pNoDepthNoStencilState, 0);
                 d3d::GetContext()->OMSetBlendState(d3d::g_pBlendStateBlendAdd, NULL, 0xffffff);
                 GeometryFactory::GetGlobalScreenQuad()->Bind();
                 GeometryFactory::GetGlobalScreenQuad()->Draw();
                 d3d::GetContext()->OMSetBlendState(d3d::g_pBlendStateNoBlending, NULL, 0xffffff);
+                d3d::GetContext()->OMSetDepthStencilState(d3d::m_pDepthNoStencilState, 0);
 
                 renderer->VPopViewTransform();
                 renderer->VPopProjectionTransform();
@@ -135,7 +144,7 @@ namespace tbd
                     util::Mat4 m = *GetTransformation();
                     m.SetScale(1);
                     DrawAnchorSphere(m_actor, &m, 1); 
-                    DrawFrustum(m_pCamera->GetFrustum());
+                   // DrawFrustum(m_pCamera->GetFrustum());
                 }
             } break;
 

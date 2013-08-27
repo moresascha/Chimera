@@ -34,7 +34,7 @@
     #pragma comment (lib, "PhysXVisualDebuggerSDK.lib")
 #endif
 
-namespace logic 
+namespace tbd 
 {
 
     using namespace physx;
@@ -173,7 +173,7 @@ namespace logic
   
         m_pDesc->cpuDispatcher = physx::PxDefaultCpuDispatcherCreate(4);
 
-        m_pDesc->flags |= physx::PxSceneFlag::eENABLE_ACTIVETRANSFORMS | physx::PxSceneFlag::eENABLE_KINEMATIC_PAIRS | physx::PxSceneFlag::eENABLE_KINEMATIC_STATIC_PAIRS;
+        m_pDesc->flags |= physx::PxSceneFlag::eENABLE_ACTIVETRANSFORMS | physx::PxSceneFlag::eENABLE_KINEMATIC_PAIRS | physx::PxSceneFlag::eENABLE_KINEMATIC_STATIC_PAIRS;// | physx::PxSceneFlag::eENABLE_SWEPT_INTEGRATION;
 
         m_pScene = this->m_pPhysx->createScene(*m_pDesc);
 
@@ -190,11 +190,11 @@ namespace logic
         } */
 
         //set default materials
-        m_materials["dynamic"] = Material(0.5f, 0.5f, 0.1f, 1.0f, 1.0f, m_pPhysx);
-        m_materials["static"] = Material(0.5f, 0.5f, 0.1f, 0.0f, 1.0f, m_pPhysx);
-        m_materials["bouncy"] = Material(0.5f, 0.5f, 0.8f, 1.0f, 2.0f, m_pPhysx);
-        m_materials["kinematic"] = Material(0.5f, 0.5f, 0.8f, 1.0f, 2.0f, m_pPhysx);
-        m_materials["default"] = Material(0.5f, 0.5f, 0.1f, 1.0f, 2.0f, m_pPhysx);
+        m_materials["dynamic"] = px::Material(0.5f, 0.5f, 0.1f, 1.0f, 1.0f, m_pPhysx);
+        m_materials["static"] = px::Material(0.5f, 0.5f, 0.1f, 0.0f, 1.0f, m_pPhysx);
+        m_materials["bouncy"] = px::Material(0.5f, 0.5f, 0.8f, 1.0f, 2.0f, m_pPhysx);
+        m_materials["kinematic"] = px::Material(0.5f, 0.5f, 0.8f, 1.0f, 2.0f, m_pPhysx);
+        m_materials["default"] = px::Material(0.5f, 0.5f, 0.1f, 1.0f, 2.0f, m_pPhysx);
         //m_materials["bouncy"].m_material->setFlag(physx::PxMaterialFlag::eDISABLE_STRONG_FRICTION, FALSE);
         //end
 
@@ -250,11 +250,10 @@ namespace logic
         this->AddActor(geo, actor, offsetPosition, material, dimension.x * dimension.y * dimension.z);
     }
 
-    VOID PhysX::VCreateTriangleMesh(std::shared_ptr<tbd::Actor> actor, CONST tbd::Mesh* mesh, CONST util::Vec3& offsetPosition, std::string& material)
+    VOID PhysX::CreateTriangleConcaveMesh(std::shared_ptr<tbd::Actor> actor, CONST tbd::Mesh* mesh, CONST util::Vec3& offsetPosition, std::string& material)
     {
         physx::PxTriangleMeshDesc meshDesc;
-        std::shared_ptr<tbd::RenderComponent> rc = actor->GetComponent<tbd::RenderComponent>(tbd::RenderComponent::COMPONENT_ID).lock();
-    
+
         UINT stride = mesh->GetVertexStride() / sizeof(UINT);
         UINT count = mesh->GetVertexCount();
 
@@ -282,28 +281,6 @@ namespace logic
             indices32[3 * i + 0] = i0;
             indices32[3 * i + 1] = i2;
             indices32[3 * i + 2] = i1;
-            /*
-            tbd::Face f = mesh->GetFaces()[i];
-            if(f.m_triples.size() == 3)
-            {
-                indices32[index++] = f.m_triples[0].position;
-                indices32[index++] = f.m_triples[1].position;
-                indices32[index++] = f.m_triples[2].position;
-            }
-            else if(f.m_triples.size() == 4)
-            {
-                indices32[index++] = f.m_triples[0].position;
-                indices32[index++] = f.m_triples[1].position;
-                indices32[index++] = f.m_triples[2].position;
-
-                indices32[index++] = f.m_triples[1].position;
-                indices32[index++] = f.m_triples[2].position;
-                indices32[index++] = f.m_triples[3].position;
-            }
-            else
-            {
-                LOG_ERROR("unkown triples count");
-            } */
         }
 
         meshDesc.triangles.count = mesh->GetIndexCount() / 3;
@@ -326,6 +303,78 @@ namespace logic
 
         SAFE_ARRAY_DELETE(indices32);
         SAFE_ARRAY_DELETE(verts);
+    }
+
+    VOID PhysX::CreateTriangleConvexMesh(std::shared_ptr<tbd::Actor> actor, CONST tbd::Mesh* mesh, CONST util::Vec3& offsetPosition, std::string& material)
+    {
+        physx::PxConvexMeshDesc meshDesc;
+
+        UINT stride = mesh->GetVertexStride() / sizeof(UINT);
+        UINT count = mesh->GetVertexCount();
+
+        physx::PxVec3* verts = new physx::PxVec3[mesh->GetVertexCount()];
+
+        for(UINT i = 0; i < mesh->GetVertexCount(); ++i)
+        {
+            physx::PxVec3 v;
+            v.x = mesh->GetVertices()[i * stride + 0];
+            v.y = mesh->GetVertices()[i * stride + 1];
+            v.z = mesh->GetVertices()[i * stride + 2];
+            verts[i] = v;
+        }
+        meshDesc.points.count = count;
+        meshDesc.points.stride = sizeof(physx::PxVec3);
+        meshDesc.points.data = verts;
+        meshDesc.flags = physx::PxConvexFlag::eCOMPUTE_CONVEX;
+
+        physx::PxU32* indices32 = new physx::PxU32[mesh->GetIndexCount()];
+        UINT index = 0;
+        for(UINT i = 0; i < mesh->GetIndexCount() / 3; ++i)
+        {
+            UINT i0 = mesh->GetIndices()[3 * i + 0];
+            UINT i1 = mesh->GetIndices()[3 * i + 1];
+            UINT i2 = mesh->GetIndices()[3 * i + 2];
+            indices32[3 * i + 0] = i0;
+            indices32[3 * i + 1] = i2;
+            indices32[3 * i + 2] = i1;
+        }
+
+        meshDesc.triangles.count = mesh->GetIndexCount() / 3;
+        meshDesc.triangles.stride = 3 * sizeof(physx::PxU32);
+        meshDesc.triangles.data = indices32;
+
+        PxToolkit::MemoryOutputStream writeBuffer;
+        if(!m_pCooking->cookConvexMesh(meshDesc, writeBuffer))
+        {
+            LOG_CRITICAL_ERROR("failed to cook triangle mesh");
+        }
+
+        PxToolkit::MemoryInputData readBuffer(writeBuffer.getData(), writeBuffer.getSize());
+        physx::PxConvexMesh* pxmesh = m_pPhysx->createConvexMesh(readBuffer);
+        physx::PxMeshScale scale;
+        scale.scale.z = scale.scale.y = scale.scale.x = actor->GetComponent<tbd::TransformComponent>(tbd::TransformComponent::COMPONENT_ID).lock()->GetTransformation()->GetScale().x;
+        physx::PxConvexMeshGeometry geo(pxmesh, scale);
+
+        AddActor(geo, actor, offsetPosition, material, 1);
+
+        SAFE_ARRAY_DELETE(indices32);
+        SAFE_ARRAY_DELETE(verts);
+    }
+
+    VOID PhysX::VCreateTriangleMesh(std::shared_ptr<tbd::Actor> actor, CONST tbd::Mesh* mesh, CONST util::Vec3& offsetPosition, std::string& material, std::string& shapeType)
+    {
+        if(shapeType == "convex")
+        {
+            CreateTriangleConvexMesh(actor, mesh, offsetPosition, material);
+        }
+        else if(shapeType == "concave")
+        {
+            CreateTriangleConcaveMesh(actor, mesh, offsetPosition, material);
+        }
+        else
+        {
+            LOG_CRITICAL_ERROR("shapetype not implemented!");
+        }
     }
 
     VOID PhysX::VCreateTrigger(FLOAT radius, std::shared_ptr<tbd::Actor> actor) 
@@ -499,7 +548,7 @@ namespace logic
 
     physx::PxActor* PhysX::AddActor(physx::PxGeometry& geo, std::shared_ptr<tbd::Actor> actor, CONST util::Vec3& offsetPosition, std::string& mat, FLOAT density)
     {
-        Material& material = CheckMaterial(mat);
+        px::Material& material = CheckMaterial(mat);
 
         std::shared_ptr<tbd::TransformComponent> comp = actor->GetComponent<tbd::TransformComponent>(tbd::TransformComponent::COMPONENT_ID).lock();
         util::Vec3 trans = comp->GetTransformation()->GetTranslation() + offsetPosition;;
@@ -519,9 +568,11 @@ namespace logic
             {
                 pxDActor->setRigidDynamicFlag(physx::PxRigidDynamicFlag::eKINEMATIC, true);
             }
+
             shape = pxDActor->createShape(geo, *material.m_material);
             pxDActor->setAngularDamping(material.m_angulardamping);
             physx::PxRigidBodyExt::updateMassAndInertia(*pxDActor, density);
+
             pxActor = pxDActor;
         }
         else
@@ -597,7 +648,7 @@ namespace logic
         {
             return;
         }
-        m_lastMillis = min(1.0 / 60.0, time);
+        m_lastMillis = time;//min(1.0 / 60.0, time);
         this->m_pScene->simulate(time);
         time = 0;
     }
@@ -618,6 +669,83 @@ namespace logic
         }
     }
 
+    VOID PhysX::CreateFromActor(std::shared_ptr<tbd::Actor> actor)
+    {
+        std::shared_ptr<tbd::PhysicComponent> physComp = actor->GetComponent<tbd::PhysicComponent>(tbd::PhysicComponent::COMPONENT_ID).lock();
+        if(!actor)
+        {
+            LOG_CRITICAL_ERROR("Actor does not exist");
+            return;
+        }
+
+        if(!physComp)
+        {
+            return; //should not happen
+        }
+
+        std::shared_ptr<tbd::TransformComponent> transComp = actor->GetComponent<tbd::TransformComponent>(tbd::TransformComponent::COMPONENT_ID).lock();
+
+        if(!transComp)
+        {
+            LOG_CRITICAL_ERROR("No TrasnformComponent");
+        }
+        std::shared_ptr<tbd::RenderComponent> renderCmp = actor->GetComponent<tbd::RenderComponent>(tbd::RenderComponent::COMPONENT_ID).lock();
+
+        if(renderCmp && !renderCmp->m_instances.empty())
+        {
+            for(auto it = renderCmp->m_instances.begin(); it != renderCmp->m_instances.end(); ++it)
+            {
+                if(physComp->m_shapeStyle == "box")
+                {
+                    this->VCreateCube(physComp->m_dim, actor, *it, physComp->m_material);
+                }
+                else if(physComp->m_shapeStyle == "sphere")
+                {
+                    this->VCreateSphere(physComp->m_radius, actor, *it, physComp->m_material);
+                }
+                else
+                {
+                    LOG_CRITICAL_ERROR("ShapeType not implemented");
+                }
+            }
+        }
+        else
+        {
+            if(physComp->m_shapeStyle == "plane")
+            {
+                this->VCreateStaticPlane(util::Vec3(), actor, physComp->m_material);
+            }
+            else if(physComp->m_shapeStyle == "box")
+            {
+                this->VCreateCube(physComp->m_dim, actor, util::Vec3(), physComp->m_material);
+            }
+            else if(physComp->m_shapeStyle == "sphere")
+            {
+                this->VCreateSphere(physComp->m_radius, actor, util::Vec3(), physComp->m_material);
+            }
+            else if(physComp->m_shapeStyle == "character")
+            {
+                CONST util::Vec3& pos = transComp->GetTransformation()->GetTranslation();
+                this->VCreateCharacterController(actor->GetId(), pos, 0.5f, 1.85f);
+            }
+            else if(physComp->m_shapeStyle == "mesh")
+            {
+                std::shared_ptr<tbd::Mesh> mesh = std::static_pointer_cast<tbd::Mesh>(app::g_pApp->GetCache()->GetHandle(physComp->m_meshFile));
+                VCreateTriangleMesh(actor, mesh.get(), util::Vec3(), physComp->m_material, physComp->m_shapeType);
+                m_resourceToActor[mesh->GetResource().m_name] = actor->GetId();
+            }
+            else if(physComp->m_shapeStyle == "trigger")
+            {
+                VCreateTrigger(physComp->m_radius, actor);
+            }
+            else
+            {
+                LOG_CRITICAL_ERROR("ShapeType not implemented");
+            }
+        }
+        physComp->VSetHandled();
+    }
+
     VOID PhysX::NewComponentDelegate(event::IEventPtr pEventData) 
     {
 
@@ -626,80 +754,20 @@ namespace logic
         if(pCastEventData->m_id == tbd::PhysicComponent::COMPONENT_ID)
         {
             std::shared_ptr<tbd::Actor> actor = app::g_pApp->GetLogic()->VFindActor(pCastEventData->m_actorId);
-            if(!actor)
-            {
-                LOG_CRITICAL_ERROR("Actor does not exist");
-                return;
-            }
+            CreateFromActor(actor);
+        }
+    }
 
-            std::shared_ptr<tbd::PhysicComponent> physComp = actor->GetComponent<tbd::PhysicComponent>(tbd::PhysicComponent::COMPONENT_ID).lock();
+    VOID PhysX::OnResourceChanged(event::IEventPtr data)
+    {
+        std::shared_ptr<event::ResourceChangedEvent> event = std::static_pointer_cast<event::ResourceChangedEvent>(data);
 
-            if(!physComp)
-            {
-                return; //should not happen
-            }
-
-            std::shared_ptr<tbd::TransformComponent> transComp = actor->GetComponent<tbd::TransformComponent>(tbd::TransformComponent::COMPONENT_ID).lock();
-
-            if(!transComp)
-            {
-                LOG_CRITICAL_ERROR("No TrasnformComponent");
-            }
-            std::shared_ptr<tbd::RenderComponent> renderCmp = actor->GetComponent<tbd::RenderComponent>(tbd::RenderComponent::COMPONENT_ID).lock();
-        
-            if(renderCmp && !renderCmp->m_instances.empty())
-            {
-                for(auto it = renderCmp->m_instances.begin(); it != renderCmp->m_instances.end(); ++it)
-                {
-                    if(physComp->m_shapeType == "box")
-                    {
-                        this->VCreateCube(physComp->m_dim, actor, *it, physComp->m_material);
-                    }
-                    else if(physComp->m_shapeType == "sphere")
-                    {
-                        this->VCreateSphere(physComp->m_radius, actor, *it, physComp->m_material);
-                    }
-                    else
-                    {
-                        LOG_CRITICAL_ERROR("ShapeType not implemented");
-                    }
-                }
-            }
-            else
-            {
-                if(physComp->m_shapeType == "plane")
-                {
-                    this->VCreateStaticPlane(util::Vec3(), actor, physComp->m_material);
-                }
-                else if(physComp->m_shapeType == "box")
-                {
-                    this->VCreateCube(physComp->m_dim, actor, util::Vec3(), physComp->m_material);
-                }
-                else if(physComp->m_shapeType == "sphere")
-                {
-                    this->VCreateSphere(physComp->m_radius, actor, util::Vec3(), physComp->m_material);
-                }
-                else if(physComp->m_shapeType == "character")
-                {
-                    CONST util::Vec3& pos = transComp->GetTransformation()->GetTranslation();
-                    this->VCreateCharacterController(actor->GetId(), pos, 0.5f, 1.85f);
-                }
-                else if(physComp->m_shapeType == "static_mesh")
-                {
-                    std::shared_ptr<tbd::Mesh> mesh = std::static_pointer_cast<tbd::Mesh>(app::g_pApp->GetCache()->GetHandle(physComp->m_meshFile));
-                    VCreateTriangleMesh(actor, mesh.get(), util::Vec3(), physComp->m_material);
-                }
-                else if(physComp->m_shapeType == "trigger")
-                {
-                    VCreateTrigger(physComp->m_radius, actor);
-                }
-                else
-                {
-                    LOG_CRITICAL_ERROR("ShapeType not implemented");
-                }
-            }
-
-            physComp->VSetHandled();
+        auto it = m_resourceToActor.find(event->m_resource);
+        if(it != m_resourceToActor.end())
+        {
+            VRemoveActor(it->second);
+            std::shared_ptr<tbd::Actor> actor = app::g_pApp->GetLogic()->VFindActor(it->second);
+            CreateFromActor(actor);
         }
     }
 

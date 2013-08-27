@@ -81,7 +81,6 @@ namespace d3d
 
         m_pCascadesSettings = new CascadeSettings[m_cascades];
 
-
         FLOAT f = 1000;
         
         FLOAT factor = 3.5;
@@ -229,7 +228,7 @@ namespace d3d
             vmax = vmax + vBoarderOffset;
             vmin = vmin - vBoarderOffset; */
             
-            float n = -120;//vmin.z; //todo
+            float n = min(-120, vmin.z); //todo
             float ff = vmax.z;
 
             distances[ci] = ff - n;

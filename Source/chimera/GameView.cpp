@@ -71,12 +71,13 @@ namespace tbd
         return app::g_pApp->GetVRamManager();
     }
 
-    VOID HumanGameView::Resize(UINT w, UINT h, BOOL fullscreen)
+    VOID HumanGameView::Resize(UINT w, UINT h)
     {
         if(d3d::g_pSwapChain) 
         {
-            d3d::Resize(w, h, fullscreen);
+            d3d::Resize(w, h);
             VOnRestore();
+            BOOL fullscreen = d3d::GetFullscreenState();
             app::g_pApp->GetInputHandler()->VSetCurserOffsets(fullscreen ? 0 : 8 , fullscreen ? 0 : 30); //todo, get systemmetrics
         }
     }
@@ -90,7 +91,6 @@ namespace tbd
             std::shared_ptr<tbd::TransformComponent> comp = m_actor->GetComponent<tbd::TransformComponent>(tbd::TransformComponent::COMPONENT_ID).lock();
             CONST util::Vec3& trans = comp->GetTransformation()->GetTranslation();
 
-            //            m_pSceneGraph->GetCamera()->SetRotation()comp->GetTransformation()->GetPYR().x, comp->GetTransformation()->GetPYR().y); TODO
             m_pSceneGraph->GetCamera()->SetRotation(comp->m_phi, comp->m_theta);
 
             m_pSceneGraph->GetCamera()->MoveToPosition(trans);
@@ -125,10 +125,6 @@ namespace tbd
             else if(comp->m_type == "skydome")
             {
                 node = std::shared_ptr<tbd::SkyDomeNode>(new tbd::SkyDomeNode(actor->GetId(), comp->m_info));
-            }
-            else if(comp->m_type == "camera_debug")
-            {
-                node = std::shared_ptr<tbd::CameraDebugNode>(new tbd::CameraDebugNode(actor->GetId()));
             }
             else if(!comp->m_instances.empty())
             {
@@ -183,6 +179,14 @@ namespace tbd
             node->VOnRestore(m_pSceneGraph);
 
             comp->VSetHandled();
+        }
+        else if(pCastEventData->m_id == tbd::CameraComponent::COMPONENT_ID)
+        {
+            std::shared_ptr<tbd::SceneNode> node = std::shared_ptr<tbd::CameraNode>(new tbd::CameraNode(actor->GetId()));
+
+            m_pSceneGraph->AddChild(pCastEventData->m_actorId, node);
+
+            node->VOnRestore(m_pSceneGraph);
         }
     }
 
@@ -310,6 +314,8 @@ namespace tbd
 
     HRESULT HumanGameView::VOnRestore()
     {
+        GetRenderer()->VOnRestore();
+
         TBD_FOR(m_scenes)
         {
             (*it)->VOnRestore();
@@ -326,6 +332,9 @@ namespace tbd
         }
 
         m_pSceneGraph->OnRestore();
+
+        GetRenderer()->VSetProjectionTransform(m_pSceneGraph->GetCamera()->GetProjection(), m_pSceneGraph->GetCamera()->GetFar());
+        GetRenderer()->VSetViewTransform(m_pSceneGraph->GetCamera()->GetView(), m_pSceneGraph->GetCamera()->GetIView(), m_pSceneGraph->GetCamera()->GetEyePos());
 
         return S_OK;
     }

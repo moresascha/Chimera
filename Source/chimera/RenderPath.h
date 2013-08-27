@@ -14,6 +14,7 @@ namespace tbd
     CONST RenderPath eDRAW_TO_ALBEDO_INSTANCED = 1 << 8;
     CONST RenderPath eDRAW_TO_SHADOW_MAP_INSTANCED = 1 << 9;
     CONST RenderPath eDRAW_SKY = 1 << 10;
+    CONST RenderPath eNO_DRAW = 1 << 11;
 
     /*
     typedef enum RenderPath 

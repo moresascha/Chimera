@@ -8,8 +8,28 @@
 #include <sys/types.h>
 #include "Process.h"
 #include "GameLogic.h"
+#include "Event.h"
+#include "EventManager.h"
+
 namespace tbd 
 {
+    class WatchResourceModification : public proc::WatchFileModificationProcess
+    {
+        class ResHandle;
+    private:
+        std::string m_resource;
+    public:
+        WatchResourceModification(std::string res, LPCTSTR file, LPCTSTR folder) : WatchFileModificationProcess(file, folder), m_resource(res)
+        {
+        }
+
+        VOID VOnFileModification(VOID)
+        {
+            QUEUE_EVENT_TSAVE(new event::ResourceChangedEvent(m_resource));
+            DEBUG_OUT_A("change on Res: %s\n", m_resource.c_str());
+            Succeed();
+        }
+    };
 
     class LoadFunctionHolder 
     {
@@ -48,6 +68,29 @@ namespace tbd
 
             cache->AllocSilent(size);
 
+#ifdef _DEBUG
+            if(app::g_pApp->GetLogic())
+            {
+                std::string f = cache->GetFile().VGetName();
+                
+                if(loader->VSubFolder() != "")
+                {
+                     f += loader->VSubFolder();
+                }
+
+                std::vector<std::string> split;
+                util::split(handle->GetResource().m_name, '/', split);
+                for(int i = 0; i < split.size()-1; ++i)
+                {
+                    f += split[i] + "/";
+                }
+                std::string rawFileName = split.back();
+
+                std::wstring wf(f.begin(), f.end());
+                std::wstring rwf(rawFileName.begin(), rawFileName.end());
+                app::g_pApp->GetLogic()->AttachProcess(std::shared_ptr<WatchResourceModification>(new WatchResourceModification(handle->GetResource().m_name, rwf.c_str(), wf.c_str())));
+            }
+#endif
         }
     };
 
@@ -78,7 +121,16 @@ namespace tbd
 
     ResourceCache::ResourceCache(UINT mbSize, IResourceFile* file) : m_defaultDecompressor(NULL), m_defaultLoader(NULL), m_currentCacheSize(NULL), m_maxCacheSize(1024 * 1024 * mbSize), m_pFile(file) 
     {
+    }
 
+    VOID ResourceCache::OnResourceChanged(std::shared_ptr<event::IEvent> data)
+    {
+        std::shared_ptr<event::ResourceChangedEvent> event = std::static_pointer_cast<event::ResourceChangedEvent>(data);
+        std::shared_ptr<tbd::ResHandle> h = Find(tbd::Resource(event->m_resource));
+        if(h)
+        {
+            h->m_isReady = FALSE;
+        }
     }
 
     BOOL ResourceCache::Init(VOID) 
@@ -105,7 +157,7 @@ namespace tbd
     VOID ResourceCache::AppendHandle(std::shared_ptr<ResHandle> handle)
     {
         m_lock.Lock();
-        Resource& r = handle->GetRessource();
+        Resource& r = handle->GetResource();
         auto it = m_locks.find(r.m_name);
         if(it == m_locks.end())
         {
@@ -161,11 +213,13 @@ namespace tbd
             {
                 m_locks[r.m_name]->Unlock();
                 Update(handle);
-            } 
-
-            m_lock.Unlock();
-            //DEBUG_OUT("returning: " + r.m_name);
-            return handle;
+                m_lock.Unlock();
+                return handle;
+            }
+            m_handlesmap.erase(handle->m_resource.m_name);
+            m_handlesList.remove(handle);
+            SAFE_ARRAY_DELETE(handle->m_data);
+            MemoryHasBeenFreed(handle->m_size);
         }
 
         handle = Load(r, async);
@@ -197,7 +251,7 @@ namespace tbd
     {
         IResourceLoader* loader;
         IResourceDecompressor* decomp = NULL;
-        std::shared_ptr<ResHandle> handle;
+        std::shared_ptr<ResHandle> handle = NULL;
 
         std::vector<std::string> elems = util::split(r.m_name, '.');
 
@@ -220,7 +274,7 @@ namespace tbd
         }
 
         handle = std::shared_ptr<ResHandle>(loader->VCreateHandle());
-        handle->m_ressource = r;
+        handle->m_resource = r;
         handle->m_cache = this;
 
         if(handle) 
@@ -304,24 +358,21 @@ namespace tbd
 
     VOID ResourceCache::FreeOneRessource(VOID) 
     {
-        /*
-        m_lock.Lock();
-        std::shared_ptr<ResHandle> handle = m_handlesList.back();
-        m_handlesList.pop_back();
-        m_handlesmap.erase(handle->m_ressource.m_name);
-        SAFE_DELETE(m_locks[handle->m_ressource.m_name]);
-        m_locks.erase(handle->m_ressource.m_name);
-        m_lock.Unlock(); */
         Free(m_handlesList.back());
     }
 
     VOID ResourceCache::Free(std::shared_ptr<ResHandle> handle) 
     {
         m_lock.Lock();
-        m_handlesmap.erase(handle->m_ressource.m_name);
+
+        SAFE_ARRAY_DELETE(handle->m_data);
+
+        MemoryHasBeenFreed(handle->m_size);
+
+        m_handlesmap.erase(handle->m_resource.m_name);
         m_handlesList.remove(handle);
-        SAFE_DELETE(m_locks[handle->m_ressource.m_name]);
-        m_locks.erase(handle->m_ressource.m_name);
+        SAFE_DELETE(m_locks[handle->m_resource.m_name]);
+        m_locks.erase(handle->m_resource.m_name);
         m_lock.Unlock();
     }
 
@@ -379,7 +430,6 @@ namespace tbd
 
     ResourceCache::~ResourceCache(VOID)
     {
-    
         while(!m_handlesList.empty())
         {
             FreeOneRessource();
@@ -391,11 +441,7 @@ namespace tbd
 
     ResHandle::~ResHandle(VOID) 
     {
-        if(m_data) 
-        {
-            delete[] m_data;
-        }
-        m_cache->MemoryHasBeenFreed(m_size);
+
     }
 
     /*
@@ -509,6 +555,5 @@ namespace tbd
         handle->SetBuffer(source);
         return size;
     }
-
 };
 

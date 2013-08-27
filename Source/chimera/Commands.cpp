@@ -186,12 +186,20 @@ namespace tbd
         }
 
         tbd::Command c(vals);
-
-        if(!it->second(c))
+        try 
         {
-            std::string printStr("print " + m_nameToUsage[cmd]);
+            if(!it->second(c))
+            {
+                std::string printStr("print " + m_nameToUsage[cmd]);
+                CallCommand(printStr.c_str());
+            }
+        } catch(LPCSTR error)
+        {
+            std::string printStr("print ");
+            printStr += error;
             CallCommand(printStr.c_str());
         }
+
 
         return TRUE;
     }
@@ -398,8 +406,84 @@ namespace tbd
             return TRUE;
         }
 
+        BOOL SaveLevel(Command& cmd)
+        {
+            std::string name = cmd.GetNextCharStr();
+            CHECK_COMMAND(cmd);
+            app::g_pApp->GetLogic()->Getlevel()->VSave(name.c_str());
+            return TRUE;
+        }
+
+        BOOL LoadLevel(tbd::Command& cmd)
+        {
+            std::string name = cmd.GetNextCharStr();
+            CHECK_COMMAND(cmd);
+
+            std::string s;
+            s += app::g_pApp->GetCache()->GetFile().VGetName();
+            s += "/";
+            s += app::g_pApp->GetConfig()->GetString("sLevelPath");
+            s += name;
+
+            if(!util::CheckIfFileExists(s.c_str()))
+            {
+                throw "File does not exist!";
+            }
+
+            event::LoadLevelEvent* e = new event::LoadLevelEvent();
+            e->m_name = name;
+            QUEUE_EVENT(e);
+
+            return TRUE;
+        }
+
+        BOOL RunProc(tbd::Command& cmd)
+        {
+            std::string cmdStr = cmd.GetRemainingString();
+
+            CHECK_COMMAND(cmd);
+
+            STARTUPINFO si;
+            ZeroMemory(&si, sizeof(si));
+            AllocConsole();
+
+            si.cb = sizeof(si);
+
+            PROCESS_INFORMATION pi;
+            ZeroMemory(&pi, sizeof(pi));
+
+            SECURITY_ATTRIBUTES sa;
+            ZeroMemory(&sa, sizeof(sa));
+            sa.nLength = sizeof(sa);
+            sa.lpSecurityDescriptor = NULL;
+            sa.bInheritHandle = TRUE;
+
+            std::wstring ws(cmdStr.begin(), cmdStr.end());
+            LPTSTR szCmdline = _tcsdup(ws.c_str());
+
+            if(!CreateProcess(NULL, szCmdline, &sa, NULL, FALSE, 0, NULL, NULL, &si, &pi))
+            {
+                return FALSE;
+            }
+
+            WaitForSingleObject(pi.hProcess, INFINITE);
+
+            DWORD exitCode;
+            GetExitCodeProcess(pi.hProcess, &exitCode);
+
+            FreeConsole();
+
+            CloseHandle(pi.hProcess);
+            CloseHandle(pi.hThread);
+
+            free(szCmdline);
+
+            return exitCode;
+        }
+
         VOID AddCommandsToInterpreter(CommandInterpreter& interpreter)
         {
+            interpreter.RegisterCommand("runproc", RunProc);
             interpreter.RegisterCommand("bind", commands::Bind, "bind [key] [command]");
             interpreter.RegisterCommand("playsound", commands::PlaySound, "playsound [valid wavefile]");
             interpreter.RegisterCommand("console", commands::ToogleConsole);
@@ -408,6 +492,8 @@ namespace tbd
             interpreter.RegisterCommand("reload", commands::ReloadLevel);
             interpreter.RegisterCommand("runscript", commands::RunScript);
             interpreter.RegisterCommand("sunpos", commands::SetSunPosition, "sunpos x y z");
+            interpreter.RegisterCommand("savelevel", commands::SaveLevel, "savelevel [levelname]");
+            interpreter.RegisterCommand("loadlevel", commands::LoadLevel, "LoadLevel [levelname]");
         }
     }
 }

@@ -6,13 +6,13 @@
 #include <vector>
 #include <sstream>
 #include "util.h"
+#include <locale>
 
 namespace tbd 
 {
-
     struct SubMeshData 
     {
-        std::vector<Face> m_faces;
+        std::list<Face> m_faces;
         UINT m_triplesCount;
         UINT m_trianglesCount;
         SubMeshData() : m_triplesCount(0), m_trianglesCount(0) {}
@@ -26,112 +26,209 @@ namespace tbd
         std::vector<util::Vec3> m_tangents;
     };
 
-    UINT GetTriple(std::string s, Triple& triple) 
+    VOID GetLine(CHAR* source, UINT& pos, UINT size)
     {
-        CHAR* context = NULL;
-        CHAR* elements = strtok_s(const_cast<CHAR*>(s.c_str()), "/", &context);
-        std::string elems[3] = {"-1", "-1", "-1"};
-        UINT count = 0;
-        while(elements != NULL)
+        while(source[pos] != '\n' && pos < size)
         {
-            elems[count] = elements;
-            elements = strtok_s(NULL, "/", &context);
-            count++;
+            pos++;
         }
-        triple.position = atoi(elems[0].c_str()) - 1;
-        triple.texCoord = atoi(elems[1].c_str()) - 1;
-        triple.normal = atoi(elems[2].c_str()) - 1;
-        return count;
+        pos++;
+    }
+
+    struct ShrdCharPtr
+    {
+        UINT m_length;
+        CHAR* m_ptr;
+
+        CHAR m_buffer[64];
+
+        ShrdCharPtr(VOID) : m_ptr(NULL), m_length(0)
+        {
+            ZeroMemory(&m_buffer, sizeof(CHAR) * 64);
+        }
+
+        std::string GetString(VOID)
+        {
+            return std::string(m_ptr, m_length);
+        }
+
+        FLOAT GetFloat(VOID)
+        {
+            _memccpy(&m_buffer, m_ptr, '\0', m_length);
+            return (FLOAT)atof(m_buffer);
+        }
+
+        INT GetInt(VOID)
+        {
+            _memccpy(&m_buffer, m_ptr, '\0', m_length);
+            return atoi(m_buffer);
+        }
+    };
+
+    BOOL ShrdPtrStrCmp(ShrdCharPtr& s0, CONST CHAR* str)
+    {
+        size_t l = std::strlen(str);
+        if(s0.m_length != l)
+        {
+            return FALSE;
+        }
+
+        TBD_FOR_INT(s0.m_length)
+        {
+            if(s0.m_ptr[i] != str[i])
+            {
+                return FALSE;
+            }
+        }
+        return TRUE;
+    }
+
+    class SharedMemoryStream
+    {
+    public:
+        UINT m_start;
+        UINT m_length;
+        UINT m_end;
+        CHAR* m_source;
+        CHAR m_delim;
+
+        SharedMemoryStream(UINT s, UINT l, CHAR* src, CHAR delim = ' ') : m_start(s), m_length(l), m_source(src), m_delim(delim)
+        {
+            m_end = m_start + m_length;
+        }
+
+        BOOL Good(VOID)
+        {
+            return m_start < m_end;
+        }
+
+        ShrdCharPtr& operator >> (ShrdCharPtr& ptr)
+        {
+            ptr.m_ptr = (m_source + m_start);
+            if(!Good())
+            {
+                LOG_CRITICAL_ERROR("Erf wtf is going on!");
+            }
+            INT l = 0;
+            CHAR c = m_source[m_start];
+            while(Good() && c != m_delim && c != '\n' && c != '\0')
+            {
+                m_start++;
+                c = m_source[m_start];
+                l++;
+            }
+            ptr.m_length = l;
+            m_start++;
+            return ptr;
+        }
+    };
+
+    UINT GetTriple(CHAR* s, Triple& triple) 
+    {
+        SharedMemoryStream ss(0, INFINITE, s, '/');
+        ShrdCharPtr f[3];
+        ss >> f[0];
+        ss >> f[1];
+        ss >> f[2];
+        triple.position = f[0].GetInt() - 1;
+        triple.texCoord = f[1].GetInt() - 1;
+        triple.normal = f[2].GetInt() - 1;
+        return 3;
     }
 
     INT ObjLoader::VLoadRessource(CHAR* source, UINT size, std::shared_ptr<tbd::ResHandle> handle) 
     {
         std::shared_ptr<tbd::Mesh> mesh = std::static_pointer_cast<tbd::Mesh>(handle);
 
-        std::string desc(source);
-        std::stringstream sss;
-        sss << desc;
-
-        clock_t start = clock();
         SubMeshData subMeshData;
         RawGeometryData rawData;
         std::string matName;
         UINT lastIndexStart = 0;
-        while(sss.good()) 
-        {
-            std::string line;
-            std::getline(sss, line);
-            std::stringstream ss(line);
+        UINT pos = 0;
 
-            std::string flag;
+        ShrdCharPtr flag;
+        ShrdCharPtr x, y, z;
+        ShrdCharPtr f[4];
+
+        std::locale loc;
+        CONST std::collate<CHAR>& coll = std::use_facet<std::collate<CHAR>>(loc);
+
+        while(pos < size)//sss.good()) 
+        {
+            //std::getline(sss, line);
+            INT start = pos;
+            GetLine(source, pos, size);
+
+            SharedMemoryStream ss(start, pos - start - 1, source);
+
             ss >> flag;
-            if(flag == "mtllib")
+            if(ShrdPtrStrCmp(flag, "mtllib"))
             {
-                std::string mtllib;
+                ShrdCharPtr mtllib;
                 ss >> mtllib;
-                mesh->m_materials = mtllib;
+                mesh->m_materials = mtllib.GetString();
             }
-            if(flag == "usemtl")
+            if(ShrdPtrStrCmp(flag, "usemtl"))
             {
                 if(subMeshData.m_triplesCount == 0) 
                 {
                     matName.clear();
-                    ss >> matName;
+                    ShrdCharPtr mat;
+                    ss >> mat;
+                    matName = mat.GetString();
                     continue;
                 }
                 std::shared_ptr<tbd::MaterialSet> materials = std::static_pointer_cast<tbd::MaterialSet>(app::g_pApp->GetCache()->GetHandle(mesh->GetMaterials()));
                 mesh->AddIndexBufferInterval(lastIndexStart, subMeshData.m_trianglesCount * 3, materials->GetMaterialIndex(matName));
                 lastIndexStart = subMeshData.m_trianglesCount * 3;
                 matName.clear();
-                ss >> matName;
+                ShrdCharPtr mat;
+                ss >> mat;
+                matName = mat.GetString();
             }
-            if(flag == "v")
+            if(ShrdPtrStrCmp(flag, "v"))
             {
                 util::Vec3 vertex;
-                std::string x, y, z;
                 ss >> x;
                 ss >> y;
                 ss >> z;
-                vertex.Set((FLOAT)atof(x.c_str()), (FLOAT)atof(y.c_str()), (FLOAT)atof(z.c_str()));
+
+                vertex.Set(x.GetFloat(), y.GetFloat(), z.GetFloat());
                 rawData.m_positions.push_back(vertex);
             }
-            else if(flag == "vt")
+            else if(ShrdPtrStrCmp(flag, "vt"))
             {
                 util::Vec3 texCoord;
-                std::string x, y;
                 ss >> x;
                 ss >> y;
-                texCoord.Set((FLOAT)atof(x.c_str()), (FLOAT)atof(y.c_str()), 0);
+                texCoord.Set(x.GetFloat(), y.GetFloat(), 0);
                 rawData.m_texCoords.push_back(texCoord);
             } 
-            else if(flag == "vn") 
+            else if(ShrdPtrStrCmp(flag, "vn"))
             {
                 util::Vec3 normal;
-                std::string x, y, z;
                 ss >> x;
                 ss >> y;
                 ss >> z;
-                normal.Set((FLOAT)atof(x.c_str()), (FLOAT)atof(y.c_str()), (FLOAT)atof(z.c_str()));
+                normal.Set(x.GetFloat(), y.GetFloat(), z.GetFloat());
                 rawData.m_normals.push_back(normal);
             }
-            else if(flag == "f")
+            else if(ShrdPtrStrCmp(flag, "f"))
             {
-                std::vector<std::string> elems;
-                while(ss.good())
+                UINT triplesCount = 0;
+                CHAR* s = source + ss.m_start;
+                CHAR* e = source + ss.m_end;
+                while(ss.Good())
                 {
-                    std::string s;
-                    ss >> s;
-                    if(s != "")
-                    {
-                        elems.push_back(s);
-                    }
+                    ss >> f[triplesCount];
+                    triplesCount++;
                 }
                 Face face;
-                UINT triplesCount = (UINT)elems.size();
                 for(UINT i = 0; i < triplesCount; ++i)
                 {
                     Triple triple;
-                    GetTriple(elems[i], triple); 
+                    GetTriple(f[i].m_ptr, triple); 
+                    triple.hash = (2729 * triple.position + triple.normal) * 3572 + triple.texCoord;
                     face.m_triples.push_back(triple);
                 }
                 subMeshData.m_triplesCount += triplesCount;
@@ -141,12 +238,20 @@ namespace tbd
             }
         }
 
+        //subMeshData.m_faces.resize(fc);
+
         std::shared_ptr<tbd::MaterialSet> materials = std::static_pointer_cast<tbd::MaterialSet>(app::g_pApp->GetCache()->GetHandle(mesh->GetMaterials()));
         mesh->AddIndexBufferInterval(lastIndexStart, subMeshData.m_trianglesCount * 3, materials->GetMaterialIndex(matName));
 
         std::vector<UINT> lIndices;
+        lIndices.reserve(mesh->GetFaces().size() * 4);
+
         std::vector<FLOAT> lVertices;
-        std::vector<Triple> existingTriples;
+        lVertices.reserve(rawData.m_positions.size() * 3);
+
+        std::map<LONG, Triple> hashToTriple;
+
+        util::Vec3 zero;
 
         for(auto it = subMeshData.m_faces.begin(); it != subMeshData.m_faces.end(); ++it)
         {
@@ -197,36 +302,38 @@ namespace tbd
             {
                 Triple t = it->m_triples[i];
 
-                auto it = std::find(existingTriples.begin(), existingTriples.end(), t);
+                auto it = hashToTriple.find(t.hash);
 
-                if(it == existingTriples.end())
+                if(it == hashToTriple.end())
                 {
                     util::Vec3& pos0 = rawData.m_positions[t.position];
 
                     mesh->m_aabb.AddPoint(pos0);
 
-                    util::Vec3 norm0;
+                    util::Vec3* norm0 = &zero;
                     if(!rawData.m_normals.empty())
                     {
-                        norm0 = rawData.m_normals[t.normal];
+                        norm0 = &rawData.m_normals[t.normal];
                     }
                     
-                    util::Vec3 texCoord0;
+                    util::Vec3* texCoord0 = &zero;
                     if(!rawData.m_texCoords.empty())
                     {
-                        texCoord0 = rawData.m_texCoords[t.texCoord];
+                        texCoord0 = &rawData.m_texCoords[t.texCoord];
                     }
+
+                    t.index = lVertices.size() / 8;
                     
                     lVertices.push_back(pos0.x);
                     lVertices.push_back(pos0.y);
                     lVertices.push_back(pos0.z);
 
-                    lVertices.push_back(norm0.x);
-                    lVertices.push_back(norm0.y);
-                    lVertices.push_back(norm0.z);
+                    lVertices.push_back(norm0->x);
+                    lVertices.push_back(norm0->y);
+                    lVertices.push_back(norm0->z);
 
-                    lVertices.push_back(texCoord0.x);
-                    lVertices.push_back(texCoord0.y); //Note: textures used by obj.files are y-inverted, might change in the future since I use old textures
+                    lVertices.push_back(texCoord0->x);
+                    lVertices.push_back(texCoord0->y); //Note: textures used by obj.files are y-inverted, might change in the future since I use old textures
                     /*
                     std::stringstream ss;
                     ss << "Created triple= p=" << t.position << ", tx=" << t.texCoord << ", n=" << t.normal;
@@ -234,19 +341,19 @@ namespace tbd
                     /*lVertices.push_back(tangents[i].x);
                     lVertices.push_back(tangents[i].y);
                     lVertices.push_back(tangents[i].z); */
-
-                    existingTriples.push_back(t);
+                    
+                    hashToTriple.insert(std::pair<LONG, Triple>(t.hash, t));
                 }
             }
 
             /*2,0,1,2,0,3*/
-            auto i0 = std::find(existingTriples.begin(), existingTriples.end(), it->m_triples[0]);
-            auto i1 = std::find(existingTriples.begin(), existingTriples.end(), it->m_triples[1]);
-            auto i2 = std::find(existingTriples.begin(), existingTriples.end(), it->m_triples[2]);
+            auto i0 = hashToTriple.find(it->m_triples[0].hash);
+            auto i1 = hashToTriple.find(it->m_triples[1].hash);
+            auto i2 = hashToTriple.find(it->m_triples[2].hash);
 
-            __int64 index0 = i0 - existingTriples.begin();
-            __int64 index1 = i1 - existingTriples.begin();
-            __int64 index2 = i2 - existingTriples.begin();
+            __int64 index0 = i0->second.index;
+            __int64 index1 = i1->second.index;
+            __int64 index2 = i2->second.index;
 
             lIndices.push_back((UINT)index2);
 
@@ -256,8 +363,8 @@ namespace tbd
 
             if(it->m_triples.size() == 4)
             {
-                auto i3 = std::find(existingTriples.begin(), existingTriples.end(), it->m_triples[3]);
-                __int64 index3 = i3 - existingTriples.begin();
+                auto i3 = hashToTriple.find(it->m_triples[3].hash);;
+                __int64 index3 = i3->second.index;
                 lIndices.push_back((UINT)index2);
 
                 lIndices.push_back((UINT)index0);
@@ -364,7 +471,7 @@ namespace tbd
                 std::string val;
                 streamLine >> val;
                 current->m_textureDiffuse = tbd::Resource(val);
-                materials->GetRessourceCache()->GetHandle(current->m_textureDiffuse); //preload texture
+                materials->GetResourceCache()->GetHandle(current->m_textureDiffuse); //preload texture
             }
             else if(prefix == "map_Kn")
             {
@@ -372,7 +479,7 @@ namespace tbd
                 streamLine >> val;
                 current->m_hasNormal = TRUE;
                 current->m_textureNormal = tbd::Resource(val);
-                materials->GetRessourceCache()->GetHandle(current->m_textureNormal); //preload texture
+                materials->GetResourceCache()->GetHandle(current->m_textureNormal); //preload texture
             }
             else if(prefix == "illum")
             {

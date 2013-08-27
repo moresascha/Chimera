@@ -9,6 +9,8 @@
 #include "Cudah.h"
 #include "Commands.h"
 #include "util.h"
+#include <strsafe.h>
+
 namespace proc 
 {
     std::shared_ptr<Process> Process::RemoveChild(VOID) {
@@ -222,7 +224,7 @@ namespace proc
         while(IsAlive())
         {
             DWORD event = WaitForMultipleObjects(2, handles, FALSE, INFINITE);
-            if(event == -1)
+            if(event == WAIT_FAILED)
             {
                 Fail();
                 return;
@@ -237,7 +239,6 @@ namespace proc
 
     VOID WatchDirModifacationProcess::VOnInit(VOID)
     {
-        RealtimeProcess::VOnInit();
         std::wstring s(m_dir.begin(), m_dir.end());
         m_fileHandle = FindFirstChangeNotification(s.c_str(), FALSE, FILE_NOTIFY_CHANGE_LAST_WRITE);
         if(INVALID_HANDLE_VALUE == m_fileHandle)
@@ -245,6 +246,8 @@ namespace proc
             LOG_CRITICAL_ERROR("FindFirstChangeNotification failed hard");
         }
         m_closeHandle = CreateEvent(NULL, FALSE, FALSE, NULL);
+
+        RealtimeProcess::VOnInit();
     }
 
     VOID WatchDirModifacationProcess::Close(VOID)

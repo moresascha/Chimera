@@ -32,7 +32,6 @@ namespace d3d
     HRESULT D3DRenderer::VOnRestore(VOID) 
     {
         Delete();
-
         m_pDefaultTexture = std::static_pointer_cast<d3d::Texture2D>(app::g_pApp->GetHumanView()->GetVRamManager()->GetHandle(m_defaultMaterial.m_textureDiffuse));
 
         m_pDefShader->OnRestore(d3d::g_width, d3d::g_height);
@@ -482,7 +481,7 @@ namespace d3d
     {
         for(UINT i = 0; i < Diff_SamplersCnt; ++i)
         {
-            m_targets[i] = NULL;
+            m_targets[i] = new d3d::RenderTarget();
         }
         OnRestore(w, h);
     }
@@ -491,11 +490,11 @@ namespace d3d
     {
         this->m_height = h;
         this->m_width = w;
-        for(UINT i = 0; i < Diff_SamplersCnt; ++i)
+        /*for(UINT i = 0; i < Diff_SamplersCnt; ++i)
         {
             SAFE_DELETE(m_targets[i]);
             m_targets[i] = new d3d::RenderTarget;
-        }
+        }*/
         m_targets[Diff_WorldPositionTarget]->OnRestore(this->m_width, this->m_height, DXGI_FORMAT_R32G32B32A32_FLOAT, TRUE);
         m_targets[Diff_NormalsTarget]->OnRestore(this->m_width, this->m_height, DXGI_FORMAT_R32G32B32A32_FLOAT, FALSE);
         m_targets[Diff_DiffuseMaterialSpecRTarget]->OnRestore(this->m_width, this->m_height, DXGI_FORMAT_R16G16B16A16_FLOAT, FALSE);

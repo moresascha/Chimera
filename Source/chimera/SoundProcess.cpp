@@ -20,7 +20,7 @@ namespace proc
 
         if(!m_pHandle->IsReady())
         {
-            m_pHandle = app::g_pApp->GetCache()->GetHandle(m_pHandle->GetRessource());
+            m_pHandle = app::g_pApp->GetCache()->GetHandle(m_pHandle->GetResource());
         }
         m_pSoundBuffer = app::g_pApp->GetHumanView()->GetSoundSystem()->VCreateSoundBuffer(m_pHandle);
         m_pSoundBuffer->VSetVolume(m_volume);
@@ -88,7 +88,7 @@ namespace proc
     }
 
     SoundEmitterProcess::SoundEmitterProcess(
-        std::shared_ptr<tbd::Actor> actor, 
+        std::shared_ptr<tbd::Actor> actor,
         std::shared_ptr<tbd::TransformComponent> transCmp, 
         std::shared_ptr<tbd::ResHandle> handle,
         FLOAT radius,

@@ -16,7 +16,7 @@
 #include "Maze.h"
 #include "Spline.h"
 
-#undef FULL_SCREEN    
+#undef FULL_SCREEN
 
 int APIENTRY _tWinMain(HINSTANCE hInstance,
                      HINSTANCE hPrevInstance,

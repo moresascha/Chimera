@@ -346,7 +346,7 @@ namespace cudah
             {
                 return TRUE;
             }
-            LOG_CRITICAL_ERROR("Ressource does not exists!");
+            LOG_CRITICAL_ERROR("Resource does not exists!");
             return FALSE;
         }
 
@@ -356,7 +356,7 @@ namespace cudah
             {
                 return TRUE;
             }
-            LOG_CRITICAL_ERROR("Ressource exists!");
+            LOG_CRITICAL_ERROR("Resource exists!");
             return FALSE;
         }
 

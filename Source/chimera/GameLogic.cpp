@@ -9,7 +9,7 @@
 namespace tbd 
 {
 
-    BaseGameLogic::BaseGameLogic() : m_pPhysics(NULL), m_gameState(ePause), m_pLevel(NULL)
+    BaseGameLogic::BaseGameLogic() : m_pPhysics(NULL), m_gameState(ePause), m_pLevel(NULL), m_pLevelManager(NULL)
     {
 
     }
@@ -35,10 +35,14 @@ namespace tbd
         listener = fastdelegate::MakeDelegate(this, &BaseGameLogic::DeleteActorDelegate);
         event::IEventManager::Get()->VAddEventListener(listener, event::DeleteActorEvent::TYPE);
 
-        this->m_pPhysics = new logic::PhysX();
+        ADD_EVENT_LISTENER(this, &BaseGameLogic::LoadLevelDelegate, event::LoadLevelEvent::TYPE);
+
+        this->m_pPhysics = new tbd::PhysX();
         this->m_pPhysics->VInit();
 
         m_pCmdInterpreter = new tbd::CommandInterpreter();
+
+        m_pLevelManager = new tbd::LevelManager();
 
         return TRUE;
     }
@@ -222,32 +226,40 @@ namespace tbd
         return std::shared_ptr<tbd::Actor>();
     } */
 
-    std::shared_ptr<tbd::Actor> BaseGameLogic::VCreateActor(tbd::ActorDescription desc)
+    std::shared_ptr<tbd::Actor> BaseGameLogic::VCreateActor(tbd::ActorDescription desc, BOOL appendToLevel)
     {
-        std::shared_ptr<tbd::Actor> actor = m_actorFactory.CreateActor(desc);
-
-        m_actors[actor->GetId()] = actor;
-
+        std::shared_ptr<tbd::Actor> actor = NULL;
+        if(appendToLevel)
+        {
+            actor = m_pLevel->VAddActor(desc);
+        }
+        else
+        {
+            std::shared_ptr<tbd::Actor> actor = m_actorFactory.CreateActor(desc);
+            m_actors[actor->GetId()] = actor;
+        }
         return actor;
     }
 
-    std::shared_ptr<tbd::Actor> BaseGameLogic::VCreateActor(CONST CHAR* resource) 
+    std::shared_ptr<tbd::Actor> BaseGameLogic::VCreateActor(CONST CHAR* resource, BOOL appendToLevel) 
     {
         if(!resource) 
         {
             LOG_CRITICAL_ERROR("Ressource cant be NULL");
         }
         std::string path = app::g_pApp->GetConfig()->GetString("sActorPath") + resource;
-        std::shared_ptr<tbd::Actor> actor = m_actorFactory.CreateActor(path.c_str());
-        if(actor)
+        std::vector<std::shared_ptr<tbd::Actor>> actors;
+        std::shared_ptr<tbd::Actor> parent = m_actorFactory.CreateActor(path.c_str(), actors);
+        TBD_FOR(actors)
         {
             //throw actor created event
-            this->m_actors[actor->GetId()] = actor;
-
-            return actor;
+            m_actors[(*it)->GetId()] = *it;
         }
-        LOG_CRITICAL_ERROR_A("Failed to create actor: %s", resource);
-        return std::shared_ptr<tbd::Actor>();
+        if(!parent)
+        {
+            LOG_CRITICAL_ERROR_A("Failed to create actor: %s", resource);
+        }
+        return parent;
     }
 
     VOID BaseGameLogic::VRemoveActor(ActorId id) 
@@ -265,7 +277,7 @@ namespace tbd
     {
         m_gameState = eLoadingLevel;
 
-        event::IEventPtr loadingLevelEvent(new event::LoadingLevelEvent(std::string("test")));
+        event::IEventPtr loadingLevelEvent(new event::LoadingLevelEvent(level->VGetName()));
         event::IEventManager::Get()->VQueueEventThreadSave(loadingLevelEvent);
 
         if(m_pLevel == level)
@@ -277,8 +289,7 @@ namespace tbd
             SAFE_DELETE(m_pLevel);
         }
         m_pLevel = level;
-        m_pLevel->VLoad(FALSE);
-        return TRUE;
+        return m_pLevel->VLoad(FALSE);
     }
 
     BOOL BaseGameLogic::VLoadLevel(CONST CHAR* resource) 
@@ -288,8 +299,9 @@ namespace tbd
         event::IEventPtr loadingLevelEvent(new event::LoadingLevelEvent(std::string(resource)));
         event::IEventManager::Get()->VQueueEventThreadSave(loadingLevelEvent);
 
-        m_pLevel = new tbd::RandomLevel("asd", &m_actorFactory);
-        //m_pLevel = new tbd::XMLLevel(resource); 
+        SAFE_DELETE(m_pLevel);
+
+        m_pLevel = new tbd::XMLLevel(resource, &m_actorFactory); 
 
         m_pLevel->VLoad(FALSE);
 
@@ -422,15 +434,8 @@ namespace tbd
     VOID BaseGameLogic::CreateActorDelegate(event::IEventPtr eventData) 
     {
         std::shared_ptr<event::CreateActorEvent> data = std::static_pointer_cast<event::CreateActorEvent>(eventData);
-        if(data->m_appendToCurrentLevel)
-        {
-            m_pLevel->VAddActor(data->m_actorDesc);
-        }
-        else
-        {
-            std::shared_ptr<tbd::Actor> actor = m_actorFactory.CreateActor(data->m_actorDesc);
-            m_actors[actor->GetId()] = actor;
-        }
+
+        VCreateActor(data->m_actorDesc, data->m_appendToCurrentLevel);
 
         //actor factory takes care of it
         /*event::IEventPtr actorCreatedEvent(new event::ActorCreatedEvent(actor->GetId()));
@@ -456,6 +461,12 @@ namespace tbd
         }
     }
 
+    VOID BaseGameLogic::LoadLevelDelegate(event::IEventPtr eventData)
+    {
+        std::shared_ptr<event::LoadLevelEvent> data = std::static_pointer_cast<event::LoadLevelEvent>(eventData);
+        VLoadLevel(new tbd::XMLLevel(data->m_name.c_str(), &m_actorFactory));
+    }
+
     VOID BaseGameLogic::LevelLoadedDelegate(event::IEventPtr eventData)
     {
         m_gameState = eRunning;
@@ -463,7 +474,11 @@ namespace tbd
 
     BaseGameLogic::~BaseGameLogic() 
     {
-        m_pLevel->VSave();
+        //m_pLevel->VSave();
+
+        SAFE_DELETE(m_pLevelManager);
+
+        REMOVE_EVENT_LISTENER(this, &BaseGameLogic::LoadLevelDelegate, event::LoadLevelEvent::TYPE);
 
         event::EventListener listener = fastdelegate::MakeDelegate(this, &BaseGameLogic::MoveActorDelegate);
         event::IEventManager::Get()->VRemoveEventListener(listener, event::MoveActorEvent::TYPE);
@@ -482,8 +497,6 @@ namespace tbd
     
         SAFE_DELETE(m_pLevel);
 
-        m_gameViewList.clear();
-
         SAFE_DELETE(m_pCmdInterpreter);
 
         this->m_pProcessManager->AbortAll(TRUE);
@@ -491,6 +504,8 @@ namespace tbd
         SAFE_DELETE(this->m_pProcessManager);
 
         SAFE_DELETE(m_pPhysics);
+
+        m_gameViewList.clear();
 
         for(auto it = this->m_actors.begin(); it != this->m_actors.end(); ++it)
         {

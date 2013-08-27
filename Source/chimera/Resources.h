@@ -5,6 +5,11 @@
 #include <gdiplus.h>
 #include "Locker.h"
 
+namespace event
+{
+    class IEvent;
+}
+
 namespace tbd 
 {
 
@@ -117,6 +122,8 @@ public:
 
     VOID Flush(VOID);
 
+    VOID OnResourceChanged(std::shared_ptr<event::IEvent> data);
+
     ~ResourceCache(VOID);
 };
 
@@ -138,8 +145,9 @@ class IExtreRessourceData
 class ResHandle {
     friend class ResourceCache;
     friend class LoadFunctionHolder;
+    friend class WatchResourceModification;
 protected:
-    Resource m_ressource;
+    Resource m_resource;
     CHAR* m_data;
     INT m_size;
     std::shared_ptr<IExtreRessourceData> m_extraData;
@@ -153,14 +161,14 @@ public:
 
     CHAR* Buffer(VOID) CONST { return m_data; }
 
-    std::string GetFullPath(VOID) { return m_cache->GetFile().VGetName() + "/" + this->m_ressource.m_name; }
+    std::string GetFullPath(VOID) { return m_cache->GetFile().VGetName() + "/" + this->m_resource.m_name; }
 
     //critical only for intern usage //TODO
     VOID SetBuffer(CHAR* buffer) { this->m_data = buffer; }
 
-    ResourceCache* GetRessourceCache(VOID) { return m_cache; }
+    ResourceCache* GetResourceCache(VOID) { return m_cache; }
 
-    Resource& GetRessource(VOID) { return this->m_ressource; }
+    Resource& GetResource(VOID) { return this->m_resource; }
 
     std::shared_ptr<IExtreRessourceData> GetExtraData(VOID) CONST { return m_extraData; }
 

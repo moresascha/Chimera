@@ -212,6 +212,18 @@ namespace event
         //TODO
     };
 
+    class LoadLevelEvent : public Event
+    {
+    public:
+        static CONST EventType TYPE;
+
+        std::string m_name;
+
+        EventType VGetEventType(VOID) { return TYPE; }
+
+        CONST CHAR* VGetName(VOID) { return "LoadLevelEvent"; }
+    };
+
     class LoadingLevelEvent : public Event
     {
     public:
@@ -291,6 +303,16 @@ namespace event
         ActorId m_parentActor;
         static CONST EventType TYPE;
         CONST CHAR* VGetName(VOID) { return "SetParentActorEvent"; }
+        EventType VGetEventType(VOID) { return TYPE; }
+    };
+
+    class ResourceChangedEvent : public Event
+    {
+    public:
+        std::string m_resource;
+        ResourceChangedEvent(std::string& res) : m_resource(res) {}
+        static CONST EventType TYPE;
+        CONST CHAR* VGetName(VOID) { return "ResourceChangedEvent"; }
         EventType VGetEventType(VOID) { return TYPE; }
     };
 };

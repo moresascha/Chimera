@@ -4,6 +4,7 @@
 #include "ActorFactory.h"
 #include "GameApp.h"
 #include "Packman.h"
+#include <random>
 
 namespace packman
 {
@@ -164,7 +165,7 @@ namespace packman
         tbd::PhysicComponent* physicComponent = desc->AddComponent<tbd::PhysicComponent>("PhysicComponent");
         physicComponent->m_dim.x = 2; physicComponent->m_dim.z = 2; physicComponent->m_dim.y = 2;
         physicComponent->m_material = "kinematic";
-        physicComponent->m_shapeType = "sphere";
+        physicComponent->m_shapeStyle = "sphere";
         physicComponent->m_radius = 1;
 
         packman::AIComponent* aiComp = desc->AddComponent<packman::AIComponent>(packman::AIComponent::COMPONENT_ID);
@@ -240,7 +241,7 @@ namespace packman
         tbd::PhysicComponent* physicComponent = desc->AddComponent<tbd::PhysicComponent>("PhysicComponent");
         physicComponent->m_dim.x = 2; physicComponent->m_dim.z = 2; physicComponent->m_dim.y = 2;
         physicComponent->m_material = "static";
-        physicComponent->m_shapeType = "box";
+        physicComponent->m_shapeStyle = "box";
         physicComponent->m_radius = 1;
 
         //renderComp->m_instances.push_back(util::Vec3(0,1,0));
