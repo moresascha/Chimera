@@ -17,6 +17,42 @@ struct VertexInput
     float2 texCoord : TEXCOORD0;
 };
 
+struct PixelLight
+{
+    float diffuse;
+    float specular;
+};
+
+PixelLight GetLightConComponents(float3 posToEye, float3 lightToPos, float3 normal, float specScale)
+{
+    float3 reflectVec = reflect(lightToPos, normal);
+
+    PixelLight pl;
+
+    pl.diffuse = saturate(dot(-lightToPos, normal));
+
+    pl.specular = pow(saturate(dot(reflectVec, posToEye)), specScale);
+    
+    return pl;
+}
+
+PixelLight GetLightConComponents(float3 eye, float3 world, float3 lightPos, float3 normal, float specScale)
+{
+    float3 posToEye = normalize(eye - world);
+
+    float3 lightToPos = normalize(world - lightPos);
+
+    float3 reflectVec = reflect(lightToPos, normal);
+
+    PixelLight pl;
+
+    pl.diffuse = saturate(dot(-lightToPos, normal));
+
+    pl.specular = pow(saturate(dot(reflectVec, posToEye)), specScale);
+    
+    return pl;
+}
+
 PixelInput Lighting_VS(VertexInput input) 
 {
     PixelInput op;
@@ -31,7 +67,7 @@ int isOut(in float3 world, uint index, out float2 tc, out float4 worldInLight)
     worldInLight /= worldInLight.w;
     tc = 0.5 * float2(worldInLight.x, worldInLight.y) + 0.5;
     tc = float2(tc.x, 1 - tc.y);
-    float nearClip = 0;//index < 2 ? 0.2 : 0;
+    float nearClip = 0;
     return tc.x < 0 || tc.x > 1 || tc.y < 0 || tc.y > 1 || worldInLight.z < nearClip || worldInLight.z > 1;
 }
 
@@ -81,7 +117,7 @@ void computeCSMContr(out in float4 color, in float2 texCoords, in float3 normal)
 
     float light_shadow_bias = 0;//0.1;//-0.1f;
     
-    float light_vsm_epsilon = 0.00001f;
+    float light_vsm_epsilon = 0.000001f;
     
     rescaled_dist_to_light -= light_shadow_bias;
     
@@ -94,7 +130,7 @@ void computeCSMContr(out in float4 color, in float2 texCoords, in float3 normal)
     float m_d = (rescaled_dist_to_light - moments.x);
     float p = variance / (variance + m_d * m_d);
 
-    color *= max(lit_factor, max(p, 0.25));
+    color *= max(lit_factor, max(p, 0.1));
     
     /*if(lightPosDepth > (moments.x + bias))
        {
@@ -131,25 +167,27 @@ PixelOutput GlobalLighting_PS(PixelInput input)
     op.color = float4(0,0,0,0);
 
     float3 normal = 0;
-    float3 ambientMat = 0;
-    float3 diffuseMat = 0;
-    float3 diffuse = 0;
+    float4 ambientMat = 0;
+    float4 diffuseMat = 0;
+    float4 diffuse = 0;
+    float3 specularMat = 0;
 
-    ambientMat = g_ambientMaterialSpecG.Sample(g_samplerClamp, input.texCoord).xyz;
-    diffuseMat = g_diffuseMaterialSpecR.Sample(g_samplerClamp, input.texCoord).xyz;
+    ambientMat = g_ambientMaterialSpecG.Sample(g_samplerClamp, input.texCoord);
+    diffuseMat = g_diffuseMaterialSpecR.Sample(g_samplerClamp, input.texCoord);
     float4 nn = g_normals.Sample(g_samplerClamp, input.texCoord);
     normal = nn.xyz;
-    diffuse = g_diffuseColorSpecB.Sample(g_samplerClamp, input.texCoord).xyz;
+    diffuse = g_diffuseColorSpecB.Sample(g_samplerClamp, input.texCoord);
+    specularMat = float3(diffuseMat.w, ambientMat.w, diffuse.w);
 
     float3 sunposition = normalize(g_CSMlightPos.xyz);
+
+    float3 sunIntensity = 1.5*float3(1.65f,1.65f,1.65f); //todo
 
     float4 worldDepth = g_worldPosDepth.Sample(g_samplerClamp, input.texCoord);
     float d = worldDepth.w;
 
     float4 sun = 0.9 * float4(253 / 255.0, 184 / 255.0, 0 / 255.0, 0);
     float4 sky = 0;//0.7 * float4(135 / 255.0, 206 / 255.0, 1, 0);
-
-    float scale = 1.65f;
 
     if(d > 0)
     {
@@ -169,23 +207,25 @@ PixelOutput GlobalLighting_PS(PixelInput input)
         }
 
         int selfShade = nn.w < 0;
-        
-        float3 factor = (0.5 * diffuseMat * saturate(dot(sunposition, normalize(normal))));
-        diffuse = lerp(diffuse, skyTex, ref);
+
+        diffuse = float4(lerp(diffuse.xyz, skyTex, ref), 0);
         //op.color = float4(normal, 1);
-        op.color = float4(diffuse * (scale * factor), 1);
-        
+
+        PixelLight pl = GetLightConComponents(normalize(g_eyePos.xyz - worldDepth.xyz), -sunposition, normalize(normal), 8);
+
+        op.color = float4(sunIntensity * (diffuseMat.xyz * diffuse.xyz * pl.diffuse + specularMat * pl.specular), 1);
+
         //CSM
         /*if(selfShade) //hack to avoid peter panning, todo
         {
             op.color *= (0.65 + 0.4 * nn.w);
         }
-        else */
+        else*/
         {
             computeCSMContr(op.color, input.texCoord, normal);
         }
 
-        op.color += float4(ambientMat * diffuse, 0);
+        op.color += float4(ambientMat.xyz * diffuse.xyz, 0);
     } 
     else
     {
@@ -195,12 +235,12 @@ PixelOutput GlobalLighting_PS(PixelInput input)
         ray = mul(g_invView, ray);
         ray = normalize(ray);
 
-        float4 tex = float4(diffuse,0);
+        float4 tex = diffuse;
 
         float powa = pow(saturate(dot(ray.xyz, sunposition)), 32);
         
         float l = clamp(worldDepth.y * 0.1, 0, 1);
-        op.color = clamp(scale, 0, 1) * lerp(sky, tex, l);
+        op.color = 0.75*diffuse;//lerp(sky, tex, l);
         //op.color += sun * powa;
     }
 
@@ -219,7 +259,7 @@ PixelOutput PointLighting_PS(PixelInput input)
     float3 world = 0;
     float depth = 0;
 
-    float4 wd =  g_worldPosDepth.Sample(g_samplerClamp, input.texCoord);
+    float4 wd = g_worldPosDepth.Sample(g_samplerClamp, input.texCoord);
     world = wd.xyz; 
     depth = wd.w;
 
@@ -236,7 +276,7 @@ PixelOutput PointLighting_PS(PixelInput input)
 
     float distSquared = dot(d, d);
 
-    if(distSquared > radius*radius) 
+    if(distSquared > radius*radius || (depth <= 0)) 
     {
         discard;
     }
@@ -244,17 +284,15 @@ PixelOutput PointLighting_PS(PixelInput input)
     float3 lightToPos = normalize(world - lightPos);
 
     float shadowSample = g_pointLightShadowMap.Sample(g_samplerClamp, lightToPos).r;
-    float bias = 0.15;//0.005 * tan(acos(dot(-lightToPos, normal)));//0.15
-    //bias = saturate(bias);
-    int shadow = shadowSample < (distSquared - bias) ? 1 : 0;
-
-    if(shadow)
-    {
-        discard;
-    }
 
     normal = g_normals.Sample(g_samplerClamp, input.texCoord).xyz;
-    normal = normalize(normal);
+
+    int hasNormal = abs(dot(normal, normal)) > 0;
+
+    if(hasNormal)
+    {
+        normal = normalize(normal);
+    }
 
     float4 dmsmr = g_diffuseMaterialSpecR.Sample(g_samplerClamp, input.texCoord);
     float4 amsmg = g_ambientMaterialSpecG.Sample(g_samplerClamp, input.texCoord);
@@ -267,6 +305,24 @@ PixelOutput PointLighting_PS(PixelInput input)
     diffuseColor = dcsmb.xyz;
 
     float3 lightColor = g_lightColorRadius.xyz;
+
+    float intensity = max(0, 1 - distSquared / (radius * radius));
+
+    float bias = 0.15;//0.005 * tan(acos(dot(-lightToPos, normal)));//0.15
+    //bias = saturate(bias);
+    int shadow = shadowSample < (distSquared - bias) ? 1 : 0;
+
+    if(shadow && hasNormal)
+    {
+        discard;
+    }
+
+    if(!hasNormal)
+    {
+        op.color = float4(intensity * lightColor * diffuseColor, 1);
+        return op;
+    }
+
     float3 posToEye = normalize(g_eyePos.xyz - world);
 
     float3 reflectVec = reflect(lightToPos, normal);
@@ -278,8 +334,6 @@ PixelOutput PointLighting_PS(PixelInput input)
     float diffuse = s * saturate(dot(-lightToPos, normal)) + (1-s);
 
     float specular = s * pow(saturate(dot(reflectVec, posToEye)), 32) + (1-s);
-
-    float intensity = max(0, 1 - distSquared / (radius * radius));
 
     float3 color = 0;
 
@@ -332,7 +386,7 @@ PixelOutput SpotLighting_PS(PixelInput input)
     } */
     
     float3 lightToPos = normalize(world - lightPos);
-    float lpd = max(dot(lightToPos, dir),0);
+    float lpd = max(dot(lightToPos, dir), 0);
     float a = acos(lpd);
 
     if(a > angel * 0.5)
@@ -350,13 +404,19 @@ PixelOutput SpotLighting_PS(PixelInput input)
     
     int shadow = shadowSample < (distSquared - bias) ? 1 : 0;
 
-    if(shadow)
+    normal = g_normals.Sample(g_samplerClamp, input.texCoord).xyz;
+
+    int hasNormal = abs(dot(normal, normal)) > 0;
+
+    if(hasNormal)
+    {
+        normal = normalize(normal);
+    }
+
+    if(shadow && hasNormal)
     {
         discard;
     }
-
-    normal = g_normals.Sample(g_samplerClamp, input.texCoord).xyz;
-    normal = normalize(normal);
 
     float4 dmsmr = g_diffuseMaterialSpecR.Sample(g_samplerClamp, input.texCoord);
     float4 amsmg = g_ambientMaterialSpecG.Sample(g_samplerClamp, input.texCoord);
@@ -365,28 +425,33 @@ PixelOutput SpotLighting_PS(PixelInput input)
     ambientMat = amsmg.xyz;
     diffuseMat = dmsmr.xyz;
     specularMat = float3(dmsmr.w, amsmg.w, dcsmb.w);
-
     diffuseColor = dcsmb.xyz;
 
+    float intensity = (angel * 0.5 - a) * (1  - distSquared / (length * length));
     float3 lightColor = g_lightColorRadius.xyz;
+
+    if(!hasNormal)
+    {
+        op.color = float4(intensity * lightColor * diffuseColor, 1);
+        return op;
+    }
+
     float3 posToEye = normalize(g_eyePos.xyz - world);
 
     float3 reflectVec = reflect(lightToPos, normal);
 
     //float bias = (distSquared * DepthBias) - shadowSample;
 
-    float s = sign(dot(abs(normal), abs(normal)));
+    //float s = sign(dot(abs(normal), abs(normal)));
 
-    float diffuse = s * saturate(dot(-lightToPos, normal)) + (1-s);
+    float diffuse = saturate(dot(-lightToPos, normal));// + (1-s);
 
-    float specular = s * pow(saturate(dot(reflectVec, posToEye)), 32) + (1-s);
-
-    float intensity = (angel * 0.5 - a) * (1  - distSquared / (length * length));
+    float specular = pow(saturate(dot(reflectVec, posToEye)), 32);// + (1-s);
 
     intensity = intensity < 0 ? 0 : intensity;
     float intensityScale = g_lightPos.w;
     intensity *= intensityScale;
-    float3 color = 0;
+    float3 color = 0; 
 
     color = lightColor * (specular * specularMat + diffuseMat * diffuse * diffuseColor);
     

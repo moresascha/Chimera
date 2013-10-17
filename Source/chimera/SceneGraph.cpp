@@ -1,25 +1,21 @@
 #include "SceneGraph.h"
 #include "Event.h"
-#include "EventManager.h"
-#include "GameApp.h"
-#include "Actor.h"
-#include "Components.h"
 #include "SceneNode.h"
-#include "Camera.h"
-#include "Frustum.h"
-namespace tbd 
-{
 
-    SceneGraph::SceneGraph() : m_visibiltyReset(TRUE), m_visbibilityCheckTime(0), m_root(std::shared_ptr<ISceneNode>(new SceneNode(INVALID_ACTOR_ID)))
+namespace chimera 
+{
+    SceneGraph::SceneGraph() : m_visibiltyReset(TRUE), m_visbibilityCheckTime(0), m_root(std::unique_ptr<ISceneNode>(new SceneNode(CM_INVALID_ACTOR_ID)))
     {
     }
 
-    HRESULT SceneGraph::OnUpdate(ULONG millis) {
-        this->m_root->VOnUpdate(millis, this);
-        return S_OK;
+    BOOL SceneGraph::VOnUpdate(ULONG millis) 
+    {
+        m_root->VOnUpdate(millis, this);
+        return TRUE;
     }
 
-    HRESULT SceneGraph::OnRender(RenderPath path) {
+    BOOL SceneGraph::VOnRender(RenderPath path) 
+    {
         //ULONG t = clock();
         TBD_FOR(m_pathToNode[path])
         {
@@ -30,65 +26,68 @@ namespace tbd
         {
             //m_visibiltyReset = FALSE; //wofür war das nochmal?!
         } */
-        return S_OK;
+        return TRUE;
     }
 
-    HRESULT SceneGraph::OnRestore(VOID) 
+    BOOL SceneGraph::VOnRestore(VOID) 
     {
-        this->m_root->VOnRestore(this);
-        this->m_camera->SetAspect(app::g_pApp->GetWindowWidth(), app::g_pApp->GetWindowHeight());
-        return S_OK;
+        m_root->VOnRestore(this);
+        if(m_camera)
+        {
+            m_camera->SetAspect(chimera::CmGetApp()->VGetHumanView()->VGetRenderer()->VGetWidth(), chimera::CmGetApp()->VGetHumanView()->VGetRenderer()->VGetHeight());
+        }
+        return TRUE;
     }
 
-    BOOL SceneGraph::IsVisibilityReset(VOID)
+    BOOL SceneGraph::VIsVisibilityReset(VOID)
     {
         return m_visibiltyReset;
     }
 
-    VOID SceneGraph::AddChild(ActorId actorId, std::shared_ptr<tbd::ISceneNode> node) {
-        this->m_actorMap[actorId] = node;
-        this->m_root->VAddChild(node);
-        for(UINT i = 0; i <= RENDERPATH_CNT; ++i)
+    VOID SceneGraph::VAddChild(ActorId actorId, std::unique_ptr<ISceneNode> node) 
+    {
+        for(UINT i = 0; i <= CM_RENDERPATH_CNT; ++i)
         {
-            RenderPath path = 1 << i;
+            RenderPath path = (RenderPath)(1 << i);
             if(node->VGetRenderPaths() & (path))
             {
-                m_pathToNode[path].push_back(node);
+                m_pathToNode[path].push_back(node.get());
             }
         }
+        
+        m_root->VAddChild(std::move(node));
     }
 
-    VOID SceneGraph::RemoveChild(ActorId actorid) {
-        auto it = m_actorMap.find(actorid);
-        if(it == m_actorMap.end())
+    VOID SceneGraph::VRemoveChild(ActorId actorid) {
+
+        ISceneNode* node = m_root->VFindActor(actorid);
+
+        if(!node)
         {
-            LOG_WARNING("actor has no node");
-            return;
+            LOG_CRITICAL_ERROR("No actor node found");
         }
 
-        std::shared_ptr<ISceneNode> node = it->second;
-        for(UINT i = 0; i < RENDERPATH_CNT; ++i)
+        for(UINT i = 0; i < CM_RENDERPATH_CNT; ++i)
         {
-            RenderPath path = 1 << i;
+            RenderPath path = (RenderPath)(1 << i);
             if(node->VGetRenderPaths() & path)
             {
                 m_pathToNode[path].remove(node);
             }
         }
 
-        this->m_root->VRemoveChild(actorid);
-        this->m_actorMap.erase(actorid);
+        m_root->VRemoveChild(actorid);
     }
 
-    VOID SceneGraph::SetCamera(std::shared_ptr<util::ICamera> camera)
+    VOID SceneGraph::VSetCamera(std::shared_ptr<ICamera> camera)
     {
-        this->m_camera = camera;
+        m_camera = camera;
         m_frustumStack.Clear();
-        this->m_camera->SetAspect(app::g_pApp->GetWindowWidth(), app::g_pApp->GetWindowHeight());
+        m_camera->SetAspect(chimera::CmGetApp()->VGetHumanView()->VGetRenderer()->VGetWidth(), chimera::CmGetApp()->VGetHumanView()->VGetRenderer()->VGetHeight());
         m_root->VForceVisibilityCheck();
     }
 
-    CONST tbd::Frustum* SceneGraph::GetFrustum(VOID)
+    CONST Frustum* SceneGraph::VGetFrustum(VOID)
     { 
         if(m_frustumStack.Size() == 0)
         {
@@ -100,12 +99,12 @@ namespace tbd
         }
     }
 
-    VOID SceneGraph::PushFrustum(tbd::Frustum* f)
+    VOID SceneGraph::VPushFrustum(chimera::Frustum* f)
     {
         m_frustumStack.Push(f);
     }
 
-    VOID SceneGraph::PopFrustum(VOID)
+    VOID SceneGraph::VPopFrustum(VOID)
     {
         if(m_frustumStack.Size() > 0)
         {
@@ -113,13 +112,13 @@ namespace tbd
         }
     }
 
-    VOID SceneGraph::ResetVisibility(VOID)
+    VOID SceneGraph::VResetVisibility(VOID)
     {
         //m_visbibilityCheckTime = clock();
         m_visibiltyReset = TRUE;
     }
 
-    std::shared_ptr<tbd::ISceneNode> SceneGraph::FindActorNode(ActorId id)
+    ISceneNode* SceneGraph::VFindActorNode(ActorId id)
     {
         return m_root->VFindActor(id);
     }

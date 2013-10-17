@@ -3,33 +3,33 @@
 #include "Process.h"
 #include "Scheduler.h"
 
-namespace proc {
-class ProcessManager
+namespace chimera 
 {
-    friend class tbd::Scheduler;
-private:
-    std::list<std::shared_ptr<Process>> m_processes;
-    tbd::Scheduler* m_pScheduler;
-    util::Locker m_lock;
+    class ProcessManager : public IProcessManager
+    {
+        friend class chimera::Scheduler;
+    private:
+        std::list<std::shared_ptr<IProcess>> m_processes;
+        Scheduler* m_pScheduler;
+        util::Locker m_lock;
 
-protected:
-    VOID SchedulerAdd(std::shared_ptr<Process> process);
+    protected:
+        VOID SchedulerAdd(std::shared_ptr<IProcess> process);
 
-public:
-    ProcessManager(VOID);
+    public:
+        ProcessManager(VOID);
 
-    UINT Update(ULONG delatMillis);
+        UINT VUpdate(ULONG delatMillis);
 
-    std::weak_ptr<Process> Attach(std::shared_ptr<Process> process);
+        IProcess* VAttach(std::shared_ptr<IProcess> process);
 
-    std::weak_ptr<Process> AttachWithScheduler(std::shared_ptr<Process> process);
+        IProcess* VAttachWithScheduler(std::shared_ptr<IProcess> process);
 
-    VOID AbortAll(BOOL immediate);
+        VOID VAbortAll(BOOL immediate);
 
-    UINT GetProcessCount(VOID) CONST { return (UINT)m_processes.size(); }
+        UINT VGetProcessCount(VOID) CONST { return (UINT)m_processes.size(); }
 
-    ~ProcessManager(VOID);
-};
-
+        ~ProcessManager(VOID);
+    };
 };
 

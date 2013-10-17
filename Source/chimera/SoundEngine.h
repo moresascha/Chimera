@@ -2,7 +2,7 @@
 #include "stdafx.h"
 #include "Event.h"
 
-namespace tbd
+namespace chimera
 {
     struct MaterialPair
     {
@@ -30,9 +30,9 @@ namespace tbd
         std::map<MaterialPair, std::string> m_soundLibrary;
     public:
         SoundEngine(VOID);
-        VOID ResgisterSound(std::string material0, std::string material1, std::string soundFile);
-        VOID CollisionEventDelegate(event::IEventPtr event);
-        VOID NewComponentDelegate(event::IEventPtr event);
+        VOID RegisterSound(std::string material0, std::string material1, std::string soundFile);
+        VOID CollisionEventDelegate(chimera::IEventPtr event);
+        VOID NewComponentDelegate(chimera::IEventPtr event);
         ~SoundEngine(VOID);
     };
 }

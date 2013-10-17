@@ -1,6 +1,6 @@
 #pragma once
 #include "stdafx.h"
-namespace tbd {
+namespace chimera {
 class ByteStream : public IStream
 {
     CHAR* m_bytes;

@@ -2,7 +2,7 @@
 #include "Script.h"
 #include "luaplus/LuaPlus.h"
 #include "Vec3.h"
-namespace tbd
+namespace chimera
 {
     namespace script
     {

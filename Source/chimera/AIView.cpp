@@ -16,10 +16,10 @@ namespace packman
 
     }
 
-    VOID EnemyAIView::VOnAttach(UINT viewId, std::shared_ptr<tbd::Actor> actor)
+    VOID EnemyAIView::VOnAttach(UINT viewId, std::shared_ptr<chimera::Actor> actor)
     {
-        tbd::IGameView::VOnAttach(viewId, actor);
-        m_pTransform = m_actor->GetComponent<tbd::TransformComponent>(tbd::TransformComponent::COMPONENT_ID).lock().get();
+        chimera::IGameView::VOnAttach(viewId, actor);
+        m_pTransform = m_actor->GetComponent<chimera::TransformComponent>(chimera::TransformComponent::COMPONENT_ID).lock().get();
     }
 
     VOID EnemyAIView::PickDir(VOID)
@@ -41,19 +41,19 @@ namespace packman
         m_dir = util::Vec3 (dx, 0, dz);
     }
 
-    tbd::GameViewType EnemyAIView::VGetType(VOID) CONST
+    chimera::ViewType EnemyAIView::VGetType(VOID) CONST
     {
-        return tbd::AI;
+        return chimera::eProjectionType_AI;
     }
 
     VOID ScriptOnUpdate(ActorId id, CONST util::Vec3& position, INT levelSize)
     {
-        LuaPlus::LuaObject o = app::g_pApp->GetScript()->GetState()->GetGlobal("OnUpdate");
+        LuaPlus::LuaObject o = chimera::g_pApp->GetScript()->GetState()->GetGlobal("OnUpdate");
         if(!o.IsNil() && o.IsFunction())
         {
-            LuaPlus::LuaFunction<VOID> function = app::g_pApp->GetScript()->GetState()->GetGlobal("OnUpdate");
+            LuaPlus::LuaFunction<VOID> function = chimera::g_pApp->GetScript()->GetState()->GetGlobal("OnUpdate");
 
-            function(tbd::script::GetIntegerObject(id), tbd::script::GetVec3Object(position), tbd::script::GetIntegerObject(levelSize));
+            function(chimera::script::GetIntegerObject(id), chimera::script::GetVec3Object(position), chimera::script::GetIntegerObject(levelSize));
         }
     }
 

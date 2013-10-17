@@ -1,18 +1,9 @@
 #include "Commands.h"
-#include "GameApp.h"
 #include "util.h"
 #include <fstream>
-#include "GameView.h"
-#include "EventManager.h"
-#include "GameLogic.h"
-#include "Resources.h"
-#include "Process.h"
-#include "ProcessManager.h"
-#include <errno.h>
-#include "GuiComponent.h"
-#include "Components.h"
-#include "Script.h"
-namespace tbd
+#include "Event.h"
+#include "Input.h"
+namespace chimera
 {
 
     BOOL CheckForError(std::list<std::string> toCheck)
@@ -159,7 +150,7 @@ namespace tbd
         return list;
     }
 
-    BOOL CommandInterpreter::CallCommand(LPCSTR command)
+    BOOL CommandInterpreter::VCallCommand(LPCSTR command)
     {
         std::vector<std::string> elements = util::split(std::string(command), ' ');
         if(elements.size() == 0)
@@ -185,19 +176,19 @@ namespace tbd
             vals.push_back(elements[i]);
         }
 
-        tbd::Command c(vals);
+        chimera::Command c(vals);
         try 
         {
             if(!it->second(c))
             {
                 std::string printStr("print " + m_nameToUsage[cmd]);
-                CallCommand(printStr.c_str());
+                VCallCommand(printStr.c_str());
             }
         } catch(LPCSTR error)
         {
             std::string printStr("print ");
             printStr += error;
-            CallCommand(printStr.c_str());
+            VCallCommand(printStr.c_str());
         }
 
 
@@ -220,7 +211,7 @@ namespace tbd
             {
                 continue;
             }
-            interpreter.CallCommand(command.c_str());
+            interpreter.VCallCommand(command.c_str());
         }
         stream.close();
 
@@ -244,8 +235,7 @@ namespace tbd
 
     VOID TransformActor(ActorId id, CONST util::Vec3& dPostition, CONST util::Vec3& dRrotation)
     {
-        event::IEventPtr event(new event::MoveActorEvent(id, dPostition, dRrotation, TRUE));
-        event::IEventManager::Get()->VQueueEvent(event); 
+        QUEUE_EVENT(new MoveActorEvent(id, dPostition, dRrotation, TRUE));
     }
 
     VOID SetActorPosition(ActorId id, CONST util::Vec3& position)
@@ -260,8 +250,7 @@ namespace tbd
 
     VOID SetActorTransformation(ActorId id, CONST util::Vec3& postition, CONST util::Vec3& rotation)
     {
-        event::IEventPtr event(new event::MoveActorEvent(id, postition, rotation, FALSE));
-        event::IEventManager::Get()->VQueueEvent(event); 
+        QUEUE_EVENT(new chimera::MoveActorEvent(id, postition, rotation, FALSE));
     }
 
     //--commands
@@ -311,25 +300,25 @@ namespace tbd
             util::split(command, ' ', split);
             INT vk = GetVKFromchar(key);
             
-            std::shared_ptr<tbd::ActorController> controller = std::static_pointer_cast<tbd::ActorController>(app::g_pApp->GetLogic()->VFindGameView("GameController"));
+            IActorController* controller = (IActorController*)(CmGetApp()->VGetLogic()->VFindView("GameController"));
 
             if(split.size() > 0 )
             {
                 if(!strcmp(split[0].c_str(), KEY_DOWN_STR))
                 {
-                    controller->RegisterKeyDownCommand(vk, CleanCommand(split));
+                    controller->VRegisterKeyDownCommand(vk, CleanCommand(split));
                 }
                 else if(!strcmp(split[0].c_str(), KEY_RELEASED_STR))
                 {
-                    controller->RegisterKeyReleasedCommand(vk, CleanCommand(split));
+                    controller->VRegisterKeyReleasedCommand(vk, CleanCommand(split));
                 }
                 else if(!strcmp(split[0].c_str(), KEY_PRESSEN_STR))
                 {
-                    controller->RegisterKeyPressedCommand(vk, CleanCommand(split));
+                    controller->VRegisterKeyPressedCommand(vk, CleanCommand(split));
                 }
                 else
                 {
-                    controller->RegisterKeyCommand(vk, command);
+                    controller->VRegisterKeyCommand(vk, command);
                 }
             }
             else
@@ -342,36 +331,36 @@ namespace tbd
 
         BOOL PlaySound(Command& cmd)
         {
-            tbd::Resource r(cmd.GetNextCharStr());
-            if(!app::g_pApp->GetCache()->HasResource(r))
+            /*chimera::CMResource r(cmd.GetNextCharStr());
+            if(!chimera::g_pApp->GetCache()->HasResource(r))
             {
                 return FALSE;
             }
-            std::shared_ptr<tbd::ResHandle> handle = app::g_pApp->GetCache()->GetHandle(r);
-            std::shared_ptr<proc::SoundProcess> proc = std::shared_ptr<proc::SoundProcess>(new proc::SoundProcess(handle));
-            app::g_pApp->GetLogic()->AttachProcess(proc);
+            std::shared_ptr<chimera::ResHandle> handle = chimera::g_pApp->GetCache()->GetHandle(r);
+            std::shared_ptr<chimera::SoundProcess> proc = std::shared_ptr<chimera::SoundProcess>(new SoundProcess(handle));
+            CmGetApp()->VGetLogic()->VGetProcessManager()->VAttach(proc);*/
             return TRUE;
         }
 
         BOOL ToogleConsole(Command& cmd)
         {
-            app::g_pApp->GetHumanView()->ToggleConsole();
+           // CmGetApp()->VGetHumanView()->ToggleConsole();
             return TRUE;
         }
 
         BOOL Print(Command& cmd)
         {
-            app::g_pApp->GetHumanView()->GetConsole()->AppendText(cmd.GetRemainingString());
+            //CmGetApp()->VGetHumanView()->GetConsole()->AppendText(cmd.GetRemainingString());
             return TRUE;
         }
 
         BOOL SetTarget(LPCSTR actor)
         {
-            std::shared_ptr<tbd::Actor> a = app::g_pApp->GetLogic()->VFindActor(actor);
+            IActor* a = CmGetApp()->VGetLogic()->VFindActor(actor);
             if(a)
             {
-                app::g_pApp->GetHumanView()->VSetTarget(a);
-                app::g_pApp->GetLogic()->VFindGameView("GameController")->VSetTarget(a);
+                CmGetApp()->VGetHumanView()->VSetTarget(a);
+                CmGetApp()->VGetLogic()->VFindView("GameController")->VSetTarget(a);
             }
             return a != NULL;
         }
@@ -384,14 +373,14 @@ namespace tbd
 
         BOOL ReloadLevel(Command& cmd)
         {
-            return app::g_pApp->GetLogic()->VLoadLevel(app::g_pApp->GetLogic()->Getlevel());
+            return CmGetApp()->VGetLogic()->VLoadLevel(CmGetApp()->VGetLogic()->VGetlevel());
         }
 
         BOOL RunScript(Command& cmd)
         {
             std::string scriptFile = cmd.GetNextCharStr();
             CHECK_COMMAND(cmd);
-            app::g_pApp->GetScript()->VRunFile((app::g_pApp->GetConfig()->GetString("sScriptPath") + scriptFile).c_str());
+            CmGetApp()->VGetScript()->VRunFile((CmGetApp()->VGetConfig()->VGetString("sScriptPath") + scriptFile).c_str());
             return TRUE;
         }
 
@@ -402,7 +391,7 @@ namespace tbd
             FLOAT z = cmd.GetNextFloat();
             CHECK_COMMAND(cmd);
             //event::IEventPtr event = std::shared_ptr<event::SetSunPositionEvent>();
-            QUEUE_EVENT(new event::SetSunPositionEvent(x, y, z));
+            QUEUE_EVENT(new chimera::SetSunPositionEvent(x, y, z));
             return TRUE;
         }
 
@@ -410,19 +399,19 @@ namespace tbd
         {
             std::string name = cmd.GetNextCharStr();
             CHECK_COMMAND(cmd);
-            app::g_pApp->GetLogic()->Getlevel()->VSave(name.c_str());
+            CmGetApp()->VGetLogic()->VGetlevel()->VSave(name.c_str());
             return TRUE;
         }
 
-        BOOL LoadLevel(tbd::Command& cmd)
+        BOOL LoadLevel(chimera::Command& cmd)
         {
             std::string name = cmd.GetNextCharStr();
             CHECK_COMMAND(cmd);
 
             std::string s;
-            s += app::g_pApp->GetCache()->GetFile().VGetName();
+            s += CmGetApp()->VGetCache()->VGetFile().VGetName();
             s += "/";
-            s += app::g_pApp->GetConfig()->GetString("sLevelPath");
+            s += CmGetApp()->VGetConfig()->VGetString("sLevelPath");
             s += name;
 
             if(!util::CheckIfFileExists(s.c_str()))
@@ -430,14 +419,14 @@ namespace tbd
                 throw "File does not exist!";
             }
 
-            event::LoadLevelEvent* e = new event::LoadLevelEvent();
+            chimera::LoadLevelEvent* e = new chimera::LoadLevelEvent();
             e->m_name = name;
             QUEUE_EVENT(e);
 
             return TRUE;
         }
 
-        BOOL RunProc(tbd::Command& cmd)
+        BOOL RunProc(chimera::Command& cmd)
         {
             std::string cmdStr = cmd.GetRemainingString();
 

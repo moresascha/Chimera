@@ -5,35 +5,35 @@
 #include "Components.h"
 #include "SceneGraph.h"
 #include "Frustum.h"
-namespace tbd
+namespace chimera
 {
-    InstancedMeshNode::InstancedMeshNode(ActorId actorid, tbd::Resource ressource) : MeshNode(actorid, ressource), m_pInstanceHandle(NULL)
+    InstancedMeshNode::InstancedMeshNode(ActorId actorid, chimera::CMResource ressource) : MeshNode(actorid, ressource), m_pInstanceHandle(NULL)
     {
     }
 
-    VOID InstancedMeshNode::_VRender(tbd::SceneGraph* graph, tbd::RenderPath& path)
+    VOID InstancedMeshNode::_VRender(chimera::SceneGraph* graph, chimera::RenderPath& path)
     {
-        if(m_pInstanceHandle->IsReady())
+        if(m_pInstanceHandle->VIsReady())
         {
             m_pInstanceHandle->Update();
-            if(m_geo->IsReady())
+            if(m_geo->VIsReady())
             {
                 m_geo->Update();
                 switch(path)
                 {
-                case eDRAW_TO_ALBEDO_INSTANCED :
+                case eRenderPath_DrawToAlbedoInstanced :
                     {
                         m_geo->SetInstanceBuffer(m_pInstanceHandle->GetBuffer());
                         DrawToAlbedo();
                         m_geo->SetInstanceBuffer(NULL);
                     } break;
-                case eDRAW_TO_SHADOW_MAP_INSTANCED : 
+                case eRenderPath_DrawToShadowMapInstanced : 
                     {
                         m_geo->SetInstanceBuffer(m_pInstanceHandle->GetBuffer());
                         DrawToShadowMap(m_geo, m_mesh, GetTransformation());
                         m_geo->SetInstanceBuffer(NULL);
                     } break;
-                case eDRAW_BOUNDING_DEBUG : 
+                case eRenderPath_DrawBounding : 
                     {
                         DrawSphere(GetTransformation(), m_aabb);
                     } break;
@@ -41,7 +41,7 @@ namespace tbd
             }
             else
             {
-                m_geo = std::static_pointer_cast<d3d::Geometry>(app::g_pApp->GetHumanView()->GetVRamManager()->GetHandle(m_ressource));
+                m_geo = std::static_pointer_cast<chimera::Geometry>(chimera::g_pApp->GetHumanView()->GetVRamManager()->GetHandle(m_ressource));
             }
         }
         else
@@ -53,12 +53,12 @@ namespace tbd
 
     UINT InstancedMeshNode::VGetRenderPaths(VOID)
     {
-        return eDRAW_TO_ALBEDO_INSTANCED | eDRAW_TO_SHADOW_MAP_INSTANCED | eDRAW_BOUNDING_DEBUG;
+        return eRenderPath_DrawToAlbedoInstanced | eRenderPath_DrawToShadowMapInstanced | eRenderPath_DrawBounding;
     }
 
     BOOL InstancedMeshNode::VIsVisible(SceneGraph* graph)
     {
-        if(m_pInstanceHandle->IsReady())
+        if(m_pInstanceHandle->VIsReady())
         {
             BOOL in = graph->GetFrustum()->IsInside(m_transformedBBPoint, m_aabb.GetRadius());
             return in;
@@ -75,11 +75,11 @@ namespace tbd
         m_transformedBBPoint = util::Mat4::Transform(*GetTransformation(), m_aabb.GetMiddle());
     }
 
-    VOID InstancedMeshNode::VOnRestore(tbd::SceneGraph* graph)
+    VOID InstancedMeshNode::VOnRestore(chimera::SceneGraph* graph)
     {
         MeshNode::VOnRestore(graph);
 
-        std::shared_ptr<tbd::RenderComponent> comp = m_actor->GetComponent<tbd::RenderComponent>(tbd::RenderComponent::COMPONENT_ID).lock();
+        std::shared_ptr<chimera::RenderComponent> comp = m_actor->GetComponent<chimera::RenderComponent>(chimera::RenderComponent::COMPONENT_ID).lock();
         if(!comp->m_instances.empty())
         {
             FLOAT* instances = new FLOAT[comp->m_instances.size() * 3];
@@ -96,10 +96,10 @@ namespace tbd
             }
             m_aabb.Construct();
 
-            m_pInstanceHandle = std::shared_ptr<d3d::VertexBufferHandle>(new d3d::VertexBufferHandle());
+            m_pInstanceHandle = std::shared_ptr<chimera::VertexBufferHandle>(new chimera::VertexBufferHandle());
             m_pInstanceHandle->SetVertexData(instances, (UINT)comp->m_instances.size(), 3 * sizeof(FLOAT));
             std::string name("instanced_" + m_actorId);
-            app::g_pApp->GetHumanView()->GetVRamManager()->AppendAndCreateHandle(name, m_pInstanceHandle);
+            chimera::g_pApp->GetHumanView()->GetVRamManager()->AppendAndCreateHandle(name, m_pInstanceHandle);
             SAFE_DELETE(instances);
         }
         else

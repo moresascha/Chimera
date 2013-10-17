@@ -1,114 +1,40 @@
 #pragma once
 #include "stdafx.h"
-#include "GameView.h"
 #include "AxisAlignedBB.h"
-#include "Actor.h"
-#include "Resources.h"
-#include "RenderPath.h"
+#include "Cache.h"
 
-namespace d3d
+namespace chimera 
 {
-    class Geometry;
-    class VertexBufferHandle;
-    class Texture2D;
-}
-
-namespace tbd
-{
-    class Mesh;
-    class Frustum;
-    class MaterialSet;
     class TransformComponent;
-    class Material;
-}
-
-namespace util
-{
-    class ICamera;
-}
-
-namespace tbd 
-{
-    class SceneGraph;
-    class SceneNode;
-
     //helper for nodes
-    VOID DrawPickingSphere(std::shared_ptr<tbd::Actor> actor, CONST util::Mat4* matrix, FLOAT radius);
-    VOID DrawPickingCube(std::shared_ptr<tbd::Actor> actor, CONST util::Mat4* matrix, CONST util::AxisAlignedBB& aabb);
-    VOID DrawActorInfos(std::shared_ptr<tbd::Actor> actor, CONST util::Mat4* matrix, std::shared_ptr<util::ICamera> camera);
+    /*
+    VOID DrawPickingSphere(std::shared_ptr<chimera::Actor> actor, CONST util::Mat4* matrix, FLOAT radius);
+    VOID DrawPickingCube(std::shared_ptr<chimera::Actor> actor, CONST util::Mat4* matrix, CONST util::AxisAlignedBB& aabb);
+    VOID DrawActorInfos(std::shared_ptr<chimera::Actor> actor, CONST util::Mat4* matrix, std::shared_ptr<chimera::ICamera> camera);
     VOID DrawSphere(CONST util::Mat4* matrix, CONST util::AxisAlignedBB& aabb);
     VOID DrawSphere(CONST util::Mat4* matrix, CONST FLOAT radius);
-    VOID DrawAnchorSphere(std::shared_ptr<tbd::Actor> actor, CONST util::Mat4* matrix, FLOAT radius);
+    VOID DrawAnchorSphere(std::shared_ptr<chimera::Actor> actor, CONST util::Mat4* matrix, FLOAT radius);
     VOID DrawBox(CONST util::Mat4* matrix, CONST util::AxisAlignedBB& aabb);
-    VOID DrawToShadowMap(std::shared_ptr<d3d::Geometry> geo, std::shared_ptr<tbd::Mesh> mesh, CONST util::Mat4* matrix);
-    VOID DrawInfoTextOnScreen(util::ICamera* camera, CONST util::Mat4* model, CONST std::string& text);
-    VOID DrawFrustum(tbd::Frustum& frustum);
-
-    class ISceneNode
-    {
-    public:
-        ISceneNode(VOID) {}
-
-        virtual util::Mat4* GetTransformation(VOID) = 0;
-
-        virtual VOID VSetVisibilityOnLastTraverse(BOOL visible) = 0;
-
-        virtual VOID VSetActor(ActorId id) = 0;
-
-        virtual BOOL VWasVisibleOnLastTraverse(VOID) = 0;
-
-        virtual VOID VForceVisibilityCheck(VOID) = 0;
-
-        virtual VOID VPreRender(SceneGraph* graph) = 0;
-
-        virtual VOID VSetParent(ISceneNode* parent) = 0;
-
-        virtual VOID VRender(SceneGraph* graph, tbd::RenderPath& path) = 0;
-
-        virtual VOID _VRender(SceneGraph* graph, tbd::RenderPath& path) = 0;
-
-        virtual VOID VRenderChildren(SceneGraph* graph, tbd::RenderPath& path) = 0;
-
-        virtual VOID VPostRender(SceneGraph* graph) = 0;
-
-        virtual VOID VOnRestore(SceneGraph* graph) = 0;
-
-        virtual VOID VAddChild(std::shared_ptr<ISceneNode> child) = 0;
-
-        virtual VOID VOnParentChanged(VOID) = 0;
-
-        virtual BOOL VIsVisible(SceneGraph* graph) = 0;
-
-        virtual BOOL VRemoveChild(std::shared_ptr<ISceneNode> child) = 0;
-
-        virtual BOOL VRemoveChild(ActorId actorId) = 0;
-
-        virtual UINT VGetRenderPaths(VOID) = 0;
-
-        virtual ActorId VGetActorId(VOID) = 0;
-
-        virtual std::vector<std::shared_ptr<ISceneNode>>& GetChilds(VOID) = 0;
-
-        virtual VOID VOnUpdate(ULONG millis, SceneGraph* graph) = 0;
-
-        virtual std::shared_ptr<tbd::ISceneNode> VFindActor(ActorId id) = 0;
-
-        virtual ~ISceneNode(VOID) {}
-    };
+    VOID DrawBox(CONST util::AxisAlignedBB& aabb);
+    VOID DrawToShadowMap(std::shared_ptr<chimera::Geometry> geo, std::shared_ptr<chimera::Mesh> mesh, CONST util::Mat4* matrix);
+    VOID DrawInfoTextOnScreen(chimera::ICamera* camera, CONST util::Mat4* model, CONST std::string& text);
+    VOID DrawFrustum(chimera::Frustum& frustum); */
 
     class SceneNode : public ISceneNode 
     {
     private:
         BOOL m_wasVisibleOnLastTraverse;
         BOOL m_forceVisibleCheck;
-        std::shared_ptr<tbd::TransformComponent> m_transformation;
-        std::shared_ptr<tbd::TransformComponent> m_wParentTransformation;
+        TransformComponent* m_transformation;
+        std::unique_ptr<TransformComponent> m_wParentTransformation;
+
     protected:
         ActorId m_actorId;
-        std::shared_ptr<tbd::Actor> m_actor;
-        std::vector<std::shared_ptr<ISceneNode>> m_childs;
+        IActor* m_actor;
+        std::vector<std::unique_ptr<ISceneNode>> m_childs;
         util::AxisAlignedBB m_aabb;
         ISceneNode* m_parent;
+        RenderPath m_paths;
 
         BOOL HasParent(VOID);
 
@@ -117,7 +43,7 @@ namespace tbd
 
         SceneNode(VOID);
 
-        util::Mat4* GetTransformation(VOID);
+        util::Mat4* VGetTransformation(VOID);
 
         VOID VSetActor(ActorId id);
 
@@ -133,92 +59,111 @@ namespace tbd
 
         VOID VOnParentChanged(VOID);
 
-        std::vector<std::shared_ptr<ISceneNode>>& GetChilds(VOID);
+        std::vector<std::unique_ptr<ISceneNode>>& VGetChilds(VOID);
 
-        virtual VOID VPreRender(tbd::SceneGraph* graph);
+        virtual VOID VPreRender(ISceneGraph* graph);
 
-        virtual VOID VPostRender(tbd::SceneGraph* graph);
+        virtual VOID VPostRender(ISceneGraph* graph);
 
-        virtual VOID VOnRestore(tbd::SceneGraph* graph);
+        virtual VOID VOnRestore(ISceneGraph* graph);
 
-        VOID VRender(tbd::SceneGraph* graph, tbd::RenderPath& path);
+        VOID VRender(ISceneGraph* graph, RenderPath& path);
 
-        virtual VOID _VRender(tbd::SceneGraph* graph, tbd::RenderPath& path) {}
+        virtual VOID _VRender(ISceneGraph* graph, RenderPath& path) {}
 
-        VOID VRenderChildren(SceneGraph* graph, tbd::RenderPath& path);
+        VOID VRenderChildren(ISceneGraph* graph, RenderPath& path);
 
-        virtual BOOL VIsVisible(SceneGraph* graph);
+        virtual BOOL VIsVisible(ISceneGraph* graph);
 
-        VOID VAddChild(std::shared_ptr<ISceneNode> child);
+        VOID VAddChild(std::unique_ptr<ISceneNode> child);
 
         BOOL VRemoveChild(ActorId actorId);
 
-        BOOL VRemoveChild(std::shared_ptr<ISceneNode> child);
+        BOOL VRemoveChild(ISceneNode* child);
 
-        virtual CONST util::AxisAlignedBB& GetAABB(VOID) CONST { return m_aabb; }
+        virtual CONST util::AxisAlignedBB& VGetAABB(VOID) CONST { return m_aabb; }
 
-        virtual VOID VOnUpdate(ULONG millis, SceneGraph* graph);
+        virtual VOID VOnUpdate(ULONG millis, ISceneGraph* graph);
 
-        VOID ActorMovedDelegate(event::IEventPtr pEventData);
+        VOID ActorMovedDelegate(chimera::IEventPtr pEventData);
 
         virtual VOID VOnActorMoved(VOID) {}
 
-        virtual UINT VGetRenderPaths(VOID);
+        UINT VGetRenderPaths(VOID);
 
-        std::shared_ptr<tbd::ISceneNode> VFindActor(ActorId id);
+        VOID VSetRenderPaths(RenderPath paths);
+
+        ISceneNode* VFindActor(ActorId id);
 
         virtual ~SceneNode(VOID);
     };
 
+   
     //for mesh nodes only
-    VOID DrawPicking(std::shared_ptr<tbd::Actor> actor, CONST util::Mat4* matrix, std::shared_ptr<tbd::Mesh> mesh, std::shared_ptr<d3d::Geometry> geo);
+    //VOID DrawPicking(std::shared_ptr<chimera::Actor> actor, CONST util::Mat4* matrix, std::shared_ptr<chimera::Mesh> mesh, std::shared_ptr<chimera::Geometry> geo);
 
     class MeshNode : public SceneNode 
     {
     protected:
         util::Vec3 m_transformedBBPoint;
-        tbd::Resource m_ressource;
-        std::shared_ptr<d3d::Geometry> m_geo;
-        std::shared_ptr<tbd::Mesh> m_mesh;
-        std::shared_ptr<tbd::MaterialSet> m_materials;
-        std::shared_ptr<d3d::Texture2D> m_diffuseTextures[32];
-        std::shared_ptr<d3d::Texture2D> m_normalTextures[32];
+        chimera::CMResource m_ressource;
+        std::shared_ptr<IGeometry> m_geo;
+        std::shared_ptr<IMesh> m_mesh;
+        std::shared_ptr<MaterialSet> m_materials;
+        std::shared_ptr<IDeviceTexture> m_diffuseTextures[32];
+        std::shared_ptr<IDeviceTexture> m_normalTextures[32];
         UINT m_diffuseTexturesCount;
         VOID DrawToAlbedo(VOID);
 
     public:
-        MeshNode(ActorId actorid, tbd::Resource ressource);
+        MeshNode(ActorId actorid, chimera::CMResource ressource);
 
-        MeshNode(tbd::Resource ressource);
+        virtual BOOL VIsVisible(ISceneGraph* graph);
 
-        virtual BOOL VIsVisible(SceneGraph* graph);
-
-        virtual VOID _VRender(tbd::SceneGraph* graph, tbd::RenderPath& path);
+        virtual VOID _VRender(ISceneGraph* graph, chimera::RenderPath& path);
 
         virtual VOID VOnActorMoved(VOID);
 
-        virtual VOID VOnRestore(tbd::SceneGraph* graph);
-
-        virtual UINT VGetRenderPaths(VOID);
+        virtual VOID VOnRestore(ISceneGraph* graph);
 
         virtual ~MeshNode(VOID);
     };
 
+    class SkyDomeNode : public SceneNode
+    {
+    private:
+        CMResource m_TextureRes;
+        std::shared_ptr<IDeviceTexture> m_textureHandle;
+        IGeometry* m_pSkyGeo;
+    public:
+
+        SkyDomeNode(ActorId id, CMResource texture);
+
+        VOID _VRender(ISceneGraph* graph, RenderPath& path);
+
+        BOOL VIsVisible(ISceneGraph* graph);
+
+        VOID VOnRestore(ISceneGraph* graph);
+
+        ~SkyDomeNode(VOID);
+    };
+
+	/*
     class InstancedMeshNode : public MeshNode
     {
     private:
-        std::shared_ptr<d3d::VertexBufferHandle> m_pInstanceHandle;
+        std::shared_ptr<chimera::VertexBufferHandle> m_pInstanceHandle;
 
     public:
-        InstancedMeshNode(ActorId actorid, tbd::Resource ressource);
+        InstancedMeshNode(ActorId actorid, chimera::CMResource ressource);
 
         BOOL VIsVisible(SceneGraph* graph);
 
-        VOID _VRender(tbd::SceneGraph* graph, tbd::RenderPath& path);
+        VOID _VRender(chimera::SceneGraph* graph, chimera::RenderPath& path);
 
         VOID VOnActorMoved(VOID);
 
-        VOID VOnRestore(tbd::SceneGraph* graph);
+        VOID VOnRestore(chimera::SceneGraph* graph);
 
         UINT VGetRenderPaths(VOID);
 
@@ -232,8 +177,8 @@ namespace tbd
     };
     enum AnchroDrawMode
     {
-        eSolid,
-        eWire
+        eFillMode_Solid,
+        eFillMode_Wire
     };
 
     class AnchorNode : public SceneNode
@@ -244,12 +189,12 @@ namespace tbd
         AnchroDrawMode m_drawMode;
         std::string m_info;
     public:
-        AnchorNode(AnchorMeshType meshType, ActorId id, LPCSTR info, FLOAT radius = 1.0f, AnchroDrawMode mode = eSolid) 
+        AnchorNode(AnchorMeshType meshType, ActorId id, LPCSTR info, FLOAT radius = 1.0f, AnchroDrawMode mode = eFillMode_Solid) 
             : SceneNode(id), m_meshType(meshType), m_radius(radius), m_drawMode(mode), m_info(info)
         {
         }
 
-        VOID _VRender(tbd::SceneGraph* graph, tbd::RenderPath& path);
+        VOID _VRender(chimera::SceneGraph* graph, chimera::RenderPath& path);
 
         UINT VGetRenderPaths(VOID);
     };
@@ -257,50 +202,37 @@ namespace tbd
     class CameraNode : public SceneNode
     {
     private:
-        std::shared_ptr<util::ICamera> m_pCamera;
+        std::shared_ptr<chimera::ICamera> m_pCamera;
 
     public:
         CameraNode(ActorId id);
 
-        VOID _VRender(tbd::SceneGraph* graph, tbd::RenderPath& path);
+        VOID _VRender(chimera::SceneGraph* graph, chimera::RenderPath& path);
 
         UINT VGetRenderPaths(VOID);
     };
 
-    class SkyDomeNode : public SceneNode
-    {
-    private:
-        tbd::Resource m_TextureRes;
-        std::shared_ptr<d3d::Texture2D> m_textureHandle;
-    public:
-
-        SkyDomeNode(ActorId id, tbd::Resource texture);
-
-        VOID _VRender(tbd::SceneGraph* graph, tbd::RenderPath& path);
-
-        BOOL VIsVisible(SceneGraph* graph);
-
-        VOID VOnRestore(tbd::SceneGraph* graph);
-
-        UINT VGetRenderPaths(VOID);
-    };
+    typedef chimera::Geometry*(*GeoCreator)(VOID);
 
     class GeometryNode : public SceneNode
     {
-        d3d::Geometry* m_pGeometry;
-        tbd::Material* m_pMaterial;
+        GeoCreator m_pFuncGeometry;
+        std::shared_ptr<chimera::Geometry> m_pGeometry;
+        chimera::Material* m_pMaterial;
 
     public:
-        GeometryNode(d3d::Geometry* m_pGeometry);
+        GeometryNode(GeoCreator gc);
 
-        VOID SetMaterial(CONST tbd::Material* mat);
+        VOID SetMaterial(CONST chimera::Material& mat);
 
         VOID SetAABB(CONST util::AxisAlignedBB& aabb);
 
-        VOID _VRender(tbd::SceneGraph* graph, tbd::RenderPath& path);
+        VOID _VRender(chimera::SceneGraph* graph, chimera::RenderPath& path);
+
+        VOID VOnRestore(chimera::SceneGraph* graph);
 
         UINT VGetRenderPaths(VOID);
 
         ~GeometryNode(VOID);
-    };
+    }; */
 }

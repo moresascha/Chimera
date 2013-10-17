@@ -1,197 +1,198 @@
 #include "ActorFactory.h"
-#include "Thread.h"
-#include "Process.h"
-#include "Event.h"
-#include "tinyxml2.h"
-#include "EventManager.h"
-#include "GameApp.h"
-#include "ProcessManager.h"
-#include "GameLogic.h"
 #include "Components.h"
 #include "Event.h"
-namespace tbd
+#include "Process.h"
+
+namespace chimera
 {
 
-    class WaitForComponentsToGethandled : public proc::RealtimeProcess
+    #define CM_EVENT___CC 0x12bd1c57
+    class __CC : public IEvent
+    {
+        friend class WaitForComponentsToGethandled;
+    private:
+        HANDLE m_handle;
+    public:
+        __CC(VOID)
+        {
+            m_handle = CreateEvent(NULL, FALSE, FALSE, NULL);
+        }
+
+        EventType VGetEventType(VOID)
+        {
+            return CM_EVENT___CC;
+        }
+
+        ~__CC(VOID)
+        {
+            if(m_handle)
+            {
+                CloseHandle(m_handle);
+            }
+        }
+    };
+
+    class WaitForComponentsToGethandled : public RealtimeProcess
     {
     private:
-        std::shared_ptr<tbd::Actor> m_actor;
+        IActor* m_actor;
     public:
-        WaitForComponentsToGethandled(std::shared_ptr<tbd::Actor> actor) : m_actor(actor)
+
+        WaitForComponentsToGethandled(IActor* actor) : m_actor(actor)
         {
         }
 
-        BOOL Done(VOID)
+        VOID WaitForEvent(IEventPtr event)
         {
-            for(auto it = m_actor->GetComponents().begin(); it != m_actor->GetComponents().end(); ++it)
-            {
-                if(!it->second->IsWaitTillHandled())
-                {
-                    return FALSE;
-                }
-            }
-            return TRUE;
+            std::shared_ptr<__CC> cc = std::static_pointer_cast<__CC>(event);
+            SetEvent(cc->m_handle);
         }
 
         VOID VThreadProc(VOID)
         {
-            /*while(!Done()) 
+            /*HANDLE* pHandles = new HANDLE[m_actor->VGetComponents().size()];
+            TBD_FOR_INT(m_actor->VGetComponents().size())
             {
-                Sleep(60);
-            } */
-            std::list<HANDLE> handles;
-
-            for(auto it = m_actor->GetComponents().begin(); it != m_actor->GetComponents().end(); ++it)
-            {
-                if(it->second->IsWaitTillHandled())
-                {
-                    handles.push_back(it->second->GetHandle());
-                }
+                *(pHandles+i) = *it;
             }
             
-            HANDLE* pHandles = new HANDLE[handles.size()];
-            INT pos = 0;
-            TBD_FOR(handles)
-            {
-                *(pHandles+pos++) = *it;
-            }
+            WaitForMultipleObjects((DWORD)handles.size(), pHandles, TRUE, INFINITE);*/
             
-            WaitForMultipleObjects((DWORD)handles.size(), pHandles, TRUE, INFINITE);
+            QUEUE_EVENT_TSAVE(new ActorCreatedEvent(m_actor->GetId()));
             
-            event::IEventPtr actorCreatedEvent(new event::ActorCreatedEvent(m_actor->GetId()));
-            event::IEventManager::Get()->VQueueEventThreadSave(actorCreatedEvent);
-            
-            SAFE_ARRAY_DELETE(pHandles);
+            //SAFE_ARRAY_DELETE(pHandles);
 
             Succeed();
         }
     };
 
-    class CreateActorComponentsProcess : public proc::RealtimeProcess 
+    class CreateActorComponentsProcess : public RealtimeProcess 
     {
     private:
-        std::shared_ptr<tbd::Actor> m_actor;
+        IActor* m_actor;
         std::string m_name;
     public:
-        CreateActorComponentsProcess(std::shared_ptr<tbd::Actor> actor) : m_actor(actor) 
+        CreateActorComponentsProcess(IActor* actor) : m_actor(actor) 
         {
-            std::shared_ptr<WaitForComponentsToGethandled> proc = std::shared_ptr<WaitForComponentsToGethandled>(new WaitForComponentsToGethandled(actor));
-            VSetChild(proc);
+            std::unique_ptr<IProcess> proc(new WaitForComponentsToGethandled(actor));
+            VSetChild(std::move(proc));
             SetPriority(THREAD_PRIORITY_HIGHEST);
         }
 
         VOID VThreadProc(VOID)
         {
-            for(auto it = m_actor->GetComponents().begin(); it != m_actor->GetComponents().end(); ++it)
+            for(auto it = m_actor->VGetComponents().begin(); it != m_actor->VGetComponents().end(); ++it)
             {
                 it->second->VCreateResources();
             }
-            for(auto it = m_actor->GetComponents().begin(); it != m_actor->GetComponents().end(); ++it)
+            for(auto it = m_actor->VGetComponents().begin(); it != m_actor->VGetComponents().end(); ++it)
             {
                 it->second->VPostInit();
+                QUEUE_EVENT_TSAVE(new NewComponentCreatedEvent(it->second->VGetComponentId(), m_actor->GetId()));
             }
             Succeed();
         }
     };
 
-    ActorComponent* CreateTransformComponent(VOID) 
+    IActorComponent* CreateTransformComponent(VOID) 
     {
         return new TransformComponent;
     }
 
-    ActorComponent* CreateRenderComponent(VOID)
+    IActorComponent* CreateRenderComponent(VOID)
     {
         return new RenderComponent;
     }
 
-    ActorComponent* CreateCameraComponent(VOID) 
+    IActorComponent* CreateCameraComponent(VOID) 
     {
         return new CameraComponent;
     }
 
-    ActorComponent* CreatePhysicComponent(VOID) 
+    IActorComponent* CreatePhysicComponent(VOID) 
     {
         return new PhysicComponent;
     }
 
-    ActorComponent* CreateLightComponent(VOID) 
+    IActorComponent* CreateLightComponent(VOID) 
     {
         return new LightComponent;
     }
 
-    ActorComponent* CreatePickableComponent(VOID)
+    IActorComponent* CreatePickableComponent(VOID)
     {
         return new PickableComponent;
     }
 
-    ActorComponent* CreateParticleComponent(VOID)
-    {
-        return new ParticleComponent;
-    }
-
-    ActorComponent* CreateSoundEmitterComponent(VOID)
+    IActorComponent* CreateSoundEmitterComponent(VOID)
     {
         return new SoundComponent;
     }
 
-    ActorComponent* CreateParentComponent(VOID)
+    IActorComponent* CreateParentComponent(VOID)
     {
         return new ParentComponent;
     }
 
-    ActorId ActorFactory::m_lastActorId = 0;
-
-    ActorFactory::ActorFactory(VOID) 
+    ActorFactory::ActorFactory(VOID) : m_lastActorId(0)
     {
-        m_creators["TransformComponent"] = CreateTransformComponent;
-        m_creatorsId[TransformComponent::COMPONENT_ID] = CreateTransformComponent;
-
-        m_creators["RenderComponent"] = CreateRenderComponent;
-        m_creatorsId[RenderComponent::COMPONENT_ID] = CreateRenderComponent;
-
-        m_creators["CameraComponent"] = CreateCameraComponent;
-        m_creatorsId[CameraComponent::COMPONENT_ID] = CreateCameraComponent;
-
-        m_creators["PhysicComponent"] = CreatePhysicComponent;
-        m_creatorsId[PhysicComponent::COMPONENT_ID] = CreatePhysicComponent;
-
-        m_creators["LightComponent"] = CreateLightComponent;
-        m_creatorsId[LightComponent::COMPONENT_ID] = CreateLightComponent;
-
-        m_creators["PickableComponent"] = CreatePickableComponent;
-        m_creatorsId[PickableComponent::COMPONENT_ID] = CreatePickableComponent;
-
-        m_creators["ParticleComponent"] = CreateParticleComponent;
-        m_creatorsId[ParticleComponent::COMPONENT_ID] = CreateParticleComponent;
-
-        m_creators["SoundComponent"] = CreateSoundEmitterComponent;
-        m_creatorsId[SoundComponent::COMPONENT_ID] = CreateSoundEmitterComponent;
-
-        m_creators["ParentComponent"] = CreateParentComponent;
-        m_creatorsId[ParentComponent::COMPONENT_ID] = CreateParentComponent;
+        VAddComponentCreator(CreateTransformComponent, "TransformComponent", CM_CMP_TRANSFORM);
+        VAddComponentCreator(CreateRenderComponent, "RenderComponent", CM_CMP_RENDERING);
+        VAddComponentCreator(CreateCameraComponent, "CameraComponent", CM_CMP_CAMERA);
+        VAddComponentCreator(CreatePhysicComponent, "PhysicComponent", CM_CMP_PHX);
+        VAddComponentCreator(CreateLightComponent, "LightComponent", CM_CMP_LIGHT);
+        VAddComponentCreator(CreateSoundEmitterComponent, "SoundComponent", CM_CMP_SOUND);
+        VAddComponentCreator(CreateParentComponent, "ParentComponent", CM_CMP_PARENT_ACTOR);
     }
 
-    VOID ActorFactory::AddComponentCreator(ActorComponentCreator creator, LPCSTR name, ComponentId id)
+    VOID ActorFactory::VAddComponentCreator(ActorComponentCreator creator, LPCSTR name, ComponentId id)
     {
         m_creators[std::string(name)] = creator;
         m_creatorsId[id] = creator;
     }
 
-    std::shared_ptr<tbd::Actor> ActorFactory::CreateActor(ActorDescription desc)
+    std::unique_ptr<IActor> ActorFactory::VCreateActor(std::unique_ptr<ActorDescription> desc)
     {
-        std::shared_ptr<tbd::Actor> actor(new Actor(GetNextActorId()));
-        for(auto it = desc->GetComponents()->begin(); it != desc->GetComponents()->end(); ++it)
+        std::unique_ptr<IActor> actor(new Actor(GetNextActorId()));
+        for(auto it = desc->GetComponents().begin(); it != desc->GetComponents().end(); ++it)
         {
-            it->get()->SetOwner(actor);
-            actor->AddComponent(*it);
+            (*it)->VSetOwner(actor.get());
+            actor->VAddComponent(std::move(*it));
         }
-        std::shared_ptr<proc::Process> proc = std::shared_ptr<proc::Process>(new CreateActorComponentsProcess(actor));
-        app::g_pApp->GetLogic()->GetProcessManager()->AttachWithScheduler(proc);
-        actor->PostInit();
+        std::unique_ptr<IProcess> proc = std::unique_ptr<IProcess>(new CreateActorComponentsProcess(actor.get()));
+        CmGetApp()->VGetLogic()->VGetProcessManager()->VAttachWithScheduler(std::move(proc));
         return actor; 
     }
 
-    std::shared_ptr<tbd::Actor> ActorFactory::CreateActor(tinyxml2::XMLElement* pData, std::vector<std::shared_ptr<tbd::Actor>>& actors) 
+
+    std::unique_ptr<IActorComponent> ActorFactory::VCreateComponent(LPCSTR name)
+    {
+        auto it = m_creators.find(name);
+        if(it == m_creators.end())
+        {
+            LOG_CRITICAL_ERROR_A("Component for '%s' creator does not exists!", name);
+        }
+
+        return std::unique_ptr<IActorComponent>(it->second());
+    }
+
+    std::unique_ptr<IActorComponent> ActorFactory::VCreateComponent(ComponentId id)
+    {
+        auto it = m_creatorsId.find(id);
+        if(it == m_creatorsId.end())
+        {
+            LOG_CRITICAL_ERROR_A("Component for '%d' creator does not exists!", id);
+        }
+
+        return std::unique_ptr<IActorComponent>(it->second());
+    }
+
+    std::unique_ptr<IActor> ActorFactory::VCreateActor(CONST CMResource& resource, std::vector<std::unique_ptr<IActor>>& actors)
+    {
+        return NULL;
+    }
+    /*
+    std::shared_ptr<chimera::Actor> ActorFactory::VCreateActor(tinyxml2::XMLElement* pData, std::vector<std::shared_ptr<chimera::Actor>>& actors) 
     {
         if(!pData)
         {
@@ -199,7 +200,7 @@ namespace tbd
             return NULL;
         }
 
-        std::shared_ptr<tbd::Actor> pActor(new Actor(GetNextActorId()));
+        std::shared_ptr<chimera::Actor> pActor(new Actor(GetNextActorId()));
 
         if(!pActor->Init(pData))
         {
@@ -212,15 +213,15 @@ namespace tbd
             std::string name(pNode->Value());
             if(name == "Actor")
             {
-                std::shared_ptr<tbd::Actor> child = CreateActor(pNode, actors);
-                std::shared_ptr<tbd::ParentComponent> pcmp = std::shared_ptr<tbd::ParentComponent>(new tbd::ParentComponent());
+                std::shared_ptr<chimera::Actor> child = CreateActor(pNode, actors);
+                std::shared_ptr<chimera::ParentComponent> pcmp = std::shared_ptr<chimera::ParentComponent>(new chimera::ParentComponent());
                 pcmp->m_parentId = pActor->GetId();
                 child->AddComponent(pcmp);
                 pcmp->SetOwner(child);
             }
             else
             {
-                std::shared_ptr<tbd::ActorComponent> pComponent(CreateComponent(pNode));
+                std::shared_ptr<chimera::ActorComponent> pComponent(CreateComponent(pNode));
                 if(pComponent)
                 {
                     pActor->AddComponent(pComponent);
@@ -233,27 +234,27 @@ namespace tbd
                 }
             }
         }
-        std::shared_ptr<proc::Process> proc = std::shared_ptr<proc::Process>(new CreateActorComponentsProcess(pActor));
-        app::g_pApp->GetLogic()->GetProcessManager()->AttachWithScheduler(proc);
+        std::shared_ptr<chimera::Process> chimera = std::shared_ptr<chimera::Process>(new CreateActorComponentsProcess(pActor));
+        chimera::g_pApp->GetLogic()->GetProcessManager()->VAttachWithScheduler(chimera);
         pActor->PostInit();
         actors.push_back(pActor);
         return pActor;
-    }
-
-    std::shared_ptr<tbd::Actor> ActorFactory::CreateActor(CONST CHAR* ressource, std::vector<std::shared_ptr<tbd::Actor>>& actors) 
+    } */
+    /*
+    std::shared_ptr<chimera::Actor> ActorFactory::VCreateActor(CONST CHAR* ressource, std::vector<std::shared_ptr<chimera::Actor>>& actors) 
     {
         tinyxml2::XMLDocument doc;
-        tbd::Resource r(ressource);
-        std::shared_ptr<tbd::ResHandle> handle = app::g_pApp->GetCache()->GetHandle(r);
+        chimera::CMResource r(ressource);
+        std::shared_ptr<chimera::ResHandle> handle = chimera::g_pApp->GetCache()->GetHandle(r);
         doc.Parse(handle->Buffer());
         tinyxml2::XMLElement* root = doc.RootElement();
         return CreateActor(root, actors);
     }
 
-    std::shared_ptr<tbd::ActorComponent> ActorFactory::CreateComponent(tinyxml2::XMLElement* pData) 
+    std::shared_ptr<chimera::ActorComponent> ActorFactory::VCreateComponent(tinyxml2::XMLElement* pData) 
     {
 
-        std::shared_ptr<tbd::ActorComponent> pComponent;
+        std::shared_ptr<chimera::ActorComponent> pComponent;
         std::string name(pData->Value());
         auto it = m_creators.find(name);
         if(it != m_creators.end())
@@ -276,14 +277,14 @@ namespace tbd
         return pComponent;
     }
 
-    VOID ActorFactory::ReplaceComponent(std::shared_ptr<tbd::Actor> actor, tinyxml2::XMLElement* pData) 
+    VOID ActorFactory::VReplaceComponent(std::shared_ptr<chimera::Actor> actor, tinyxml2::XMLElement* pData) 
     {
-        std::shared_ptr<tbd::ActorComponent> pComponent(CreateComponent(pData));
+        std::shared_ptr<chimera::ActorComponent> pComponent(CreateComponent(pData));
         if(pComponent)
         {
             actor->ReplaceComponent(pComponent);
 
             pComponent->SetOwner(actor);
         }
-    }
+    }*/
 }

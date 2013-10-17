@@ -5,21 +5,11 @@ namespace LuaPlus
 {
     class LuaState;
 }
-namespace tbd
+namespace chimera
 {
     namespace script
     {
-        class IScript
-        {
-
-        public:
-            virtual BOOL VInit(VOID) = 0;
-            virtual VOID VRunFile(LPCSTR file) = 0;
-            virtual VOID VRunString(LPCSTR str) = 0;
-            virtual ~IScript(VOID) {}
-        };
-
-        class LuaScript : public IScript
+        class LuaScript : public chimera::IScript
         {
         private:
             LuaPlus::LuaState* m_pState;

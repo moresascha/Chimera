@@ -13,7 +13,7 @@
 #include "Frustum.h"
 #include "Transformation.cuh"
 
-namespace tbd
+namespace chimera
 {
     BOOL UniformBSplineNode::drawCP_CP = FALSE;
 
@@ -22,7 +22,7 @@ namespace tbd
         friend class CudaTransformationNode;
         friend class UniformBSplineNode;
     protected:
-        d3d::Geometry* m_pGeo;
+        chimera::Geometry* m_pGeo;
         cudah::cudah* m_pCuda;
         cudah::cuda_buffer m_d3dbuffer;
         cudah::cuda_buffer m_normals;
@@ -100,7 +100,7 @@ namespace tbd
     {
         friend class UniformBSplineNode;
     private:
-        d3d::Geometry* m_pControlGeo;
+        chimera::Geometry* m_pControlGeo;
         cudah::cuda_buffer m_controlPoints;
         FLOAT* m_pControlPoints;
         UINT m_controlPointsCnt;
@@ -165,11 +165,11 @@ namespace tbd
 
     VOID CudaTransformationNode::VOnUpdate(ULONG millis, SceneGraph* graph)
     {
-        if(VIsVisible(graph) && m_pHandle->IsReady())
+        if(VIsVisible(graph) && m_pHandle->VIsReady())
         {
             m_pHandle->m_pCuda->MapGraphicsResource(m_pHandle->m_d3dbuffer);
             m_fpFunc(m_pHandle->m_d3dbuffer, m_pHandle->m_normals, m_pHandle->m_positions, m_pHandle->m_indices, 
-                m_pHandle->m_pGeo->GetVertexBuffer()->GetElementCount(), 128, app::g_pApp->GetUpdateTimer()->GetTime(), m_pStream);
+                m_pHandle->m_pGeo->GetVertexBuffer()->GetElementCount(), 128, chimera::g_pApp->GetUpdateTimer()->GetTime(), m_pStream);
             m_pHandle->m_pCuda->UnmapGraphicsResource(m_pHandle->m_d3dbuffer);
         }        
     }
@@ -184,7 +184,7 @@ namespace tbd
         return m_pHandle->m_pCuda;
     }
 
-    BOOL CudaTransformationNode::VIsVisible(tbd::SceneGraph* graph)
+    BOOL CudaTransformationNode::VIsVisible(chimera::SceneGraph* graph)
     {
         util::Vec3 middle = util::Mat4::Transform(*GetTransformation(), m_aabb.GetMiddle());
         BOOL in = graph->GetFrustum()->IsInside(middle, m_aabb.GetRadius());
@@ -193,12 +193,12 @@ namespace tbd
 
     UINT CudaTransformationNode::VGetRenderPaths(VOID)
     {
-        return eDRAW_TO_ALBEDO | eDRAW_TO_SHADOW_MAP | eDRAW_BOUNDING_DEBUG;
+        return eRenderPath_DrawToAlbedo | eRenderPath_DrawToShadowMap | eRenderPath_DrawBounding;
     }
 
-    VOID CudaTransformationNode::_VRender(tbd::SceneGraph* graph, tbd::RenderPath& path)
+    VOID CudaTransformationNode::_VRender(chimera::SceneGraph* graph, chimera::RenderPath& path)
     {
-        if(m_pHandle->IsReady())
+        if(m_pHandle->VIsReady())
         {
             m_pHandle->Update();
             m_pDiffuseTextureHandle->Update();
@@ -208,41 +208,41 @@ namespace tbd
             }
             switch(path)
             {
-            case eDRAW_TO_SHADOW_MAP: 
+            case eRenderPath_DrawToShadowMap: 
                 {
-                    app::g_pApp->GetHumanView()->GetRenderer()->VPushWorldTransform(*GetTransformation());
+                    chimera::g_pApp->GetHumanView()->GetRenderer()->VPushWorldTransform(*GetTransformation());
                     m_pHandle->m_pGeo->Bind();
                     m_pHandle->m_pGeo->Draw();
                 } break;
-            case eDRAW_TO_ALBEDO :
+            case eRenderPath_DrawToAlbedo :
                 {
-                    app::g_pApp->GetHumanView()->GetRenderer()->VPushWorldTransform(*GetTransformation());
-                    app::g_pApp->GetRenderer()->VPushMaterial(m_material);
-                    app::g_pApp->GetHumanView()->GetRenderer()->SetDiffuseSampler(m_pDiffuseTextureHandle->GetShaderResourceView());
+                    chimera::g_pApp->GetHumanView()->GetRenderer()->VPushWorldTransform(*GetTransformation());
+                    chimera::g_pApp->GetRenderer()->VPushMaterial(m_material);
+                    chimera::g_pApp->GetHumanView()->GetRenderer()->SetDiffuseSampler(m_pDiffuseTextureHandle->GetShaderResourceView());
 
                     if(m_pNormalTextureHandle)
                     {
-                        app::g_pApp->GetHumanView()->GetRenderer()->SetSampler(d3d::eNormalColorSampler, m_pNormalTextureHandle->GetShaderResourceView());
-                        app::g_pApp->GetHumanView()->GetRenderer()->SetNormalMapping(TRUE);
+                        chimera::g_pApp->GetHumanView()->GetRenderer()->SetSampler(chimera::eNormalColorSampler, m_pNormalTextureHandle->GetShaderResourceView());
+                        chimera::g_pApp->GetHumanView()->GetRenderer()->SetNormalMapping(TRUE);
                     }
                     else
                     {
-                        app::g_pApp->GetHumanView()->GetRenderer()->SetNormalMapping(FALSE);
+                        chimera::g_pApp->GetHumanView()->GetRenderer()->SetNormalMapping(FALSE);
                     }
                     m_pHandle->m_pGeo->Bind();
                     m_pHandle->m_pGeo->Draw();
                 } break;
-            case eDRAW_BOUNDING_DEBUG :
+            case eRenderPath_DrawBounding :
                 {
                 DrawSphere(GetTransformation(), m_aabb);
                 } break;
-            case eDRAW_PICKING :
+            case eRenderPath_DrawPicking :
                 {
                     //DrawPicking(m_actor, m_transformation->GetTransformation(), m_mesh, m_geo);
                 } break;
-            case eDRAW_DEBUG_INFOS : 
+            case eRenderPath_DrawDebugInfo : 
                 {
-                    tbd::DrawActorInfos(m_actor, GetTransformation(), graph->GetCamera());
+                    chimera::DrawActorInfos(m_actor, GetTransformation(), graph->GetCamera());
                 } break;
             }
         }
@@ -252,14 +252,14 @@ namespace tbd
         }
     }
 
-    VOID CudaTransformationNode::VOnRestore(tbd::SceneGraph* graph)
+    VOID CudaTransformationNode::VOnRestore(chimera::SceneGraph* graph)
     {
         std::stringstream ss;
         ss << "CudaTransformationNode";
         ss << m_actorId;
         m_pHandle = std::shared_ptr<TransformCudaHandle>(new TransformCudaHandle());
         m_pHandle->m_fpCreator = m_fpGeoCreator;
-        app::g_pApp->GetHumanView()->GetVRamManager()->AppendAndCreateHandle(ss.str(), m_pHandle);
+        chimera::g_pApp->GetHumanView()->GetVRamManager()->AppendAndCreateHandle(ss.str(), m_pHandle);
 
         m_pStream = m_pHandle->m_pCuda->CreateStream();
 
@@ -279,21 +279,21 @@ namespace tbd
         m_aabb.Construct(); */
     }
 
-    tbd::Material& CudaTransformationNode::GetMaterial(VOID)
+    chimera::Material& CudaTransformationNode::GetMaterial(VOID)
     {
         return m_material;
     }
 
-    VOID CudaTransformationNode::SetTexture(tbd::Resource res)
+    VOID CudaTransformationNode::SetTexture(chimera::CMResource res)
     {
         m_diffTextureRes = res;
-        m_pDiffuseTextureHandle = std::static_pointer_cast<d3d::Texture2D>(app::g_pApp->GetHumanView()->GetVRamManager()->GetHandle(m_diffTextureRes));
+        m_pDiffuseTextureHandle = std::static_pointer_cast<chimera::D3DTexture2D>(chimera::g_pApp->GetHumanView()->GetVRamManager()->GetHandle(m_diffTextureRes));
     }
 
-    VOID CudaTransformationNode::SetNormaleTexture(tbd::Resource res)
+    VOID CudaTransformationNode::SetNormaleTexture(chimera::CMResource res)
     {
         m_normalTexRes = res;
-        m_pNormalTextureHandle = std::static_pointer_cast<d3d::Texture2D>(app::g_pApp->GetHumanView()->GetVRamManager()->GetHandle(m_normalTexRes));
+        m_pNormalTextureHandle = std::static_pointer_cast<chimera::D3DTexture2D>(chimera::g_pApp->GetHumanView()->GetVRamManager()->GetHandle(m_normalTexRes));
     }
 
     CudaTransformationNode::~CudaTransformationNode(VOID)
@@ -314,7 +314,7 @@ namespace tbd
         return m_bspline;
     }
 
-    VOID UniformBSplineNode::VOnRestore(tbd::SceneGraph* graph)
+    VOID UniformBSplineNode::VOnRestore(chimera::SceneGraph* graph)
     {
         std::stringstream ss;
         ss << "UniformBSplineNode";
@@ -338,7 +338,7 @@ namespace tbd
         handle->m_pControlPoints = controlPoints;
         handle->m_controlPointsCnt = (UINT)m_bspline.GetControlPoints().size();
 
-        app::g_pApp->GetHumanView()->GetVRamManager()->AppendAndCreateHandle(ss.str(), m_pHandle);
+        chimera::g_pApp->GetHumanView()->GetVRamManager()->AppendAndCreateHandle(ss.str(), m_pHandle);
 
         m_pStream = m_pHandle->m_pCuda->CreateStream();
 
@@ -348,7 +348,7 @@ namespace tbd
 
     VOID UniformBSplineNode::VOnUpdate(ULONG millis, SceneGraph* graph)
     {
-        if(VIsVisible(graph) && m_pHandle->IsReady())
+        if(VIsVisible(graph) && m_pHandle->VIsReady())
         {
             BSplinesTransformHandle* handle = (BSplinesTransformHandle*)m_pHandle.get();
 
@@ -360,9 +360,8 @@ namespace tbd
             }
 
             m_fpFunc(m_pHandle->m_d3dbuffer, m_pHandle->m_normals, handle->m_controlPoints, m_pHandle->m_indices, 
-                m_pHandle->m_pGeo->GetVertexBuffer()->GetElementCount(), 128, app::g_pApp->GetUpdateTimer()->GetTime(), m_pStream);
+                m_pHandle->m_pGeo->GetVertexBuffer()->GetElementCount(), 128, chimera::g_pApp->GetUpdateTimer()->GetTime(), m_pStream);
 
-            UINT gws = cudah::cudah::GetThreadCount(m_pHandle->m_pGeo->GetVertexBuffer()->GetElementCount(), 128);
             LOG_CRITICAL_ERROR_A("%s\n", "TODO");
             /*bspline(gws, 128, 
                 (VertexData*)handle->m_d3dbuffer->ptr, (float3*)handle->m_controlPoints->ptr,
@@ -379,22 +378,22 @@ namespace tbd
 
     UINT UniformBSplineNode::VGetRenderPaths(VOID)
     {
-        return eDRAW_TO_ALBEDO_INSTANCED | CudaTransformationNode::VGetRenderPaths();
+        return eRenderPath_DrawToAlbedoInstanced | CudaTransformationNode::VGetRenderPaths();
     }
 
-    VOID UniformBSplineNode::_VRender(tbd::SceneGraph* graph, tbd::RenderPath& path)
+    VOID UniformBSplineNode::_VRender(chimera::SceneGraph* graph, chimera::RenderPath& path)
     {
         CudaTransformationNode::_VRender(graph, path);
         if(drawCP_CP)
         switch(path)
         {
-        case eDRAW_TO_ALBEDO_INSTANCED:
+        case eRenderPath_DrawToAlbedoInstanced:
         {
             util::Mat4 mat = *GetTransformation();
             mat.Scale(0.05f);
             mat.Translate(1,2,1);
-            app::g_pApp->GetHumanView()->GetRenderer()->VPushWorldTransform(mat);
-            app::g_pApp->GetHumanView()->GetRenderer()->SetDefaultMaterial();
+            chimera::g_pApp->GetHumanView()->GetRenderer()->VPushWorldTransform(mat);
+            chimera::g_pApp->GetHumanView()->GetRenderer()->SetDefaultMaterial();
             ((BSplinesTransformHandle*)m_pHandle.get())->m_pControlGeo->Bind();
             ((BSplinesTransformHandle*)m_pHandle.get())->m_pControlGeo->Draw();
         } break;

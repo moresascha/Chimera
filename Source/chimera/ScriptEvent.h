@@ -7,7 +7,7 @@
 #define REGISTER_SCRIPT_TRANSFORMER(transformer, type, classs) \
     app::g_pApp->GetScriptEventManager()->RegisterEventTransformer(transformer, type, #classs) \
 
-namespace tbd
+namespace chimera
 {
     namespace script
     {
@@ -15,8 +15,8 @@ namespace tbd
         {
             friend class LuaScriptEventManager;
         public:
-            virtual LuaPlus::LuaObject VBuildForScript(event::IEventPtr event) { return LuaPlus::LuaObject(); }
-            virtual event::IEventPtr VBuildFromScript(LuaPlus::LuaObject) { return NULL; };
+            virtual LuaPlus::LuaObject VBuildForScript(chimera::IEventPtr event) { return LuaPlus::LuaObject(); }
+            virtual chimera::IEventPtr VBuildFromScript(LuaPlus::LuaObject) { return NULL; };
         };
 
         class LuaEventListener
@@ -29,19 +29,19 @@ namespace tbd
 
             }
             LuaPlus::LuaObject GetFunction(VOID) { return m_function; }
-            VOID EventListenerDelegate(event::IEventPtr event);
+            VOID EventListenerDelegate(chimera::IEventPtr event);
         };
 
-        class LuaScriptEventManager
+        class LuaScriptEventManager : public IScriptEventManager
         {
         private:
             std::map<EventType, LuaScriptEventTransformation> m_transformMap;
             std::map<EventType, std::list<std::shared_ptr<LuaEventListener>>> m_listenerMap;
         public:
-            VOID AddListener(LuaPlus::LuaObject listener, EventType type);
-            VOID RemoveListener(LuaPlus::LuaObject listener, EventType type);
+            VOID VAddListener(LuaPlus::LuaObject listener, EventType type);
+            VOID VRemoveListener(LuaPlus::LuaObject listener, EventType type);
             LuaScriptEventTransformation* GetTransformation(EventType type);
-            VOID RegisterEventTransformer(LuaScriptEventTransformation transformer, EventType type, LPCSTR name);
+            VOID VRegisterEventTransformer(LuaScriptEventTransformation transformer, EventType type, LPCSTR name);
         };
 
         VOID RegisterScriptEvents(VOID);

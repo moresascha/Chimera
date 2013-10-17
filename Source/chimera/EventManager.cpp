@@ -1,28 +1,10 @@
 #include "EventManager.h"
 #include <sstream>
-namespace event 
+namespace chimera 
 {
-    IEventManager* g_pBlobalEventManger = NULL;
 
-    IEventManager* IEventManager::Get(VOID) {
-        return g_pBlobalEventManger;
-    }
-
-    IEventManager::IEventManager(BOOL setGLobal) {
-        if(setGLobal)
-        {
-            if(g_pBlobalEventManger)
-            {
-                LOG_CRITICAL_ERROR("Global Eventmanager already set!");
-            }
-            else 
-            {
-                g_pBlobalEventManger = this;
-            }
-        }
-    }
-
-    EventManager::EventManager(BOOL setGlobal) : IEventManager(setGlobal), m_activeQueue(0) { 
+    EventManager::EventManager(VOID) : m_activeQueue(0) 
+    { 
 
     }
 
@@ -63,9 +45,9 @@ namespace event
         return FALSE;
     }
 
-    BOOL EventManager::VTriggetEvent(CONST IEventPtr& event) {
+    BOOL EventManager::VTriggetEvent(CONST IEventPtr& chimera) {
 
-        auto it = m_eventListenerMap.find(event->VGetEventType());
+        auto it = m_eventListenerMap.find(chimera->VGetEventType());
 
         if(it == m_eventListenerMap.end())
         {
@@ -75,13 +57,13 @@ namespace event
         for(auto i = it->second.begin(); i != it->second.end(); ++i)
         {
             EventListener listener = (*i);
-            (*i)(event);
+            (*i)(chimera);
         }
 
         return TRUE;
     }
 
-    BOOL EventManager::VQueueEventTest(CONST IEventPtr& event) {
+    BOOL EventManager::VQueueEventTest(CONST IEventPtr& chimera) {
         /*
         auto it = m_eventListenerMap.find(event->VGetEventType());
 
@@ -101,15 +83,15 @@ namespace event
         return TRUE;
     }
 
-    BOOL EventManager::VQueueEvent(CONST IEventPtr& event) {
+    BOOL EventManager::VQueueEvent(CONST IEventPtr& chimera) {
 
-        auto it = m_eventListenerMap.find(event->VGetEventType());
+        auto it = m_eventListenerMap.find(chimera->VGetEventType());
 
         if(it == m_eventListenerMap.end()) 
         {
     #ifdef _DEBUG
             std::stringstream ss;
-            ss << event->VGetEventType();
+            ss << chimera->VGetEventType();
             LOG_INFO_A("Failed to queue event, no listener for event: %s", ss.str());
     #endif
             return FALSE;
@@ -117,22 +99,22 @@ namespace event
 
         //LOG_INFO("Event queued: "+std::string(event->VGetName()));
 
-        m_eventQueues[m_activeQueue].push_back(event);
+        m_eventQueues[m_activeQueue].push_back(chimera);
 
 
         return TRUE;
     }
 
-    BOOL EventManager::VQueueEventThreadSave(CONST IEventPtr& event) {
+    BOOL EventManager::VQueueEventThreadSave(CONST IEventPtr& chimera) {
 
-        auto it = m_eventListenerMap.find(event->VGetEventType());
+        auto it = m_eventListenerMap.find(chimera->VGetEventType());
 
         if(it == m_eventListenerMap.end()) 
         {
             return FALSE;
         }
 
-        m_threadSaveQueue.push(event);
+        m_threadSaveQueue.push(chimera);
 
         return TRUE;
     }
@@ -237,10 +219,7 @@ namespace event
         return TRUE;
     }
 
-    EventManager::~EventManager(VOID) {
-        if(g_pBlobalEventManger == this)
-        {
-            g_pBlobalEventManger = NULL;
-        }
+    EventManager::~EventManager(VOID) 
+    {
     }
 };

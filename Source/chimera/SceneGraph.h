@@ -3,61 +3,56 @@
 #include "tbdStack.h"
 #include "Actor.h"
 #include "Vec3.h"
-#include "RenderPath.h"
 
 namespace util
 {
     class ICamera;
 }
-namespace tbd 
+namespace chimera 
 {
     class ISceneNode;
     class Frustum;
 
-class SceneGraph
-{
-private:
-    std::shared_ptr<tbd::ISceneNode> m_root;
-    std::shared_ptr<util::ICamera> m_camera;
-    util::tbdStack<tbd::Frustum*> m_frustumStack;
-    std::map<UINT, std::list<std::shared_ptr<tbd::ISceneNode>>> m_pathToNode;
-    std::map<ActorId, std::shared_ptr<tbd::ISceneNode>> m_actorMap;
-    ULONG m_visbibilityCheckTime;
-public:
-    BOOL m_visibiltyReset;
+    class SceneGraph : public ISceneGraph
+    {
+    private:
+        std::unique_ptr<ISceneNode> m_root;
+        std::shared_ptr<ICamera> m_camera;
+        util::tbdStack<Frustum*> m_frustumStack;
+        std::map<UINT, std::list<ISceneNode*>> m_pathToNode;
+        ULONG m_visbibilityCheckTime;
+        BOOL m_visibiltyReset;
 
-public:
-    SceneGraph(VOID);
+    public:
+        SceneGraph(VOID);
 
-    VOID AddChild(ActorId actorid, std::shared_ptr<tbd::ISceneNode>);
+        VOID VAddChild(ActorId actorid, std::unique_ptr<ISceneNode> child);
 
-    VOID RemoveChild(ActorId actorid);
+        VOID VRemoveChild(ActorId actorid);
 
-    HRESULT OnUpdate(ULONG millis);
+        BOOL VOnRender(RenderPath path);
 
-    std::shared_ptr<util::ICamera> GetCamera(VOID) { return this->m_camera; }
+        BOOL VOnRestore(VOID);
 
-    CONST tbd::Frustum* GetFrustum(VOID);
+        BOOL VOnUpdate(ULONG millis);
 
-    VOID PushFrustum(tbd::Frustum* f);
+        std::shared_ptr<ICamera> VGetCamera(VOID) { return m_camera; }
 
-    VOID PopFrustum(VOID);
+        CONST Frustum* VGetFrustum(VOID);
 
-    VOID ResetVisibility(VOID);
+        VOID VPushFrustum(Frustum* f);
 
-    BOOL IsVisibilityReset(VOID);
+        VOID VPopFrustum(VOID);
 
-    std::shared_ptr<tbd::ISceneNode> FindActorNode(ActorId id);
+        VOID VResetVisibility(VOID);
 
-    VOID SetCamera(std::shared_ptr<util::ICamera> camera);
+        BOOL VIsVisibilityReset(VOID);
 
-    std::shared_ptr<tbd::ISceneNode> RayCast(CONST util::Vec3& position, CONST util::Vec3& direction);
+        ISceneNode* VFindActorNode(ActorId id);
 
-    HRESULT OnRender(RenderPath path);
+        VOID VSetCamera(std::shared_ptr<ICamera> camera);
 
-    HRESULT OnRestore(VOID);
-
-    virtual ~SceneGraph(VOID);
-};
+        virtual ~SceneGraph(VOID);
+    };
 }
 

@@ -1,6 +1,6 @@
 #include "ByteStream.h"
 
-namespace tbd {
+namespace chimera {
 
     HRESULT ByteStream::Seek(
         LARGE_INTEGER dlibMove,

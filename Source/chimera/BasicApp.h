@@ -1,19 +1,18 @@
 #pragma once
 #pragma once
 #include "stdafx.h"
-#include "Actor.h"
-#include "GameLogic.h"
-#include "Components.h"
 #include "GameApp.h"
-#include "GuiHelper.h"
-#include "Input.h"
-#include "Commands.h"
-#include "d3d.h"
 
-namespace app
+namespace chimera
 {
-    class BasicApp : public app::GameApp 
+    class BasicApp : public GameApp 
     {
+    public:
+        CM_DLL_API BasicApp(VOID)
+        {
+
+        }
+
         virtual VOID VCreateLogicAndView(VOID);
     };
 }

@@ -75,7 +75,7 @@ PixelOutput Particle_PS(PixelInput input)
 
     op.normal = float4(0,0,0,0);
     half scale = 1;
-    half4 color = scale * half4(1,2,2,1); 
+    half4 color = scale * half4(0.9,1,0.1,1); 
     op.diffMaterialSpecR = half4(1,1,1,1);
     op.ambientMaterialSpecG = half4(1,1,1,1);
     op.diffuseColorSpecB = half4(color);

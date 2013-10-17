@@ -1,133 +1,98 @@
 #pragma once
 #include "stdafx.h"
-#include "ProcessManager.h"
-#include "Process.h"
-#include "GameView.h"
-#include "PhysicsSystem.h"
-#include "ActorFactory.h"
-#include "Level.h"
 
-namespace tbd
+namespace chimera 
 {
-    class CommandInterpreter;
-}
-
-namespace tbd 
-{
-
-    class IGameLogic
-    {
-    public:
-        IGameLogic(VOID) {}
-        virtual BOOL VInit(VOID) = 0;
-        virtual VOID VOnUpdate(ULONG millis) = 0;
-        virtual std::shared_ptr<tbd::Actor> VCreateActor(LPCSTR resource, BOOL appendToLevel = FALSE) = 0;
-        virtual std::shared_ptr<tbd::Actor> VCreateActor(tbd::ActorDescription desc, BOOL appendToLevel = FALSE) = 0;
-        virtual VOID VRemoveActor(ActorId id) = 0;
-        virtual std::shared_ptr<tbd::Actor> VFindActor(ActorId id) = 0;
-        virtual std::shared_ptr<tbd::Actor> VFindActor(LPCSTR name) = 0;
-        virtual std::shared_ptr<tbd::IGameView> VFindGameView(GameViewId id) = 0;
-        virtual std::shared_ptr<tbd::IGameView> VFindGameView(LPCSTR name) = 0;
-        virtual ~IGameLogic(VOID) {}
-    };
-
-    enum GameState
-    {
-        eLoadingLevel,
-        eRunning,
-        ePause
-    };
-
-    class BaseGameLogic : public IGameLogic 
+    class BaseGameLogic : public ILogic 
     {
 
     protected:
-        proc::ProcessManager* m_pProcessManager;
+        IProcessManager* m_pProcessManager;
 
-        tbd::IPhysicsSystem* m_pPhysics;
+        IPhysicsSystem* m_pPhysics;
         
-        tbd::CommandInterpreter* m_pCmdInterpreter;
+        ICommandInterpreter* m_pCmdInterpreter;
 
-        std::vector<std::shared_ptr<tbd::IGameView>> m_gameViewList;
+        std::vector<std::unique_ptr<IView>> m_gameViewList;
 
-        std::map<ActorId, std::shared_ptr<tbd::IGameView>> m_actorToViewMap;
+        std::map<ActorId, IView*> m_actorToViewMap;
 
-        std::map<ActorId, std::shared_ptr<tbd::Actor>> m_actors;
+        std::map<ActorId, std::unique_ptr<IActor>> m_actors;
 
-        tbd::ActorFactory m_actorFactory;
+        IActorFactory* m_pActorFactory;
 
         std::vector<ActorId> m_levelActors;
 
         UINT m_levelActorsCount;
 
-        tbd::ILevel* m_pLevel;
+        ILevel* m_pLevel;
 
-        tbd::LevelManager* m_pLevelManager;
+        IHumanView* m_pHumanView;
 
-        enum GameState m_gameState;
+        GameState m_gameState;
 
     public:
         BaseGameLogic(VOID);
 
-        virtual BOOL VInit(VOID);
+        BOOL VInitialise(FactoryPtr* facts);
 
-        VOID AttachGameView(std::shared_ptr<tbd::IGameView> view, std::shared_ptr<tbd::Actor> actor);
+        VOID VAttachView(std::unique_ptr<IView> view, ActorId actor);
 
-        VOID AttachProcess(std::shared_ptr<proc::Process> process);
+        IActor* VFindActor(ActorId id);
 
-        std::shared_ptr<tbd::Actor> VFindActor(ActorId id);
+        IActor* VFindActor(LPCSTR name);
 
-        std::shared_ptr<tbd::Actor> VFindActor(LPCSTR name);
+        IView* VFindView(GameViewId id);
 
-        std::shared_ptr<tbd::IGameView> VFindGameView(GameViewId id);
+        IView* VFindView(LPCSTR name);
 
-        std::shared_ptr<tbd::IGameView> VFindGameView(LPCSTR name);
+        IHumanView* VGetHumanView(VOID) { return m_pHumanView; }
 
         VOID VOnUpdate(ULONG millis);
 
-        std::shared_ptr<tbd::Actor> VCreateActor(CONST CHAR* resource, BOOL appendToLevel = FALSE);
+        IActor* VCreateActor(LPCSTR resource, BOOL appendToLevel = FALSE);
 
-        std::shared_ptr<tbd::Actor> VCreateActor(tbd::ActorDescription desc, BOOL appendToLevel = FALSE);
+        IActor* VCreateActor(std::unique_ptr<ActorDescription> desc, BOOL appendToLevel = FALSE);
    
         VOID VRemoveActor(ActorId id);
 
         VOID VOnRender(VOID);
 
-        tbd::CommandInterpreter* GetCommandInterpreter(VOID) { return m_pCmdInterpreter; }
+        ICommandInterpreter* VGetCommandInterpreter(VOID) { return m_pCmdInterpreter; }
 
-        tbd::LevelManager* GetLevelManager(VOID) { return m_pLevelManager; }
+        GameState VGetGameState(VOID) { return m_gameState; }
 
-        GameState GetGameState(VOID) { return m_gameState; }
-
-        VOID SetGameState(GameState state) { m_gameState = state; }
+        VOID VSetGameState(GameState state) { m_gameState = state; }
 
         BOOL VLoadLevel(CONST CHAR* ressource);
 
-        virtual BOOL VLoadLevel(tbd::ILevel* level);
+        BOOL VLoadLevel(ILevel* level);
 
-        tbd::ILevel* Getlevel(VOID) { return m_pLevel;}
+        ILevel* VGetlevel(VOID) { return m_pLevel;}
 
         FLOAT GetLevelLoadProgress(VOID) CONST;
 
         UINT GetLevelActorCount(VOID) CONST;
 
-        tbd::IPhysicsSystem* GetPhysics(VOID) { return m_pPhysics; }
+        IPhysicsSystem* VGetPhysics(VOID) { return m_pPhysics; }
 
-        VOID MoveActorDelegate(event::IEventPtr eventData);
+        VOID MoveActorDelegate(IEventPtr eventData);
 
-        VOID CreateActorDelegate(event::IEventPtr eventData);
+        VOID CreateActorDelegate(IEventPtr eventData);
 
-        VOID DeleteActorDelegate(event::IEventPtr eventData);
+        VOID DeleteActorDelegate(IEventPtr eventData);
 
-        VOID ActorCreatedDelegate(event::IEventPtr eventData);
+        VOID ActorCreatedDelegate(IEventPtr eventData);
 
-        VOID LoadLevelDelegate(event::IEventPtr eventData);
+        VOID LoadLevelDelegate(IEventPtr eventData);
 
-        VOID LevelLoadedDelegate(event::IEventPtr eventData);
+        VOID CreateProcessDelegate(IEventPtr eventData);
 
-        tbd::ActorFactory* GetActorFactory(VOID) { return &m_actorFactory; }
+        VOID LevelLoadedDelegate(IEventPtr eventData);
 
-        proc::ProcessManager* GetProcessManager(VOID) { return m_pProcessManager; }
+        IActorFactory* VGetActorFactory(VOID) { return m_pActorFactory; }
+
+        IProcessManager* VGetProcessManager(VOID) { return m_pProcessManager; }
 
         virtual ~BaseGameLogic(VOID);
     };

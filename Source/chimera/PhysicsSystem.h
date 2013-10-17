@@ -1,10 +1,8 @@
 #pragma once
 #include "stdafx.h"
-#include "Actor.h"
-#include "Event.h"
 #include "Vec3.h"
 
-namespace tbd 
+namespace chimera 
 {
     class Mesh;
     class ResHandle;
@@ -15,27 +13,27 @@ namespace tbd
 
         virtual BOOL VInit(VOID) = 0;
     
-        virtual VOID VCreateStaticPlane(CONST util::Vec3& dimension, std::shared_ptr<tbd::Actor> actor, std::string& material) = 0;
+        virtual VOID VCreateStaticPlane(CONST util::Vec3& dimension, IActor* actor, std::string& material) = 0;
 
-        virtual VOID VCreateSphere(FLOAT radius, std::shared_ptr<tbd::Actor> actor, CONST util::Vec3& offsetPosition, std::string& material) = 0;
+        virtual VOID VCreateSphere(FLOAT radius, IActor* actor, CONST util::Vec3& offsetPosition, std::string& material) = 0;
 
-        virtual VOID VCreateCube(CONST util::Vec3& dimension, std::shared_ptr<tbd::Actor> actor, CONST util::Vec3& offsetPosition, std::string& material) = 0;
+        virtual VOID VCreateCube(CONST util::Vec3& dimension, IActor* actor, CONST util::Vec3& offsetPosition, std::string& material) = 0;
 
-        virtual VOID VCreateTrigger(FLOAT radius, std::shared_ptr<tbd::Actor> actor) = 0;
+        virtual VOID VCreateTrigger(FLOAT radius, IActor* actor) = 0;
 
-        virtual VOID VCreateTriangleMesh(std::shared_ptr<tbd::Actor> actor, CONST tbd::Mesh* mesh, CONST util::Vec3& offsetPosition, std::string& material, std::string & shapeType) = 0;
+        virtual VOID VCreateTriangleMesh(IActor* actor, CONST IMesh* mesh, CONST util::Vec3& offsetPosition, std::string& material, std::string & shapeType) = 0;
 
         virtual VOID VCreateCharacterController(ActorId id, CONST util::Vec3& pos, FLOAT radius, FLOAT height) = 0;
 
         virtual VOID VRemoveActor(ActorId id) = 0;
 
-        virtual VOID VApplyForce(CONST util::Vec3& dir, FLOAT newtons, std::shared_ptr<tbd::Actor> actor) = 0;
+        virtual VOID VApplyForce(CONST util::Vec3& dir, FLOAT newtons, IActor* actor) = 0;
 
-        virtual VOID VApplyTorque(CONST util::Vec3& dir, FLOAT newtons, std::shared_ptr<tbd::Actor> actor) = 0;
+        virtual VOID VApplyTorque(CONST util::Vec3& dir, FLOAT newtons, IActor* actor) = 0;
 
-        virtual VOID VMoveKinematic(std::shared_ptr<tbd::Actor> actor, CONST util::Vec3* pos, CONST util::Vec4* quat, FLOAT deltaMillis, BOOL isDeltaMove, BOOL isJump = FALSE) = 0;
+        virtual VOID VMoveKinematic(IActor* actor, CONST util::Vec3* pos, CONST util::Vec4* quat, FLOAT deltaMillis, BOOL isDeltaMove, BOOL isJump = FALSE) = 0;
 
-        virtual VOID VMoveKinematic(std::shared_ptr<tbd::Actor> actor, CONST util::Vec3* pos, CONST util::Vec3* axis, FLOAT angle, FLOAT deltaMillis, BOOL isDeltaMove, BOOL isJump = FALSE) = 0;
+        virtual VOID VMoveKinematic(IActor* actor, CONST util::Vec3* pos, CONST util::Vec3* axis, FLOAT angle, FLOAT deltaMillis, BOOL isDeltaMove, BOOL isJump = FALSE) = 0;
 
         virtual VOID VDebugRender(VOID) { }
 
@@ -191,7 +189,7 @@ namespace tbd
 
         PVD::PvdConnection* m_pDebugConnection;
 
-        physx::PxActor* AddActor(physx::PxGeometry& geo, std::shared_ptr<tbd::Actor> actor, CONST util::Vec3& offsetPosition, std::string& material, FLOAT density);
+        physx::PxActor* AddActor(physx::PxGeometry& geo, IActor* actor, CONST util::Vec3& offsetPosition, std::string& material, FLOAT density);
 
         px::Material& CheckMaterial(std::string material) {
 
@@ -207,10 +205,10 @@ namespace tbd
 
         std::map<std::string, px::Material> m_materials;
 
-        VOID CreateTriangleConcaveMesh(std::shared_ptr<tbd::Actor> actor, CONST tbd::Mesh* mesh, CONST util::Vec3& position, std::string& material);
-        VOID CreateTriangleConvexMesh(std::shared_ptr<tbd::Actor> actor, CONST tbd::Mesh* mesh, CONST util::Vec3& position, std::string& material);
+        VOID CreateTriangleConcaveMesh(IActor* actor, CONST IMesh* mesh, CONST util::Vec3& position, std::string& material);
+        VOID CreateTriangleConvexMesh(IActor* actor, CONST IMesh* mesh, CONST util::Vec3& position, std::string& material);
 
-        VOID CreateFromActor(std::shared_ptr<tbd::Actor> actor);
+        VOID CreateFromActor(IActor* actor);
 
     public:
 
@@ -218,27 +216,27 @@ namespace tbd
 
         BOOL VInit(VOID);
 
-        VOID VCreateStaticPlane(CONST util::Vec3& dimension, std::shared_ptr<tbd::Actor> actor, std::string& material);
+        VOID VCreateStaticPlane(CONST util::Vec3& dimension, IActor* actor, std::string& material);
 
-        VOID VCreateSphere(FLOAT radius, std::shared_ptr<tbd::Actor> actor, CONST util::Vec3& offsetPosition, std::string& material);
+        VOID VCreateSphere(FLOAT radius, IActor* actor, CONST util::Vec3& offsetPosition, std::string& material);
 
-        VOID VCreateCube(CONST util::Vec3& dimension, std::shared_ptr<tbd::Actor> actor, CONST util::Vec3& offsetPosition, std::string& material);
+        VOID VCreateCube(CONST util::Vec3& dimension, IActor* actor, CONST util::Vec3& offsetPosition, std::string& material);
 
-        VOID VCreateTriangleMesh(std::shared_ptr<tbd::Actor> actor, CONST tbd::Mesh* mesh, CONST util::Vec3& position, std::string& material, std::string& shapeType);
+        VOID VCreateTriangleMesh(IActor* actor, CONST IMesh* mesh, CONST util::Vec3& position, std::string& material, std::string& shapeType);
 
-        VOID VCreateTrigger(FLOAT radius, std::shared_ptr<tbd::Actor> actor);
+        VOID VCreateTrigger(FLOAT radius, IActor* actor);
 
         VOID VRemoveActor(ActorId id);
 
-        VOID VApplyForce(CONST util::Vec3& dir, FLOAT newtons, std::shared_ptr<tbd::Actor> actor);
+        VOID VApplyForce(CONST util::Vec3& dir, FLOAT newtons, IActor* actor);
 
-        VOID VApplyTorque(CONST util::Vec3& dir, FLOAT newtons, std::shared_ptr<tbd::Actor> actor);
+        VOID VApplyTorque(CONST util::Vec3& dir, FLOAT newtons, IActor* actor);
 
         VOID VCreateCharacterController(ActorId id, CONST util::Vec3& pos, FLOAT radius, FLOAT height);
 
-        VOID VMoveKinematic(std::shared_ptr<tbd::Actor> actor, CONST util::Vec3* pos, CONST util::Vec4* quat, FLOAT deltaMillis, BOOL isDeltaMove, BOOL isJump = FALSE);
+        VOID VMoveKinematic(IActor* actor, CONST util::Vec3* pos, CONST util::Vec4* quat, FLOAT deltaMillis, BOOL isDeltaMove, BOOL isJump = FALSE);
 
-        VOID VMoveKinematic(std::shared_ptr<tbd::Actor> actor, CONST util::Vec3* pos, CONST util::Vec3* axis, FLOAT angle, FLOAT deltaMillis, BOOL isDeltaMove, BOOL isJump = FALSE);
+        VOID VMoveKinematic(IActor* actor, CONST util::Vec3* pos, CONST util::Vec3* axis, FLOAT angle, FLOAT deltaMillis, BOOL isDeltaMove, BOOL isJump = FALSE);
 
         VOID VDebugRender(VOID);
 
@@ -246,11 +244,11 @@ namespace tbd
 
         VOID VUpdate(FLOAT deltaMillis);
 
-        VOID NewComponentDelegate(event::IEventPtr data);
+        VOID NewComponentDelegate(IEventPtr data);
 
-        VOID ApplyForceTorqueDelegate(event::IEventPtr data);
+        VOID ApplyForceTorqueDelegate(IEventPtr data);
 
-        VOID OnResourceChanged(event::IEventPtr data);
+        VOID OnResourceChanged(IEventPtr data);
 
         ~PhysX(VOID);
     };

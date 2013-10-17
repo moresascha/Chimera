@@ -8,10 +8,174 @@
 #include "EventManager.h"
 #include "GameLogic.h"
 #include "ActorFactory.h"
-namespace tbd
+#include "FileSystem.h"
+#include "util.h"
+namespace chimera
 {
     namespace gradientpremades
     {
+
+        static int A[] = { 0, 0, 0 };
+        static int T[] = { 0x15, 0x38, 0x32, 0x2c, 0x0d, 0x13, 0x07, 0x2a };
+
+        static double u, v, w;
+        static int i, j, k;
+        static int hi, lo, li, la;
+        static double s, t, r, q, p, y, x, z;
+        static int b1, b2, b3, b4, b5;
+        static int h, pp, hh, gg;
+
+        static int b( int N, int B ) 
+        {
+            return N >> B & 1;
+        }
+
+        static double K(int a) ;
+        static int shuffle2( int i, int j, int k );
+
+        static double Noise3( double x, double y, double z ) 
+        {
+            s = (x + y + z) / 3.;
+
+            i = (int) floor(x + s);
+            j = (int) floor(y + s);
+            k = (int) floor(z + s);
+
+            s = (i + j + k) / 6.;
+            u = x - i + s;
+            v = y - j + s;
+            w = z - k + s;
+
+            A[0] = A[1] = A[2] = 0;
+            hi = u >= w ? u >= v ? 0 : 1 : v >= w ? 1 : 2;
+            lo = u < w ? u < v ? 0 : 1 : v < w ? 1 : 2;
+            li = (3 - hi - lo);
+            la = 0;
+            return K(hi) + K(li) + K(lo) + K(la);
+        }
+        
+        static double K(int a) 
+        {
+
+            s = (A[0] + A[1] + A[2]) / 6.;
+
+            x = u - A[0] + s;
+            y = v - A[1] + s;
+            z = w - A[2] + s;
+            t = .6 - x * x - y * y - z * z;
+            gg = i + A[0];
+            hh = j + A[1];
+            pp = k + A[2];
+            h = shuffle2(gg, hh , pp);
+            A[a]++;
+            if (t < 0)
+                return 0;
+
+            b5 = h >> 5 & 1;
+            b4 = h >> 4 & 1;
+            b3 = h >> 3 & 1;
+            b2 = h >> 2 & 1;
+            b1 = h & 3;
+
+            p = b1 == 1 ? x : b1 == 2 ? y : z;
+            q = b1 == 1 ? y : b1 == 2 ? z : x;
+            r = b1 == 1 ? z : b1 == 2 ? x : y;
+
+            p = (b5 == b3 ? -p : p);
+            q = (b5 == b4 ? -q : q);
+            r = (b5 != (b4 ^ b3) ? -r : r);
+            t *= t;
+            return 8 * t * t * (p + (b1 == 0 ? q + r : b2 == 0 ? q : r));
+        }
+
+        static int shuffle2( int i, int j, int k ) 
+        {
+            return 
+                T[4 * (i >> 0 & 1) + 2 * (j >> 0 & 1) + (k >> 0 & 1)] + 
+                T[4 * (j >> 1 & 1) + 2 * (k >> 1 & 1) + (i >> 1 & 1)] + 
+                T[4 * (k >> 2 & 1) + 2 * (i >> 2 & 1) + (j >> 2 & 1)] + 
+                T[4 * (i >> 3 & 1) + 2 * (j >> 3 & 1) + (k >> 3 & 1)] + 
+                T[4 * (j >> 4 & 1) + 2 * (k >> 4 & 1) + (i >> 4 & 1)] + 
+                T[4 * (k >> 5 & 1) + 2 * (i >> 5 & 1) + (j >> 5 & 1)] + 
+                T[4 * (i >> 6 & 1) + 2 * (j >> 6 & 1) + (k >> 6 & 1)] +
+                T[4 * (j >> 7 & 1) + 2 * (k >> 7 & 1) + (i >> 7 & 1)];
+        }
+
+        static float* GenerateNoiseValues(int width, int height, int depth, float amplitude, float frequency) 
+        {
+            float* buffer = new float[width * height * depth * 4];
+            float n[] = { 0, 0, 0, 1 };
+            int format = 4;
+            int count = 0;
+            float incz, incx, incy, _amp, _frequency;
+
+            float r = 0;
+            for (int z = 0; z < depth; z++ ) 
+            {
+
+                for (int x = 0; x < height; x++ ) 
+                {
+
+                    for (int y = 0; y < width; y++) 
+                    {
+                        _amp = amplitude;
+                        _frequency = 16;
+                        FLOAT v = 0;
+                        for (int o = 0; o < format; o++, _amp *= 0.5, _frequency *= 2) 
+                        {
+                            incx = 1.0f / ((float)width / _frequency);
+                            incz = 1.0f / ((float)depth / _frequency);
+                            incy = 1.0f / ((float)height / _frequency);
+
+                            n[0] = incz * z;
+                            n[1] = incx * x;
+                            n[2] = incy * y;
+
+                            r = (float)Noise3(n[0], n[1], n[2]);
+                            v += r;
+                        }
+                        _amp = amplitude;
+                        _frequency = 17;
+                        buffer[count++] = v;
+                        v = 0;
+                        for (int o = 0; o < format; o++, _amp *= 0.5, _frequency *= 2) 
+                        {
+                            incx = 1.0f / ((float)width / _frequency);
+                            incz = 1.0f / ((float)depth / _frequency);
+                            incy = 1.0f / ((float)height / _frequency);
+
+                            n[0] = incz * z;
+                            n[1] = incx * x;
+                            n[2] = incy * y;
+
+                            r = (float)Noise3(n[0], n[1], n[2]);
+                            v += r;
+                        }
+                        _amp = amplitude;
+                        _frequency = 18;
+                        buffer[count++] = v;
+                        v = 0;
+                        for (int o = 0; o < format; o++, _amp *= 0.5, _frequency *= 2) 
+                        {
+                            incx = 1.0f / ((float)width / _frequency);
+                            incz = 1.0f / ((float)depth / _frequency);
+                            incy = 1.0f / ((float)height / _frequency);
+
+                            n[0] = incz * z;
+                            n[1] = incx * x;
+                            n[2] = incy * y;
+
+                            r = (float)Noise3(n[0], n[1], n[2]);
+                            v += r;
+                        }
+                        buffer[count++] = v;
+                        buffer[count++] = 0;
+                    }
+                }
+            }
+            return buffer;
+        }
+
         FLOAT* RandomStuff0(UINT w, UINT h, UINT d, FLOAT scale)
         {
             UINT size = 4;
@@ -55,7 +219,7 @@ namespace tbd
                         //if(x * x + z * z <  radius * radius)
                         {
                             FLOAT sx = cos(x / (FLOAT)w * XM_2PI) * sin(z / (FLOAT)w * XM_2PI);
-                            FLOAT sy = cos(y / (FLOAT)h * XM_2PI) * sin(y / (FLOAT)w * XM_2PI);
+                            FLOAT sy = cos((x+z) / (FLOAT)h * XM_2PI) * sin((x+z) / (FLOAT)w * XM_2PI);
                             FLOAT sz = cos(z / (FLOAT)d * XM_2PI) * sin(x / (FLOAT)w * XM_2PI);
                             util::Vec3 dir(sx, sy, sz);
                             //dir.Normalize();
@@ -83,11 +247,10 @@ namespace tbd
                         UINT pos = size * (z * w * h + y * w + x);
                         //if(x * x + z * z <  radius * radius)
                         {
-                            FLOAT sx = cos(x / (FLOAT)w * XM_2PI) + sin(y / (FLOAT)w * XM_2PI);
-                            FLOAT sy = cos(y / (FLOAT)h * XM_2PI) + sin(z / (FLOAT)w * XM_2PI);
-                            FLOAT sz = cos(z / (FLOAT)d * XM_2PI) + sin(x / (FLOAT)w * XM_2PI);
+                            FLOAT sx = cos((XM_2PI * x / (FLOAT)w)) + sin((XM_2PI * x / (FLOAT)w));
+                            FLOAT sy = sin((XM_2PI * x / (FLOAT)h)) + cos((XM_2PI * x / (FLOAT)w));
+                            FLOAT sz = cos((XM_2PI * z / (FLOAT)d)) + sin((XM_2PI * z / (FLOAT)w));
                             util::Vec3 dir(sx, sy, sz);
-                            //dir.Normalize();
                             data[pos + 0] = scale * dir.x;
                             data[pos + 1] = scale * dir.y;
                             data[pos + 2] = scale * dir.z;
@@ -152,26 +315,26 @@ namespace tbd
 
     ActorBasedModifier::ActorBasedModifier(VOID)
     {
-        event::EventListener listener = fastdelegate::MakeDelegate(this, &ActorBasedModifier::ActorMovedDelegate);
-        event::IEventManager::Get()->VAddEventListener(listener, event::ActorMovedEvent::TYPE);
+        chimera::EventListener listener = fastdelegate::MakeDelegate(this, &ActorBasedModifier::ActorMovedDelegate);
+        chimera::IEventManager::Get()->VAddEventListener(listener, chimera::ActorMovedEvent::TYPE);
     }
 
     std::shared_ptr<Actor> ActorBasedModifier::CreateModActor(CONST util::Vec3& pos, LPCSTR info, CONST FLOAT scale)
     {
-        tbd::ActorDescription desc = app::g_pApp->GetLogic()->GetActorFactory()->CreateActorDescription();
-        tbd::RenderComponent* cmp = desc->AddComponent<tbd::RenderComponent>(tbd::RenderComponent::COMPONENT_ID);
+        chimera::ActorDescription desc = chimera::g_pApp->GetLogic()->GetActorFactory()->CreateActorDescription();
+        chimera::RenderComponent* cmp = desc->AddComponent<chimera::RenderComponent>(chimera::RenderComponent::COMPONENT_ID);
         cmp->m_type = "anchor";
         cmp->m_info = info;
 
-        tbd::TransformComponent* tc = desc->AddComponent<tbd::TransformComponent>(tbd::TransformComponent::COMPONENT_ID);
+        chimera::TransformComponent* tc = desc->AddComponent<chimera::TransformComponent>(chimera::TransformComponent::COMPONENT_ID);
 
         tc->GetTransformation()->SetTranslate(pos.x, pos.y, pos.z);
 
         tc->GetTransformation()->SetScale(scale);
 
-        desc->AddComponent<tbd::PickableComponent>(tbd::PickableComponent::COMPONENT_ID);
+        desc->AddComponent<chimera::PickableComponent>(chimera::PickableComponent::COMPONENT_ID);
 
-        std::shared_ptr<tbd::Actor> actor = app::g_pApp->GetLogic()->VCreateActor(desc);
+        std::shared_ptr<chimera::Actor> actor = chimera::g_pApp->GetLogic()->VCreateActor(desc);
 
         m_actorId = actor->GetId();
 
@@ -218,7 +381,7 @@ namespace tbd
             (EmitterData*)m_emitterData->ptr,
             translation, (FLOAT)time, (FLOAT)dt, (FLOAT)m_startSpawnTime, (FLOAT)m_endSpawnTime, m_particleCount, sys->GetLocalWorkSize()); */
 
-        INT threads = cudah::cudah::GetThreadCount(sys->GetParticlesCount(), sys->GetLocalWorkSize());
+        INT threads = cudahu::GetThreadCount(sys->GetParticlesCount(), sys->GetLocalWorkSize());
         m_kernel->m_blockDim.x = sys->GetLocalWorkSize();
         m_kernel->m_gridDim.x = threads / m_kernel->m_blockDim.x;
 
@@ -304,13 +467,13 @@ namespace tbd
         return positions;
     }
 
-    SurfaceEmitter::SurfaceEmitter(tbd::Resource meshFile, CONST util::Vec3& position, UINT particleCount, FLOAT start, FLOAT end) 
+    SurfaceEmitter::SurfaceEmitter(chimera::CMResource meshFile, CONST util::Vec3& position, UINT particleCount, FLOAT start, FLOAT end) 
         : BaseEmitter(position, particleCount, start, end), m_meshFile(meshFile)
     {
 
     }
 
-    util::Vec3 GetVertex(std::shared_ptr<tbd::Mesh> mesh, UINT index)
+    util::Vec3 GetVertex(std::shared_ptr<chimera::Mesh> mesh, UINT index)
     {
         UINT stride = mesh->GetVertexStride() / 4;
         FLOAT x = mesh->GetVertices()[index * stride + 0];
@@ -321,8 +484,8 @@ namespace tbd
 
     ParticlePosition* SurfaceEmitter::CreateParticles(VOID)
     {
-        std::shared_ptr<tbd::Mesh> mesh = std::static_pointer_cast<tbd::Mesh>(app::g_pApp->GetCache()->GetHandle(m_meshFile));
-        CONST std::list<tbd::Face>& faces = mesh->GetFaces();
+        std::shared_ptr<chimera::Mesh> mesh = std::static_pointer_cast<chimera::Mesh>(chimera::g_pApp->GetCache()->GetHandle(m_meshFile));
+        CONST std::list<chimera::Face>& faces = mesh->GetFaces();
         ParticlePosition* poses = new ParticlePosition[m_particleCount];
         srand(10);
         for(UINT i = 0; i < m_particleCount; ++i)
@@ -397,7 +560,7 @@ namespace tbd
     {
         //computeGravity((float4*)sys->GetParticles()->ptr, (float3*)sys->GetAcceleration()->ptr, m_factor, sys->GetParticlesCount(), sys->GetLocalWorkSize()); 
 
-        INT threads = cudah::cudah::GetThreadCount(sys->GetParticlesCount(), sys->GetLocalWorkSize());
+        INT threads = cudahu::GetThreadCount(sys->GetParticlesCount(), sys->GetLocalWorkSize());
         m_kernel->m_blockDim.x = sys->GetLocalWorkSize();
         m_kernel->m_gridDim.x = threads / m_kernel->m_blockDim.x;
 
@@ -424,7 +587,7 @@ namespace tbd
     VOID Turbulence::VUpdate(ParticleSystem* sys, FLOAT time, FLOAT dt)
     {
         //computeTurbulence((float4*)sys->GetParticles()->ptr, (float3*)sys->GetAcceleration()->ptr, (float3*)m_randomDirections->ptr, 256, time, sys->GetParticlesCount(), sys->GetLocalWorkSize());
-        INT threads = cudah::cudah::GetThreadCount(sys->GetParticlesCount(), sys->GetLocalWorkSize());
+        INT threads = cudahu::GetThreadCount(sys->GetParticlesCount(), sys->GetLocalWorkSize());
         m_kernel->m_blockDim.x = sys->GetLocalWorkSize();
         m_kernel->m_gridDim.x = threads / m_kernel->m_blockDim.x;
         
@@ -445,9 +608,13 @@ namespace tbd
         return 256 * 3 * sizeof(FLOAT);
     }
 
+    typedef FLOAT* (*PROC)(UINT,UINT,UINT,FLOAT);
+
     GradientField::GradientField(VOID)
     {
         FLOAT scale = 0.1f;
+
+		m_array = NULL;
 
         m_positionNscale.x = m_positionNscale.y = m_positionNscale.z = 0, m_positionNscale.w = scale;
 
@@ -460,13 +627,22 @@ namespace tbd
         UINT h = 64;
         UINT d = 64;
         UINT size = 4;
-        
-        FLOAT* data = gradientpremades::RandomStuff3(w, h, d, 0.1f);
+
+		chimera::DLL dll("../../ParticleData/ParticleData/x64/Debug/ParticleData.dll");
+		FLOAT* data = dll.GetFunction<PROC>("CreateData")(w,h,d,1);
+        //FLOAT* data = gradientpremades::RandomStuff2(w, h, d, 0.1f); //2, 16);//
+		//FLOAT* data = gradientpremades::GenerateNoiseValues(w, h, d, 2, 16);
 
         std::stringstream ss;
         ss << "gradientTexture_";
         ss << m_actorId;
-        cudah::cuda_array array = sys->GetCuda()->CreateArray(ss.str(), w, h, d, cudah::eRGBA, data);
+		if(m_array)
+		{
+			sys->GetCuda()->DeleteArray(m_array);
+		}
+
+        m_array = sys->GetCuda()->CreateArray(ss.str(), w, h, d, cudah::eRGBA, data);
+
 
         //bindGradientTexture(array->m_array, array->GetChannelDesc());
         /*
@@ -483,7 +659,7 @@ namespace tbd
         CUDA_DRIVER_SAFE_CALLING(cuTexRefSetFilterMode(ref, CU_TR_FILTER_MODE_LINEAR));
         CUDA_DRIVER_SAFE_CALLING(cuTexRefSetAddressMode(ref, 0, CU_TR_ADDRESS_MODE_MIRROR));
         */
-        sys->GetCuda()->BindArrayToTexture("ct_gradientTexture", array, CU_TR_FILTER_MODE_LINEAR, CU_TR_ADDRESS_MODE_MIRROR, CU_TRSF_NORMALIZED_COORDINATES);
+        sys->GetCuda()->BindArrayToTexture("ct_gradientTexture", m_array, CU_TR_FILTER_MODE_LINEAR, CU_TR_ADDRESS_MODE_MIRROR, 0);
 
         m_kernel = sys->GetCuda()->GetKernel("_computeGradientField");
 
@@ -498,7 +674,7 @@ namespace tbd
     VOID GradientField::VUpdate(ParticleSystem* sys, FLOAT time, FLOAT dt)
     {
         //computeGradientField((float4*)sys->GetParticles()->ptr, (float3*)sys->GetVelocities()->ptr, m_positionNscale, sys->GetParticlesCount(), sys->GetLocalWorkSize());
-        INT threads = cudah::cudah::GetThreadCount(sys->GetParticlesCount(), sys->GetLocalWorkSize());
+        INT threads = cudahu::GetThreadCount(sys->GetParticlesCount(), sys->GetLocalWorkSize());
         m_kernel->m_blockDim.x = sys->GetLocalWorkSize();
         m_kernel->m_gridDim.x = threads / m_kernel->m_blockDim.x;
 
@@ -512,9 +688,9 @@ namespace tbd
         sys->GetCuda()->CallKernel(m_kernel);
     }
 
-    VOID GradientField::VOnActorMoved(std::shared_ptr<tbd::Actor> actor)
+    VOID GradientField::VOnActorMoved(std::shared_ptr<chimera::Actor> actor)
     {
-        std::shared_ptr<tbd::TransformComponent> cmp = actor->GetComponent<tbd::TransformComponent>(tbd::TransformComponent::COMPONENT_ID).lock();
+        std::shared_ptr<chimera::TransformComponent> cmp = actor->GetComponent<chimera::TransformComponent>(chimera::TransformComponent::COMPONENT_ID).lock();
         m_positionNscale.x = cmp->GetTransformation()->GetTranslation().x;
         m_positionNscale.y = cmp->GetTransformation()->GetTranslation().y;
         m_positionNscale.z = cmp->GetTransformation()->GetTranslation().z;
@@ -540,7 +716,7 @@ namespace tbd
     VOID GravityField::VUpdate(ParticleSystem* sys, FLOAT time, FLOAT dt)
     {
         //computeGravityField((float4*)sys->GetParticles()->ptr, (float3*)sys->GetVelocities()->ptr, m_posistionNrange, m_pole == eRepel, m_scale, sys->GetParticlesCount(), sys->GetLocalWorkSize());
-        INT threads = cudah::cudah::GetThreadCount(sys->GetParticlesCount(), sys->GetLocalWorkSize());
+        INT threads = cudahu::GetThreadCount(sys->GetParticlesCount(), sys->GetLocalWorkSize());
         m_kernel->m_blockDim.x = sys->GetLocalWorkSize();
         m_kernel->m_gridDim.x = threads / m_kernel->m_blockDim.x;
 
@@ -556,9 +732,9 @@ namespace tbd
         sys->GetCuda()->CallKernel(m_kernel);
     }
 
-    VOID GravityField::VOnActorMoved(std::shared_ptr<tbd::Actor> actor)
+    VOID GravityField::VOnActorMoved(std::shared_ptr<chimera::Actor> actor)
     {
-        std::shared_ptr<tbd::TransformComponent> cmp = actor->GetComponent<tbd::TransformComponent>(tbd::TransformComponent::COMPONENT_ID).lock();
+        std::shared_ptr<chimera::TransformComponent> cmp = actor->GetComponent<chimera::TransformComponent>(chimera::TransformComponent::COMPONENT_ID).lock();
         m_posistionNrange.x = cmp->GetTransformation()->GetTranslation().x;
         m_posistionNrange.y = cmp->GetTransformation()->GetTranslation().y;
         m_posistionNrange.z = cmp->GetTransformation()->GetTranslation().z;
@@ -573,7 +749,7 @@ namespace tbd
     VOID VelocityDamper::VUpdate(ParticleSystem* sys, FLOAT time, FLOAT dt)
     {
         //computeVelocityDamping((float4*)sys->GetParticles()->ptr, (float3*)sys->GetVelocities()->ptr, m_dampValue,  sys->GetParticlesCount(), sys->GetLocalWorkSize());
-        INT threads = cudah::cudah::GetThreadCount(sys->GetParticlesCount(), sys->GetLocalWorkSize());
+        INT threads = cudahu::GetThreadCount(sys->GetParticlesCount(), sys->GetLocalWorkSize());
         m_kernel->m_blockDim.x = sys->GetLocalWorkSize();
         m_kernel->m_gridDim.x = threads / m_kernel->m_blockDim.x;
 
@@ -585,5 +761,141 @@ namespace tbd
         m_kernel->m_ppArgs = args;
 
         sys->GetCuda()->CallKernel(m_kernel);
+    }
+
+    VOID Plane::VOnRestore(ParticleSystem* sys)
+    {
+        m_kernel = sys->GetCuda()->GetKernel("_computePlane");
+    }
+
+    VOID Plane::VUpdate(ParticleSystem* sys, FLOAT time, FLOAT dt)
+    {
+        INT threads = cudahu::GetThreadCount(sys->GetParticlesCount(), sys->GetLocalWorkSize());
+        m_kernel->m_blockDim.x = sys->GetLocalWorkSize();
+        m_kernel->m_gridDim.x = threads / m_kernel->m_blockDim.x;
+
+        DirectX::XMFLOAT4 n;
+        n.x = m_plane.GetNormal().m_v.x;
+        n.y = m_plane.GetNormal().m_v.y;
+        n.z = m_plane.GetNormal().m_v.z;
+        n.w = m_plane.GetRadius();
+
+        VOID *args[] = 
+        { 
+            &n, &sys->GetVelocities()->ptr, &sys->GetParticles()->ptr,
+        };
+
+        m_kernel->m_ppArgs = args;
+
+        sys->GetCuda()->CallKernel(m_kernel);
+    }
+
+    BoundingBox::BoundingBox(VOID)
+    {
+        m_pData[0] = NULL;
+        m_pData[1] = NULL;
+    }
+
+    BoundingBox::~BoundingBox(VOID)
+    {
+        SAFE_ARRAY_DELETE(m_pData[0]);
+        SAFE_ARRAY_DELETE(m_pData[1]);
+    }
+
+	VOID BoundingBox::VOnRestore(ParticleSystem* sys)
+	{
+        SAFE_ARRAY_DELETE(m_pData[0]);
+        SAFE_ARRAY_DELETE(m_pData[1]);
+        m_pData[0] = new FLOAT[3 * 1024];
+        m_pData[1] = new FLOAT[3 * 1024];
+		m_kernel = sys->GetCuda()->GetKernel("_reduce_max4");
+        m_second = sys->GetCuda()->GetKernel("_reduce_min4");
+		m_min = sys->GetCuda()->CreateBuffer(std::string("__min"), 1024 * 3 * sizeof(FLOAT), 3 * sizeof(FLOAT));
+        m_max = sys->GetCuda()->CreateBuffer(std::string("__max"), 1024 * 3 * sizeof(FLOAT), 3 * sizeof(FLOAT));
+	}
+
+    VOID _GetAABB(float3* data[2], UINT l, util::AxisAlignedBB& aabb)
+    {
+        aabb.Clear();
+        for(UINT i = 0; i < l; ++i)
+        {
+            float3 m0 = data[0][i];
+            float3 m1 = data[1][i];
+            aabb.AddPoint(util::Vec3(m0.x, m0.y, m0.z));
+            aabb.AddPoint(util::Vec3(m1.x, m1.y, m1.z));
+        }
+        aabb.Construct();
+    }
+
+	VOID BoundingBox::VUpdate(ParticleSystem* sys, FLOAT time, FLOAT dt)
+	{
+		INT threads = cudahu::GetThreadCount(sys->GetParticlesCount(), sys->GetLocalWorkSize());
+		m_kernel->m_blockDim.x = 512;//sys->GetLocalWorkSize();
+		m_kernel->m_gridDim.x = (threads/2) / m_kernel->m_blockDim.x;
+		m_kernel->m_shrdMemBytes = 3 * (m_kernel->m_blockDim.x) * sizeof(FLOAT);
+		VOID *args[] = 
+		{ 
+			&sys->GetParticles()->ptr, &m_max->ptr
+		};
+
+		m_kernel->m_ppArgs = args;
+
+		sys->GetCuda()->CallKernel(m_kernel);
+
+        m_second->m_blockDim.x = m_kernel->m_blockDim.x;
+        m_second->m_gridDim.x = m_kernel->m_gridDim.x;
+        m_second->m_shrdMemBytes = m_kernel->m_shrdMemBytes;
+
+        VOID* args2[] = 
+        { 
+            &sys->GetParticles()->ptr, &m_min->ptr
+        };
+
+        m_second->m_ppArgs = args2;
+
+        sys->GetCuda()->CallKernel(m_second);
+		
+        sys->GetCuda()->ReadBuffer(m_max, m_pData[0]);
+
+        sys->GetCuda()->ReadBuffer(m_min, m_pData[1]);
+
+        _GetAABB((float3**)m_pData, 1024, m_aabb);
+
+        sys->SetAxisAlignedBB(m_aabb);
+	}
+
+    UINT BoundingBox::VGetByteCount(VOID)
+    {
+        return m_min->GetByteSize() + m_max->GetByteSize();
+    }
+
+    KDTree::KDTree(VOID) : m_pBB(NULL)
+    {
+
+    }
+
+    VOID KDTree::VOnRestore(ParticleSystem* sys)
+    {
+        if(!m_pBB)
+        {
+            m_pBB = new BoundingBox();
+        }
+        m_pBB->VOnRestore(sys);
+
+    }
+
+    VOID KDTree::VUpdate(ParticleSystem* sys, FLOAT time, FLOAT dt)
+    {
+        m_pBB->VUpdate(sys, time, dt);
+    }
+
+    UINT KDTree::VGetByteCount(VOID)
+    {
+        return 0;
+    }
+
+    KDTree::~KDTree(VOID)
+    {
+        SAFE_DELETE(m_pBB);
     }
 }

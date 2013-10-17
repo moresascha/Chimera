@@ -1,0 +1,1016 @@
+#line 4 "e:\\dropbox\\visualstudio\\chimera\\source\\chimera\\Particles.cuh"
+struct EmitterData;
+#line 1 "Particles.cudafe1.gpu"
+typedef char __nv_bool;
+#line 428 "C:/Program Files (x86)/Microsoft Visual Studio 11.0/VC/include\\crtdefs.h"
+typedef unsigned long long size_t;
+#include "crt/device_runtime.h"
+#line 2 "e:\\dropbox\\visualstudio\\chimera\\source\\chimera\\Particles.cuh"
+typedef unsigned UINT;
+#line 4 "e:\\dropbox\\visualstudio\\chimera\\source\\chimera\\Particles.cuh"
+struct EmitterData {
+#line 6 "e:\\dropbox\\visualstudio\\chimera\\source\\chimera\\Particles.cuh"
+float rand;
+#line 7 "e:\\dropbox\\visualstudio\\chimera\\source\\chimera\\Particles.cuh"
+float birthTime;
+#line 8 "e:\\dropbox\\visualstudio\\chimera\\source\\chimera\\Particles.cuh"
+float time;
+#line 9 "e:\\dropbox\\visualstudio\\chimera\\source\\chimera\\Particles.cuh"
+float tmp;};
+#line 322 "E:/Dropbox/VisualStudio/Chimera/Source/chimera/Particles.cu"
+typedef struct float4 Plane;
+#line 384 "E:/Dropbox/VisualStudio/Chimera/Source/chimera/Particles.cu"
+typedef struct float3 (*function)(struct float3, struct float3);
+#if !defined(__CUDABE__)
+#line 247 "c:\\program files\\nvidia gpu computing toolkit\\cuda\\v5.5\\include\\math_functions.h"
+ __device_builtin__ ___device__(extern  __no_sc__) float fminf(float, float);
+#endif
+#if !defined(__CUDABE__)
+#line 283 "c:\\program files\\nvidia gpu computing toolkit\\cuda\\v5.5\\include\\math_functions.h"
+ __device_builtin__ ___device__(extern  __no_sc__) float fmaxf(float, float);
+#endif
+#if !defined(__CUDABE__)
+#line 131 "c:\\program files\\nvidia gpu computing toolkit\\cuda\\v5.5\\include\\device_functions.h"
+ __device_builtin__ ___device__(extern  __no_sc__) void __syncthreads(void);
+#endif
+#if !defined(__CUDABE__)
+#line 79 "c:\\program files\\nvidia gpu computing toolkit\\cuda\\v5.5\\include\\texture_fetch_functions.h"
+ __device_builtin__ ___device__(extern  __no_sc__) struct float4 __ftexfetch(__texture_type__, struct float4, int);
+#endif
+#line 239 "c:\\program files\\nvidia gpu computing toolkit\\cuda\\v5.5\\include\\vector_functions.h"
+___device__(static  __no_sc__) __inline__ struct float3 _ZN39_INTERNAL_17_Particles_cpp1_ii_610dbc6511make_float3Efff(float, float, float);
+#line 244 "c:\\program files\\nvidia gpu computing toolkit\\cuda\\v5.5\\include\\vector_functions.h"
+___device__(static  __no_sc__) __inline__ struct float4 _ZN39_INTERNAL_17_Particles_cpp1_ii_610dbc6511make_float4Effff(float, float, float, float);
+#line 2631 "c:\\program files\\nvidia gpu computing toolkit\\cuda\\v5.5\\include\\texture_fetch_functions.h"
+___device__(static  __no_sc__) __forceinline__ struct float4 _ZN39_INTERNAL_17_Particles_cpp1_ii_610dbc655tex3DE7textureI6float4Li3EL19cudaTextureReadMode0EEfff(__text__ __texture_type__, float, float, float);
+#line 127 "../include\\cutil_math.h"
+___device__(extern  __no_sc__) __inline__ struct float3 _Z11make_float36float4(struct float4);
+#line 254 "../include\\cutil_math.h"
+___device__(extern  __no_sc__) __inline__ struct float3 _ZngR6float3(struct float3 *);
+#line 343 "../include\\cutil_math.h"
+___device__(extern  __no_sc__) __inline__ void _ZpLR6float3S_(struct float3 *, struct float3);
+#line 738 "../include\\cutil_math.h"
+___device__(extern  __no_sc__) __inline__ void _ZmLR6float3f(struct float3 *, float);
+#line 801 "../include\\cutil_math.h"
+___device__(extern  __no_sc__) __inline__ void _ZmLR6float4f(struct float4 *, float);
+#line 922 "../include\\cutil_math.h"
+___device__(extern  __no_sc__) __inline__ struct float3 _Z5fminf6float3S_(struct float3, struct float3);
+#line 965 "../include\\cutil_math.h"
+___device__(extern  __no_sc__) __inline__ struct float3 _Z5fmaxf6float3S_(struct float3, struct float3);
+#line 1123 "../include\\cutil_math.h"
+___device__(extern  __no_sc__) __inline__ float _Z3dot6float3S_(struct float3, struct float3);
+#line 21 "E:/Dropbox/VisualStudio/Chimera/Source/chimera/Particles.cu"
+___device__(extern  __no_sc__) int _Z5IsOutP6float4P6float3S2_(struct float4 *, struct float3 *, struct float3 *);
+#line 29 "E:/Dropbox/VisualStudio/Chimera/Source/chimera/Particles.cu"
+___device__(extern  __no_sc__) __nv_bool _Z7IsAliveP6float4(struct float4 *);
+#line 34 "E:/Dropbox/VisualStudio/Chimera/Source/chimera/Particles.cu"
+___device__(extern  __no_sc__) __nv_bool _Z7WasDeadP6float4(struct float4 *);
+#line 324 "E:/Dropbox/VisualStudio/Chimera/Source/chimera/Particles.cu"
+___device__(extern  __no_sc__) float _Z11getDistance6float4S_(Plane, struct float4);
+#line 329 "E:/Dropbox/VisualStudio/Chimera/Source/chimera/Particles.cu"
+___device__(extern  __no_sc__) __nv_bool _Z9isOutside6float4S_(Plane, struct float4);
+#line 354 "E:/Dropbox/VisualStudio/Chimera/Source/chimera/Particles.cu"
+___device__(extern  __no_sc__) void _Z7_reduceIPF6float3S0_S0_EEvP6float4PS0_T_(struct float4 *, struct float3 *, function);
+#line 39 "E:/Dropbox/VisualStudio/Chimera/Source/chimera/Particles.cu"
+__global__ __var_used__ extern void _computeEmitter(struct float4 *, struct float4 *, struct float3 *, struct float3 *, struct EmitterData *, struct float3, float, float, float, float, UINT);
+#line 129 "E:/Dropbox/VisualStudio/Chimera/Source/chimera/Particles.cu"
+__global__ __var_used__ extern void _computeGravity(struct float4 *, struct float3 *, float);
+#line 151 "E:/Dropbox/VisualStudio/Chimera/Source/chimera/Particles.cu"
+__global__ __var_used__ extern void _computeTurbulence(struct float4 *, struct float3 *, struct float3 *, UINT, UINT);
+#line 177 "E:/Dropbox/VisualStudio/Chimera/Source/chimera/Particles.cu"
+__global__ __var_used__ extern void _integrate(struct float4 *, struct float3 *, struct float3 *, float);
+#line 206 "E:/Dropbox/VisualStudio/Chimera/Source/chimera/Particles.cu"
+__global__ __var_used__ extern void _computeGradientField(struct float4 *, struct float3 *, struct float4);
+#line 253 "E:/Dropbox/VisualStudio/Chimera/Source/chimera/Particles.cu"
+__global__ __var_used__ extern void _computeGravityField(struct float4 *, struct float3 *, struct float4, int, float);
+#line 291 "E:/Dropbox/VisualStudio/Chimera/Source/chimera/Particles.cu"
+__global__ __var_used__ extern void _computeVelocityDamping(struct float4 *, struct float3 *, float);
+#line 334 "E:/Dropbox/VisualStudio/Chimera/Source/chimera/Particles.cu"
+__global__ __var_used__ extern void _computePlane(Plane, struct float3 *, struct float4 *);
+#line 386 "E:/Dropbox/VisualStudio/Chimera/Source/chimera/Particles.cu"
+__global__ __var_used__ extern void _reduce_max4(struct float4 *, struct float3 *);
+#line 391 "E:/Dropbox/VisualStudio/Chimera/Source/chimera/Particles.cu"
+__global__ __var_used__ extern void _reduce_min4(struct float4 *, struct float3 *);
+#line 19 "E:/Dropbox/VisualStudio/Chimera/Source/chimera/Particles.cu"
+static  __text__  __var_used__ __texture_type__ ct_gradientTexture;
+#line 356 "E:/Dropbox/VisualStudio/Chimera/Source/chimera/Particles.cu"
+extern  __shared__ struct float3 s_d[];
+#include "common_functions.h"
+#line 358 "E:/Dropbox/VisualStudio/Chimera/Source/chimera/Particles.cu"
+static  __device__  __var_used__ const long long _ZTVSt14error_category[9] = {0LL,0LL,0LL,0LL,0LL,0LL,0LL,0LL,0LL};
+#line 359 "E:/Dropbox/VisualStudio/Chimera/Source/chimera/Particles.cu"
+static  __device__  __var_used__ const long long _ZTVSt23_Generic_error_category[9] = {0LL,0LL,0LL,0LL,0LL,0LL,0LL,0LL,0LL};
+#line 360 "E:/Dropbox/VisualStudio/Chimera/Source/chimera/Particles.cu"
+static  __device__  __var_used__ const long long _ZTVSt24_Iostream_error_category[9] = {0LL,0LL,0LL,0LL,0LL,0LL,0LL,0LL,0LL};
+#line 361 "E:/Dropbox/VisualStudio/Chimera/Source/chimera/Particles.cu"
+static  __device__  __var_used__ const long long _ZTVSt22_System_error_category[9] = {0LL,0LL,0LL,0LL,0LL,0LL,0LL,0LL,0LL};
+#if !defined(__CUDABE__)
+#endif
+#if !defined(__CUDABE__)
+#endif
+#if !defined(__CUDABE__)
+#endif
+#if !defined(__CUDABE__)
+#endif
+#line 239 "c:\\program files\\nvidia gpu computing toolkit\\cuda\\v5.5\\include\\vector_functions.h"
+___device__(static  __no_sc__) __inline__ struct float3 _ZN39_INTERNAL_17_Particles_cpp1_ii_610dbc6511make_float3Efff(
+#line 239 "c:\\program files\\nvidia gpu computing toolkit\\cuda\\v5.5\\include\\vector_functions.h"
+float x, 
+#line 239 "c:\\program files\\nvidia gpu computing toolkit\\cuda\\v5.5\\include\\vector_functions.h"
+float y, 
+#line 239 "c:\\program files\\nvidia gpu computing toolkit\\cuda\\v5.5\\include\\vector_functions.h"
+float z){
+#line 239 "c:\\program files\\nvidia gpu computing toolkit\\cuda\\v5.5\\include\\vector_functions.h"
+{
+#line 240 "c:\\program files\\nvidia gpu computing toolkit\\cuda\\v5.5\\include\\vector_functions.h"
+{
+#line 241 "c:\\program files\\nvidia gpu computing toolkit\\cuda\\v5.5\\include\\vector_functions.h"
+ struct float3 __cuda_local_var_41583_10_non_const_t;
+#line 241 "c:\\program files\\nvidia gpu computing toolkit\\cuda\\v5.5\\include\\vector_functions.h"
+(__cuda_local_var_41583_10_non_const_t.x) = x;
+#line 241 "c:\\program files\\nvidia gpu computing toolkit\\cuda\\v5.5\\include\\vector_functions.h"
+(__cuda_local_var_41583_10_non_const_t.y) = y;
+#line 241 "c:\\program files\\nvidia gpu computing toolkit\\cuda\\v5.5\\include\\vector_functions.h"
+(__cuda_local_var_41583_10_non_const_t.z) = z;
+#line 241 "c:\\program files\\nvidia gpu computing toolkit\\cuda\\v5.5\\include\\vector_functions.h"
+return __cuda_local_var_41583_10_non_const_t;
+#line 242 "c:\\program files\\nvidia gpu computing toolkit\\cuda\\v5.5\\include\\vector_functions.h"
+}
+#line 242 "c:\\program files\\nvidia gpu computing toolkit\\cuda\\v5.5\\include\\vector_functions.h"
+}}
+#line 244 "c:\\program files\\nvidia gpu computing toolkit\\cuda\\v5.5\\include\\vector_functions.h"
+___device__(static  __no_sc__) __inline__ struct float4 _ZN39_INTERNAL_17_Particles_cpp1_ii_610dbc6511make_float4Effff(
+#line 244 "c:\\program files\\nvidia gpu computing toolkit\\cuda\\v5.5\\include\\vector_functions.h"
+float x, 
+#line 244 "c:\\program files\\nvidia gpu computing toolkit\\cuda\\v5.5\\include\\vector_functions.h"
+float y, 
+#line 244 "c:\\program files\\nvidia gpu computing toolkit\\cuda\\v5.5\\include\\vector_functions.h"
+float z, 
+#line 244 "c:\\program files\\nvidia gpu computing toolkit\\cuda\\v5.5\\include\\vector_functions.h"
+float w){
+#line 244 "c:\\program files\\nvidia gpu computing toolkit\\cuda\\v5.5\\include\\vector_functions.h"
+{
+#line 245 "c:\\program files\\nvidia gpu computing toolkit\\cuda\\v5.5\\include\\vector_functions.h"
+{
+#line 246 "c:\\program files\\nvidia gpu computing toolkit\\cuda\\v5.5\\include\\vector_functions.h"
+ struct float4 __cuda_local_var_41588_10_non_const_t;
+#line 246 "c:\\program files\\nvidia gpu computing toolkit\\cuda\\v5.5\\include\\vector_functions.h"
+(__cuda_local_var_41588_10_non_const_t.x) = x;
+#line 246 "c:\\program files\\nvidia gpu computing toolkit\\cuda\\v5.5\\include\\vector_functions.h"
+(__cuda_local_var_41588_10_non_const_t.y) = y;
+#line 246 "c:\\program files\\nvidia gpu computing toolkit\\cuda\\v5.5\\include\\vector_functions.h"
+(__cuda_local_var_41588_10_non_const_t.z) = z;
+#line 246 "c:\\program files\\nvidia gpu computing toolkit\\cuda\\v5.5\\include\\vector_functions.h"
+(__cuda_local_var_41588_10_non_const_t.w) = w;
+#line 246 "c:\\program files\\nvidia gpu computing toolkit\\cuda\\v5.5\\include\\vector_functions.h"
+return __cuda_local_var_41588_10_non_const_t;
+#line 247 "c:\\program files\\nvidia gpu computing toolkit\\cuda\\v5.5\\include\\vector_functions.h"
+}
+#line 247 "c:\\program files\\nvidia gpu computing toolkit\\cuda\\v5.5\\include\\vector_functions.h"
+}}
+#line 2631 "c:\\program files\\nvidia gpu computing toolkit\\cuda\\v5.5\\include\\texture_fetch_functions.h"
+___device__(static  __no_sc__) __forceinline__ struct float4 _ZN39_INTERNAL_17_Particles_cpp1_ii_610dbc655tex3DE7textureI6float4Li3EL19cudaTextureReadMode0EEfff(
+#line 2631 "c:\\program files\\nvidia gpu computing toolkit\\cuda\\v5.5\\include\\texture_fetch_functions.h"
+__text__ __texture_type__ t, 
+#line 2631 "c:\\program files\\nvidia gpu computing toolkit\\cuda\\v5.5\\include\\texture_fetch_functions.h"
+float x, 
+#line 2631 "c:\\program files\\nvidia gpu computing toolkit\\cuda\\v5.5\\include\\texture_fetch_functions.h"
+float y, 
+#line 2631 "c:\\program files\\nvidia gpu computing toolkit\\cuda\\v5.5\\include\\texture_fetch_functions.h"
+float z){
+#line 2631 "c:\\program files\\nvidia gpu computing toolkit\\cuda\\v5.5\\include\\texture_fetch_functions.h"
+{
+#line 2632 "c:\\program files\\nvidia gpu computing toolkit\\cuda\\v5.5\\include\\texture_fetch_functions.h"
+{
+#line 2633 "c:\\program files\\nvidia gpu computing toolkit\\cuda\\v5.5\\include\\texture_fetch_functions.h"
+ struct float4 __cuda_local_var_138162_10_non_const_v;
+#line 2633 "c:\\program files\\nvidia gpu computing toolkit\\cuda\\v5.5\\include\\texture_fetch_functions.h"
+__cuda_local_var_138162_10_non_const_v = (__ftexfetch(t, (_ZN39_INTERNAL_17_Particles_cpp1_ii_610dbc6511make_float4Effff(x, y, z, (0.0F))), 3));
+#line 2635 "c:\\program files\\nvidia gpu computing toolkit\\cuda\\v5.5\\include\\texture_fetch_functions.h"
+return _ZN39_INTERNAL_17_Particles_cpp1_ii_610dbc6511make_float4Effff((__cuda_local_var_138162_10_non_const_v.x), (__cuda_local_var_138162_10_non_const_v.y), (__cuda_local_var_138162_10_non_const_v.z), (__cuda_local_var_138162_10_non_const_v.w));
+#line 2636 "c:\\program files\\nvidia gpu computing toolkit\\cuda\\v5.5\\include\\texture_fetch_functions.h"
+}
+#line 2636 "c:\\program files\\nvidia gpu computing toolkit\\cuda\\v5.5\\include\\texture_fetch_functions.h"
+}}
+#line 127 "../include\\cutil_math.h"
+___device__( __no_sc__) __inline__ struct float3 _Z11make_float36float4(
+#line 127 "../include\\cutil_math.h"
+struct float4 a){
+#line 127 "../include\\cutil_math.h"
+{
+#line 128 "../include\\cutil_math.h"
+{
+#line 129 "../include\\cutil_math.h"
+return _ZN39_INTERNAL_17_Particles_cpp1_ii_610dbc6511make_float3Efff((a.x), (a.y), (a.z));
+#line 130 "../include\\cutil_math.h"
+}
+#line 130 "../include\\cutil_math.h"
+}}
+#line 254 "../include\\cutil_math.h"
+___device__( __no_sc__) __inline__ struct float3 _ZngR6float3(
+#line 254 "../include\\cutil_math.h"
+struct float3 *a){
+#line 254 "../include\\cutil_math.h"
+{
+#line 255 "../include\\cutil_math.h"
+{
+#line 256 "../include\\cutil_math.h"
+return _ZN39_INTERNAL_17_Particles_cpp1_ii_610dbc6511make_float3Efff((-(a->x)), (-(a->y)), (-(a->z)));
+#line 257 "../include\\cutil_math.h"
+}
+#line 257 "../include\\cutil_math.h"
+}}
+#line 343 "../include\\cutil_math.h"
+___device__( __no_sc__) __inline__ void _ZpLR6float3S_(
+#line 343 "../include\\cutil_math.h"
+struct float3 *a, 
+#line 343 "../include\\cutil_math.h"
+struct float3 b){
+#line 343 "../include\\cutil_math.h"
+{
+#line 344 "../include\\cutil_math.h"
+{
+#line 345 "../include\\cutil_math.h"
+(a->x) += (b.x);
+#line 345 "../include\\cutil_math.h"
+(a->y) += (b.y);
+#line 345 "../include\\cutil_math.h"
+(a->z) += (b.z);
+#line 346 "../include\\cutil_math.h"
+} 
+#line 346 "../include\\cutil_math.h"
+}}
+#line 738 "../include\\cutil_math.h"
+___device__( __no_sc__) __inline__ void _ZmLR6float3f(
+#line 738 "../include\\cutil_math.h"
+struct float3 *a, 
+#line 738 "../include\\cutil_math.h"
+float b){
+#line 738 "../include\\cutil_math.h"
+{
+#line 739 "../include\\cutil_math.h"
+{
+#line 740 "../include\\cutil_math.h"
+(a->x) *= b;
+#line 740 "../include\\cutil_math.h"
+(a->y) *= b;
+#line 740 "../include\\cutil_math.h"
+(a->z) *= b;
+#line 741 "../include\\cutil_math.h"
+} 
+#line 741 "../include\\cutil_math.h"
+}}
+#line 801 "../include\\cutil_math.h"
+___device__( __no_sc__) __inline__ void _ZmLR6float4f(
+#line 801 "../include\\cutil_math.h"
+struct float4 *a, 
+#line 801 "../include\\cutil_math.h"
+float b){
+#line 801 "../include\\cutil_math.h"
+{
+#line 802 "../include\\cutil_math.h"
+{
+#line 803 "../include\\cutil_math.h"
+(a->x) *= b;
+#line 803 "../include\\cutil_math.h"
+(a->y) *= b;
+#line 803 "../include\\cutil_math.h"
+(a->z) *= b;
+#line 803 "../include\\cutil_math.h"
+(a->w) *= b;
+#line 804 "../include\\cutil_math.h"
+} 
+#line 804 "../include\\cutil_math.h"
+}}
+#line 922 "../include\\cutil_math.h"
+___device__( __no_sc__) __inline__ struct float3 _Z5fminf6float3S_(
+#line 922 "../include\\cutil_math.h"
+struct float3 a, 
+#line 922 "../include\\cutil_math.h"
+struct float3 b){
+#line 922 "../include\\cutil_math.h"
+{
+#line 923 "../include\\cutil_math.h"
+{
+#line 924 "../include\\cutil_math.h"
+return _ZN39_INTERNAL_17_Particles_cpp1_ii_610dbc6511make_float3Efff((fminf((a.x), (b.x))), (fminf((a.y), (b.y))), (fminf((a.z), (b.z))));
+#line 925 "../include\\cutil_math.h"
+}
+#line 925 "../include\\cutil_math.h"
+}}
+#line 965 "../include\\cutil_math.h"
+___device__( __no_sc__) __inline__ struct float3 _Z5fmaxf6float3S_(
+#line 965 "../include\\cutil_math.h"
+struct float3 a, 
+#line 965 "../include\\cutil_math.h"
+struct float3 b){
+#line 965 "../include\\cutil_math.h"
+{
+#line 966 "../include\\cutil_math.h"
+{
+#line 967 "../include\\cutil_math.h"
+return _ZN39_INTERNAL_17_Particles_cpp1_ii_610dbc6511make_float3Efff((fmaxf((a.x), (b.x))), (fmaxf((a.y), (b.y))), (fmaxf((a.z), (b.z))));
+#line 968 "../include\\cutil_math.h"
+}
+#line 968 "../include\\cutil_math.h"
+}}
+#line 1123 "../include\\cutil_math.h"
+___device__( __no_sc__) __inline__ float _Z3dot6float3S_(
+#line 1123 "../include\\cutil_math.h"
+struct float3 a, 
+#line 1123 "../include\\cutil_math.h"
+struct float3 b){
+#line 1123 "../include\\cutil_math.h"
+{
+#line 1124 "../include\\cutil_math.h"
+{
+#line 1125 "../include\\cutil_math.h"
+return (((a.x) * (b.x)) + ((a.y) * (b.y))) + ((a.z) * (b.z));
+#line 1126 "../include\\cutil_math.h"
+}
+#line 1126 "../include\\cutil_math.h"
+}}
+#line 21 "E:/Dropbox/VisualStudio/Chimera/Source/chimera/Particles.cu"
+___device__( __no_sc__) int _Z5IsOutP6float4P6float3S2_(
+#line 21 "E:/Dropbox/VisualStudio/Chimera/Source/chimera/Particles.cu"
+struct float4 *pos, 
+#line 21 "E:/Dropbox/VisualStudio/Chimera/Source/chimera/Particles.cu"
+struct float3 *min, 
+#line 21 "E:/Dropbox/VisualStudio/Chimera/Source/chimera/Particles.cu"
+struct float3 *max){
+#line 21 "E:/Dropbox/VisualStudio/Chimera/Source/chimera/Particles.cu"
+{
+#line 22 "E:/Dropbox/VisualStudio/Chimera/Source/chimera/Particles.cu"
+{
+#line 23 "E:/Dropbox/VisualStudio/Chimera/Source/chimera/Particles.cu"
+return (int)(((((((min->x) > (pos->x)) || ((max->x) < (pos->x))) || ((min->y) > (pos->y))) || ((max->y) < (pos->y))) || ((min->z) > (pos->z))) || ((max->z) < (pos->z)));
+#line 27 "E:/Dropbox/VisualStudio/Chimera/Source/chimera/Particles.cu"
+}
+#line 27 "E:/Dropbox/VisualStudio/Chimera/Source/chimera/Particles.cu"
+}}
+#line 29 "E:/Dropbox/VisualStudio/Chimera/Source/chimera/Particles.cu"
+___device__( __no_sc__) __nv_bool _Z7IsAliveP6float4(
+#line 29 "E:/Dropbox/VisualStudio/Chimera/Source/chimera/Particles.cu"
+struct float4 *pos){
+#line 29 "E:/Dropbox/VisualStudio/Chimera/Source/chimera/Particles.cu"
+{
+#line 30 "E:/Dropbox/VisualStudio/Chimera/Source/chimera/Particles.cu"
+{
+#line 31 "E:/Dropbox/VisualStudio/Chimera/Source/chimera/Particles.cu"
+return (__nv_bool)((((double)(pos->w)) > (0.5)) && (((double)(pos->w)) < (1.5)));
+#line 32 "E:/Dropbox/VisualStudio/Chimera/Source/chimera/Particles.cu"
+}
+#line 32 "E:/Dropbox/VisualStudio/Chimera/Source/chimera/Particles.cu"
+}}
+#line 34 "E:/Dropbox/VisualStudio/Chimera/Source/chimera/Particles.cu"
+___device__( __no_sc__) __nv_bool _Z7WasDeadP6float4(
+#line 34 "E:/Dropbox/VisualStudio/Chimera/Source/chimera/Particles.cu"
+struct float4 *pos){
+#line 34 "E:/Dropbox/VisualStudio/Chimera/Source/chimera/Particles.cu"
+{
+#line 35 "E:/Dropbox/VisualStudio/Chimera/Source/chimera/Particles.cu"
+{
+#line 36 "E:/Dropbox/VisualStudio/Chimera/Source/chimera/Particles.cu"
+return (__nv_bool)((((double)(pos->w)) > (1.5)) && (((double)(pos->w)) < (2.5)));
+#line 37 "E:/Dropbox/VisualStudio/Chimera/Source/chimera/Particles.cu"
+}
+#line 37 "E:/Dropbox/VisualStudio/Chimera/Source/chimera/Particles.cu"
+}}
+#line 324 "E:/Dropbox/VisualStudio/Chimera/Source/chimera/Particles.cu"
+___device__( __no_sc__) float _Z11getDistance6float4S_(
+#line 324 "E:/Dropbox/VisualStudio/Chimera/Source/chimera/Particles.cu"
+Plane p, 
+#line 324 "E:/Dropbox/VisualStudio/Chimera/Source/chimera/Particles.cu"
+struct float4 position){
+#line 324 "E:/Dropbox/VisualStudio/Chimera/Source/chimera/Particles.cu"
+{
+#line 325 "E:/Dropbox/VisualStudio/Chimera/Source/chimera/Particles.cu"
+{
+#line 326 "E:/Dropbox/VisualStudio/Chimera/Source/chimera/Particles.cu"
+return (_Z3dot6float3S_((_Z11make_float36float4(position)), (_Z11make_float36float4(p)))) - (p.w);
+#line 327 "E:/Dropbox/VisualStudio/Chimera/Source/chimera/Particles.cu"
+}
+#line 327 "E:/Dropbox/VisualStudio/Chimera/Source/chimera/Particles.cu"
+}}
+#line 329 "E:/Dropbox/VisualStudio/Chimera/Source/chimera/Particles.cu"
+___device__( __no_sc__) __nv_bool _Z9isOutside6float4S_(
+#line 329 "E:/Dropbox/VisualStudio/Chimera/Source/chimera/Particles.cu"
+Plane p, 
+#line 329 "E:/Dropbox/VisualStudio/Chimera/Source/chimera/Particles.cu"
+struct float4 position){
+#line 329 "E:/Dropbox/VisualStudio/Chimera/Source/chimera/Particles.cu"
+{
+#line 330 "E:/Dropbox/VisualStudio/Chimera/Source/chimera/Particles.cu"
+{
+#line 331 "E:/Dropbox/VisualStudio/Chimera/Source/chimera/Particles.cu"
+return (__nv_bool)((_Z11getDistance6float4S_(p, position)) < (0.0F));
+#line 332 "E:/Dropbox/VisualStudio/Chimera/Source/chimera/Particles.cu"
+}
+#line 332 "E:/Dropbox/VisualStudio/Chimera/Source/chimera/Particles.cu"
+}}
+#line 354 "E:/Dropbox/VisualStudio/Chimera/Source/chimera/Particles.cu"
+___device__( __no_sc__) void _Z7_reduceIPF6float3S0_S0_EEvP6float4PS0_T_(
+#line 354 "E:/Dropbox/VisualStudio/Chimera/Source/chimera/Particles.cu"
+struct float4 *data, 
+#line 354 "E:/Dropbox/VisualStudio/Chimera/Source/chimera/Particles.cu"
+struct float3 *dst, 
+#line 354 "E:/Dropbox/VisualStudio/Chimera/Source/chimera/Particles.cu"
+function _operator){
+#line 354 "E:/Dropbox/VisualStudio/Chimera/Source/chimera/Particles.cu"
+{
+#line 355 "E:/Dropbox/VisualStudio/Chimera/Source/chimera/Particles.cu"
+{
+#line 358 "E:/Dropbox/VisualStudio/Chimera/Source/chimera/Particles.cu"
+ UINT __cuda_local_var_248887_7_non_const_id;
+#line 359 "E:/Dropbox/VisualStudio/Chimera/Source/chimera/Particles.cu"
+ UINT __cuda_local_var_248888_7_non_const_si;
+#line 361 "E:/Dropbox/VisualStudio/Chimera/Source/chimera/Particles.cu"
+ struct float4 __cuda_local_var_248890_9_non_const_d0;
+#line 362 "E:/Dropbox/VisualStudio/Chimera/Source/chimera/Particles.cu"
+ struct float4 __cuda_local_var_248891_12_non_const_d1;
+#line 358 "E:/Dropbox/VisualStudio/Chimera/Source/chimera/Particles.cu"
+__cuda_local_var_248887_7_non_const_id = (threadIdx.x);
+#line 359 "E:/Dropbox/VisualStudio/Chimera/Source/chimera/Particles.cu"
+__cuda_local_var_248888_7_non_const_si = (((2U * (blockIdx.x)) * (blockDim.x)) + (threadIdx.x));
+#line 361 "E:/Dropbox/VisualStudio/Chimera/Source/chimera/Particles.cu"
+__cuda_local_var_248890_9_non_const_d0 = (data[__cuda_local_var_248888_7_non_const_si]);
+#line 362 "E:/Dropbox/VisualStudio/Chimera/Source/chimera/Particles.cu"
+__cuda_local_var_248891_12_non_const_d1 = (data[(__cuda_local_var_248888_7_non_const_si + (blockDim.x))]);
+#line 364 "E:/Dropbox/VisualStudio/Chimera/Source/chimera/Particles.cu"
+((s_d)[__cuda_local_var_248887_7_non_const_id]) = (_operator((_ZN39_INTERNAL_17_Particles_cpp1_ii_610dbc6511make_float3Efff((__cuda_local_var_248890_9_non_const_d0.x), (__cuda_local_var_248890_9_non_const_d0.y), (__cuda_local_var_248890_9_non_const_d0.z))), (_ZN39_INTERNAL_17_Particles_cpp1_ii_610dbc6511make_float3Efff((__cuda_local_var_248891_12_non_const_d1.x), (__cuda_local_var_248891_12_non_const_d1.y), (__cuda_local_var_248891_12_non_const_d1.z)))));
+#line 366 "E:/Dropbox/VisualStudio/Chimera/Source/chimera/Particles.cu"
+__syncthreads();
+#line 366 "E:/Dropbox/VisualStudio/Chimera/Source/chimera/Particles.cu"
+{
+#line 368 "E:/Dropbox/VisualStudio/Chimera/Source/chimera/Particles.cu"
+ UINT i;
+#line 368 "E:/Dropbox/VisualStudio/Chimera/Source/chimera/Particles.cu"
+i = ((blockDim.x) / 2U);
+#line 368 "E:/Dropbox/VisualStudio/Chimera/Source/chimera/Particles.cu"
+for (; (i > 0U); i >>= 1)
+#line 369 "E:/Dropbox/VisualStudio/Chimera/Source/chimera/Particles.cu"
+{
+#line 370 "E:/Dropbox/VisualStudio/Chimera/Source/chimera/Particles.cu"
+if (__cuda_local_var_248887_7_non_const_id < i)
+#line 371 "E:/Dropbox/VisualStudio/Chimera/Source/chimera/Particles.cu"
+{
+#line 372 "E:/Dropbox/VisualStudio/Chimera/Source/chimera/Particles.cu"
+((s_d)[__cuda_local_var_248887_7_non_const_id]) = (_operator(((s_d)[(__cuda_local_var_248887_7_non_const_id + i)]), ((s_d)[__cuda_local_var_248887_7_non_const_id])));
+#line 373 "E:/Dropbox/VisualStudio/Chimera/Source/chimera/Particles.cu"
+}
+#line 375 "E:/Dropbox/VisualStudio/Chimera/Source/chimera/Particles.cu"
+__syncthreads();
+#line 376 "E:/Dropbox/VisualStudio/Chimera/Source/chimera/Particles.cu"
+}
+#line 376 "E:/Dropbox/VisualStudio/Chimera/Source/chimera/Particles.cu"
+}
+#line 378 "E:/Dropbox/VisualStudio/Chimera/Source/chimera/Particles.cu"
+if (__cuda_local_var_248887_7_non_const_id == 0U)
+#line 379 "E:/Dropbox/VisualStudio/Chimera/Source/chimera/Particles.cu"
+{
+#line 380 "E:/Dropbox/VisualStudio/Chimera/Source/chimera/Particles.cu"
+(dst[(blockIdx.x)]) = ((s_d)[0]);
+#line 381 "E:/Dropbox/VisualStudio/Chimera/Source/chimera/Particles.cu"
+}
+#line 382 "E:/Dropbox/VisualStudio/Chimera/Source/chimera/Particles.cu"
+} 
+#line 382 "E:/Dropbox/VisualStudio/Chimera/Source/chimera/Particles.cu"
+}}
+#line 39 "E:/Dropbox/VisualStudio/Chimera/Source/chimera/Particles.cu"
+__global__ __var_used__ void _computeEmitter(
+#line 39 "E:/Dropbox/VisualStudio/Chimera/Source/chimera/Particles.cu"
+struct float4 *positions, 
+#line 39 "E:/Dropbox/VisualStudio/Chimera/Source/chimera/Particles.cu"
+struct float4 *startingPositions, 
+#line 39 "E:/Dropbox/VisualStudio/Chimera/Source/chimera/Particles.cu"
+struct float3 *velos, 
+#line 39 "E:/Dropbox/VisualStudio/Chimera/Source/chimera/Particles.cu"
+struct float3 *acc, 
+#line 39 "E:/Dropbox/VisualStudio/Chimera/Source/chimera/Particles.cu"
+struct EmitterData *ed, 
+#line 39 "E:/Dropbox/VisualStudio/Chimera/Source/chimera/Particles.cu"
+struct float3 translation, 
+#line 39 "E:/Dropbox/VisualStudio/Chimera/Source/chimera/Particles.cu"
+float time, 
+#line 39 "E:/Dropbox/VisualStudio/Chimera/Source/chimera/Particles.cu"
+float dt, 
+#line 39 "E:/Dropbox/VisualStudio/Chimera/Source/chimera/Particles.cu"
+float start, 
+#line 39 "E:/Dropbox/VisualStudio/Chimera/Source/chimera/Particles.cu"
+float end, 
+#line 39 "E:/Dropbox/VisualStudio/Chimera/Source/chimera/Particles.cu"
+UINT N){
+#line 39 "E:/Dropbox/VisualStudio/Chimera/Source/chimera/Particles.cu"
+{
+#line 40 "E:/Dropbox/VisualStudio/Chimera/Source/chimera/Particles.cu"
+{
+#line 41 "E:/Dropbox/VisualStudio/Chimera/Source/chimera/Particles.cu"
+ UINT __cuda_local_var_248570_10_non_const_id;
+#line 42 "E:/Dropbox/VisualStudio/Chimera/Source/chimera/Particles.cu"
+ struct float4 __cuda_local_var_248571_12_non_const_pos;
+#line 43 "E:/Dropbox/VisualStudio/Chimera/Source/chimera/Particles.cu"
+ struct EmitterData __cuda_local_var_248572_17_non_const_data;
+#line 41 "E:/Dropbox/VisualStudio/Chimera/Source/chimera/Particles.cu"
+__cuda_local_var_248570_10_non_const_id = (((blockDim.x) * (blockIdx.x)) + (threadIdx.x));
+#line 42 "E:/Dropbox/VisualStudio/Chimera/Source/chimera/Particles.cu"
+__cuda_local_var_248571_12_non_const_pos = (positions[__cuda_local_var_248570_10_non_const_id]);
+#line 43 "E:/Dropbox/VisualStudio/Chimera/Source/chimera/Particles.cu"
+__cuda_local_var_248572_17_non_const_data = (ed[__cuda_local_var_248570_10_non_const_id]);
+#line 45 "E:/Dropbox/VisualStudio/Chimera/Source/chimera/Particles.cu"
+(__cuda_local_var_248572_17_non_const_data.time) += dt;
+#line 47 "E:/Dropbox/VisualStudio/Chimera/Source/chimera/Particles.cu"
+if ((_Z7IsAliveP6float4((&__cuda_local_var_248571_12_non_const_pos))) && ((time - (__cuda_local_var_248572_17_non_const_data.birthTime)) > end))
+#line 48 "E:/Dropbox/VisualStudio/Chimera/Source/chimera/Particles.cu"
+{
+#line 49 "E:/Dropbox/VisualStudio/Chimera/Source/chimera/Particles.cu"
+__cuda_local_var_248571_12_non_const_pos = (startingPositions[__cuda_local_var_248570_10_non_const_id]);
+#line 50 "E:/Dropbox/VisualStudio/Chimera/Source/chimera/Particles.cu"
+(__cuda_local_var_248571_12_non_const_pos.w) = (0.0F);
+#line 51 "E:/Dropbox/VisualStudio/Chimera/Source/chimera/Particles.cu"
+(positions[__cuda_local_var_248570_10_non_const_id]) = __cuda_local_var_248571_12_non_const_pos;
+#line 53 "E:/Dropbox/VisualStudio/Chimera/Source/chimera/Particles.cu"
+(__cuda_local_var_248572_17_non_const_data.birthTime) = time;
+#line 54 "E:/Dropbox/VisualStudio/Chimera/Source/chimera/Particles.cu"
+(ed[__cuda_local_var_248570_10_non_const_id]) = __cuda_local_var_248572_17_non_const_data;
+#line 55 "E:/Dropbox/VisualStudio/Chimera/Source/chimera/Particles.cu"
+(acc[__cuda_local_var_248570_10_non_const_id]) = (_ZN39_INTERNAL_17_Particles_cpp1_ii_610dbc6511make_float3Efff((0.0F), (0.0F), (0.0F)));
+#line 56 "E:/Dropbox/VisualStudio/Chimera/Source/chimera/Particles.cu"
+(velos[__cuda_local_var_248570_10_non_const_id]) = (_ZN39_INTERNAL_17_Particles_cpp1_ii_610dbc6511make_float3Efff((0.0F), (0.0F), (0.0F)));
+#line 57 "E:/Dropbox/VisualStudio/Chimera/Source/chimera/Particles.cu"
+}
+#line 59 "E:/Dropbox/VisualStudio/Chimera/Source/chimera/Particles.cu"
+if ((!(_Z7IsAliveP6float4((&__cuda_local_var_248571_12_non_const_pos)))) && ((__cuda_local_var_248572_17_non_const_data.time) > (end * (__cuda_local_var_248572_17_non_const_data.rand))))
+#line 60 "E:/Dropbox/VisualStudio/Chimera/Source/chimera/Particles.cu"
+{
+#line 61 "E:/Dropbox/VisualStudio/Chimera/Source/chimera/Particles.cu"
+(__cuda_local_var_248571_12_non_const_pos.x) += (translation.x);
+#line 62 "E:/Dropbox/VisualStudio/Chimera/Source/chimera/Particles.cu"
+(__cuda_local_var_248571_12_non_const_pos.y) += (translation.y);
+#line 63 "E:/Dropbox/VisualStudio/Chimera/Source/chimera/Particles.cu"
+(__cuda_local_var_248571_12_non_const_pos.z) += (translation.z);
+#line 64 "E:/Dropbox/VisualStudio/Chimera/Source/chimera/Particles.cu"
+(__cuda_local_var_248571_12_non_const_pos.w) = (1.0F);
+#line 65 "E:/Dropbox/VisualStudio/Chimera/Source/chimera/Particles.cu"
+(__cuda_local_var_248572_17_non_const_data.birthTime) = time;
+#line 66 "E:/Dropbox/VisualStudio/Chimera/Source/chimera/Particles.cu"
+(ed[__cuda_local_var_248570_10_non_const_id]) = __cuda_local_var_248572_17_non_const_data;
+#line 67 "E:/Dropbox/VisualStudio/Chimera/Source/chimera/Particles.cu"
+(positions[__cuda_local_var_248570_10_non_const_id]) = __cuda_local_var_248571_12_non_const_pos;
+#line 68 "E:/Dropbox/VisualStudio/Chimera/Source/chimera/Particles.cu"
+return;
+#line 69 "E:/Dropbox/VisualStudio/Chimera/Source/chimera/Particles.cu"
+}
+#line 71 "E:/Dropbox/VisualStudio/Chimera/Source/chimera/Particles.cu"
+(ed[__cuda_local_var_248570_10_non_const_id]) = __cuda_local_var_248572_17_non_const_data;
+#line 119 "E:/Dropbox/VisualStudio/Chimera/Source/chimera/Particles.cu"
+} 
+#line 119 "E:/Dropbox/VisualStudio/Chimera/Source/chimera/Particles.cu"
+}}
+#line 129 "E:/Dropbox/VisualStudio/Chimera/Source/chimera/Particles.cu"
+__global__ __var_used__ void _computeGravity(
+#line 129 "E:/Dropbox/VisualStudio/Chimera/Source/chimera/Particles.cu"
+struct float4 *positions, 
+#line 129 "E:/Dropbox/VisualStudio/Chimera/Source/chimera/Particles.cu"
+struct float3 *acc, 
+#line 129 "E:/Dropbox/VisualStudio/Chimera/Source/chimera/Particles.cu"
+float factor){
+#line 129 "E:/Dropbox/VisualStudio/Chimera/Source/chimera/Particles.cu"
+{
+#line 130 "E:/Dropbox/VisualStudio/Chimera/Source/chimera/Particles.cu"
+{
+#line 131 "E:/Dropbox/VisualStudio/Chimera/Source/chimera/Particles.cu"
+ UINT __cuda_local_var_248660_10_non_const_id;
+#line 132 "E:/Dropbox/VisualStudio/Chimera/Source/chimera/Particles.cu"
+ struct float4 __cuda_local_var_248661_12_non_const_pos;
+#line 131 "E:/Dropbox/VisualStudio/Chimera/Source/chimera/Particles.cu"
+__cuda_local_var_248660_10_non_const_id = (((blockDim.x) * (blockIdx.x)) + (threadIdx.x));
+#line 132 "E:/Dropbox/VisualStudio/Chimera/Source/chimera/Particles.cu"
+__cuda_local_var_248661_12_non_const_pos = (positions[__cuda_local_var_248660_10_non_const_id]);
+#line 134 "E:/Dropbox/VisualStudio/Chimera/Source/chimera/Particles.cu"
+if (!(_Z7IsAliveP6float4((&__cuda_local_var_248661_12_non_const_pos))))
+#line 134 "E:/Dropbox/VisualStudio/Chimera/Source/chimera/Particles.cu"
+{
+#line 134 "E:/Dropbox/VisualStudio/Chimera/Source/chimera/Particles.cu"
+return;
+#line 134 "E:/Dropbox/VisualStudio/Chimera/Source/chimera/Particles.cu"
+}
+#line 134 "E:/Dropbox/VisualStudio/Chimera/Source/chimera/Particles.cu"
+;
+#line 137 "E:/Dropbox/VisualStudio/Chimera/Source/chimera/Particles.cu"
+{
+#line 138 "E:/Dropbox/VisualStudio/Chimera/Source/chimera/Particles.cu"
+ struct float3 __cuda_local_var_248667_16_non_const_a;
+#line 138 "E:/Dropbox/VisualStudio/Chimera/Source/chimera/Particles.cu"
+__cuda_local_var_248667_16_non_const_a = (acc[__cuda_local_var_248660_10_non_const_id]);
+#line 139 "E:/Dropbox/VisualStudio/Chimera/Source/chimera/Particles.cu"
+(__cuda_local_var_248667_16_non_const_a.y) += factor;
+#line 140 "E:/Dropbox/VisualStudio/Chimera/Source/chimera/Particles.cu"
+(acc[__cuda_local_var_248660_10_non_const_id]) = __cuda_local_var_248667_16_non_const_a;
+#line 141 "E:/Dropbox/VisualStudio/Chimera/Source/chimera/Particles.cu"
+}
+#line 142 "E:/Dropbox/VisualStudio/Chimera/Source/chimera/Particles.cu"
+} 
+#line 142 "E:/Dropbox/VisualStudio/Chimera/Source/chimera/Particles.cu"
+}}
+#line 151 "E:/Dropbox/VisualStudio/Chimera/Source/chimera/Particles.cu"
+__global__ __var_used__ void _computeTurbulence(
+#line 151 "E:/Dropbox/VisualStudio/Chimera/Source/chimera/Particles.cu"
+struct float4 *positions, 
+#line 151 "E:/Dropbox/VisualStudio/Chimera/Source/chimera/Particles.cu"
+struct float3 *acc, 
+#line 151 "E:/Dropbox/VisualStudio/Chimera/Source/chimera/Particles.cu"
+struct float3 *dirs, 
+#line 151 "E:/Dropbox/VisualStudio/Chimera/Source/chimera/Particles.cu"
+UINT randomCount, 
+#line 151 "E:/Dropbox/VisualStudio/Chimera/Source/chimera/Particles.cu"
+UINT time){
+#line 151 "E:/Dropbox/VisualStudio/Chimera/Source/chimera/Particles.cu"
+{
+#line 152 "E:/Dropbox/VisualStudio/Chimera/Source/chimera/Particles.cu"
+{
+#line 153 "E:/Dropbox/VisualStudio/Chimera/Source/chimera/Particles.cu"
+ UINT __cuda_local_var_248682_10_non_const_id;
+#line 154 "E:/Dropbox/VisualStudio/Chimera/Source/chimera/Particles.cu"
+ struct float4 __cuda_local_var_248683_12_non_const_pos;
+#line 153 "E:/Dropbox/VisualStudio/Chimera/Source/chimera/Particles.cu"
+__cuda_local_var_248682_10_non_const_id = (((blockDim.x) * (blockIdx.x)) + (threadIdx.x));
+#line 154 "E:/Dropbox/VisualStudio/Chimera/Source/chimera/Particles.cu"
+__cuda_local_var_248683_12_non_const_pos = (positions[__cuda_local_var_248682_10_non_const_id]);
+#line 156 "E:/Dropbox/VisualStudio/Chimera/Source/chimera/Particles.cu"
+if (!(_Z7IsAliveP6float4((&__cuda_local_var_248683_12_non_const_pos))))
+#line 156 "E:/Dropbox/VisualStudio/Chimera/Source/chimera/Particles.cu"
+{
+#line 156 "E:/Dropbox/VisualStudio/Chimera/Source/chimera/Particles.cu"
+return;
+#line 156 "E:/Dropbox/VisualStudio/Chimera/Source/chimera/Particles.cu"
+}
+#line 156 "E:/Dropbox/VisualStudio/Chimera/Source/chimera/Particles.cu"
+;
+#line 159 "E:/Dropbox/VisualStudio/Chimera/Source/chimera/Particles.cu"
+{
+#line 160 "E:/Dropbox/VisualStudio/Chimera/Source/chimera/Particles.cu"
+ struct float3 __cuda_local_var_248689_16_non_const_a;
+#line 161 "E:/Dropbox/VisualStudio/Chimera/Source/chimera/Particles.cu"
+ UINT __cuda_local_var_248690_14_non_const_dirsIndex;
+#line 162 "E:/Dropbox/VisualStudio/Chimera/Source/chimera/Particles.cu"
+ struct float3 __cuda_local_var_248691_16_non_const_dir;
+#line 160 "E:/Dropbox/VisualStudio/Chimera/Source/chimera/Particles.cu"
+__cuda_local_var_248689_16_non_const_a = (acc[__cuda_local_var_248682_10_non_const_id]);
+#line 161 "E:/Dropbox/VisualStudio/Chimera/Source/chimera/Particles.cu"
+__cuda_local_var_248690_14_non_const_dirsIndex = ((__cuda_local_var_248682_10_non_const_id + time) % randomCount);
+#line 162 "E:/Dropbox/VisualStudio/Chimera/Source/chimera/Particles.cu"
+__cuda_local_var_248691_16_non_const_dir = (dirs[__cuda_local_var_248690_14_non_const_dirsIndex]);
+#line 163 "E:/Dropbox/VisualStudio/Chimera/Source/chimera/Particles.cu"
+(__cuda_local_var_248689_16_non_const_a.x) += (__cuda_local_var_248691_16_non_const_dir.x);
+#line 164 "E:/Dropbox/VisualStudio/Chimera/Source/chimera/Particles.cu"
+(__cuda_local_var_248689_16_non_const_a.y) += (__cuda_local_var_248691_16_non_const_dir.y);
+#line 165 "E:/Dropbox/VisualStudio/Chimera/Source/chimera/Particles.cu"
+(__cuda_local_var_248689_16_non_const_a.z) += (__cuda_local_var_248691_16_non_const_dir.z);
+#line 166 "E:/Dropbox/VisualStudio/Chimera/Source/chimera/Particles.cu"
+(acc[__cuda_local_var_248682_10_non_const_id]) = __cuda_local_var_248689_16_non_const_a;
+#line 167 "E:/Dropbox/VisualStudio/Chimera/Source/chimera/Particles.cu"
+}
+#line 168 "E:/Dropbox/VisualStudio/Chimera/Source/chimera/Particles.cu"
+} 
+#line 168 "E:/Dropbox/VisualStudio/Chimera/Source/chimera/Particles.cu"
+}}
+#line 177 "E:/Dropbox/VisualStudio/Chimera/Source/chimera/Particles.cu"
+__global__ __var_used__ void _integrate(
+#line 177 "E:/Dropbox/VisualStudio/Chimera/Source/chimera/Particles.cu"
+struct float4 *positions, 
+#line 177 "E:/Dropbox/VisualStudio/Chimera/Source/chimera/Particles.cu"
+struct float3 *acc, 
+#line 177 "E:/Dropbox/VisualStudio/Chimera/Source/chimera/Particles.cu"
+struct float3 *velocity, 
+#line 177 "E:/Dropbox/VisualStudio/Chimera/Source/chimera/Particles.cu"
+float dt){
+#line 177 "E:/Dropbox/VisualStudio/Chimera/Source/chimera/Particles.cu"
+{
+#line 178 "E:/Dropbox/VisualStudio/Chimera/Source/chimera/Particles.cu"
+{
+#line 179 "E:/Dropbox/VisualStudio/Chimera/Source/chimera/Particles.cu"
+ UINT __cuda_local_var_248708_10_non_const_id;
+#line 181 "E:/Dropbox/VisualStudio/Chimera/Source/chimera/Particles.cu"
+ struct float4 __cuda_local_var_248710_12_non_const_pos;
+#line 183 "E:/Dropbox/VisualStudio/Chimera/Source/chimera/Particles.cu"
+ struct float3 __cuda_local_var_248712_12_non_const_a;
+#line 184 "E:/Dropbox/VisualStudio/Chimera/Source/chimera/Particles.cu"
+ struct float3 __cuda_local_var_248713_12_non_const_v;
+#line 179 "E:/Dropbox/VisualStudio/Chimera/Source/chimera/Particles.cu"
+__cuda_local_var_248708_10_non_const_id = (((blockDim.x) * (blockIdx.x)) + (threadIdx.x));
+#line 181 "E:/Dropbox/VisualStudio/Chimera/Source/chimera/Particles.cu"
+__cuda_local_var_248710_12_non_const_pos = (positions[__cuda_local_var_248708_10_non_const_id]);
+#line 183 "E:/Dropbox/VisualStudio/Chimera/Source/chimera/Particles.cu"
+__cuda_local_var_248712_12_non_const_a = (acc[__cuda_local_var_248708_10_non_const_id]);
+#line 184 "E:/Dropbox/VisualStudio/Chimera/Source/chimera/Particles.cu"
+__cuda_local_var_248713_12_non_const_v = (velocity[__cuda_local_var_248708_10_non_const_id]);
+#line 187 "E:/Dropbox/VisualStudio/Chimera/Source/chimera/Particles.cu"
+(__cuda_local_var_248713_12_non_const_v.x) += ((__cuda_local_var_248712_12_non_const_a.x) * dt);
+#line 188 "E:/Dropbox/VisualStudio/Chimera/Source/chimera/Particles.cu"
+(__cuda_local_var_248713_12_non_const_v.y) += ((__cuda_local_var_248712_12_non_const_a.y) * dt);
+#line 189 "E:/Dropbox/VisualStudio/Chimera/Source/chimera/Particles.cu"
+(__cuda_local_var_248713_12_non_const_v.z) += ((__cuda_local_var_248712_12_non_const_a.z) * dt);
+#line 191 "E:/Dropbox/VisualStudio/Chimera/Source/chimera/Particles.cu"
+(__cuda_local_var_248710_12_non_const_pos.x) += ((__cuda_local_var_248713_12_non_const_v.x) * dt);
+#line 192 "E:/Dropbox/VisualStudio/Chimera/Source/chimera/Particles.cu"
+(__cuda_local_var_248710_12_non_const_pos.y) += ((__cuda_local_var_248713_12_non_const_v.y) * dt);
+#line 193 "E:/Dropbox/VisualStudio/Chimera/Source/chimera/Particles.cu"
+(__cuda_local_var_248710_12_non_const_pos.z) += ((__cuda_local_var_248713_12_non_const_v.z) * dt);
+#line 195 "E:/Dropbox/VisualStudio/Chimera/Source/chimera/Particles.cu"
+(velocity[__cuda_local_var_248708_10_non_const_id]) = __cuda_local_var_248713_12_non_const_v;
+#line 196 "E:/Dropbox/VisualStudio/Chimera/Source/chimera/Particles.cu"
+(positions[__cuda_local_var_248708_10_non_const_id]) = __cuda_local_var_248710_12_non_const_pos;
+#line 197 "E:/Dropbox/VisualStudio/Chimera/Source/chimera/Particles.cu"
+} 
+#line 197 "E:/Dropbox/VisualStudio/Chimera/Source/chimera/Particles.cu"
+}}
+#line 206 "E:/Dropbox/VisualStudio/Chimera/Source/chimera/Particles.cu"
+__global__ __var_used__ void _computeGradientField(
+#line 206 "E:/Dropbox/VisualStudio/Chimera/Source/chimera/Particles.cu"
+struct float4 *positions, 
+#line 206 "E:/Dropbox/VisualStudio/Chimera/Source/chimera/Particles.cu"
+struct float3 *velo, 
+#line 206 "E:/Dropbox/VisualStudio/Chimera/Source/chimera/Particles.cu"
+struct float4 __val_param(position)){__copy_param(struct float4 position,__val_param(position));
+#line 206 "E:/Dropbox/VisualStudio/Chimera/Source/chimera/Particles.cu"
+{
+#line 206 "E:/Dropbox/VisualStudio/Chimera/Source/chimera/Particles.cu"
+;
+#line 207 "E:/Dropbox/VisualStudio/Chimera/Source/chimera/Particles.cu"
+{
+#line 208 "E:/Dropbox/VisualStudio/Chimera/Source/chimera/Particles.cu"
+ UINT __cuda_local_var_248737_10_non_const_id;
+#line 209 "E:/Dropbox/VisualStudio/Chimera/Source/chimera/Particles.cu"
+ struct float4 __cuda_local_var_248738_12_non_const_pos;
+#line 215 "E:/Dropbox/VisualStudio/Chimera/Source/chimera/Particles.cu"
+ struct float3 __cuda_local_var_248744_12_non_const_coord;
+#line 216 "E:/Dropbox/VisualStudio/Chimera/Source/chimera/Particles.cu"
+ float __cuda_local_var_248745_11_non_const_scale;
+#line 219 "E:/Dropbox/VisualStudio/Chimera/Source/chimera/Particles.cu"
+ struct float3 __cuda_local_var_248748_12_non_const_dist;
+#line 221 "E:/Dropbox/VisualStudio/Chimera/Source/chimera/Particles.cu"
+ float __cuda_local_var_248750_11_non_const_distanceSquared;
+#line 223 "E:/Dropbox/VisualStudio/Chimera/Source/chimera/Particles.cu"
+ float __cuda_local_var_248752_11_non_const_range;
+#line 230 "E:/Dropbox/VisualStudio/Chimera/Source/chimera/Particles.cu"
+ struct float4 __cuda_local_var_248759_12_non_const_grad;
+#line 232 "E:/Dropbox/VisualStudio/Chimera/Source/chimera/Particles.cu"
+ float __cuda_local_var_248761_11_non_const_t;
+#line 233 "E:/Dropbox/VisualStudio/Chimera/Source/chimera/Particles.cu"
+ float __cuda_local_var_248762_11_non_const_s;
+#line 237 "E:/Dropbox/VisualStudio/Chimera/Source/chimera/Particles.cu"
+ struct float3 __cuda_local_var_248766_12_non_const_v;
+#line 208 "E:/Dropbox/VisualStudio/Chimera/Source/chimera/Particles.cu"
+__cuda_local_var_248737_10_non_const_id = (((blockDim.x) * (blockIdx.x)) + (threadIdx.x));
+#line 209 "E:/Dropbox/VisualStudio/Chimera/Source/chimera/Particles.cu"
+__cuda_local_var_248738_12_non_const_pos = (positions[__cuda_local_var_248737_10_non_const_id]);
+#line 211 "E:/Dropbox/VisualStudio/Chimera/Source/chimera/Particles.cu"
+if (!(_Z7IsAliveP6float4((&__cuda_local_var_248738_12_non_const_pos))))
+#line 211 "E:/Dropbox/VisualStudio/Chimera/Source/chimera/Particles.cu"
+{
+#line 211 "E:/Dropbox/VisualStudio/Chimera/Source/chimera/Particles.cu"
+return;
+#line 211 "E:/Dropbox/VisualStudio/Chimera/Source/chimera/Particles.cu"
+}
+#line 211 "E:/Dropbox/VisualStudio/Chimera/Source/chimera/Particles.cu"
+;
+#line 213 "E:/Dropbox/VisualStudio/Chimera/Source/chimera/Particles.cu"
+_ZmLR6float4f((&__cuda_local_var_248738_12_non_const_pos), (30.0F));
+#line 215 "E:/Dropbox/VisualStudio/Chimera/Source/chimera/Particles.cu"
+__cuda_local_var_248744_12_non_const_coord = (_ZN39_INTERNAL_17_Particles_cpp1_ii_610dbc6511make_float3Efff((__cuda_local_var_248738_12_non_const_pos.x), (__cuda_local_var_248738_12_non_const_pos.y), (__cuda_local_var_248738_12_non_const_pos.z)));
+#line 216 "E:/Dropbox/VisualStudio/Chimera/Source/chimera/Particles.cu"
+__cuda_local_var_248745_11_non_const_scale = (position.w);
+#line 217 "E:/Dropbox/VisualStudio/Chimera/Source/chimera/Particles.cu"
+position = (_ZN39_INTERNAL_17_Particles_cpp1_ii_610dbc6511make_float4Effff((1.0F), (5.0F), (8.0F), (0.0F)));
+#line 219 "E:/Dropbox/VisualStudio/Chimera/Source/chimera/Particles.cu"
+__cuda_local_var_248748_12_non_const_dist = (_ZN39_INTERNAL_17_Particles_cpp1_ii_610dbc6511make_float3Efff(((__cuda_local_var_248738_12_non_const_pos.x) - (position.x)), ((__cuda_local_var_248738_12_non_const_pos.y) - (position.y)), ((__cuda_local_var_248738_12_non_const_pos.z) - (position.z))));
+#line 221 "E:/Dropbox/VisualStudio/Chimera/Source/chimera/Particles.cu"
+__cuda_local_var_248750_11_non_const_distanceSquared = (_Z3dot6float3S_(__cuda_local_var_248748_12_non_const_dist, __cuda_local_var_248748_12_non_const_dist));
+#line 223 "E:/Dropbox/VisualStudio/Chimera/Source/chimera/Particles.cu"
+__cuda_local_var_248752_11_non_const_range = (30.0F);
+#line 230 "E:/Dropbox/VisualStudio/Chimera/Source/chimera/Particles.cu"
+__cuda_local_var_248759_12_non_const_grad = (_ZN39_INTERNAL_17_Particles_cpp1_ii_610dbc655tex3DE7textureI6float4Li3EL19cudaTextureReadMode0EEfff(ct_gradientTexture, ((position.x) + ((__cuda_local_var_248744_12_non_const_coord.x) * __cuda_local_var_248745_11_non_const_scale)), ((position.y) + ((__cuda_local_var_248744_12_non_const_coord.y) * __cuda_local_var_248745_11_non_const_scale)), ((position.z) + ((__cuda_local_var_248744_12_non_const_coord.z) * __cuda_local_var_248745_11_non_const_scale))));
+#line 232 "E:/Dropbox/VisualStudio/Chimera/Source/chimera/Particles.cu"
+__cuda_local_var_248761_11_non_const_t = (5.0F);
+#line 233 "E:/Dropbox/VisualStudio/Chimera/Source/chimera/Particles.cu"
+__cuda_local_var_248762_11_non_const_s = (__cuda_local_var_248761_11_non_const_t - (__cuda_local_var_248761_11_non_const_t * ((float)(fdividef(((double)__cuda_local_var_248750_11_non_const_distanceSquared), ((double)(__cuda_local_var_248752_11_non_const_range * __cuda_local_var_248752_11_non_const_range)))))));
+#line 235 "E:/Dropbox/VisualStudio/Chimera/Source/chimera/Particles.cu"
+_ZmLR6float4f((&__cuda_local_var_248759_12_non_const_grad), (6.0F));
+#line 237 "E:/Dropbox/VisualStudio/Chimera/Source/chimera/Particles.cu"
+__cuda_local_var_248766_12_non_const_v = (velo[__cuda_local_var_248737_10_non_const_id]);
+#line 239 "E:/Dropbox/VisualStudio/Chimera/Source/chimera/Particles.cu"
+(__cuda_local_var_248766_12_non_const_v.x) = (__cuda_local_var_248759_12_non_const_grad.x);
+#line 240 "E:/Dropbox/VisualStudio/Chimera/Source/chimera/Particles.cu"
+(__cuda_local_var_248766_12_non_const_v.y) = (__cuda_local_var_248759_12_non_const_grad.y);
+#line 241 "E:/Dropbox/VisualStudio/Chimera/Source/chimera/Particles.cu"
+(__cuda_local_var_248766_12_non_const_v.z) = (__cuda_local_var_248759_12_non_const_grad.z);
+#line 242 "E:/Dropbox/VisualStudio/Chimera/Source/chimera/Particles.cu"
+(velo[__cuda_local_var_248737_10_non_const_id]) = __cuda_local_var_248766_12_non_const_v;
+#line 243 "E:/Dropbox/VisualStudio/Chimera/Source/chimera/Particles.cu"
+} 
+#line 243 "E:/Dropbox/VisualStudio/Chimera/Source/chimera/Particles.cu"
+}}
+#line 253 "E:/Dropbox/VisualStudio/Chimera/Source/chimera/Particles.cu"
+__global__ __var_used__ void _computeGravityField(
+#line 253 "E:/Dropbox/VisualStudio/Chimera/Source/chimera/Particles.cu"
+struct float4 *positions, 
+#line 253 "E:/Dropbox/VisualStudio/Chimera/Source/chimera/Particles.cu"
+struct float3 *acc, 
+#line 253 "E:/Dropbox/VisualStudio/Chimera/Source/chimera/Particles.cu"
+struct float4 posNrange, 
+#line 253 "E:/Dropbox/VisualStudio/Chimera/Source/chimera/Particles.cu"
+int repel, 
+#line 253 "E:/Dropbox/VisualStudio/Chimera/Source/chimera/Particles.cu"
+float scale){
+#line 253 "E:/Dropbox/VisualStudio/Chimera/Source/chimera/Particles.cu"
+{
+#line 254 "E:/Dropbox/VisualStudio/Chimera/Source/chimera/Particles.cu"
+{
+#line 255 "E:/Dropbox/VisualStudio/Chimera/Source/chimera/Particles.cu"
+ UINT __cuda_local_var_248784_10_non_const_id;
+#line 256 "E:/Dropbox/VisualStudio/Chimera/Source/chimera/Particles.cu"
+ struct float4 __cuda_local_var_248785_12_non_const_pos;
+#line 260 "E:/Dropbox/VisualStudio/Chimera/Source/chimera/Particles.cu"
+ struct float3 __cuda_local_var_248789_12_non_const_gpos;
+#line 262 "E:/Dropbox/VisualStudio/Chimera/Source/chimera/Particles.cu"
+ float __cuda_local_var_248791_11_non_const_range;
+#line 264 "E:/Dropbox/VisualStudio/Chimera/Source/chimera/Particles.cu"
+ struct float3 __cuda_local_var_248793_12_non_const_grad;
+#line 266 "E:/Dropbox/VisualStudio/Chimera/Source/chimera/Particles.cu"
+ float __cuda_local_var_248795_11_non_const_distanceSquared;
+#line 273 "E:/Dropbox/VisualStudio/Chimera/Source/chimera/Particles.cu"
+ float __cuda_local_var_248802_11_non_const_s;
+#line 278 "E:/Dropbox/VisualStudio/Chimera/Source/chimera/Particles.cu"
+ struct float3 __cuda_local_var_248807_12_non_const_a;
+#line 255 "E:/Dropbox/VisualStudio/Chimera/Source/chimera/Particles.cu"
+__cuda_local_var_248784_10_non_const_id = (((blockDim.x) * (blockIdx.x)) + (threadIdx.x));
+#line 256 "E:/Dropbox/VisualStudio/Chimera/Source/chimera/Particles.cu"
+__cuda_local_var_248785_12_non_const_pos = (positions[__cuda_local_var_248784_10_non_const_id]);
+#line 258 "E:/Dropbox/VisualStudio/Chimera/Source/chimera/Particles.cu"
+if (!(_Z7IsAliveP6float4((&__cuda_local_var_248785_12_non_const_pos))))
+#line 258 "E:/Dropbox/VisualStudio/Chimera/Source/chimera/Particles.cu"
+{
+#line 258 "E:/Dropbox/VisualStudio/Chimera/Source/chimera/Particles.cu"
+return;
+#line 258 "E:/Dropbox/VisualStudio/Chimera/Source/chimera/Particles.cu"
+}
+#line 258 "E:/Dropbox/VisualStudio/Chimera/Source/chimera/Particles.cu"
+;
+#line 260 "E:/Dropbox/VisualStudio/Chimera/Source/chimera/Particles.cu"
+__cuda_local_var_248789_12_non_const_gpos = (_ZN39_INTERNAL_17_Particles_cpp1_ii_610dbc6511make_float3Efff((posNrange.x), (posNrange.y), (posNrange.z)));
+#line 262 "E:/Dropbox/VisualStudio/Chimera/Source/chimera/Particles.cu"
+__cuda_local_var_248791_11_non_const_range = ((5.0F) * (posNrange.w));
+#line 264 "E:/Dropbox/VisualStudio/Chimera/Source/chimera/Particles.cu"
+__cuda_local_var_248793_12_non_const_grad = (_ZN39_INTERNAL_17_Particles_cpp1_ii_610dbc6511make_float3Efff(((__cuda_local_var_248785_12_non_const_pos.x) - (__cuda_local_var_248789_12_non_const_gpos.x)), ((__cuda_local_var_248785_12_non_const_pos.y) - (__cuda_local_var_248789_12_non_const_gpos.y)), ((__cuda_local_var_248785_12_non_const_pos.z) - (__cuda_local_var_248789_12_non_const_gpos.z))));
+#line 266 "E:/Dropbox/VisualStudio/Chimera/Source/chimera/Particles.cu"
+__cuda_local_var_248795_11_non_const_distanceSquared = (_Z3dot6float3S_(__cuda_local_var_248793_12_non_const_grad, __cuda_local_var_248793_12_non_const_grad));
+#line 268 "E:/Dropbox/VisualStudio/Chimera/Source/chimera/Particles.cu"
+if (__cuda_local_var_248795_11_non_const_distanceSquared > (__cuda_local_var_248791_11_non_const_range * __cuda_local_var_248791_11_non_const_range))
+#line 269 "E:/Dropbox/VisualStudio/Chimera/Source/chimera/Particles.cu"
+{
+#line 270 "E:/Dropbox/VisualStudio/Chimera/Source/chimera/Particles.cu"
+return;
+#line 271 "E:/Dropbox/VisualStudio/Chimera/Source/chimera/Particles.cu"
+}
+#line 273 "E:/Dropbox/VisualStudio/Chimera/Source/chimera/Particles.cu"
+__cuda_local_var_248802_11_non_const_s = (((float)repel) - ((float)(fdividef(((double)__cuda_local_var_248795_11_non_const_distanceSquared), ((double)(__cuda_local_var_248791_11_non_const_range * __cuda_local_var_248791_11_non_const_range))))));
+#line 274 "E:/Dropbox/VisualStudio/Chimera/Source/chimera/Particles.cu"
+__cuda_local_var_248802_11_non_const_s *= scale;
+#line 276 "E:/Dropbox/VisualStudio/Chimera/Source/chimera/Particles.cu"
+_ZmLR6float3f((&__cuda_local_var_248793_12_non_const_grad), __cuda_local_var_248802_11_non_const_s);
+#line 278 "E:/Dropbox/VisualStudio/Chimera/Source/chimera/Particles.cu"
+__cuda_local_var_248807_12_non_const_a = (acc[__cuda_local_var_248784_10_non_const_id]);
+#line 279 "E:/Dropbox/VisualStudio/Chimera/Source/chimera/Particles.cu"
+_ZpLR6float3S_((&__cuda_local_var_248807_12_non_const_a), __cuda_local_var_248793_12_non_const_grad);
+#line 280 "E:/Dropbox/VisualStudio/Chimera/Source/chimera/Particles.cu"
+(acc[__cuda_local_var_248784_10_non_const_id]) = __cuda_local_var_248807_12_non_const_a;
+#line 281 "E:/Dropbox/VisualStudio/Chimera/Source/chimera/Particles.cu"
+} 
+#line 281 "E:/Dropbox/VisualStudio/Chimera/Source/chimera/Particles.cu"
+}}
+#line 291 "E:/Dropbox/VisualStudio/Chimera/Source/chimera/Particles.cu"
+__global__ __var_used__ void _computeVelocityDamping(
+#line 291 "E:/Dropbox/VisualStudio/Chimera/Source/chimera/Particles.cu"
+struct float4 *positions, 
+#line 291 "E:/Dropbox/VisualStudio/Chimera/Source/chimera/Particles.cu"
+struct float3 *velo, 
+#line 291 "E:/Dropbox/VisualStudio/Chimera/Source/chimera/Particles.cu"
+float damping){
+#line 291 "E:/Dropbox/VisualStudio/Chimera/Source/chimera/Particles.cu"
+{
+#line 292 "E:/Dropbox/VisualStudio/Chimera/Source/chimera/Particles.cu"
+{
+#line 293 "E:/Dropbox/VisualStudio/Chimera/Source/chimera/Particles.cu"
+ UINT __cuda_local_var_248822_10_non_const_id;
+#line 294 "E:/Dropbox/VisualStudio/Chimera/Source/chimera/Particles.cu"
+ struct float4 __cuda_local_var_248823_12_non_const_pos;
+#line 298 "E:/Dropbox/VisualStudio/Chimera/Source/chimera/Particles.cu"
+ struct float3 __cuda_local_var_248827_12_non_const_a;
+#line 293 "E:/Dropbox/VisualStudio/Chimera/Source/chimera/Particles.cu"
+__cuda_local_var_248822_10_non_const_id = (((blockDim.x) * (blockIdx.x)) + (threadIdx.x));
+#line 294 "E:/Dropbox/VisualStudio/Chimera/Source/chimera/Particles.cu"
+__cuda_local_var_248823_12_non_const_pos = (positions[__cuda_local_var_248822_10_non_const_id]);
+#line 296 "E:/Dropbox/VisualStudio/Chimera/Source/chimera/Particles.cu"
+if (!(_Z7IsAliveP6float4((&__cuda_local_var_248823_12_non_const_pos))))
+#line 296 "E:/Dropbox/VisualStudio/Chimera/Source/chimera/Particles.cu"
+{
+#line 296 "E:/Dropbox/VisualStudio/Chimera/Source/chimera/Particles.cu"
+return;
+#line 296 "E:/Dropbox/VisualStudio/Chimera/Source/chimera/Particles.cu"
+}
+#line 296 "E:/Dropbox/VisualStudio/Chimera/Source/chimera/Particles.cu"
+;
+#line 298 "E:/Dropbox/VisualStudio/Chimera/Source/chimera/Particles.cu"
+__cuda_local_var_248827_12_non_const_a = (velo[__cuda_local_var_248822_10_non_const_id]);
+#line 299 "E:/Dropbox/VisualStudio/Chimera/Source/chimera/Particles.cu"
+_ZmLR6float3f((&__cuda_local_var_248827_12_non_const_a), damping);
+#line 300 "E:/Dropbox/VisualStudio/Chimera/Source/chimera/Particles.cu"
+(velo[__cuda_local_var_248822_10_non_const_id]) = __cuda_local_var_248827_12_non_const_a;
+#line 301 "E:/Dropbox/VisualStudio/Chimera/Source/chimera/Particles.cu"
+} 
+#line 301 "E:/Dropbox/VisualStudio/Chimera/Source/chimera/Particles.cu"
+}}
+#line 334 "E:/Dropbox/VisualStudio/Chimera/Source/chimera/Particles.cu"
+__global__ __var_used__ void _computePlane(
+#line 334 "E:/Dropbox/VisualStudio/Chimera/Source/chimera/Particles.cu"
+Plane p, 
+#line 334 "E:/Dropbox/VisualStudio/Chimera/Source/chimera/Particles.cu"
+struct float3 *velos, 
+#line 334 "E:/Dropbox/VisualStudio/Chimera/Source/chimera/Particles.cu"
+struct float4 *positions){
+#line 334 "E:/Dropbox/VisualStudio/Chimera/Source/chimera/Particles.cu"
+{
+#line 335 "E:/Dropbox/VisualStudio/Chimera/Source/chimera/Particles.cu"
+{
+#line 336 "E:/Dropbox/VisualStudio/Chimera/Source/chimera/Particles.cu"
+ UINT __cuda_local_var_248865_10_non_const_id;
+#line 337 "E:/Dropbox/VisualStudio/Chimera/Source/chimera/Particles.cu"
+ struct float4 __cuda_local_var_248866_12_non_const_pos;
+#line 336 "E:/Dropbox/VisualStudio/Chimera/Source/chimera/Particles.cu"
+__cuda_local_var_248865_10_non_const_id = (((blockDim.x) * (blockIdx.x)) + (threadIdx.x));
+#line 337 "E:/Dropbox/VisualStudio/Chimera/Source/chimera/Particles.cu"
+__cuda_local_var_248866_12_non_const_pos = (positions[__cuda_local_var_248865_10_non_const_id]);
+#line 339 "E:/Dropbox/VisualStudio/Chimera/Source/chimera/Particles.cu"
+if (!(_Z7IsAliveP6float4((&__cuda_local_var_248866_12_non_const_pos))))
+#line 339 "E:/Dropbox/VisualStudio/Chimera/Source/chimera/Particles.cu"
+{
+#line 339 "E:/Dropbox/VisualStudio/Chimera/Source/chimera/Particles.cu"
+return;
+#line 339 "E:/Dropbox/VisualStudio/Chimera/Source/chimera/Particles.cu"
+}
+#line 339 "E:/Dropbox/VisualStudio/Chimera/Source/chimera/Particles.cu"
+;
+#line 341 "E:/Dropbox/VisualStudio/Chimera/Source/chimera/Particles.cu"
+if (_Z9isOutside6float4S_(p, __cuda_local_var_248866_12_non_const_pos))
+#line 342 "E:/Dropbox/VisualStudio/Chimera/Source/chimera/Particles.cu"
+{
+#line 343 "E:/Dropbox/VisualStudio/Chimera/Source/chimera/Particles.cu"
+ struct float3 __cuda_local_var_248872_16_non_const_v;
+#line 343 "E:/Dropbox/VisualStudio/Chimera/Source/chimera/Particles.cu"
+__cuda_local_var_248872_16_non_const_v = (velos[__cuda_local_var_248865_10_non_const_id]);
+#line 344 "E:/Dropbox/VisualStudio/Chimera/Source/chimera/Particles.cu"
+__cuda_local_var_248872_16_non_const_v = (_ZngR6float3((&__cuda_local_var_248872_16_non_const_v)));
+#line 345 "E:/Dropbox/VisualStudio/Chimera/Source/chimera/Particles.cu"
+(__cuda_local_var_248866_12_non_const_pos.x) = ((__cuda_local_var_248866_12_non_const_pos.x) + (__cuda_local_var_248872_16_non_const_v.x));
+#line 346 "E:/Dropbox/VisualStudio/Chimera/Source/chimera/Particles.cu"
+(__cuda_local_var_248866_12_non_const_pos.y) = ((__cuda_local_var_248866_12_non_const_pos.y) + (__cuda_local_var_248872_16_non_const_v.y));
+#line 347 "E:/Dropbox/VisualStudio/Chimera/Source/chimera/Particles.cu"
+(__cuda_local_var_248866_12_non_const_pos.z) = ((__cuda_local_var_248866_12_non_const_pos.z) + (__cuda_local_var_248872_16_non_const_v.z));
+#line 350 "E:/Dropbox/VisualStudio/Chimera/Source/chimera/Particles.cu"
+}
+#line 351 "E:/Dropbox/VisualStudio/Chimera/Source/chimera/Particles.cu"
+} 
+#line 351 "E:/Dropbox/VisualStudio/Chimera/Source/chimera/Particles.cu"
+}}
+#line 386 "E:/Dropbox/VisualStudio/Chimera/Source/chimera/Particles.cu"
+__global__ __var_used__ void _reduce_max4(
+#line 386 "E:/Dropbox/VisualStudio/Chimera/Source/chimera/Particles.cu"
+struct float4 *data, 
+#line 386 "E:/Dropbox/VisualStudio/Chimera/Source/chimera/Particles.cu"
+struct float3 *dst){
+#line 386 "E:/Dropbox/VisualStudio/Chimera/Source/chimera/Particles.cu"
+{
+#line 387 "E:/Dropbox/VisualStudio/Chimera/Source/chimera/Particles.cu"
+{
+#line 388 "E:/Dropbox/VisualStudio/Chimera/Source/chimera/Particles.cu"
+_Z7_reduceIPF6float3S0_S0_EEvP6float4PS0_T_(data, dst, _Z5fmaxf6float3S_);
+#line 389 "E:/Dropbox/VisualStudio/Chimera/Source/chimera/Particles.cu"
+} 
+#line 389 "E:/Dropbox/VisualStudio/Chimera/Source/chimera/Particles.cu"
+}}
+#line 391 "E:/Dropbox/VisualStudio/Chimera/Source/chimera/Particles.cu"
+__global__ __var_used__ void _reduce_min4(
+#line 391 "E:/Dropbox/VisualStudio/Chimera/Source/chimera/Particles.cu"
+struct float4 *data, 
+#line 391 "E:/Dropbox/VisualStudio/Chimera/Source/chimera/Particles.cu"
+struct float3 *dst){
+#line 391 "E:/Dropbox/VisualStudio/Chimera/Source/chimera/Particles.cu"
+{
+#line 392 "E:/Dropbox/VisualStudio/Chimera/Source/chimera/Particles.cu"
+{
+#line 393 "E:/Dropbox/VisualStudio/Chimera/Source/chimera/Particles.cu"
+_Z7_reduceIPF6float3S0_S0_EEvP6float4PS0_T_(data, dst, _Z5fminf6float3S_);
+#line 394 "E:/Dropbox/VisualStudio/Chimera/Source/chimera/Particles.cu"
+} 
+#line 394 "E:/Dropbox/VisualStudio/Chimera/Source/chimera/Particles.cu"
+}}

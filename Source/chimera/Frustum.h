@@ -4,7 +4,7 @@
 #include "Vec3.h"
 #include "AxisAlignedBB.h"
 
-namespace tbd
+namespace chimera
 {
     enum Planes {left, right, up, down, front, back};
     enum Points {rightUpNear, rightDownNear, leftDownNear, leftUpNear, rightUpFar, rightDownFar, leftDownFar, leftUpFar};

@@ -1,63 +1,15 @@
 #pragma once
 #include "stdafx.h"
 #include <time.h>
-#include "Resources.h"
 #include "Locker.h"
 
-namespace event
+namespace chimera
 {
     class IEvent;
 }
-namespace tbd 
+namespace chimera 
 {
-
-    typedef tbd::Resource VRamResource;
-
-    class VRamHandle 
-    {
-        friend class VRamManager;
-        friend class IVRamHandleCreator;
-    protected:
-        LONG m_lastUsage;
-        BOOL m_created;
-        VRamResource m_resource;
-        //std::shared_ptr<tbd::ResHandle> m_handle;
-        VOID SetResource(std::string& name);
-    public:
-        VRamHandle(VOID);
-        virtual BOOL VCreate(VOID) = 0;
-        virtual VOID VDestroy() = 0;
-        virtual UINT VGetByteCount(VOID) CONST = 0;
-
-        VOID SetCreated(BOOL created) { m_created = created; };
-        BOOL IsReady(VOID) CONST;
-        VOID Update(VOID) { m_lastUsage = clock(); }
-        LONG GetLastUsageTime() CONST { return m_lastUsage; }
-        VRamResource& GetResource(VOID) { return m_resource; }
-    };
-
-    class IVRamHandleCreator
-    {
-    public:
-        virtual VRamHandle* VGetHandle(VOID) = 0;
-        virtual VOID VCreateHandle(VRamHandle* handle) = 0;
-    };
-
-    class GeometryCreator : public IVRamHandleCreator
-    {
-    public:
-        VRamHandle* VGetHandle(VOID);
-        VOID VCreateHandle(VRamHandle* handle);
-    };
-
-    class TextureCreator : public IVRamHandleCreator
-    {
-    public:
-        VRamHandle* VGetHandle(VOID);
-        VOID VCreateHandle(VRamHandle* handle);
-    };
-
-    class VRamManager
+    class VRamManager : public IVRamManager
     {
     private:
         UINT m_bytes;
@@ -65,39 +17,40 @@ namespace tbd
         FLOAT m_updateFrequency;
         ULONG m_time;
         util::Locker m_locker;
-        std::map<std::string, std::shared_ptr<VRamHandle>> m_resources;
+        std::map<std::string, std::shared_ptr<IVRamHandle>> m_resources;
         std::map<std::string, IVRamHandleCreator*> m_creators;
         std::map<std::string, util::Locker*> m_locks;
 
-        std::shared_ptr<VRamHandle> _GetHandle(CONST VRamResource& ressource, BOOL async);
-        VOID Update(std::shared_ptr<VRamHandle> ressource);
+        std::shared_ptr<IVRamHandle> _GetHandle(CONST VRamResource& ressource, BOOL async);
 
-        VOID Reload(std::shared_ptr<VRamHandle> handle);
+        VOID Reload(std::shared_ptr<IVRamHandle> handle);
+
+        std::map<std::string, std::shared_ptr<IVRamHandle>>::iterator Free(std::shared_ptr<IVRamHandle> ressource);
 
     public:
         VRamManager(UINT mb);
 
-        UINT GetCurrentSize(VOID) CONST { return m_currentByteSize; }
+        UINT VGetCurrentSize(VOID) CONST { return m_currentByteSize; }
 
-        UINT GetMaxSize(VOID) CONST { return m_bytes; }
+        UINT VGetMaxSize(VOID) CONST { return m_bytes; }
 
-        FLOAT GetWorkload(VOID) CONST { return 100.0f * (FLOAT)m_currentByteSize / (FLOAT)m_bytes; }
+        FLOAT VGetWorkload(VOID) CONST { return 100.0f * (FLOAT)m_currentByteSize / (FLOAT)m_bytes; }
 
-        VOID Update(ULONG millis);
+        VOID VUpdate(ULONG millis);
 
-        VOID Flush(VOID);
+        VOID VFlush(VOID);
 
-        std::map<std::string, std::shared_ptr<VRamHandle>>::iterator Free(std::shared_ptr<VRamHandle> ressource);
+        VOID VFree(std::shared_ptr<IVRamHandle> ressource) { LOG_CRITICAL_ERROR("TODO");}
 
-        std::shared_ptr<VRamHandle> GetHandle(CONST VRamResource& ressource);
+        std::shared_ptr<IVRamHandle> VGetHandle(CONST VRamResource& ressource);
 
-        VOID RegisterHandleCreator(LPCSTR suffix, IVRamHandleCreator* creator);
+        VOID VRegisterHandleCreator(LPCSTR suffix, IVRamHandleCreator* creator);
 
-        std::shared_ptr<VRamHandle> GetHandleAsync(CONST VRamResource& ressource);
+        std::shared_ptr<IVRamHandle> VGetHandleAsync(CONST VRamResource& ressource);
 
-        VOID OnResourceChanged(std::shared_ptr<event::IEvent> event);
+        VOID VAppendAndCreateHandle(std::shared_ptr<IVRamHandle> handle);
 
-        VOID AppendAndCreateHandle(std::string& name, std::shared_ptr<VRamHandle> handle);
+        VOID OnResourceChanged(std::shared_ptr<IEvent> event);
 
         ~VRamManager(VOID);
     };

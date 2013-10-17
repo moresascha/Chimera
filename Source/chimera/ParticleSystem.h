@@ -8,13 +8,13 @@
 #include "Resources.h"
 #include "VRamManager.h"
 
-namespace d3d
+namespace chimera
 {
     class Geometry;
     class VertexBuffer;
 }
 
-namespace tbd
+namespace chimera
 {
 
     class VRamManager;
@@ -53,33 +53,26 @@ namespace tbd
         FLOAT4 velocity;
     };
 
-    class BaseModifier
+    class BaseModifier : public IParticleModifier
     {
         friend class ParticleSystem;
     protected:
         util::AxisAlignedBB m_aabb;
         cudah::cuda_kernel m_kernel;
+        ParticleSystem* m_sys;
     public:
+
+        BaseModifier(VOID) : m_sys(NULL), m_kernel(NULL) { }
+
         virtual VOID VUpdate(ParticleSystem* sys, FLOAT time, FLOAT dt) = 0;
 
         virtual VOID VOnRestore(ParticleSystem* sys) { }
 
-        virtual UINT VGetByteCount(VOID) { return 0; }
+        virtual UINT VGetByteCount(VOID) = 0;
 
-        VOID SetAABB(CONST util::AxisAlignedBB& aabb);
+        VOID VSetAABB(CONST util::AxisAlignedBB& aabb);
 
         virtual ~BaseModifier(VOID) {}
-    };
-
-    class IRandomGenerator
-    {
-    protected:
-        UINT m_count;
-    public:
-        IRandomGenerator(UINT count) : m_count(count) {}
-        virtual FLOAT* CreateRandomValues(VOID) = 0;
-        UINT IRandomGenerator::GetValuesCount(VOID) { return m_count;}
-        virtual ~IRandomGenerator(VOID) { }
     };
 
     class BaseEmitter : public BaseModifier
@@ -129,7 +122,7 @@ namespace tbd
     class ParticleSystem : public VRamHandle
     {
     private:
-        std::shared_ptr<d3d::Geometry> m_geometry;
+        std::shared_ptr<chimera::Geometry> m_geometry;
         std::vector<BaseModifier*> m_mods;
         util::AxisAlignedBB m_aabb;
         BaseEmitter* m_pEmitter;
@@ -144,7 +137,7 @@ namespace tbd
 
         cudah::cuda_kernel m_kernel;
 
-        d3d::VertexBuffer* m_pParticleBuffer;
+        chimera::VertexBuffer* m_pParticleBuffer;
 
         UINT m_updateInterval;
         UINT m_time;
@@ -157,7 +150,7 @@ namespace tbd
 
         ParticleSystem(BaseEmitter* emitter, IRandomGenerator* generator = NULL);
 
-        std::shared_ptr<d3d::Geometry> GetGeometry(VOID);
+        std::shared_ptr<chimera::Geometry> GetGeometry(VOID);
 
         VOID AddModifier(BaseModifier* mod);
 
@@ -177,9 +170,9 @@ namespace tbd
 
         CONST util::Vec3& GetTranslation(VOID);
 
-        d3d::VertexBuffer* GetParticleBuffer(VOID);
+        chimera::VertexBuffer* GetParticleBuffer(VOID);
 
-        CONST util::AxisAlignedBB& GetAxisAlignedBB(VOID);
+        util::AxisAlignedBB& GetAxisAlignedBB(VOID);
 
         cudah::cuda_buffer GetAcceleration(VOID);
 
@@ -229,12 +222,12 @@ namespace tbd
     {
     protected:
         ActorId m_actorId;
-        std::shared_ptr<tbd::Actor> CreateModActor(CONST util::Vec3& pos, LPCSTR info, CONST FLOAT scale = 1.0f);
+        std::shared_ptr<chimera::Actor> CreateModActor(CONST util::Vec3& pos, LPCSTR info, CONST FLOAT scale = 1.0f);
 
     public:
         ActorBasedModifier(VOID);
-        VOID ActorMovedDelegate(event::IEventPtr pEventData);
-        virtual VOID VOnActorMoved(std::shared_ptr<tbd::Actor> actor) = 0;
+        VOID ActorMovedDelegate(chimera::IEventPtr pEventData);
+        virtual VOID VOnActorMoved(std::shared_ptr<chimera::Actor> actor) = 0;
         virtual ~ActorBasedModifier(VOID);
     };
 
@@ -243,11 +236,12 @@ namespace tbd
     private:
         ActorId m_actorId;
         float4 m_positionNscale;
+		cudah::cuda_array m_array;
     public:
         GradientField(VOID);
         VOID VOnRestore(ParticleSystem* sys);
         VOID VUpdate(ParticleSystem* sys, FLOAT time, FLOAT dt);
-        VOID VOnActorMoved(std::shared_ptr<tbd::Actor> actor);
+        VOID VOnActorMoved(std::shared_ptr<chimera::Actor> actor);
         UINT VGetByteCount(VOID);
     };
 
@@ -268,7 +262,7 @@ namespace tbd
         GravityField(CONST util::Vec3& position, CONST FLOAT range, CONST FLOAT scale, GravityPolarization pole);
         VOID VOnRestore(ParticleSystem* sys);
         VOID VUpdate(ParticleSystem* sys, FLOAT time, FLOAT dt);
-        VOID VOnActorMoved(std::shared_ptr<tbd::Actor> actor);
+        VOID VOnActorMoved(std::shared_ptr<chimera::Actor> actor);
     };
 
     class VelocityDamper : public BaseModifier
@@ -281,6 +275,45 @@ namespace tbd
         VOID VOnRestore(ParticleSystem* sys);
     };
 
+    class Plane : public BaseModifier 
+    {
+    private:
+        util::Plane m_plane;
+    public:
+        Plane(CONST util::Plane& p) : m_plane(p) {}
+        VOID VUpdate(ParticleSystem* sys, FLOAT time, FLOAT dt);
+        VOID VOnRestore(ParticleSystem* sys);
+        UINT VGetByteCount(VOID) { return 0; }
+    };
+
+	class BoundingBox : public BaseModifier
+	{
+	private:
+		cudah::cuda_buffer m_min;
+        cudah::cuda_buffer m_max;
+        cudah::cuda_kernel m_second;
+		FLOAT* m_pData[2];
+        util::AxisAlignedBB m_aabb;
+	public:
+		BoundingBox(VOID);
+		VOID VUpdate(ParticleSystem* sys, FLOAT time, FLOAT dt);
+		VOID VOnRestore(ParticleSystem* sys);
+        UINT VGetByteCount(VOID);
+        CONST util::AxisAlignedBB& GetAABB(VOID) { return m_aabb; }
+		~BoundingBox(VOID);
+	};
+
+    class KDTree : public BaseModifier
+    {
+    private:
+        BoundingBox* m_pBB;
+    public:
+        KDTree(VOID);
+        VOID VUpdate(ParticleSystem* sys, FLOAT time, FLOAT dt);
+        VOID VOnRestore(ParticleSystem* sys);
+        UINT VGetByteCount(VOID);
+        ~KDTree(VOID);
+    };
 
     //--emitter
 
@@ -289,6 +322,7 @@ namespace tbd
     public:
         PointEmitter(CONST util::Vec3& point, UINT particleCount, FLOAT startSpawn, FLOAT endSpawn);
         ParticlePosition* CreateParticles(VOID);
+        UINT VGetByteCount(VOID) { return 0; }
     };
 
     class BoxEmitter : public BaseEmitter
@@ -298,14 +332,16 @@ namespace tbd
     public:
         BoxEmitter(CONST util::Vec3& extends, CONST util::Vec3& point, UINT particleCount, FLOAT startSpawn, FLOAT endSpawn);
         ParticlePosition* CreateParticles(VOID);
+        UINT VGetByteCount(VOID) { return 0; }
     };
 
     class SurfaceEmitter : public BaseEmitter
     {
     private:
-        tbd::Resource m_meshFile;
+        chimera::CMResource m_meshFile;
     public:
-        SurfaceEmitter(tbd::Resource meshFile, CONST util::Vec3& position, UINT particleCount, FLOAT start, FLOAT end);
+        SurfaceEmitter(chimera::CMResource meshFile, CONST util::Vec3& position, UINT particleCount, FLOAT start, FLOAT end);
         ParticlePosition* CreateParticles(VOID);
+        UINT VGetByteCount(VOID) { return 0; }
     };
 }

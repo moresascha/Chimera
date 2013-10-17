@@ -1,28 +1,18 @@
-// D3D.cpp : Defines the entry point for the application.
-//
 #include "stdafx.h"
-
-/*static struct LeaksLocator
+static struct LeaksLocator
 {
     LeaksLocator()
     {
-        _CrtSetBreakAlloc(82565);
+		//_CrtSetBreakAlloc(2082);
     }
-} LeaksLocatorInst; */
-
-#include "BasicApp.h"
-#include "Packman.h"
-#include "Script.h"
-#include "Maze.h"
-#include "Spline.h"
-
-#undef FULL_SCREEN
+} LeaksLocatorInst;
 
 int APIENTRY _tWinMain(HINSTANCE hInstance,
                      HINSTANCE hPrevInstance,
                      LPTSTR    lpCmdLine,
                      int       nCmdShow)
 {
+    
 #ifdef _DEBUG
     _CrtSetDbgFlag (_CRTDBG_ALLOC_MEM_DF | _CRTDBG_LEAK_CHECK_DF);
     _CrtSetReportMode(_CRT_ERROR, _CRTDBG_MODE_FILE);
@@ -32,29 +22,32 @@ int APIENTRY _tWinMain(HINSTANCE hInstance,
     UNREFERENCED_PARAMETER(hPrevInstance);
     UNREFERENCED_PARAMETER(lpCmdLine);
 
-    app::GameApp* g_pApp = new app::BasicApp(); //packman::Packman();//
     LPCWSTR APPNAME;
-
+    
 #ifdef _DEBUG
     APPNAME = L"Chimera (Debugx64)";
 #else
     APPNAME = L"Chimera (Releasex64)";
 #endif
 
-    g_pApp->Init(hInstance, APPNAME, "../Assets/", "log.log");
+    //chimera::d3d::Init(WndProc, hInstance, L"asd", 100, 100);
 
-    //post init pre run code here
-    //g_pApp->GetLogic()->VLoadLevel(new packman::Maze(100, 3));//
+    //chimera::FactoryPtr facts[] = {CM_SOUND_FACTORY, (size_t)&s, CM_GFX_FACTORY, (size_t)&g, CM_VIEW_FACTORY, (size_t)&v, CM_FACTORY_END};
+    
+    chimera::CM_APP_DESCRIPTION desc;
+    desc.facts = NULL;
+    desc.hInstance = hInstance;
+    desc.titel = APPNAME;
+    desc.ival = 60;
+    desc.cachePath = "../Assets/";
+    desc.logFile = "log.log";
 
-    g_pApp->Run();
+    chimera::IApplication* cm = chimera::CmCreateApplication(&desc);
 
-    delete g_pApp;
+    chimera::CmGetApp()->VRun();
 
-    _CrtDumpMemoryLeaks();
+    chimera::CmReleaseApplication();
 
-     return 0;
+    //_CrtDumpMemoryLeaks();
+    return 0;
 }
-
-
-
-

@@ -4,34 +4,8 @@
 #include "Event.h"
 #include "ts_queue.h"
 
-namespace event 
+namespace chimera 
 {
-    class IEventManager
-    {
-    public:
-        IEventManager(BOOL setGlobal);
-
-        virtual BOOL VAddEventListener(CONST EventListener& listener, CONST EventType& type) = 0;
-
-        virtual BOOL VRemoveEventListener(CONST EventListener& listener, CONST EventType& type) = 0;
-
-        virtual BOOL VQueueEvent(CONST IEventPtr& event) = 0;
-
-        virtual BOOL VQueueEventTest(CONST IEventPtr& event) = 0;
-
-        virtual BOOL VQueueEventThreadSave(CONST IEventPtr& event) = 0;
-
-        virtual BOOL VTriggetEvent(CONST IEventPtr& event) = 0;
-
-        virtual BOOL VAbortEvent(CONST EventType& type, BOOL all = FALSE) = 0;
-
-        virtual BOOL VUpdate(CONST ULONG maxMillis = -1) = 0;
-
-        static IEventManager* Get(VOID);
-
-        virtual ~IEventManager(VOID) {}
-    };
-
     class EventManager : public IEventManager 
     {
     
@@ -43,7 +17,7 @@ namespace event
         UINT m_lastEventsFired;
 
     public:
-        EventManager(BOOL setGlobal);
+        EventManager(VOID);
 
         BOOL VAddEventListener(CONST EventListener& listener, CONST EventType& type);
 
@@ -65,36 +39,4 @@ namespace event
 
         ~EventManager(VOID);
     };
-
-    extern IEventManager* g_pBlobalEventManger;
-
-#define ADD_EVENT_LISTENER(_this, function, type) \
-    { \
-    event::EventListener listener = fastdelegate::MakeDelegate(_this, function); \
-    event::IEventManager::Get()->VAddEventListener(listener, type); \
-    }
-
-#define ADD_EVENT_LISTENER_STATIC(function, type) \
-    { \
-    event::EventListener listener = function; \
-    event::IEventManager::Get()->VAddEventListener(listener, type); \
-    }
-
-#define REMOVE_EVENT_LISTENER(_this, function, type) \
-    { \
-    event::EventListener listener = fastdelegate::MakeDelegate(_this, function); \
-    event::IEventManager::Get()->VRemoveEventListener(listener, type); \
-    }
-
-#define QUEUE_EVENT(_eventPtr) \
-    { \
-        event::IEventPtr event(_eventPtr); \
-        event::IEventManager::Get()->VQueueEvent(event); \
-    }
-
-#define QUEUE_EVENT_TSAVE(_eventPtr) \
-    { \
-    event::IEventPtr event(_eventPtr); \
-    event::IEventManager::Get()->VQueueEventThreadSave(event); \
-    }
 };

@@ -11,20 +11,20 @@
 #include "Camera.h"
 #include "math.h"
 
-namespace tbd
+namespace chimera
 {
-    d3d::RenderTarget* SpotlightNode::g_pShadowRenderTarget = NULL;
+    chimera::RenderTarget* SpotlightNode::g_pShadowRenderTarget = NULL;
 
     SpotlightNode::SpotlightNode(ActorId actorid) : SceneNode(actorid), m_distance(0)
     {
-        std::shared_ptr<tbd::Actor> actor = app::g_pApp->GetLogic()->VFindActor(actorid);
-        this->m_lightComponent = m_actor->GetComponent<tbd::LightComponent>(tbd::LightComponent::COMPONENT_ID).lock();
+        std::shared_ptr<chimera::Actor> actor = chimera::g_pApp->GetLogic()->VFindActor(actorid);
+        this->m_lightComponent = m_actor->GetComponent<chimera::LightComponent>(chimera::LightComponent::COMPONENT_ID).lock();
 
-        m_drawShadow = d3d::ShaderProgram::GetProgram("SpotLightShadowMap").get();
-        m_drawShadowInstanced = d3d::ShaderProgram::GetProgram("SpotLightShadowMapInstanced").get();
-        m_drawLighting = d3d::ShaderProgram::GetProgram("SpotLight").get();
+        m_drawShadow = chimera::ShaderProgram::GetProgram("SpotLightShadowMap").get();
+        m_drawShadowInstanced = chimera::ShaderProgram::GetProgram("SpotLightShadowMapInstanced").get();
+        m_drawLighting = chimera::ShaderProgram::GetProgram("SpotLight").get();
 
-        UINT wh = app::g_pApp->GetConfig()->GetInteger("iSpotLightSMSize");
+        UINT wh = chimera::g_pApp->GetConfig()->GetInteger("iSpotLightSMSize");
 
         m_pCamera = new util::Camera(wh, wh, 1e-2f, GetTransformation()->GetScale().x);
         
@@ -55,7 +55,7 @@ namespace tbd
         m_middle = m_middle + (m_pCamera->GetViewDir() * m_distance);
     }
 
-    VOID SpotlightNode::VOnRestore(tbd::SceneGraph* graph)
+    VOID SpotlightNode::VOnRestore(chimera::SceneGraph* graph)
     {
         SceneNode::VOnRestore(graph);
     }
@@ -67,14 +67,14 @@ namespace tbd
 
     UINT SpotlightNode::VGetRenderPaths(VOID)
     {
-        return eDRAW_LIGHTING | eDRAW_PICKING | eDRAW_BOUNDING_DEBUG | eDRAW_EDIT_MODE | eDRAW_DEBUG_INFOS;
+        return eRenderPath_DrawLighting | eRenderPath_DrawPicking | eRenderPath_DrawBounding | eRenderPath_DrawEditMode | eRenderPath_DrawDebugInfo;
     }
 
-    VOID SpotlightNode::_VRender(tbd::SceneGraph* graph, RenderPath& path)
+    VOID SpotlightNode::_VRender(chimera::SceneGraph* graph, RenderPath& path)
     {
         switch(path)
         {
-        case eDRAW_LIGHTING: 
+        case eRenderPath_DrawLighting: 
             {
                 if(!m_lightComponent->m_activated)
                 {
@@ -82,7 +82,7 @@ namespace tbd
                 }
 
                 m_drawShadow->Bind();
-                d3d::D3DRenderer* renderer = app::g_pApp->GetHumanView()->GetRenderer();
+                chimera::D3DRenderer* renderer = chimera::g_pApp->GetHumanView()->GetRenderer();
                 renderer->VPushViewTransform(m_pCamera->GetView(), m_pCamera->GetIView(), m_pCamera->GetEyePos());
                 renderer->VPushProjectionTransform(m_pCamera->GetProjection(), GetTransformation()->GetScale().x);
 
@@ -95,49 +95,49 @@ namespace tbd
 
                 graph->PushFrustum(&m_pCamera->GetFrustum());
 
-                graph->OnRender(tbd::eDRAW_TO_SHADOW_MAP);
+                graph->OnRender(chimera::eRenderPath_DrawToShadowMap);
 
                 m_drawShadowInstanced->Bind();
 
-                graph->OnRender(tbd::eDRAW_TO_SHADOW_MAP_INSTANCED);
+                graph->OnRender(chimera::eRenderPath_DrawToShadowMapInstanced);
 
                 graph->PopFrustum();
 
                 renderer->ActivateCurrentRendertarget();
 
-                renderer->SetSampler(d3d::eDiffuseColorSampler, g_pShadowRenderTarget->GetShaderRessourceView()); //todo
+                renderer->SetSampler(chimera::eDiffuseColorSampler, g_pShadowRenderTarget->GetShaderRessourceView()); //todo
 
                 m_drawLighting->Bind();
 
-                d3d::GetContext()->OMSetDepthStencilState(d3d::m_pNoDepthNoStencilState, 0);
-                d3d::GetContext()->OMSetBlendState(d3d::g_pBlendStateBlendAdd, NULL, 0xffffff);
+                chimera::GetContext()->OMSetDepthStencilState(chimera::m_pNoDepthNoStencilState, 0);
+                chimera::GetContext()->OMSetBlendState(chimera::g_pBlendStateBlendAdd, NULL, 0xffffff);
                 GeometryFactory::GetGlobalScreenQuad()->Bind();
                 GeometryFactory::GetGlobalScreenQuad()->Draw();
-                d3d::GetContext()->OMSetBlendState(d3d::g_pBlendStateNoBlending, NULL, 0xffffff);
-                d3d::GetContext()->OMSetDepthStencilState(d3d::m_pDepthNoStencilState, 0);
+                chimera::GetContext()->OMSetBlendState(chimera::g_pBlendStateNoBlending, NULL, 0xffffff);
+                chimera::GetContext()->OMSetDepthStencilState(chimera::m_pDepthNoStencilState, 0);
 
                 renderer->VPopViewTransform();
                 renderer->VPopProjectionTransform();
 
-                renderer->SetSampler(d3d::eDiffuseColorSampler, NULL); //todo
+                renderer->SetSampler(chimera::eDiffuseColorSampler, NULL); //todo
 
             } break;
 
-        case eDRAW_BOUNDING_DEBUG :
+        case eRenderPath_DrawBounding :
             {
                 util::Mat4 t;
                 t.SetTranslate(m_middle.x, m_middle.y, m_middle.z);
                 DrawSphere(&t, m_distance);
             } break;
 
-        case eDRAW_PICKING : 
+        case eRenderPath_DrawPicking : 
             {
                 util::Mat4 m = *GetTransformation();
                 m.SetScale(1);
                 DrawPickingSphere(m_actor, &m, 1);
             } break;
 
-        case eDRAW_EDIT_MODE :
+        case eRenderPath_DrawEditMode :
             {
                 if(!HasParent())
                 {
@@ -148,7 +148,7 @@ namespace tbd
                 }
             } break;
 
-        case eDRAW_DEBUG_INFOS : 
+        case eRenderPath_DrawDebugInfo : 
             {            
                 std::stringstream ss;
                 ss << "SpotLight_";
@@ -168,9 +168,9 @@ namespace tbd
 
     BOOL SpotlightNode::Create(VOID)
     {
-        g_pShadowRenderTarget = new d3d::RenderTarget();
+        g_pShadowRenderTarget = new chimera::RenderTarget();
 
-        UINT shadowMapSize = app::g_pApp->GetConfig()->GetInteger("iSpotLightSMSize");
+        UINT shadowMapSize = chimera::g_pApp->GetConfig()->GetInteger("iSpotLightSMSize");
 
         if(!g_pShadowRenderTarget->OnRestore(shadowMapSize, shadowMapSize, DXGI_FORMAT_R32_FLOAT, TRUE))
         {

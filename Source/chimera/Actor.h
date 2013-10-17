@@ -1,115 +1,48 @@
 #pragma once
 #include "stdafx.h"
 
-#define INVALID_ACTOR_ID 0
-typedef ULONG ActorId;
-typedef UINT ComponentId;
-
-namespace tinyxml2
+namespace chimera 
 {
-    class XMLElement;
-}
-
-namespace tbd 
-{
-
-  class ActorComponent;
-  class Actor;
-  class _ActorDescription {
-      friend class ActorFactory;
-  private:    
-      std::vector<std::shared_ptr<tbd::ActorComponent>> m_components;
-      ActorFactory* m_pFactory;
-      _ActorDescription(ActorFactory* factory) : m_pFactory(factory) {}
-
-  public:
-      template<class ComponentType>
-      ComponentType* AddComponent(std::string comp) 
-      {
-          auto it = m_pFactory->m_creators.find(comp);
-          if(it == m_pFactory->m_creators.end())
-          {
-              LOG_CRITICAL_ERROR_A("%s does not exist", comp.c_str());
-          }
-          std::shared_ptr<tbd::ActorComponent>& acomp = std::shared_ptr<tbd::ActorComponent>((it->second)());
-          m_components.push_back(acomp);
-          return (ComponentType*)acomp.get();
-      }
-
-      template<class ComponentType>
-      ComponentType* AddComponent(CONST ComponentId id) 
-      {
-          auto it = m_pFactory->m_creatorsId.find(id);
-          if(it == m_pFactory->m_creatorsId.end())
-          {
-              LOG_CRITICAL_ERROR("component does not exist");
-          }
-          std::shared_ptr<tbd::ActorComponent>& acomp = std::shared_ptr<tbd::ActorComponent>((it->second)());
-          m_components.push_back(acomp);
-
-          //std::shared_ptr<ComponentType> pSub(std::tr1::static_pointer_cast<ComponentType>(acomp));
-          return (ComponentType*)acomp.get();//std::tr1::static_pointer_cast<ComponentType>(acomp);//pSub;
-      }
-
-      std::vector<std::shared_ptr<tbd::ActorComponent>>* GetComponents(VOID) {
-          return &m_components;
-      }
-  };
-
-  typedef std::shared_ptr<_ActorDescription> ActorDescription;
-
-  class Actor 
+  class Actor : public IActor
   {
-      friend class ActorFactory;
   private:
-      std::map<ComponentId, std::shared_ptr<tbd::ActorComponent>> m_components;
-      ActorId m_id;
-      VOID AddComponent(std::shared_ptr<tbd::ActorComponent> pComponent);
-      VOID ReplaceComponent(std::shared_ptr<tbd::ActorComponent> pComponent);
-      std::string m_name;
-
+      std::map<ComponentId, std::unique_ptr<IActorComponent>> m_components;
   public:
       Actor(ActorId id);
-      ~Actor(VOID) {}
 
-      BOOL Init(tinyxml2::XMLElement* pData) { return TRUE; } //for what?
-      VOID PostInit(VOID);
-      VOID Destroy(VOID);
-      VOID Update(ULONG millis);
-      ActorId GetId(VOID) CONST { return m_id; }
+      virtual ~Actor(VOID) 
+	  {
+		  TBD_FOR(m_components)
+		  {
+			  it->second.reset();
+		  }
+	  }
 
-      VOID SetName(CONST std::string& name)
+      CONST std::map<ComponentId, std::unique_ptr<IActorComponent>>& VGetComponents(VOID) { return m_components; } 
+
+      IActorComponent* VGetComponent(ComponentId id) 
       {
-          m_name = name;
-      }
-
-      CONST std::string& GetName(VOID)
-      {
-          return m_name;
-      }
-
-      std::map<ComponentId, std::shared_ptr<tbd::ActorComponent>>& GetComponents(VOID) { return m_components; } 
-
-      template<class ComponentType>
-      std::weak_ptr<ComponentType> GetComponent(CONST ComponentId id) {
-
           auto it = m_components.find(id);
 
           if(it != m_components.end())
           {
-              std::shared_ptr<ActorComponent> pBase(it->second);
-              //std::shared_ptr<ComponentType> pSub();
-              std::weak_ptr<ComponentType> pWeakSub(std::tr1::static_pointer_cast<ComponentType>(pBase));
-              return pWeakSub;
+              return it->second.get();
           }
-//          LOG_CRITICAL_ERROR_A("Component not found %d\n", id);
-          return std::weak_ptr<ComponentType>();
-        }
+          return NULL;
+      }
 
-      template<class ComponentType>
-      BOOL HasComponent(ComponentId id)
+      VOID VAddComponent(std::unique_ptr<IActorComponent> pComponent)
       {
-          return GetComponent<ComponentType>(id).lock() != NULL;
+          if(m_components.find(pComponent->VGetComponentId()) != m_components.end())
+          {
+              LOG_CRITICAL_ERROR_A("%s", "Replacing an AC!");
+          }
+          m_components.insert(std::pair<ComponentId, std::unique_ptr<IActorComponent>>(pComponent->VGetComponentId(), std::move(pComponent)));
+      }
+
+      BOOL VHasComponent(ComponentId id)
+      {
+          return VGetComponent(id) != NULL;
       }
   };
 };

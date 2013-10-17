@@ -1,25 +1,25 @@
 #include "Profiling.h"
 #include <sstream>
 
-namespace tbd
+namespace chimera
 {
     D3DQuery::D3DQuery(LPCSTR infoText, D3D11_QUERY query, VOID* pData, UINT size) : Query(infoText), m_queryType(query), m_pQuery(NULL), m_pData(pData), m_dataSize(size)
     {
         D3D11_QUERY_DESC desc;
         desc.Query = query;
         desc.MiscFlags = 0;
-        CHECK__(d3d::GetDevice()->CreateQuery(&desc, &m_pQuery));
+        D3D_SAVE_CALL(chimera::GetDevice()->CreateQuery(&desc, &m_pQuery));
     }
 
     VOID D3DQuery::VStart(VOID)
     {
-        d3d::g_pContext->Begin(m_pQuery);
+        chimera::g_pContext->Begin(m_pQuery);
     }
 
     VOID D3DQuery::VEnd(VOID)
     {
-        d3d::g_pContext->End(m_pQuery);
-        while(S_OK != d3d::GetContext()->GetData(m_pQuery, m_pData, m_dataSize, 0))
+        chimera::g_pContext->End(m_pQuery);
+        while(S_OK != chimera::GetContext()->GetData(m_pQuery, m_pData, m_dataSize, 0))
         {
             //Sleep(1);
         }

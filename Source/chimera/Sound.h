@@ -4,7 +4,7 @@
 struct IDirectSound8;
 struct IDirectSoundBuffer;
 
-namespace tbd
+namespace chimera
 {
     enum SoundType
     {
@@ -13,54 +13,6 @@ namespace tbd
     };
 
     class ResHandle;
-
-    class ISoundBuffer
-    {
-    public:
-        virtual BOOL VInit(VOID) = 0;
-
-        virtual VOID VPlay(BOOL loop = FALSE) = 0;
-
-        virtual VOID VStop(VOID) = 0;
-
-        virtual VOID VPause(VOID) = 0;
-
-        virtual VOID VSetVolume(LONG volume) = 0;
-
-        virtual VOID VResume(VOID) = 0;
-
-        virtual INT VGetVolume(VOID) = 0;
-
-        virtual BOOL VIsPlaying(VOID) = 0;
-
-        virtual BOOL VRestore(VOID) = 0;
-
-        virtual VOID VSetPan(FLOAT pan) = 0; //-1 left 0 middle 1 right
-
-        virtual BOOL VIsLooping(VOID) = 0;
-
-        virtual FLOAT VGetProgress(VOID) = 0;
-
-        virtual ~ISoundBuffer(VOID) {}
-    };
-
-    class ISoundSystem
-    {
-    public:
-        virtual BOOL VInit(VOID) = 0;
-
-        virtual ISoundBuffer* VCreateSoundBuffer(std::shared_ptr<tbd::ResHandle> handle) = 0;
-
-        virtual VOID VReleaseSoundBuffer(ISoundBuffer* buffer) = 0;
-
-        virtual VOID VStopAll(VOID) = 0;
-
-        virtual VOID VResumeAll(VOID) = 0;
-
-        virtual VOID VPauseAll(VOID) = 0;
-
-        virtual ~ISoundSystem(VOID) {}
-    };
 
     class BaseSoundSystem : public ISoundSystem
     {
@@ -92,7 +44,7 @@ namespace tbd
 
         BOOL VInit(VOID);
 
-        ISoundBuffer* VCreateSoundBuffer(std::shared_ptr<tbd::ResHandle> handle);
+        ISoundBuffer* VCreateSoundBuffer(std::shared_ptr<chimera::ResHandle> handle);
 
         VOID VReleaseSoundBuffer(ISoundBuffer* buffer);
 
@@ -103,7 +55,7 @@ namespace tbd
     {
     private:
         DirectSoundSystem* m_pSystem;
-        std::shared_ptr<tbd::ResHandle> m_pHandle;
+        std::shared_ptr<chimera::ResHandle> m_pHandle;
         BOOL m_initialized;
         IDirectSoundBuffer* m_pSoundBuffer;
         LPDWORD m_position;
@@ -111,7 +63,7 @@ namespace tbd
         BOOL FillBuffer(VOID);
 
     public:
-        DirectWaveBuffer(DirectSoundSystem* system, std::shared_ptr<tbd::ResHandle> handle);
+        DirectWaveBuffer(DirectSoundSystem* system, std::shared_ptr<chimera::ResHandle> handle);
         
         BOOL VInit(VOID);
 

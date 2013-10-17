@@ -1,7 +1,7 @@
 #include "ParticleManager.h"
 #include "Cudah.h"
 
-namespace tbd
+namespace chimera
 {
     ParticleManager::ParticleManager(VOID)
     {

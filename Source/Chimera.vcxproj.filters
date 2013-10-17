@@ -13,299 +13,302 @@
       <UniqueIdentifier>{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}</UniqueIdentifier>
       <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav;mfcribbon-ms</Extensions>
     </Filter>
+    <Filter Include="Header Files\api">
+      <UniqueIdentifier>{9d7c569d-727c-416b-a15e-97133b31dee1}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\d3d">
+      <UniqueIdentifier>{9ecbcc31-01d4-4093-9716-61dc48a8340b}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\d3d">
+      <UniqueIdentifier>{b610d13d-2521-4bf3-ae13-d766c90e8dcf}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\sound">
+      <UniqueIdentifier>{915f259b-66aa-434d-b4d0-83d7020614ac}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\logic">
+      <UniqueIdentifier>{fcc11ed0-d030-4df8-9fd3-620413e8f2b1}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\resource">
+      <UniqueIdentifier>{73dfafd3-b624-4b08-b4d0-36f89227c316}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\font">
+      <UniqueIdentifier>{8438ff6f-59ee-4a76-9f41-de3ff8ada869}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\input">
+      <UniqueIdentifier>{efe34cdf-e069-4440-b8b1-c3374044c89c}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\event">
+      <UniqueIdentifier>{2aeb553f-9f2c-4453-ab57-bfa3dd304d5d}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\view">
+      <UniqueIdentifier>{6fdeca79-3b1f-488a-9549-b2013b3daa4b}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\script">
+      <UniqueIdentifier>{c7273669-9d7b-4d3e-aca3-193d14967d39}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\api">
+      <UniqueIdentifier>{e26a9522-b4bd-46a7-b318-23e979224e6e}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\app">
+      <UniqueIdentifier>{8d6f3444-e4e0-41ce-9718-4c893202768e}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\logger">
+      <UniqueIdentifier>{09b7a2ef-5682-4987-a9e0-bca308cd1665}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\logic">
+      <UniqueIdentifier>{0e591720-683f-4960-81bf-ecb85d6a36ed}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\font">
+      <UniqueIdentifier>{d3f0bec9-81f0-48bc-8462-3d4cbf102dc5}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\input">
+      <UniqueIdentifier>{99bdee2b-132e-4755-9579-8cc3b36ca10f}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\event">
+      <UniqueIdentifier>{329b84e7-a3c4-42b0-89d7-ad7816656aec}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\app">
+      <UniqueIdentifier>{dde6fbe3-a168-4ae1-b0b5-7ddbbeb2967e}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\logger">
+      <UniqueIdentifier>{09f89fe2-1443-4bb1-bc61-1d36dfa91251}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\util">
+      <UniqueIdentifier>{33f5b756-a532-48e1-9be3-57a782000f36}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\view">
+      <UniqueIdentifier>{564ca8e3-5d30-4c6f-9bbf-f2e70161d0d8}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\resource">
+      <UniqueIdentifier>{bf64d12b-bc54-4434-ac4f-ce9e459f6d88}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\sound">
+      <UniqueIdentifier>{61a97d19-a41e-4c88-b6c1-f0c0d6a8d58e}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\script">
+      <UniqueIdentifier>{e79275f6-c3f6-4ebd-bc9a-267061155883}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\util">
+      <UniqueIdentifier>{f7c94c4b-b0c0-4382-a0d5-4f3d1eae4cfb}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\screen">
+      <UniqueIdentifier>{95b4cb88-287e-40c9-9f56-6bf0428b76b1}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\screen">
+      <UniqueIdentifier>{667ea646-a34c-41c7-922f-249114067022}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="chimera\Actor.h">
-      <Filter>Header Files</Filter>
+    <ClInclude Include="..\Assets\shader\ShaderGlobals.h">
+      <Filter>Resource Files</Filter>
     </ClInclude>
-    <ClInclude Include="chimera\ActorFactory.h">
-      <Filter>Header Files</Filter>
+    <ClInclude Include="chimera\api\ApplicationAPI.h">
+      <Filter>Header Files\api</Filter>
     </ClInclude>
-    <ClInclude Include="chimera\AIView.h">
-      <Filter>Header Files</Filter>
+    <ClInclude Include="chimera\api\CMDefines.h">
+      <Filter>Header Files\api</Filter>
     </ClInclude>
-    <ClInclude Include="chimera\Animation.h">
-      <Filter>Header Files</Filter>
+    <ClInclude Include="chimera\api\FontAPI.h">
+      <Filter>Header Files\api</Filter>
     </ClInclude>
-    <ClInclude Include="chimera\AxisAlignedBB.h">
-      <Filter>Header Files</Filter>
+    <ClInclude Include="chimera\api\GraphicsAPI.h">
+      <Filter>Header Files\api</Filter>
     </ClInclude>
-    <ClInclude Include="chimera\BasicApp.h">
-      <Filter>Header Files</Filter>
+    <ClInclude Include="chimera\api\InputAPI.h">
+      <Filter>Header Files\api</Filter>
     </ClInclude>
-    <ClInclude Include="chimera\ByteStream.h">
-      <Filter>Header Files</Filter>
+    <ClInclude Include="chimera\api\LogicAPI.h">
+      <Filter>Header Files\api</Filter>
     </ClInclude>
-    <ClInclude Include="chimera\Camera.h">
-      <Filter>Header Files</Filter>
+    <ClInclude Include="chimera\api\ResourceAPI.h">
+      <Filter>Header Files\api</Filter>
     </ClInclude>
-    <ClInclude Include="chimera\CameraTracking.h">
-      <Filter>Header Files</Filter>
+    <ClInclude Include="chimera\api\SoundAPI.h">
+      <Filter>Header Files\api</Filter>
     </ClInclude>
-    <ClInclude Include="chimera\CascadedShadowMapper.h">
-      <Filter>Header Files</Filter>
+    <ClInclude Include="chimera\api\ViewAPI.h">
+      <Filter>Header Files\api</Filter>
     </ClInclude>
-    <ClInclude Include="chimera\Commands.h">
-      <Filter>Header Files</Filter>
+    <ClInclude Include="chimera\api\CMTypes.h">
+      <Filter>Header Files\api</Filter>
     </ClInclude>
-    <ClInclude Include="chimera\Components.h">
-      <Filter>Header Files</Filter>
+    <ClInclude Include="chimera\api\ScriptAPI.h">
+      <Filter>Header Files\api</Filter>
     </ClInclude>
-    <ClInclude Include="chimera\Config.h">
-      <Filter>Header Files</Filter>
+    <ClInclude Include="chimera\api\EventAPI.h">
+      <Filter>Header Files\api</Filter>
     </ClInclude>
-    <ClInclude Include="chimera\ConstBuffer.h">
-      <Filter>Header Files</Filter>
+    <ClInclude Include="chimera\api\ChimeraAPI.h">
+      <Filter>Header Files\api</Filter>
     </ClInclude>
-    <ClInclude Include="chimera\Cudah.h">
-      <Filter>Header Files</Filter>
+    <ClInclude Include="chimera\api\CMCommon.h">
+      <Filter>Header Files\api</Filter>
     </ClInclude>
-    <ClInclude Include="chimera\CudaTransformationNode.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="chimera\d3d.h">
-      <Filter>Header Files</Filter>
+    <ClInclude Include="chimera\D3DGraphics.h">
+      <Filter>Header Files\d3d</Filter>
     </ClInclude>
     <ClInclude Include="chimera\D3DRenderer.h">
-      <Filter>Header Files</Filter>
+      <Filter>Header Files\d3d</Filter>
     </ClInclude>
-    <ClInclude Include="chimera\D3DResource.h">
-      <Filter>Header Files</Filter>
+    <ClInclude Include="chimera\D3DGeometry.h">
+      <Filter>Header Files\d3d</Filter>
     </ClInclude>
-    <ClInclude Include="chimera\DebugSceneNode.h">
-      <Filter>Header Files</Filter>
+    <ClInclude Include="chimera\D3DConstBuffer.h">
+      <Filter>Header Files\d3d</Filter>
     </ClInclude>
-    <ClInclude Include="chimera\DebugStartup.h">
-      <Filter>Header Files</Filter>
+    <ClInclude Include="chimera\D3DTexture.h">
+      <Filter>Header Files\d3d</Filter>
     </ClInclude>
-    <ClInclude Include="chimera\EditNode.h">
-      <Filter>Header Files</Filter>
+    <ClInclude Include="chimera\D3DRenderTarget.h">
+      <Filter>Header Files\d3d</Filter>
     </ClInclude>
-    <ClInclude Include="chimera\Effect.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="chimera\Event.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="chimera\EventManager.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="chimera\FPSControler.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="chimera\Frustum.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="chimera\GameApp.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="chimera\GameInputActions.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="chimera\GameLogic.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="chimera\GameView.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="chimera\Geometry.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="chimera\GeometryFactory.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="chimera\GraphicsSettings.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="chimera\GuiComponent.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="chimera\GuiHelper.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="chimera\Input.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="chimera\InstancedMeshNode.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="chimera\Level.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="chimera\Line.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="chimera\Locker.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="chimera\Logger.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="chimera\LuaHelper.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="chimera\Mat4.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="chimera\Material.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="chimera\math.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="chimera\Maze.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="chimera\Mesh.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="chimera\MeshNode.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="chimera\Packman.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="chimera\PackmanLogic.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="chimera\ParticleManager.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="chimera\ParticleNode.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="chimera\ParticleSystem.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="chimera\PhysicsSystem.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="chimera\Picker.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="chimera\Plane.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="chimera\Process.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="chimera\ProcessManager.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="chimera\Profiling.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="chimera\Renderer.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="chimera\RenderPath.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="chimera\RenderTarget.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="chimera\Resources.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="chimera\SceneGraph.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="chimera\SceneNode.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="chimera\Scheduler.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="chimera\ScreenElement.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="chimera\Script.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="chimera\ScriptEvent.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="chimera\ShaderProgram.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="chimera\SkyDomeNode.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="chimera\Sound.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="chimera\SoundEngine.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="chimera\Spline.h">
-      <Filter>Header Files</Filter>
+    <ClInclude Include="chimera\D3DShaderProgram.h">
+      <Filter>Header Files\d3d</Filter>
     </ClInclude>
     <ClInclude Include="chimera\stdafx.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="chimera\targetver.h">
-      <Filter>Header Files</Filter>
+    <ClInclude Include="chimera\Application.h">
+      <Filter>Header Files\app</Filter>
     </ClInclude>
-    <ClInclude Include="chimera\tbdFont.h">
-      <Filter>Header Files</Filter>
+    <ClInclude Include="chimera\APIError.h">
+      <Filter>Header Files\app</Filter>
     </ClInclude>
-    <ClInclude Include="chimera\tbdStack.h">
-      <Filter>Header Files</Filter>
+    <ClInclude Include="chimera\Logger.h">
+      <Filter>Header Files\logger</Filter>
     </ClInclude>
-    <ClInclude Include="chimera\Texture.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="chimera\Thread.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="chimera\Timer.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="chimera\tinyxml2.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="chimera\ts_queue.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="chimera\util.h">
-      <Filter>Header Files</Filter>
+    <ClInclude Include="chimera\Mat4.h">
+      <Filter>Header Files\util</Filter>
     </ClInclude>
     <ClInclude Include="chimera\Vec3.h">
-      <Filter>Header Files</Filter>
+      <Filter>Header Files\util</Filter>
     </ClInclude>
     <ClInclude Include="chimera\Vec4.h">
-      <Filter>Header Files</Filter>
+      <Filter>Header Files\util</Filter>
+    </ClInclude>
+    <ClInclude Include="chimera\GameView.h">
+      <Filter>Header Files\view</Filter>
+    </ClInclude>
+    <ClInclude Include="chimera\SceneNode.h">
+      <Filter>Header Files\view</Filter>
+    </ClInclude>
+    <ClInclude Include="chimera\SceneGraph.h">
+      <Filter>Header Files\view</Filter>
+    </ClInclude>
+    <ClInclude Include="chimera\D3DGraphicsFactory.h">
+      <Filter>Header Files\d3d</Filter>
+    </ClInclude>
+    <ClInclude Include="chimera\Actor.h">
+      <Filter>Header Files\logic</Filter>
+    </ClInclude>
+    <ClInclude Include="chimera\Components.h">
+      <Filter>Header Files\logic</Filter>
+    </ClInclude>
+    <ClInclude Include="chimera\Event.h">
+      <Filter>Header Files\event</Filter>
+    </ClInclude>
+    <ClInclude Include="chimera\GameLogic.h">
+      <Filter>Header Files\logic</Filter>
+    </ClInclude>
+    <ClInclude Include="chimera\Config.h">
+      <Filter>Header Files\util</Filter>
+    </ClInclude>
+    <ClInclude Include="chimera\EventManager.h">
+      <Filter>Header Files\event</Filter>
+    </ClInclude>
+    <ClInclude Include="chimera\api\ActorAPI.h">
+      <Filter>Header Files\api</Filter>
+    </ClInclude>
+    <ClInclude Include="chimera\ActorFactory.h">
+      <Filter>Header Files\logic</Filter>
+    </ClInclude>
+    <ClInclude Include="chimera\PhysicsSystem.h">
+      <Filter>Header Files\logic</Filter>
+    </ClInclude>
+    <ClInclude Include="chimera\Process.h">
+      <Filter>Header Files\logic</Filter>
+    </ClInclude>
+    <ClInclude Include="chimera\ProcessManager.h">
+      <Filter>Header Files\logic</Filter>
+    </ClInclude>
+    <ClInclude Include="chimera\Scheduler.h">
+      <Filter>Header Files\logic</Filter>
+    </ClInclude>
+    <ClInclude Include="chimera\Commands.h">
+      <Filter>Header Files\logic</Filter>
     </ClInclude>
     <ClInclude Include="chimera\VRamManager.h">
-      <Filter>Header Files</Filter>
+      <Filter>Header Files\resource</Filter>
     </ClInclude>
-    <ClInclude Include="..\Assets\shader\ShaderGlobals.h">
-      <Filter>Resource Files</Filter>
+    <ClInclude Include="chimera\util.h">
+      <Filter>Header Files\util</Filter>
     </ClInclude>
-    <ClInclude Include="resource.h">
-      <Filter>Header Files</Filter>
+    <ClInclude Include="chimera\ByteStream.h">
+      <Filter>Header Files\util</Filter>
     </ClInclude>
-    <ClInclude Include="chimera\PointlightNode.h">
-      <Filter>Header Files</Filter>
+    <ClInclude Include="chimera\Cache.h">
+      <Filter>Header Files\resource</Filter>
     </ClInclude>
-    <ClInclude Include="chimera\SpotlightNode.h">
-      <Filter>Header Files</Filter>
+    <ClInclude Include="chimera\ResourceLoader.h">
+      <Filter>Header Files\resource</Filter>
+    </ClInclude>
+    <ClInclude Include="chimera\Material.h">
+      <Filter>Header Files\resource</Filter>
+    </ClInclude>
+    <ClInclude Include="chimera\Mesh.h">
+      <Filter>Header Files\resource</Filter>
+    </ClInclude>
+    <ClInclude Include="chimera\AxisAlignedBB.h">
+      <Filter>Header Files\util</Filter>
+    </ClInclude>
+    <ClInclude Include="chimera\GuiComponent.h">
+      <Filter>Header Files\screen</Filter>
+    </ClInclude>
+    <ClInclude Include="chimera\api\ScreenAPI.h">
+      <Filter>Header Files\api</Filter>
+    </ClInclude>
+    <ClInclude Include="chimera\api\GuiAPI.h">
+      <Filter>Header Files\api</Filter>
+    </ClInclude>
+    <ClInclude Include="chimera\ScreenElement.h">
+      <Filter>Header Files\screen</Filter>
+    </ClInclude>
+    <ClInclude Include="chimera\GeometryFactory.h">
+      <Filter>Header Files\d3d</Filter>
+    </ClInclude>
+    <ClInclude Include="chimera\GraphicsSettings.h">
+      <Filter>Header Files\screen</Filter>
+    </ClInclude>
+    <ClInclude Include="chimera\ShaderCache.h">
+      <Filter>Header Files\resource</Filter>
+    </ClInclude>
+    <ClInclude Include="chimera\Input.h">
+      <Filter>Header Files\input</Filter>
+    </ClInclude>
+    <ClInclude Include="chimera\Camera.h">
+      <Filter>Header Files\view</Filter>
+    </ClInclude>
+    <ClInclude Include="chimera\Timer.h">
+      <Filter>Header Files\util</Filter>
+    </ClInclude>
+    <ClInclude Include="chimera\Frustum.h">
+      <Filter>Header Files\util</Filter>
+    </ClInclude>
+    <ClInclude Include="chimera\Effect.h">
+      <Filter>Header Files\view</Filter>
+    </ClInclude>
+    <ClInclude Include="chimera\CascadedShadowMapper.h">
+      <Filter>Header Files\d3d</Filter>
+    </ClInclude>
+    <ClInclude Include="chimera\cm_math.h">
+      <Filter>Header Files\util</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="chimera\Actor.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="chimera\ActorFactory.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="chimera\AIView.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="chimera\AnchorNode.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="chimera\AxisAlignedBB.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="chimera\BasicApp.cpp">
@@ -314,85 +317,22 @@
     <ClCompile Include="chimera\ByteStream.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="chimera\Camera.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="chimera\CameraTracking.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="chimera\CascadedShadowMapper.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="chimera\Commands.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="chimera\Components.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="chimera\Config.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="chimera\ConstBuffer.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="chimera\Controller.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="chimera\Cudah.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="chimera\CudaTransformationNode.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="chimera\d3d.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="chimera\D3DRenderer.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="chimera\Effect.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="chimera\Event.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="chimera\EventManager.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="chimera\FPSControler.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="chimera\Frustum.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="chimera\GameApp.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="chimera\GameInputActions.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="chimera\GameLogic.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="chimera\GameView.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="chimera\Geometry.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="chimera\GeometryFactory.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="chimera\GeometryNode.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="chimera\GraphicsSettings.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="chimera\GuiComponent.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="chimera\Input.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="chimera\InstancedMeshNode.cpp">
@@ -401,31 +341,13 @@
     <ClCompile Include="chimera\Level.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="chimera\LoaderImp.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="chimera\Logger.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="chimera\LuaHelper.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="chimera\Main.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="chimera\Material.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="chimera\MatVec.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="chimera\Maze.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="chimera\Mesh.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="chimera\MeshNode.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="chimera\Modifier.cpp">
@@ -446,49 +368,16 @@
     <ClCompile Include="chimera\ParticleSystem.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="chimera\PhysicsSystem.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="chimera\Picker.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="chimera\Process.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="chimera\ProcessManager.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="chimera\Profiling.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="chimera\RenderTarget.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="chimera\Resources.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="chimera\SceneGraph.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="chimera\SceneNode.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="chimera\Scheduler.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="chimera\ScreenElement.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="chimera\Script.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="chimera\ScriptEvent.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="chimera\ShaderProgram.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="chimera\SkyDomeNode.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="chimera\Sound.cpp">
@@ -509,22 +398,10 @@
     <ClCompile Include="chimera\tbdStack.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="chimera\Texture.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="chimera\Thread.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="chimera\Timer.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="chimera\tinyxml2.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="chimera\util.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="chimera\VRamManager.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="chimera\SpotlightNode.cpp">
@@ -538,6 +415,141 @@
     </ClCompile>
     <ClCompile Include="chimera\PointlightNode.cpp">
       <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="chimera\FileSystem.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="chimera\D3DTexture.cpp">
+      <Filter>Source Files\d3d</Filter>
+    </ClCompile>
+    <ClCompile Include="chimera\D3DRenderTarget.cpp">
+      <Filter>Source Files\d3d</Filter>
+    </ClCompile>
+    <ClCompile Include="chimera\D3DConstBuffer.cpp">
+      <Filter>Source Files\d3d</Filter>
+    </ClCompile>
+    <ClCompile Include="chimera\D3DGeometry.cpp">
+      <Filter>Source Files\d3d</Filter>
+    </ClCompile>
+    <ClCompile Include="chimera\D3DRenderer.cpp">
+      <Filter>Source Files\d3d</Filter>
+    </ClCompile>
+    <ClCompile Include="chimera\D3DGraphics.cpp">
+      <Filter>Source Files\d3d</Filter>
+    </ClCompile>
+    <ClCompile Include="chimera\D3DShaderProgram.cpp">
+      <Filter>Source Files\d3d</Filter>
+    </ClCompile>
+    <ClCompile Include="chimera\APIError.cpp">
+      <Filter>Source Files\api</Filter>
+    </ClCompile>
+    <ClCompile Include="chimera\ChimeraAPI.cpp">
+      <Filter>Source Files\api</Filter>
+    </ClCompile>
+    <ClCompile Include="chimera\GameView.cpp">
+      <Filter>Source Files\view</Filter>
+    </ClCompile>
+    <ClCompile Include="chimera\Input.cpp">
+      <Filter>Source Files\input</Filter>
+    </ClCompile>
+    <ClCompile Include="chimera\Components.cpp">
+      <Filter>Source Files\logic</Filter>
+    </ClCompile>
+    <ClCompile Include="chimera\Event.cpp">
+      <Filter>Source Files\logic</Filter>
+    </ClCompile>
+    <ClCompile Include="chimera\Application.cpp">
+      <Filter>Source Files\app</Filter>
+    </ClCompile>
+    <ClCompile Include="chimera\GameLogic.cpp">
+      <Filter>Source Files\logic</Filter>
+    </ClCompile>
+    <ClCompile Include="chimera\Config.cpp">
+      <Filter>Source Files\util</Filter>
+    </ClCompile>
+    <ClCompile Include="chimera\util.cpp">
+      <Filter>Source Files\util</Filter>
+    </ClCompile>
+    <ClCompile Include="chimera\PhysicsSystem.cpp">
+      <Filter>Source Files\logic</Filter>
+    </ClCompile>
+    <ClCompile Include="chimera\ProcessManager.cpp">
+      <Filter>Source Files\logic</Filter>
+    </ClCompile>
+    <ClCompile Include="chimera\Process.cpp">
+      <Filter>Source Files\logic</Filter>
+    </ClCompile>
+    <ClCompile Include="chimera\EventManager.cpp">
+      <Filter>Source Files\event</Filter>
+    </ClCompile>
+    <ClCompile Include="chimera\Commands.cpp">
+      <Filter>Source Files\logic</Filter>
+    </ClCompile>
+    <ClCompile Include="chimera\Scheduler.cpp">
+      <Filter>Source Files\logic</Filter>
+    </ClCompile>
+    <ClCompile Include="chimera\VRamManager.cpp">
+      <Filter>Source Files\resource</Filter>
+    </ClCompile>
+    <ClCompile Include="chimera\Logger.cpp">
+      <Filter>Source Files\util</Filter>
+    </ClCompile>
+    <ClCompile Include="chimera\D3DGraphicsFactory.cpp">
+      <Filter>Source Files\d3d</Filter>
+    </ClCompile>
+    <ClCompile Include="chimera\Cache.cpp">
+      <Filter>Source Files\resource</Filter>
+    </ClCompile>
+    <ClCompile Include="chimera\ResourceLoader.cpp">
+      <Filter>Source Files\resource</Filter>
+    </ClCompile>
+    <ClCompile Include="chimera\AxisAlignedBB.cpp">
+      <Filter>Source Files\util</Filter>
+    </ClCompile>
+    <ClCompile Include="chimera\ScreenElement.cpp">
+      <Filter>Source Files\screen</Filter>
+    </ClCompile>
+    <ClCompile Include="chimera\GeometryFactory.cpp">
+      <Filter>Source Files\d3d</Filter>
+    </ClCompile>
+    <ClCompile Include="chimera\GraphicsSettings.cpp">
+      <Filter>Source Files\screen</Filter>
+    </ClCompile>
+    <ClCompile Include="chimera\SceneNode.cpp">
+      <Filter>Source Files\view</Filter>
+    </ClCompile>
+    <ClCompile Include="chimera\SceneGraph.cpp">
+      <Filter>Source Files\view</Filter>
+    </ClCompile>
+    <ClCompile Include="chimera\ActorFactory.cpp">
+      <Filter>Source Files\logic</Filter>
+    </ClCompile>
+    <ClCompile Include="chimera\Actor.cpp">
+      <Filter>Source Files\logic</Filter>
+    </ClCompile>
+    <ClCompile Include="chimera\Camera.cpp">
+      <Filter>Source Files\view</Filter>
+    </ClCompile>
+    <ClCompile Include="chimera\Timer.cpp">
+      <Filter>Source Files\util</Filter>
+    </ClCompile>
+    <ClCompile Include="chimera\Frustum.cpp">
+      <Filter>Source Files\util</Filter>
+    </ClCompile>
+    <ClCompile Include="chimera\Controller.cpp">
+      <Filter>Source Files\view</Filter>
+    </ClCompile>
+    <ClCompile Include="chimera\MeshNode.cpp">
+      <Filter>Source Files\view</Filter>
+    </ClCompile>
+    <ClCompile Include="chimera\Effect.cpp">
+      <Filter>Source Files\view</Filter>
+    </ClCompile>
+    <ClCompile Include="chimera\CascadedShadowMapper.cpp">
+      <Filter>Source Files\d3d</Filter>
+    </ClCompile>
+    <ClCompile Include="chimera\SkyDomeNode.cpp">
+      <Filter>Source Files\view</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

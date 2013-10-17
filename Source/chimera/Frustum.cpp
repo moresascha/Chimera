@@ -10,7 +10,7 @@ CONST UCHAR DOWN = 1 << 4;
 CONST UCHAR FRONT = 1 << 5;
 CONST UCHAR BACK = 1 << 6;
 
-namespace tbd
+namespace chimera
 {
 
     VOID Frustum::CreateOrthographicOffCenter(FLOAT l, FLOAT r, FLOAT b, FLOAT t, FLOAT fNear, FLOAT fFar)

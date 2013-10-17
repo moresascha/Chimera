@@ -28,8 +28,9 @@ struct VertexInput
 PixelInput Sky_VS(VertexInput input) 
 {
     PixelInput op;
-    op.worldpos = mul(g_model, float4(input.position, 1));
-    op.position = mul(g_projection, mul(g_view, op.worldpos));
+    op.worldpos = mul(g_model, float4(input.position, 0));
+    float4 tmp = mul(g_view, op.worldpos); tmp.w = 1;
+    op.position = mul(g_projection, tmp);
     op.texCoord = input.texCoord;
     return op;
 }

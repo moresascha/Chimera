@@ -7,15 +7,8 @@
 
 #define CHECK_COMMAND(__cmd) if(__cmd.IsError()) { return FALSE; }
 
-namespace tbd
+namespace chimera
 {
-    enum CommandArgType
-    {
-        eCommandArgumentFloat = 1,
-        eCommandArgumentInt = 2,
-        eCommandArgumentString = 3
-    };
-
     class Command
     {
     private:
@@ -27,21 +20,19 @@ namespace tbd
         
         BOOL InitArgumentTypes(INT args, ...);
         
-        FLOAT GetNextFloat(VOID);
-        INT GetNextInt(VOID);
-        CHAR GetNextChar(VOID);
-        BOOL GetNextBool(VOID);
-        std::string GetNextCharStr(VOID);
-        std::string GetRemainingString(VOID);
-        BOOL IsError(VOID);
-        BOOL IsValid(VOID);
+        CM_DLL_API FLOAT GetNextFloat(VOID);
+        CM_DLL_API INT GetNextInt(VOID);
+        CM_DLL_API CHAR GetNextChar(VOID);
+        CM_DLL_API BOOL GetNextBool(VOID);
+        CM_DLL_API std::string GetNextCharStr(VOID);
+        CM_DLL_API std::string GetRemainingString(VOID);
+        CM_DLL_API BOOL IsError(VOID);
+        CM_DLL_API BOOL IsValid(VOID);
 
         ~Command(VOID);
     };
 
-    typedef fastdelegate::FastDelegate1<Command&, BOOL> CommandHandler;
-
-    class CommandInterpreter
+    class CommandInterpreter : public ICommandInterpreter
     {
     private:
         std::map<std::string, CommandHandler> m_nameToCommandHandler;
@@ -53,7 +44,7 @@ namespace tbd
 
         VOID RegisterCommand(LPCSTR name, CommandHandler command, LPCSTR usage = NULL);
 
-        BOOL CallCommand(LPCSTR command);
+        BOOL VCallCommand(LPCSTR command);
 
         std::list<std::string> GetCommands(VOID);
 

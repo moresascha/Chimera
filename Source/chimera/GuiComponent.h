@@ -1,25 +1,15 @@
 #pragma once
 #include "stdafx.h"
-#include "Vec4.h"
-#include "Input.h"
 #include "ScreenElement.h"
 
-namespace d3d
-{
-    class ShaderProgram;
-    class Texture2D;
-    class VertexShader;
-    class PixelShader;
-}
-
-namespace tbd
+namespace chimera
 {
     namespace gui
     {
         class D3DGuiComponent : public ScreenElement
         {
         protected:
-            d3d::PixelShader* m_pPixelShader;
+            chimera::PixelShader* m_pPixelShader;
             std::string m_shaderName;
         public:
             D3DGuiComponent(VOID);
@@ -30,8 +20,8 @@ namespace tbd
 
         class D3D_GUI : public ScreenElementContainer
         {
-            d3d::VertexShader* m_pVertexShader;
-            d3d::PixelShader* m_pPixelShader;
+            IShader* m_pVertexShader;
+            IShader* m_pPixelShader;
         public:
             D3D_GUI(VOID);
             BOOL VOnRestore(VOID);
@@ -57,7 +47,7 @@ namespace tbd
         {
         protected:
             std::string m_resource;
-            std::shared_ptr<d3d::Texture2D> m_textureHandle;
+            std::shared_ptr<chimera::D3DTexture2D> m_textureHandle;
         public:
             GuiTextureComponent(VOID);
             VOID SetTexture(LPCSTR texFile);

@@ -2,7 +2,7 @@
 #include "GameApp.h"
 #include "Event.h"
 #include "EventManager.h"
-namespace tbd
+namespace chimera
 {
     namespace script
     {
@@ -22,7 +22,7 @@ namespace tbd
 
         VOID LuaScriptEventManager::RegisterEventTransformer(LuaScriptEventTransformation transformer, EventType type, LPCSTR name)
         {
-            LuaScript* luas = (LuaScript*)app::g_pApp->GetScript();
+            LuaScript* luas = (LuaScript*)chimera::g_pApp->GetScript();
             LuaPlus::LuaObject table = luas->GetState()->GetGlobals().GetByName("EventType");
 
             if(table.IsNil())
@@ -40,8 +40,8 @@ namespace tbd
             LuaEventListener* l = new LuaEventListener(listener);
             m_listenerMap[type].push_back(std::shared_ptr<LuaEventListener>(l));
 
-            event::EventListener elistener = fastdelegate::MakeDelegate(l, &LuaEventListener::EventListenerDelegate);
-            event::IEventManager::Get()->VAddEventListener(elistener, type);
+            chimera::EventListener elistener = fastdelegate::MakeDelegate(l, &LuaEventListener::EventListenerDelegate);
+            chimera::IEventManager::Get()->VAddEventListener(elistener, type);
         }
 
         VOID LuaScriptEventManager::RemoveListener(LuaPlus::LuaObject listener, EventType type)
@@ -53,15 +53,15 @@ namespace tbd
                 if(listener.GetString() == l->GetFunction().GetString())
                 {
                     itt = it->second.erase(itt);
-                    event::EventListener elistener = fastdelegate::MakeDelegate(l, &LuaEventListener::EventListenerDelegate);
-                    event::IEventManager::Get()->VRemoveEventListener(elistener, type);
+                    chimera::EventListener elistener = fastdelegate::MakeDelegate(l, &LuaEventListener::EventListenerDelegate);
+                    chimera::IEventManager::Get()->VRemoveEventListener(elistener, type);
                 }
             }
         }
 
         VOID LuaEventListener::EventListenerDelegate(event::IEventPtr event)
         {
-            LuaScriptEventTransformation* t = app::g_pApp->GetScriptEventManager()->GetTransformation(event->VGetEventType());
+            LuaScriptEventTransformation* t = chimera::g_pApp->GetScriptEventManager()->GetTransformation(event->VGetEventType());
             if(t)
             {
                 if(!m_function.IsFunction())
@@ -88,7 +88,7 @@ namespace tbd
 
         VOID RegisterScriptEvents(VOID)
         {
-            REGISTER_SCRIPT_TRANSFORMER(LuaScriptEventTransformation(), event::ActorCreatedEvent::TYPE, ActorCreatedEvent);
+            REGISTER_SCRIPT_TRANSFORMER(LuaScriptEventTransformation(), chimera::ActorCreatedEvent::TYPE, ActorCreatedEvent);
         }
     }
 }

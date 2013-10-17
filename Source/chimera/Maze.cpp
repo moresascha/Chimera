@@ -152,17 +152,17 @@ namespace packman
 
     };
 
-    std::shared_ptr<tbd::Actor> CreateEnemy(CONST util::Vec3& pos,  Maze* level)
+    std::shared_ptr<chimera::Actor> CreateEnemy(CONST util::Vec3& pos,  Maze* level)
     {
-        tbd::ActorDescription desc = app::g_pApp->GetLogic()->GetActorFactory()->CreateActorDescription();
+        chimera::ActorDescription desc = chimera::g_pApp->GetLogic()->GetActorFactory()->CreateActorDescription();
 
-        tbd::TransformComponent* comp = desc->AddComponent<tbd::TransformComponent>("TransformComponent");
+        chimera::TransformComponent* comp = desc->AddComponent<chimera::TransformComponent>("TransformComponent");
         comp->GetTransformation()->SetTranslate(pos.x, pos.y, pos.z);
 
-        tbd::RenderComponent* renderComp = desc->AddComponent<tbd::RenderComponent>("RenderComponent");
-        renderComp->m_meshFile = "sphere.obj";
+        chimera::RenderComponent* renderComp = desc->AddComponent<chimera::RenderComponent>("RenderComponent");
+        renderComp->m_resource = "sphere.obj";
 
-        tbd::PhysicComponent* physicComponent = desc->AddComponent<tbd::PhysicComponent>("PhysicComponent");
+        chimera::PhysicComponent* physicComponent = desc->AddComponent<chimera::PhysicComponent>("PhysicComponent");
         physicComponent->m_dim.x = 2; physicComponent->m_dim.z = 2; physicComponent->m_dim.y = 2;
         physicComponent->m_material = "kinematic";
         physicComponent->m_shapeStyle = "sphere";
@@ -187,14 +187,14 @@ namespace packman
         }
     }
 
-    Maze::Maze(INT size, INT enemies, tbd::ActorFactory* factory) : BaseLevel("test", factory), m_size(size), m_step(0), m_enemies(enemies)
+    Maze::Maze(INT size, INT enemies, chimera::ActorFactory* factory) : BaseLevel("test", factory), m_size(size), m_step(0), m_enemies(enemies)
     {
     }
 
     BOOL Maze::VLoad(BOOL block)
     {
 
-        tbd::CreateStaticPlane(this);
+        chimera::CreateStaticPlane(this);
 
         srand(100);
         std::list<Chamber> list;
@@ -230,15 +230,15 @@ namespace packman
 
         //CreateCube(util::Vec3(-2,0,0), this);
 
-        tbd::ActorDescription desc = app::g_pApp->GetLogic()->GetActorFactory()->CreateActorDescription();
+        chimera::ActorDescription desc = chimera::g_pApp->GetLogic()->GetActorFactory()->CreateActorDescription();
 
-        tbd::TransformComponent* comp = desc->AddComponent<tbd::TransformComponent>("TransformComponent");
+        chimera::TransformComponent* comp = desc->AddComponent<chimera::TransformComponent>("TransformComponent");
         //comp->GetTransformation()->SetTranslate(pos.x, pos.y, pos.z);
 
-        tbd::RenderComponent* renderComp = desc->AddComponent<tbd::RenderComponent>("RenderComponent");
-        renderComp->m_meshFile = "box.obj";
+        chimera::RenderComponent* renderComp = desc->AddComponent<chimera::RenderComponent>("RenderComponent");
+        renderComp->m_resource = "box.obj";
 
-        tbd::PhysicComponent* physicComponent = desc->AddComponent<tbd::PhysicComponent>("PhysicComponent");
+        chimera::PhysicComponent* physicComponent = desc->AddComponent<chimera::PhysicComponent>("PhysicComponent");
         physicComponent->m_dim.x = 2; physicComponent->m_dim.z = 2; physicComponent->m_dim.y = 2;
         physicComponent->m_material = "static";
         physicComponent->m_shapeStyle = "box";
@@ -279,14 +279,14 @@ namespace packman
                 z = -m_size + 2 * (INT)(rrand() * m_size);
             } while (IsWall((FLOAT)x, (FLOAT)z));
 
-            std::shared_ptr<tbd::Actor> actor = CreateEnemy(util::Vec3((FLOAT)x, 1, (FLOAT)z), this);
+            std::shared_ptr<chimera::Actor> actor = CreateEnemy(util::Vec3((FLOAT)x, 1, (FLOAT)z), this);
         }
 
         desc = m_pActorFactory->CreateActorDescription();
-        comp = desc->AddComponent<tbd::TransformComponent>(tbd::TransformComponent::COMPONENT_ID);
+        comp = desc->AddComponent<chimera::TransformComponent>(chimera::TransformComponent::COMPONENT_ID);
         comp->GetTransformation()->SetTranslate(0,0,0);
 
-        renderComp = desc->AddComponent<tbd::RenderComponent>(tbd::RenderComponent::COMPONENT_ID);
+        renderComp = desc->AddComponent<chimera::RenderComponent>(chimera::RenderComponent::COMPONENT_ID);
         renderComp->m_type = "skydome";
         renderComp->m_info = "skydome3.jpg";
         VAddActor(desc);

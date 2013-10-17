@@ -1,116 +1,190 @@
 #include "GameView.h"
-#include "Event.h"
-#include "EventManager.h"
-#include "GameApp.h"
-#include "Actor.h"
 #include "Components.h"
-#include "Vec3.h"
-#include "D3DRenderer.h"
-#include "PointLightNode.h"
-#include "GeometryFactory.h"
-#include "GameLogic.h"
-#include "ParticleSystem.h"
-#include "ParticleNode.h"
+#include "Event.h"
+#include "VRamManager.h"
+#include "ScreenElement.h"
+#include "GraphicsSettings.h"
 #include "SceneGraph.h"
-#include "Picker.h"
-#include "tbdFont.h"
-#include "ParticleManager.h"
-#include "Camera.h"
-#include "GuiComponent.h"
-#include "Sound.h"
-#include "SpotlightNode.h"
+#include "SceneNode.h"
 
-namespace tbd
+namespace chimera
 {
-    IGameView::IGameView(VOID) : m_id(-1), m_actor(NULL), m_name("undefined")
-    {
+    //default creator
 
-    }
-
-    VOID IGameView::VOnAttach(UINT viewId, std::shared_ptr<tbd::Actor> actor) 
+    ISceneNode* CreateRenderNode(IHumanView* gw, IActor* actor)
     {
-        this->m_id = viewId;
-        VSetTarget(actor);
-    }
+        RenderComponent* comp = GetActorCompnent<RenderComponent>(actor, CM_CMP_RENDERING);
 
-    VOID IGameView::VSetTarget(std::shared_ptr<tbd::Actor> actor)
-    {
-        if(actor)
-        {
-            m_actor = actor;
+        if(comp->m_type == std::string("skydome"))
+        {            
+            return new SkyDomeNode(actor->GetId(), comp->m_resource);
         }
-    }
-
-    std::shared_ptr<tbd::Actor> IGameView::GetTarget(VOID)
-    {
-        return m_actor;
-    }
-
-    CONST std::string& IGameView::GetName(VOID) CONST
-    {
-        return m_name;
-    }
-
-    VOID IGameView::SetName(CONST std::string& name)
-    {
-        m_name = name;
-    }
-
-    HumanGameView::HumanGameView(VOID) : m_loadingDots(0), m_picker(NULL), m_currentScene(NULL)
-    {
-
-    }
-
-    d3d::D3DRenderer* HumanGameView::GetRenderer(VOID)
-    {
-        return app::g_pApp->GetRenderer();
-    }
-
-    tbd::VRamManager* HumanGameView::GetVRamManager(VOID) CONST
-    {
-        return app::g_pApp->GetVRamManager();
-    }
-
-    VOID HumanGameView::Resize(UINT w, UINT h)
-    {
-        if(d3d::g_pSwapChain) 
+        else
         {
-            d3d::Resize(w, h);
+            if(comp->m_resource == CMResource())
+            {
+                LOG_CRITICAL_ERROR("no meshfile specified!");
+            }
+            return new MeshNode(actor->GetId(), comp->m_resource);
+        }
+        LOG_CRITICAL_ERROR("wait what?!");
+        return NULL;
+    }
+
+    ISceneNode* CreateInstancedMeshNode(IHumanView* gw, IActor* actor)
+    {
+        RenderComponent* comp = GetActorCompnent<RenderComponent>(actor, CM_CMP_RENDERING);
+        return new MeshNode(actor->GetId(), comp->m_resource);
+    }
+
+    ISceneNode* CreateLightNode(IHumanView* gw, IActor* actor)
+    {
+        LightComponent* comp = GetActorCompnent<LightComponent>(actor, CM_CMP_LIGHT);
+        return new MeshNode(actor->GetId(), "");
+    }
+
+    //default creator end
+
+    HumanGameView::HumanGameView(VOID)
+    {
+        m_loadingDots = NULL;
+        m_picker = NULL; 
+        m_pCurrentScene = NULL;
+        m_pSceneGraph = NULL;
+        m_pSoundSystem = NULL;
+        m_pSoundEngine = NULL;
+        m_pRenderer = NULL;
+		m_pEffectFactory = NULL;
+    }
+
+    BOOL HumanGameView::VInitialise(FactoryPtr* facts)
+    {
+        m_pGraphicsFactory = FindAndCopyFactory<IGraphicsFactory>(facts, CM_FACTORY_GFX);
+        if(m_pGraphicsFactory == NULL)
+        {
+            return FALSE;
+        }
+        m_pRenderer = m_pGraphicsFactory->VCreateRenderer();
+
+        IVRamManagerFactory* vramF = FindFactory<IVRamManagerFactory>(facts, CM_FACTORY_VRAM);
+        RETURN_IF_FAILED(vramF);
+
+        m_pVramManager = vramF->VCreateVRamManager();
+
+        IEffectFactoryFactory* eff = FindFactory<IEffectFactoryFactory>(facts, CM_FACTORY_EFFECT);
+        RETURN_IF_FAILED(eff);
+
+        m_pEffectFactory = eff->VCreateEffectFactroy();
+
+        m_pSceneGraph = new SceneGraph();
+
+		ADD_EVENT_LISTENER(this, &HumanGameView::ActorMovedDelegate, CM_EVENT_ACTOR_MOVED);
+
+		ADD_EVENT_LISTENER(this, &HumanGameView::NewComponentDelegate, CM_EVENT_COMPONENT_CREATED);
+
+        VAddSceneNodeCreator(CreateRenderNode, CM_CMP_RENDERING);
+
+        return TRUE;
+    }
+
+    BOOL HumanGameView::VOnRestore()
+    {
+        VGetRenderer()->VOnRestore();
+
+        TBD_FOR(m_scenes)
+        {
+            (*it)->VOnRestore();
+        }
+
+        TBD_FOR(m_screenElements)
+        {
+            (*it)->VOnRestore();
+        }
+
+        /*if(m_pGui)
+        {
+            m_pGui->VOnRestore();
+        } */
+
+        m_pSceneGraph->VOnRestore();
+
+        if(m_pSceneGraph->VGetCamera())
+        {
+			m_pSceneGraph->VGetCamera()->SetAspect(VGetRenderer()->VGetWidth(), VGetRenderer()->VGetHeight());
+            VGetRenderer()->VSetProjectionTransform(m_pSceneGraph->VGetCamera()->GetProjection(), m_pSceneGraph->VGetCamera()->GetFar());
+            VGetRenderer()->VSetViewTransform(m_pSceneGraph->VGetCamera()->GetView(), m_pSceneGraph->VGetCamera()->GetIView(), m_pSceneGraph->VGetCamera()->GetEyePos());
+        }
+
+        return TRUE;
+    }
+
+    IRenderer* HumanGameView::VGetRenderer(VOID)
+    {
+        return m_pRenderer.get();
+    }
+
+    VOID HumanGameView::VOnResize(UINT w, UINT h)
+    {
+       /* if(chimera::g_pSwapChain) 
+        {
+            chimera::Resize(w, h);
             VOnRestore();
-            BOOL fullscreen = d3d::GetFullscreenState();
-            app::g_pApp->GetInputHandler()->VSetCurserOffsets(fullscreen ? 0 : 8 , fullscreen ? 0 : 30); //todo, get systemmetrics
-        }
+            BOOL fullscreen = chimera::GetFullscreenState();
+            chimera::g_pApp->GetInputHandler()->VSetCurserOffsets(fullscreen ? 0 : 8 , fullscreen ? 0 : 30); //todo, get systemmetrics
+        } */
+        m_pRenderer->VResize(w, h);
+
+        VOnRestore();
+
+		std::shared_ptr<ActorMovedEvent> movedEvent(new ActorMovedEvent(m_actor));
+		ActorMovedDelegate(movedEvent);
     }
 
-    VOID HumanGameView::ActorMovedDelegate(event::IEventPtr eventData)  
+    VOID HumanGameView::ActorMovedDelegate(IEventPtr eventData)  
     {
-        std::shared_ptr<event::ActorMovedEvent> movedEvent = std::static_pointer_cast<event::ActorMovedEvent>(eventData);
-        
+        std::shared_ptr<ActorMovedEvent> movedEvent = std::static_pointer_cast<ActorMovedEvent>(eventData);
+
         if(movedEvent->m_actor->GetId() == m_actor->GetId())
         {
-            std::shared_ptr<tbd::TransformComponent> comp = m_actor->GetComponent<tbd::TransformComponent>(tbd::TransformComponent::COMPONENT_ID).lock();
+            TransformComponent* comp = GetActorCompnent<TransformComponent>(m_actor, CM_CMP_TRANSFORM);
             CONST util::Vec3& trans = comp->GetTransformation()->GetTranslation();
 
-            m_pSceneGraph->GetCamera()->SetRotation(comp->m_phi, comp->m_theta);
+            m_pSceneGraph->VGetCamera()->SetRotation(comp->m_phi, comp->m_theta);
 
-            m_pSceneGraph->GetCamera()->MoveToPosition(trans);
+            m_pSceneGraph->VGetCamera()->MoveToPosition(trans);
 
-            GetRenderer()->VPushViewTransform(m_pSceneGraph->GetCamera()->GetView(), m_pSceneGraph->GetCamera()->GetIView(), m_pSceneGraph->GetCamera()->GetEyePos());
+            VGetRenderer()->VSetViewTransform(m_pSceneGraph->VGetCamera()->GetView(), m_pSceneGraph->VGetCamera()->GetIView(), m_pSceneGraph->VGetCamera()->GetEyePos());
         }
     }
 
-    VOID HumanGameView::NewComponentDelegate(event::IEventPtr pEventData) 
+    VOID HumanGameView::NewComponentDelegate(IEventPtr pEventData) 
     {
+        std::shared_ptr<NewComponentCreatedEvent> pCastEventData = std::static_pointer_cast<NewComponentCreatedEvent>(pEventData);
+        IActor* actor = chimera::CmGetApp()->VGetLogic()->VFindActor(pCastEventData->m_actorId);
 
-        std::shared_ptr<event::NewComponentCreatedEvent> pCastEventData = std::static_pointer_cast<event::NewComponentCreatedEvent>(pEventData);
-        std::shared_ptr<tbd::Actor> actor = app::g_pApp->GetLogic()->VFindActor(pCastEventData->m_actorId);
-
-        if(pCastEventData->m_id == tbd::RenderComponent::COMPONENT_ID)
+        auto it = m_nodeCreators.find(pCastEventData->m_id);
+        if(it == m_nodeCreators.end())
         {
-            std::shared_ptr<tbd::RenderComponent> comp = actor->GetComponent<tbd::RenderComponent>(tbd::RenderComponent::COMPONENT_ID).lock();
+            return;
+        }
 
-            std::shared_ptr<tbd::ISceneNode> node;
+        std::unique_ptr<ISceneNode> node(it->second(this, actor));
 
+        if(node)
+        {
+            node->VOnRestore(m_pSceneGraph);
+
+            m_pSceneGraph->VAddChild(pCastEventData->m_actorId, std::move(node));
+        }
+        else
+        {
+            LOG_CRITICAL_ERROR_A("%s", "hmm");
+        }
+
+        //if(pCastEventData->m_id == CM_CMP_RENDERING)
+        {
+            //
+			/*
             if(comp->m_sceneNode)
             {
                 node = comp->m_sceneNode;
@@ -119,125 +193,147 @@ namespace tbd
             }
             else if(comp->m_type == "anchor")
             {
-                node = std::shared_ptr<tbd::AnchorNode>(
-                    new tbd::AnchorNode(eSPHERE, actor->GetId(), comp->m_info.c_str(), comp->m_anchorRadius, comp->m_drawType == "solid" ? eSolid : eWire));
+                node = std::shared_ptr<chimera::AnchorNode>(
+                    new chimera::AnchorNode(eSPHERE, actor->GetId(), comp->m_info.c_str(), comp->m_anchorRadius, comp->m_drawType == "solid" ? eSolid : eWire));
             }
             else if(comp->m_type == "skydome")
             {
-                node = std::shared_ptr<tbd::SkyDomeNode>(new tbd::SkyDomeNode(actor->GetId(), comp->m_info));
+                node = std::shared_ptr<chimera::SkyDomeNode>(new chimera::SkyDomeNode(actor->GetId(), comp->m_info));
             }
             else if(!comp->m_instances.empty())
             {
-                node = std::shared_ptr<tbd::InstancedMeshNode>(new tbd::InstancedMeshNode(actor->GetId(), comp->m_meshFile));
+                node = std::shared_ptr<chimera::InstancedMeshNode>(new chimera::InstancedMeshNode(actor->GetId(), comp->m_meshFile));
             }
             else
             {
-                 node = std::shared_ptr<tbd::MeshNode>(new tbd::MeshNode(actor->GetId(), comp->m_meshFile));
-            }
+                
+            }*/
 
-            m_pSceneGraph->AddChild(pCastEventData->m_actorId, node);
-
-            node->VOnRestore(m_pSceneGraph);
-
-            comp->VSetHandled();
+			//
+            
         }
 
-        else if(pCastEventData->m_id == tbd::LightComponent::COMPONENT_ID)
+		/*
+        else if(pCastEventData->m_id == chimera::LightComponent::COMPONENT_ID)
         {
-            std::shared_ptr<tbd::LightComponent> comp = actor->GetComponent<tbd::LightComponent>(tbd::LightComponent::COMPONENT_ID).lock();
+            std::shared_ptr<chimera::LightComponent> comp = actor->GetComponent<chimera::LightComponent>(chimera::LightComponent::COMPONENT_ID).lock();
 
-            std::shared_ptr<tbd::SceneNode> node;
+            std::shared_ptr<chimera::ISceneNode> node;
 
             if(comp->m_type == "point")
             {
-                node = std::shared_ptr<tbd::PointlightNode>(new tbd::PointlightNode(actor->GetId()));
+                node = std::shared_ptr<chimera::PointlightNode>(new chimera::PointlightNode(actor->GetId()));
             }
             else if(comp->m_type == "spot")
             {
-                node = std::shared_ptr<tbd::SpotlightNode>(new tbd::SpotlightNode(actor->GetId()));
+                node = std::shared_ptr<chimera::SpotlightNode>(new chimera::SpotlightNode(actor->GetId()));
             }
             else
             {
                 LOG_CRITICAL_ERROR_A("Unknown lighttype: %s", comp->m_type.c_str());
             }
 
-            m_pSceneGraph->AddChild(pCastEventData->m_actorId, node);
+            m_pSceneGraph->VAddChild(pCastEventData->m_actorId, node);
 
             node->VOnRestore(m_pSceneGraph);
 
             comp->VSetHandled();
         }
 
-        else if(pCastEventData->m_id == tbd::ParticleComponent::COMPONENT_ID)
+        else if(pCastEventData->m_id == chimera::ParticleComponent::COMPONENT_ID)
         {
-            std::shared_ptr<tbd::ParticleComponent> comp = actor->GetComponent<tbd::ParticleComponent>(tbd::ParticleComponent::COMPONENT_ID).lock();
+            std::shared_ptr<chimera::ParticleComponent> comp = actor->GetComponent<chimera::ParticleComponent>(chimera::ParticleComponent::COMPONENT_ID).lock();
 
-            std::shared_ptr<tbd::ParticleNode> node = std::shared_ptr<tbd::ParticleNode>(new tbd::ParticleNode(actor->GetId()));
+            std::shared_ptr<chimera::ParticleNode> node = std::shared_ptr<chimera::ParticleNode>(new chimera::ParticleNode(actor->GetId()));
 
-            m_pSceneGraph->AddChild(pCastEventData->m_actorId, node);
+            m_pSceneGraph->VAddChild(pCastEventData->m_actorId, node);
 
             node->VOnRestore(m_pSceneGraph);
 
             comp->VSetHandled();
         }
-        else if(pCastEventData->m_id == tbd::CameraComponent::COMPONENT_ID)
+        else if(pCastEventData->m_id == chimera::CameraComponent::COMPONENT_ID)
         {
-            std::shared_ptr<tbd::SceneNode> node = std::shared_ptr<tbd::CameraNode>(new tbd::CameraNode(actor->GetId()));
+            std::shared_ptr<chimera::SceneNode> node = std::shared_ptr<chimera::CameraNode>(new chimera::CameraNode(actor->GetId()));
 
-            m_pSceneGraph->AddChild(pCastEventData->m_actorId, node);
+            m_pSceneGraph->VAddChild(pCastEventData->m_actorId, node);
 
             node->VOnRestore(m_pSceneGraph);
         }
+        */
     }
 
-    VOID HumanGameView::AddScreenElement(tbd::IScreenElement* element)
+    VOID HumanGameView::VAddSceneNodeCreator(SceneNodeCreator nc, ComponentId cmpid)
     {
-        m_screenElements.push_back(element);
-        element->VOnRestore();
+         auto f = m_nodeCreators.find(cmpid);
+         if(f == m_nodeCreators.end())
+         {
+             m_nodeCreators.insert(std::pair<ComponentId, SceneNodeCreator>(cmpid, nc));
+         }
+         else
+         {
+             LOG_CRITICAL_ERROR("CMPID already has a creator isntalled!");
+         }
     }
 
-    tbd::IScreenElement* HumanGameView::GetScreenElementByName(LPCSTR name)
+    VOID HumanGameView::VRemoveSceneNodeCreator(ComponentId cmpid)
+    {
+        auto f = m_nodeCreators.find(cmpid);
+        if(f != m_nodeCreators.end())
+        {
+            m_nodeCreators.erase(cmpid);
+        }
+    }
+
+    VOID HumanGameView::VAddScreenElement(std::unique_ptr<IScreenElement> element)
+    {
+		element->VOnRestore();
+		m_screenElements.push_back(std::move(element));
+    }
+
+    IScreenElement* HumanGameView::VGetScreenElementByName(LPCSTR name)
     {
         TBD_FOR(m_screenElements)
         {
             if((*it)->VGetName() == std::string(name))
             {
-                return *it;
+                return (*it).get();
             }
         }
         return NULL;
     }
 
-    VOID HumanGameView::DeleteActorDelegate(event::IEventPtr pEventData)
+    VOID HumanGameView::DeleteActorDelegate(IEventPtr pEventData)
     {
-        std::shared_ptr<event::ActorDeletedEvent> pCastEventData = std::static_pointer_cast<event::ActorDeletedEvent>(pEventData);
+        std::shared_ptr<ActorDeletedEvent> pCastEventData = std::static_pointer_cast<ActorDeletedEvent>(pEventData);
 
-        m_pSceneGraph->RemoveChild(pCastEventData->m_id);
+        m_pSceneGraph->VRemoveChild(pCastEventData->m_id);
     }
 
-    VOID HumanGameView::LevelLoadedDelegate(event::IEventPtr pEventData)
+    VOID HumanGameView::LevelLoadedDelegate(IEventPtr pEventData)
     {
 
     }
 
-    VOID HumanGameView::LoadingLevelDelegate(event::IEventPtr pEventData)
+    VOID HumanGameView::LoadingLevelDelegate(IEventPtr pEventData)
     {
         
     }
 
-    VOID HumanGameView::SetParentDelegate(event::IEventPtr pEventData)
+    VOID HumanGameView::SetParentDelegate(IEventPtr pEventData)
     {
         //if(pEventData->VGetEventType() == event::SetParentActorEvent::TYPE) needed?
         {
-            std::shared_ptr<event::SetParentActorEvent> e = std::static_pointer_cast<event::SetParentActorEvent>(pEventData);
+            std::shared_ptr<SetParentActorEvent> e = std::static_pointer_cast<SetParentActorEvent>(pEventData);
             ActorId actor = e->m_actor;
             ActorId parent = e->m_parentActor;
 
-            std::shared_ptr<tbd::ISceneNode> p = m_pSceneGraph->FindActorNode(parent);
-            std::shared_ptr<tbd::ISceneNode> a = m_pSceneGraph->FindActorNode(actor);
+            ISceneNode* p = m_pSceneGraph->VFindActorNode(parent);
+            ISceneNode* a = m_pSceneGraph->VFindActorNode(actor);
             if(p)
             {
-                p->VAddChild(a);
+                //p->VAddChild(a);
+                LOG_CRITICAL_ERROR("ASD");
             }
             else
             {
@@ -246,145 +342,121 @@ namespace tbd
         }
     }
 
-    VOID HumanGameView::ToggleConsole(VOID)
+    /*VOID HumanGameView::ToggleConsole(VOID)
     {
-        tbd::gui::GuiConsole* c = GetConsole();
+        chimera::gui::GuiConsole* c = GetConsole();
         c->VSetActive(!c->VIsActive());
     }
 
-    tbd::gui::GuiConsole* HumanGameView::GetConsole(VOID)
+    chimera::gui::GuiConsole* HumanGameView::GetConsole(VOID)
     {
-        return (tbd::gui::GuiConsole*)m_pGui->GetComponent("console");
-    }
+        return (chimera::gui::GuiConsole*)m_pGui->GetComponent("console");
+    } */
 
     VOID HumanGameView::VOnUpdate(ULONG deltaMillis)
     {
-        switch(app::g_pApp->GetLogic()->GetGameState())
+        switch(CmGetApp()->VGetLogic()->VGetGameState())
         {
-        case tbd::eRunning :
+        case CM_STATE_RUNNING :
             {
-                m_pSceneGraph->OnUpdate(deltaMillis);
-                m_pGui->VUpdate(deltaMillis);
+                m_pSceneGraph->VOnUpdate(deltaMillis);
+                m_pVramManager->VUpdate(deltaMillis);
+                //m_pGui->VUpdate(deltaMillis);
             } break;
-        case tbd::eLoadingLevel :
+        case CM_STATE_LOADING :
             {
                 //todo
             } break;
 
-        case tbd::ePause : 
+        case CM_STATE_PAUSED : 
             {
 
             } break;
         }
     }
 
-    VOID HumanGameView::AddScene(tbd::RenderScreen* screen)
+    VOID HumanGameView::VAddScene(std::unique_ptr<IRenderScreen> screen)
     {
-        m_scenes.push_back(screen);
         screen->VOnRestore();
-        if(!m_currentScene)
+        std::string name(screen->VGetName());
+        m_scenes.push_back(std::move(screen));
+        if(!m_pCurrentScene)
         {
-            ActivateScene(screen->VGetName());
+            VActivateScene(name.c_str());
         }
     }
 
-    tbd::RenderScreen* HumanGameView::GetSceneByName(LPCSTR name)
+    IRenderScreen* HumanGameView::VGetSceneByName(LPCSTR name)
     {
         TBD_FOR(m_scenes)
         {
             if((*it)->VGetName() == std::string(name))
             {
-                return *it;
+                return (*it).get();
             }
         }
         return NULL;
     }
 
-    VOID HumanGameView::ActivateScene(LPCSTR name)
+    VOID HumanGameView::VActivateScene(LPCSTR name)
     {
         TBD_FOR(m_scenes)
         {
             if((*it)->VGetName() == std::string(name))
             {
-                m_currentScene = *it;
-                m_currentScene->GetSettings()->VOnActivate();
+                m_pCurrentScene = (*it).get();
+                m_pCurrentScene->VGetSettings()->VOnActivate();
             }
         }
     }
 
-    HRESULT HumanGameView::VOnRestore()
+    VOID HumanGameView::VOnAttach(UINT viewId, IActor* actor) 
     {
-        GetRenderer()->VOnRestore();
+        /*
+        m_pSceneGraph = new chimera::SceneGraph();
 
-        TBD_FOR(m_scenes)
-        {
-            (*it)->VOnRestore();
-        }
-
-        TBD_FOR(m_screenElements)
-        {
-            (*it)->VOnRestore();
-        }
-
-        if(m_pGui)
-        {
-            m_pGui->VOnRestore();
-        }
-
-        m_pSceneGraph->OnRestore();
-
-        GetRenderer()->VSetProjectionTransform(m_pSceneGraph->GetCamera()->GetProjection(), m_pSceneGraph->GetCamera()->GetFar());
-        GetRenderer()->VSetViewTransform(m_pSceneGraph->GetCamera()->GetView(), m_pSceneGraph->GetCamera()->GetIView(), m_pSceneGraph->GetCamera()->GetEyePos());
-
-        return S_OK;
-    }
-
-    VOID HumanGameView::VOnAttach(UINT viewId, std::shared_ptr<tbd::Actor> actor) 
-    {
-        m_pSceneGraph = new tbd::SceneGraph();
-
-        event::EventListener listener = fastdelegate::MakeDelegate(this, &HumanGameView::ActorMovedDelegate);
-        event::IEventManager::Get()->VAddEventListener(listener, event::ActorMovedEvent::TYPE);
+        chimera::EventListener listener = fastdelegate::MakeDelegate(this, &HumanGameView::ActorMovedDelegate);
+        chimera::IEventManager::Get()->VAddEventListener(listener, chimera::ActorMovedEvent::TYPE);
 
         listener = fastdelegate::MakeDelegate(this, &HumanGameView::NewComponentDelegate);
-        event::IEventManager::Get()->VAddEventListener(listener, event::NewComponentCreatedEvent::TYPE);
+        chimera::IEventManager::Get()->VAddEventListener(listener, chimera::NewComponentCreatedEvent::TYPE);
 
         listener = fastdelegate::MakeDelegate(this, &HumanGameView::LoadingLevelDelegate);
-        event::IEventManager::Get()->VAddEventListener(listener, event::LoadingLevelEvent::TYPE);
+        chimera::IEventManager::Get()->VAddEventListener(listener, chimera::LoadingLevelEvent::TYPE);
 
         listener = fastdelegate::MakeDelegate(this, &HumanGameView::LevelLoadedDelegate);
-        event::IEventManager::Get()->VAddEventListener(listener, event::LevelLoadedEvent::TYPE);
+        chimera::IEventManager::Get()->VAddEventListener(listener, chimera::LevelLoadedEvent::TYPE);
 
         listener = fastdelegate::MakeDelegate(this, &HumanGameView::DeleteActorDelegate);
-        event::IEventManager::Get()->VAddEventListener(listener, event::DeleteActorEvent::TYPE);
+        chimera::IEventManager::Get()->VAddEventListener(listener, chimera::DeleteActorEvent::TYPE);
 
-        ADD_EVENT_LISTENER(this, &HumanGameView::SetParentDelegate, event::SetParentActorEvent::TYPE);
+        ADD_EVENT_LISTENER(this, &HumanGameView::SetParentDelegate, chimera::SetParentActorEvent::TYPE);
 
-        m_pSceneGraph->SetCamera(std::shared_ptr<util::ICamera>(new util::FPSCamera(GetRenderer()->VGetWidth(), GetRenderer()->VGetHeight(), 1e-2f, 1e3f)));
+        m_pSceneGraph->VSetCamera(std::shared_ptr<chimera::ICamera>(new util::FPSCamera(VGetRenderer()->VGetWidth(), VGetRenderer()->VGetHeight(), 1e-2f, 1e3f)));
 
-        GetRenderer()->VSetProjectionTransform(m_pSceneGraph->GetCamera()->GetProjection(), m_pSceneGraph->GetCamera()->GetFar());
-        GetRenderer()->VSetViewTransform(m_pSceneGraph->GetCamera()->GetView(), m_pSceneGraph->GetCamera()->GetIView(), m_pSceneGraph->GetCamera()->GetEyePos());
+        VGetRenderer()->VSetProjectionTransform(m_pSceneGraph->GetCamera()->GetProjection(), m_pSceneGraph->GetCamera()->GetFar());
+        VGetRenderer()->VSetViewTransform(m_pSceneGraph->GetCamera()->GetView(), m_pSceneGraph->GetCamera()->GetIView(), m_pSceneGraph->GetCamera()->GetEyePos());
 
         m_picker = new ActorPicker();
 
         m_picker->VCreate();
 
-        GetVRamManager()->RegisterHandleCreator("ParticleQuadGeometry", new tbd::ParticleQuadGeometryHandleCreator()); //TODO not needed anymore
+        GetVRamManager()->RegisterHandleCreator("ParticleQuadGeometry", new chimera::ParticleQuadGeometryHandleCreator()); //TODO not needed anymore
 
-        m_pParticleManager = new tbd::ParticleManager();
+        m_pParticleManager = new chimera::ParticleManager();
 
-        tbd::gui::GuiConsole* console = new tbd::gui::GuiConsole();
+        chimera::gui::GuiConsole* console = new chimera::gui::GuiConsole();
 
-        tbd::Dimension dim;
+        chimera::CMDimension dim;
         dim.x = 0;
         dim.y = 0;
-        dim.w = d3d::g_width;
-        dim.h = (INT)(d3d::g_height * 0.4f);
+        dim.w = chimera::g_width;
+        dim.h = (INT)(chimera::g_height * 0.4f);
         console->VSetAlpha(0.5f);
         console->VSetBackgroundColor(0.25f,0.25f,0.25f);
         console->VSetDimension(dim);
 
-        m_pGui = new tbd::gui::D3D_GUI();
+        m_pGui = new chimera::gui::D3D_GUI();
 
         m_pGui->VOnRestore();
 
@@ -392,21 +464,21 @@ namespace tbd
 
         console->VSetActive(FALSE);
 
-        app::PostInitMessage("Loading Sound ...");
-        m_pSoundSystem = new tbd::DirectSoundSystem();
+        chimera::PostInitMessage("Loading Sound ...");
+        m_pSoundSystem = new chimera::DirectSoundSystem();
 
         if(!m_pSoundSystem->VInit())
         {
             LOG_WARNING("Failed to create SoundSystem");
         }
 
-        listener = fastdelegate::MakeDelegate(&m_soundEngine, &tbd::SoundEngine::CollisionEventDelegate);
-        event::IEventManager::Get()->VAddEventListener(listener, event::CollisionEvent::TYPE);
+        listener = fastdelegate::MakeDelegate(&m_soundEngine, &chimera::SoundEngine::CollisionEventDelegate);
+        chimera::IEventManager::Get()->VAddEventListener(listener, chimera::CollisionEvent::TYPE);
 
-        listener = fastdelegate::MakeDelegate(&m_soundEngine, &tbd::SoundEngine::NewComponentDelegate);
-        event::IEventManager::Get()->VAddEventListener(listener, event::NewComponentCreatedEvent::TYPE);
-
-        IGameView::VOnAttach(viewId, actor);
+        listener = fastdelegate::MakeDelegate(&m_soundEngine, &chimera::SoundEngine::NewComponentDelegate);
+        chimera::IEventManager::Get()->VAddEventListener(listener, chimera::NewComponentCreatedEvent::TYPE);
+        */
+        IView::VOnAttach(viewId, actor);
     }
 
     VOID HumanGameView::VPostRender(VOID)
@@ -414,55 +486,60 @@ namespace tbd
         //m_picker->VPostRender();
     }
 
-    VOID HumanGameView::VOnRender(DOUBLE time, FLOAT elapsedTime) 
+    VOID HumanGameView::VOnRender(VOID) 
     {        
-        app::g_pApp->GetRenderer()->ClearBackbuffer();
-        switch(app::g_pApp->GetLogic()->GetGameState())
+        m_pCurrentScene->VDraw();
+		TBD_FOR(m_screenElements)
+		{
+			(*it)->VDraw();
+		}
+        /*
+        switch(chimera::CmGetApp()->VGetLogic()->VGetGameState())
         {
-        case tbd::eRunning : 
+        case chimera::eRunning : 
             {
-                m_currentScene->VDraw();
-                TBD_FOR(m_screenElements)
-                {
-                    (*it)->VDraw();
-                }
-                m_pGui->VDraw();
+                m_pCurrentScene->VDraw();
+               // m_pGui->VDraw();
 
             } break;
-        case tbd::eLoadingLevel : 
+        case chimera::eLoadingLevel : 
             {
+                VGetRenderer()->VClearAndBindBackBuffer();
                 //TODO: GUI Label class maybe?
-                app::g_pApp->GetHumanView()->GetRenderer()->VPreRender();
+                VGetRenderer()->VPreRender();
                 std::string text("Loading Level");
-                app::g_pApp->GetFontManager()->RenderText(text, 0.45f, 0.5f);
+                VGetRenderer()->VPostRender();
                 text = "";
-                for(UCHAR c = 0; c < app::g_pApp->GetLogic()->GetLevelLoadProgress() * 100; ++c)
+                /*for(UCHAR c = 0; c < chimera::CmGetApp()->VGetLogic()->VGetLevelLoadProgress() * 100; ++c)
                 {
                     text += ".";
-                }
-                app::g_pApp->GetFontManager()->RenderText(text, 0.30f, 0.6f);
-                app::g_pApp->GetHumanView()->GetRenderer()->VPostRender();
+                } */
+                /*chimera::CmGetApp()->VGetFontManager()->VRenderText(text, 0.30f, 0.6f);
+                VGetRenderer()->VPostRender();
             } break;
-        case tbd::ePause : 
+        case chimera::ePause : 
             {
-                app::g_pApp->GetHumanView()->GetRenderer()->VPreRender();
-                app::g_pApp->GetFontManager()->RenderText("Paused", 0.01f, 0.1f);
-                app::g_pApp->GetHumanView()->GetRenderer()->VPostRender();
+                VGetRenderer()->VClearAndBindBackBuffer();
+                VGetRenderer()->VPreRender();
+                chimera::CmGetApp()->VGetFontManager()->VRenderText("Paused", 0.01f, 0.1f);
+                VGetRenderer()->VPostRender();
             } break;
-        }
+        } */
+
+        VGetRenderer()->VPresent();  
     }
 
-    VOID HumanGameView::VSetTarget(std::shared_ptr<tbd::Actor> actor) 
+    VOID HumanGameView::VSetTarget(IActor* actor) 
     {
         if(actor)
         {
-            std::shared_ptr<tbd::CameraComponent> comp = actor->GetComponent<tbd::CameraComponent>(tbd::CameraComponent::COMPONENT_ID).lock();
+            CameraComponent* comp = GetActorCompnent<CameraComponent>(actor, CM_CMP_CAMERA);
 
             if(comp)
             {
-                std::shared_ptr<util::ICamera> cam = comp->GetCamera();
+                std::shared_ptr<ICamera> cam = comp->GetCamera();
 
-                std::shared_ptr<tbd::TransformComponent> transComp = actor->GetComponent<tbd::TransformComponent>(tbd::TransformComponent::COMPONENT_ID).lock();
+                TransformComponent* transComp = GetActorCompnent<TransformComponent>(actor, CM_CMP_TRANSFORM);
 
                 if(!transComp)
                 {
@@ -471,12 +548,12 @@ namespace tbd
       
                 cam->MoveToPosition(transComp->GetTransformation()->GetTranslation());
    
-                IGameView::VSetTarget(actor);
+                IView::VSetTarget(actor);
 
-                GetRenderer()->VSetViewTransform(cam->GetView(), cam->GetIView(), cam->GetEyePos());
-                GetRenderer()->VSetProjectionTransform(cam->GetProjection(), cam->GetFar() - cam->GetNear());
+                VGetRenderer()->VSetViewTransform(cam->GetView(), cam->GetIView(), cam->GetEyePos());
+                VGetRenderer()->VSetProjectionTransform(cam->GetProjection(), cam->GetFar() - cam->GetNear());
 
-                m_pSceneGraph->SetCamera(cam);                
+                m_pSceneGraph->VSetCamera(cam);                
             }
             else
             {
@@ -487,50 +564,62 @@ namespace tbd
 
     HumanGameView::~HumanGameView(VOID) 
     {
-        if(event::IEventManager::Get())
+		REMOVE_EVENT_LISTENER(this, &HumanGameView::ActorMovedDelegate, CM_EVENT_ACTOR_MOVED);
+
+		REMOVE_EVENT_LISTENER(this, &HumanGameView::NewComponentDelegate, CM_EVENT_COMPONENT_CREATED);
+        /*
+        if(chimera::IEventManager::Get())
         {
-            event::EventListener listener = fastdelegate::MakeDelegate(this, &HumanGameView::ActorMovedDelegate);
-            event::IEventManager::Get()->VRemoveEventListener(listener, event::ActorMovedEvent::TYPE);
+            chimera::EventListener listener = fastdelegate::MakeDelegate(this, &HumanGameView::ActorMovedDelegate);
+            chimera::IEventManager::Get()->VRemoveEventListener(listener, chimera::ActorMovedEvent::TYPE);
 
             listener = fastdelegate::MakeDelegate(this, &HumanGameView::NewComponentDelegate);
-            event::IEventManager::Get()->VRemoveEventListener(listener, event::NewComponentCreatedEvent::TYPE);
+            chimera::IEventManager::Get()->VRemoveEventListener(listener, chimera::NewComponentCreatedEvent::TYPE);
 
             listener = fastdelegate::MakeDelegate(this, &HumanGameView::LevelLoadedDelegate);
-            event::IEventManager::Get()->VRemoveEventListener(listener, event::LevelLoadedEvent::TYPE);
+            chimera::IEventManager::Get()->VRemoveEventListener(listener, chimera::LevelLoadedEvent::TYPE);
 
             listener = fastdelegate::MakeDelegate(this, &HumanGameView::LoadingLevelDelegate);
-            event::IEventManager::Get()->VRemoveEventListener(listener, event::LoadingLevelEvent::TYPE);
+            chimera::IEventManager::Get()->VRemoveEventListener(listener, chimera::LoadingLevelEvent::TYPE);
 
             listener = fastdelegate::MakeDelegate(this, &HumanGameView::DeleteActorDelegate);
-            event::IEventManager::Get()->VRemoveEventListener(listener, event::DeleteActorEvent::TYPE);
+            chimera::IEventManager::Get()->VRemoveEventListener(listener, chimera::DeleteActorEvent::TYPE);
 
-            listener = fastdelegate::MakeDelegate(&m_soundEngine, &tbd::SoundEngine::CollisionEventDelegate);
-            event::IEventManager::Get()->VRemoveEventListener(listener, event::CollisionEvent::TYPE);
+            listener = fastdelegate::MakeDelegate(&m_soundEngine, &chimera::SoundEngine::CollisionEventDelegate);
+            chimera::IEventManager::Get()->VRemoveEventListener(listener, chimera::CollisionEvent::TYPE);
 
-            listener = fastdelegate::MakeDelegate(&m_soundEngine, &tbd::SoundEngine::NewComponentDelegate);
-            event::IEventManager::Get()->VRemoveEventListener(listener, event::NewComponentCreatedEvent::TYPE);
+            listener = fastdelegate::MakeDelegate(&m_soundEngine, &chimera::SoundEngine::NewComponentDelegate);
+            chimera::IEventManager::Get()->VRemoveEventListener(listener, chimera::NewComponentCreatedEvent::TYPE);
 
-            REMOVE_EVENT_LISTENER(this, &HumanGameView::SetParentDelegate, event::SetParentActorEvent::TYPE);
-        }
+            REMOVE_EVENT_LISTENER(this, &HumanGameView::SetParentDelegate, chimera::SetParentActorEvent::TYPE);
+        } */
 
         TBD_FOR(m_screenElements)
         {
-            SAFE_DELETE(*it);
+			it->reset();
         }
 
         TBD_FOR(m_scenes)
         {
-            SAFE_DELETE(*it);
+			it->reset();
         }
 
         SAFE_DELETE(m_pSoundSystem);
         
-        SAFE_DELETE(m_pGui);
-
-        SAFE_DELETE(m_pParticleManager);
+        //SAFE_DELETE(m_pGui);
 
         SAFE_DELETE(m_picker);
 
         SAFE_DELETE(m_pSceneGraph);
+
+		SAFE_DELETE(m_pEffectFactory);
+
+        SAFE_DELETE(m_pVramManager);
+
+        SAFE_DELETE(m_pGraphicsFactory);
+
+        //always last
+        SAFE_RESET(m_pRenderer);
+        //m_pRenderer.reset();
     }
 }

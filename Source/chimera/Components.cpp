@@ -1,67 +1,21 @@
 #include "Components.h"
-#include "Vec3.h"
-#include "EventManager.h"
-#include "GameApp.h"
-#include "Thread.h"
-#include "math.h"
 #include "tinyxml2.h"
-#include "GameView.h"
-#include "D3DRenderer.h"
-#include "Camera.h"
-#include "Process.h"
 #include "Event.h"
-#include "GameView.h"
-#include "SceneGraph.h"
 
-namespace tbd 
+namespace chimera 
 {
-    CONST ComponentId TransformComponent::COMPONENT_ID = 0xdb756713;
-    CONST ComponentId RenderComponent::COMPONENT_ID = 0x8beb1acc;
-    CONST ComponentId CameraComponent::COMPONENT_ID = 0xb8a716ca;
-    CONST ComponentId PhysicComponent::COMPONENT_ID = 0xc1514f;
-    CONST ComponentId LightComponent::COMPONENT_ID = 0x1b5b0ea4;
-    CONST ComponentId PickableComponent::COMPONENT_ID = 0xd295188c;
-    CONST ComponentId ParticleComponent::COMPONENT_ID = 0x746a7b4a;
-    CONST ComponentId SoundComponent::COMPONENT_ID = 0x568a0c05;
-    CONST ComponentId ParentComponent::COMPONENT_ID = 0xde7b06f1;
-
-    ActorComponent::ActorComponent(VOID) : m_waitTillHandled(FALSE), m_handle(NULL)
+    ActorComponent::ActorComponent(VOID)
     {
-        m_handle = CreateEvent(NULL, FALSE, FALSE, NULL);
+
     }
 
     VOID ActorComponent::VPostInit(VOID)
     {
-        std::shared_ptr<tbd::Actor> owner = this->m_owner.lock();
-        event::IEventPtr event = std::shared_ptr<event::NewComponentCreatedEvent>(new event::NewComponentCreatedEvent(GetComponentId(), owner->GetId()));
-        event::IEventManager::Get()->VQueueEventThreadSave(event);
-    }
 
-    VOID ActorComponent::VSetHandled(VOID)
-    {
-        if(m_handle)
-        {
-            SetEvent(m_handle);
-        }
     }
 
     ActorComponent::~ActorComponent(VOID)
     {
-        if(m_handle)
-        {
-            CloseHandle(m_handle);
-        }
-    }
-
-    BOOL ParticleComponent::VInit(tinyxml2::XMLElement* pData)
-    {
-
-        return TRUE;
-    }
-
-    VOID ParticleComponent::VSave(tinyxml2::XMLElement* pData) CONST
-    {
-
     }
 
     TransformComponent::TransformComponent(VOID) : m_phi(0), m_theta(0)
@@ -69,8 +23,9 @@ namespace tbd
 
     }
 
-    BOOL TransformComponent::VInit(tinyxml2::XMLElement* pData) 
+    BOOL TransformComponent::VInitialize(IStream* stream)
     {
+        /*
         tinyxml2::XMLElement* trans = pData->FirstChildElement("Position");
 
         if(trans)
@@ -104,12 +59,13 @@ namespace tbd
             RETURN_IF_FAILED(tinyxml2::XML_NO_ATTRIBUTE != scale->QueryFloatAttribute("z", &z));
             m_transformation.SetScale(x, y, z);
         }
-
+        */
         return TRUE;
     }
 
-    VOID TransformComponent::VSave(tinyxml2::XMLElement* pData) CONST
+    VOID TransformComponent::VSerialize(IStream* stream) CONST
     {
+        /*
         tinyxml2::XMLDocument* doc = pData->GetDocument();
         tinyxml2::XMLElement* transform = doc->NewElement("TransformComponent");
         tinyxml2::XMLElement* position = doc->NewElement("Position");
@@ -138,11 +94,12 @@ namespace tbd
 
         transform->LinkEndChild(rotation);
 
-        pData->LinkEndChild(transform);
+        pData->LinkEndChild(transform); */
     }
 
-    BOOL CameraComponent::VInit(tinyxml2::XMLElement* pData) 
+    BOOL CameraComponent::VInitialize(IStream* stream)
     {
+        /*
         tinyxml2::XMLElement* settings = pData->FirstChildElement("Settings");
         if(settings)
         {
@@ -169,8 +126,8 @@ namespace tbd
             if(m_type == "FPSCharacter")
             {
                 m_camera = std::shared_ptr<util::FPSCamera>(new util::CharacterCamera(
-                    app::g_pApp->GetHumanView()->GetRenderer()->VGetWidth(), 
-                    app::g_pApp->GetHumanView()->GetRenderer()->VGetHeight(), 
+                    chimera::g_pApp->GetHumanView()->GetRenderer()->VGetWidth(), 
+                    chimera::g_pApp->GetHumanView()->GetRenderer()->VGetHeight(), 
                     (FLOAT)n, 
                     (FLOAT)f)
                     );
@@ -178,39 +135,39 @@ namespace tbd
             else if(m_type == "FPSShakeCharacter")
             {
                 m_camera = std::shared_ptr<util::FPSCamera>(new util::CharacterHeadShake(
-                    app::g_pApp->GetHumanView()->GetRenderer()->VGetWidth(), 
-                    app::g_pApp->GetHumanView()->GetRenderer()->VGetHeight(), 
+                    chimera::g_pApp->GetHumanView()->GetRenderer()->VGetWidth(), 
+                    chimera::g_pApp->GetHumanView()->GetRenderer()->VGetHeight(), 
                     (FLOAT)n, 
                     (FLOAT)f)
-                    );
+                    ); 
             }
             else if(m_type == "FPSStatic")
             {
                 m_camera = std::shared_ptr<util::StaticCamera>(new util::StaticCamera(
-                    app::g_pApp->GetHumanView()->GetRenderer()->VGetWidth(), 
-                    app::g_pApp->GetHumanView()->GetRenderer()->VGetHeight(), 
+                    chimera::g_pApp->GetHumanView()->GetRenderer()->VGetWidth(), 
+                    chimera::g_pApp->GetHumanView()->GetRenderer()->VGetHeight(), 
                     (FLOAT)n, 
                     (FLOAT)f)
-                    );
+                    ); 
             }
             else
             {
                 LOG_CRITICAL_ERROR("FPS Camera is bugged"); //use FPSCharacter
-                /*m_camera = std::shared_ptr<util::FPSCamera>(new util::FPSCamera(
+                m_camera = std::shared_ptr<util::FPSCamera>(new util::FPSCamera(
                     app::g_pApp->GetHumanView()->GetRenderer()->VGetWidth(), 
                     app::g_pApp->GetHumanView()->GetRenderer()->VGetHeight(), 
                     (FLOAT)n, 
                     (FLOAT)f)
-                    ); */
+                    ); 
             }
             //RETURN_IF_FAILED(type);
 
             m_camera->SetFoV(DEGREE_TO_RAD(fov));
-            /*this->m_aspect = (FLOAT)aspect;
+            this->m_aspect = (FLOAT)aspect;
             this->m_far = (FLOAT)f;
             this->m_near = (FLOAT)n;
             this->m_FoV = (FLOAT)fov / 180.0f * XM_PI;
-            this->m_viewDir.Set((INT)viewDir == 0, (INT)viewDir == 1, (INT)viewDir == 2); */
+            this->m_viewDir.Set((INT)viewDir == 0, (INT)viewDir == 1, (INT)viewDir == 2);
 
             return TRUE;
         }
@@ -218,6 +175,8 @@ namespace tbd
         {
             return FALSE;
         }
+        */
+        return TRUE;
     }
 
     RenderComponent::RenderComponent(VOID)
@@ -228,16 +187,16 @@ namespace tbd
         m_anchorRadius = 1.0f;
         m_anchorBoxHE.Set(1, 1, 1);
         m_sceneNode = NULL;
-        WaitTillHandled();
     }
 
-    BOOL RenderComponent::VInit(tinyxml2::XMLElement* pData) 
+    BOOL RenderComponent::VInitialize(IStream* stream)
     {
+        /*
         tinyxml2::XMLElement* source = pData->FirstChildElement("MeshFile");
         //RETURN_IF_FAILED(source);
         if(source)
         {
-            m_meshFile = tbd::Resource(source->GetText());
+            m_meshFile = CMResource(source->GetText());
         }
 
         tinyxml2::XMLElement* type = pData->FirstChildElement("Type");
@@ -253,12 +212,13 @@ namespace tbd
         {
             m_info = info->GetText();
         }
-
+        */
         return TRUE;
     }
 
-    VOID RenderComponent::VSave(tinyxml2::XMLElement* pData) CONST
+    VOID RenderComponent::VSerialize(IStream* stream) CONST
     {
+        /*
         tinyxml2::XMLDocument* doc = pData->GetDocument();
         tinyxml2::XMLElement* cmp = doc->NewElement("RenderComponent");
         tinyxml2::XMLElement* source = doc->NewElement("MeshFile");
@@ -279,20 +239,26 @@ namespace tbd
         cmp->LinkEndChild(source);
         source->LinkEndChild(text);
 
-        pData->LinkEndChild(cmp);
+        pData->LinkEndChild(cmp); */
     }
 
     VOID RenderComponent::VCreateResources(VOID)
     {
-        if(m_meshFile.m_name != "unknown")
+        CMResource c;
+        if(m_resource != c)
         {
-            app::g_pApp->GetHumanView()->GetVRamManager()->GetHandle(m_meshFile);
+            CmGetApp()->VGetHumanView()->VGetVRamManager()->VGetHandle(CMResource(m_resource));
         }
-        //DEBUG_OUT(m_meshFile.m_name + " done");
+/*
+        if(CMResource(m_info) != c)
+        {
+            CmGetApp()->VGetCache()->VGetHandle(CMResource(m_info));
+        }*/
     }
 
-    BOOL PhysicComponent::VInit(tinyxml2::XMLElement* pData) 
+    BOOL PhysicComponent::VInitialize(IStream* stream)
     {
+        /*
          tinyxml2::XMLElement* shape = pData->FirstChildElement("Shape");
          RETURN_IF_FAILED(shape);
 
@@ -328,14 +294,15 @@ namespace tbd
 
          if(file)
          {
-             m_meshFile = tbd::Resource(file->GetText());
+             m_meshFile = chimera::CMResource(file->GetText());
          }
- 
+         */
          return TRUE;
     }
 
-    VOID PhysicComponent::VSave(tinyxml2::XMLElement* pData) CONST
+    VOID PhysicComponent::VSerialize(IStream* stream) CONST
     {
+        /*
         tinyxml2::XMLDocument* doc = pData->GetDocument();
 
         tinyxml2::XMLElement* cmp = doc->NewElement("PhysicComponent");
@@ -363,22 +330,22 @@ namespace tbd
         elem->SetAttribute("z", m_dim.z);
         elem->SetAttribute("radius", m_radius);
         cmp->LinkEndChild(elem);
-        pData->LinkEndChild(cmp);
+        pData->LinkEndChild(cmp); */
     }
 
     VOID PhysicComponent::VCreateResources(VOID)
     {
-        tbd::Resource r;
-        if(m_meshFile.m_name != r.m_name)
+        CMResource c;
+        if(m_meshFile != c)
         {
-            app::g_pApp->GetCache()->GetHandle(m_meshFile);
+            CmGetApp()->VGetCache()->VGetHandle(CMResource(m_meshFile));
         }
     }
 
-    BOOL LightComponent::VInit(tinyxml2::XMLElement* pData)
+    BOOL LightComponent::VInitialize(IStream* stream)
     {
         m_activated = TRUE;
-
+        /*
         tinyxml2::XMLElement* file = pData->FirstChildElement("Type");
         RETURN_IF_FAILED(file);
         m_type = file->GetText();
@@ -399,12 +366,13 @@ namespace tbd
 
         a = pData->FirstChildElement("Intensity");
         m_intensity = (FLOAT)atof(a->GetText());
-
+        */
         return TRUE;
     }
 
-    VOID LightComponent::VSave(tinyxml2::XMLElement* pData) CONST
+    VOID LightComponent::VSerialize(IStream* stream) CONST
     {
+        /*
         tinyxml2::XMLDocument* doc = pData->GetDocument();
         tinyxml2::XMLElement* cmp = doc->NewElement("LightComponent");
         //cmp->
@@ -434,30 +402,36 @@ namespace tbd
         elem->LinkEndChild(text);
         cmp->LinkEndChild(elem);
 
-        pData->LinkEndChild(cmp);
+        pData->LinkEndChild(cmp);*/
     }
 
-    VOID PickableComponent::VSave(tinyxml2::XMLElement* pData) CONST
+    VOID PickableComponent::VSerialize(IStream* stream) CONST
     {
-        tinyxml2::XMLDocument* doc = pData->GetDocument();
+        /*tinyxml2::XMLDocument* doc = pData->GetDocument();
         tinyxml2::XMLElement* elem = doc->NewElement("PickableComponent");
-        pData->LinkEndChild(elem);
+        pData->LinkEndChild(elem); */
     }
 
     SoundComponent::SoundComponent(VOID) : m_loop(FALSE), m_soundFile("Unknown"), m_emitter(FALSE)
     {
-        WaitTillHandled();
+
     }
 
-    BOOL SoundComponent::VInit(tinyxml2::XMLElement* pData)
+    VOID SoundComponent::VCreateResources(VOID)
     {
+        CmGetApp()->VGetCache()->VGetHandle(CMResource(m_soundFile));
+    }
+
+    BOOL SoundComponent::VInitialize(IStream* stream)
+    {
+        /*
         tinyxml2::XMLElement* file = pData->FirstChildElement("SoundFile");
         RETURN_IF_FAILED(file);
         m_soundFile = file->GetText();
 
         tinyxml2::XMLElement* loop = pData->FirstChildElement("Loop");
         RETURN_IF_FAILED(loop);
-        m_loop = (file->GetText() == "true") || (file->GetText() == "TRUE");
+        m_loop = !strcmp(loop->GetText(), "true") || !strcmp(loop->GetText(), "TRUE");
 
         tinyxml2::XMLElement* radius = pData->FirstChildElement("Radius");
         RETURN_IF_FAILED(radius);
@@ -470,24 +444,17 @@ namespace tbd
         }
 
         tinyxml2::XMLElement* emit = pData->FirstChildElement("Emitter");
-        m_emitter = emit->GetText() == "false";
+        m_emitter = !strcmp(emit->GetText(), "true");*/
 
         return TRUE;
     }
 
-    VOID SoundComponent::VSave(tinyxml2::XMLElement* pData) CONST
+    VOID SoundComponent::VSerialize(IStream* stream) CONST
     {
 
     }
 
-    VOID SoundComponent::VCreateResources(VOID)
-    {
-        //warum up cache
-        tbd::Resource r(m_soundFile);
-        app::g_pApp->GetCache()->GetHandle(r);
-    }
-
-    class SetParentWaitProcess : public proc::Process
+    class SetParentWaitProcess : public IProcess
     {
     private:
         ActorId m_actor;
@@ -495,11 +462,11 @@ namespace tbd
         BOOL m_gotActor;
         BOOL m_gotParent;
 
-        VOID EventListener(event::IEventPtr event)
+        VOID EventListener(IEventPtr event)
         {
-            if(event->VGetEventType() == event::ActorCreatedEvent::TYPE)
+            if(event->VGetEventType() == CM_EVENT_ACTOR_CREATED)
             {
-                std::shared_ptr<event::ActorCreatedEvent> e = std::static_pointer_cast<event::ActorCreatedEvent>(event);
+                std::shared_ptr<ActorCreatedEvent> e = std::static_pointer_cast<ActorCreatedEvent>(event);
                 if(!m_gotActor)
                 {
                     m_gotActor = e->m_id == m_actor;
@@ -519,26 +486,28 @@ namespace tbd
 
         VOID VOnInit(VOID)
         {
-            ADD_EVENT_LISTENER(this, &SetParentWaitProcess::EventListener, event::ActorCreatedEvent::TYPE);
+            ADD_EVENT_LISTENER(this, &SetParentWaitProcess::EventListener, CM_EVENT_ACTOR_CREATED);
         }
         VOID VOnAbort(VOID)
         {
-            REMOVE_EVENT_LISTENER(this, &SetParentWaitProcess::EventListener, event::ActorCreatedEvent::TYPE);
+            REMOVE_EVENT_LISTENER(this, &SetParentWaitProcess::EventListener, CM_EVENT_ACTOR_CREATED);
         }
         VOID VOnFail(VOID)
         {
-            REMOVE_EVENT_LISTENER(this, &SetParentWaitProcess::EventListener, event::ActorCreatedEvent::TYPE);
+            REMOVE_EVENT_LISTENER(this, &SetParentWaitProcess::EventListener, CM_EVENT_ACTOR_CREATED);
         }
         VOID VOnSuccess(VOID)
         {
-            REMOVE_EVENT_LISTENER(this, &SetParentWaitProcess::EventListener, event::ActorCreatedEvent::TYPE);
+            REMOVE_EVENT_LISTENER(this, &SetParentWaitProcess::EventListener, CM_EVENT_ACTOR_CREATED);
         }
 
         VOID VOnUpdate(ULONG deltaMillis)
         {
-            if(m_gotActor && m_gotParent || app::g_pApp->GetHumanView()->GetSceneGraph()->FindActorNode(m_actor) && app::g_pApp->GetHumanView()->GetSceneGraph()->FindActorNode(m_parent))
+            if(m_gotActor && m_gotParent || 
+                (CmGetApp()->VGetHumanView()->VGetSceneGraph()->VFindActorNode(m_actor) && 
+                CmGetApp()->VGetHumanView()->VGetSceneGraph()->VFindActorNode(m_parent)))
             {
-                event::SetParentActorEvent* spe = new event::SetParentActorEvent();
+                SetParentActorEvent* spe = new SetParentActorEvent();
                 spe->m_actor = m_actor;
                 spe->m_parentActor = m_parent;
                 QUEUE_EVENT(spe);
@@ -549,18 +518,6 @@ namespace tbd
 
     VOID ParentComponent::VPostInit(VOID)
     {
-        std::shared_ptr<tbd::Actor> a = m_owner.lock();
-        app::g_pApp->GetLogic()->GetProcessManager()->Attach(std::shared_ptr<SetParentWaitProcess>(new SetParentWaitProcess(a->GetId(), m_parentId)));
-    }
-
-    BOOL ParentComponent::VInit(tinyxml2::XMLElement* pData)
-    {
-
-        return TRUE;
-    }
-
-    VOID ParentComponent::VSave(tinyxml2::XMLElement* pData) CONST
-    {
-
+        CmGetApp()->VGetLogic()->VGetProcessManager()->VAttach(std::unique_ptr<SetParentWaitProcess>(new SetParentWaitProcess(m_owner->GetId(), m_parentId)));
     }
 }

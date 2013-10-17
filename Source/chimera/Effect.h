@@ -1,82 +1,99 @@
 #pragma once
 #include "stdafx.h"
-#include "d3d.h"
 
-namespace d3d
+namespace chimera
 {
-    class RenderTarget;
-    class PixelShader;
-    class VertexShader;
-
-    VOID DrawScreenQuad(INT x, INT y, INT w, INT h);
-
-    VOID DrawLine(INT x, INT y, INT w, INT h);
-
-    class IEffectParmaters
-    {
-    public:
-        virtual VOID VApply(VOID){ LOG_CRITICAL_ERROR("VApply not implemented!"); }
-    };
-
     class DefaultParams : public IEffectParmaters
     {
     public:
         VOID VApply(VOID) {  }
     };
 
-    typedef VOID (*EffectDrawMethod) (VOID);
-
-    class Effect
+    class Effect : public IEffect
     {
-        friend class EffectChain;
     private:
-        BOOL m_ownsTarget;
-        d3d::RenderTarget* m_source;
-        d3d::RenderTarget* m_target;
+        IRenderTarget* m_source;
+        IRenderTarget* m_target;
+		std::unique_ptr<IRenderTarget> m_ownedTarget;
         BOOL m_created, m_isProcessed;
-        d3d::PixelShader* m_pPixelShader;
-        LPCSTR m_pixelShaderFunction;
+        IShader* m_pPixelShader;
         FLOAT m_w, m_h;
-        std::shared_ptr<IEffectParmaters> m_params;
-        std::list<Effect*> m_requirements;
-        VOID Process(VOID);
+        IEffectParmaters* m_params; //TODO
+        std::vector<IEffect*> m_requirements;
+		CMShaderDescription m_shaderDesc;
         EffectDrawMethod m_pfDraw;
 
     public:
-        Effect(LPCSTR pixelShader, FLOAT w, FLOAT h);
-        VOID SetParameters(std::shared_ptr<IEffectParmaters> params);
-        VOID SetDrawMethod(EffectDrawMethod dm);
-        VOID AddRequirement(Effect* e);
-        VOID SetSource(d3d::RenderTarget* src);
-        VOID SetTarget(d3d::RenderTarget* target);
-        d3d::RenderTarget* GetTarget(VOID);
-        BOOL OnRestore(UINT w, UINT h, ErrorLog* log = NULL);
+        Effect(VOID);
+
+        VOID VCreate(CONST CMShaderDescription& shaderDesc, FLOAT w, FLOAT h);
+
+        VOID VSetParameters(IEffectParmaters* params);
+
+        VOID VSetDrawMethod(EffectDrawMethod dm);
+
+        VOID VAddRequirement(IEffect* e);
+
+		VOID VReset(VOID);
+
+        VOID VSetSource(IRenderTarget* src);
+
+        FLOAT2 VGetViewPort(VOID);
+
+        VOID VProcess(VOID);
+
+        VOID VSetTarget(IRenderTarget* target);
+
+		VOID VSetTarget(std::unique_ptr<IRenderTarget> target);
+
+        IRenderTarget* VGetTarget(VOID);
+
+        BOOL VOnRestore(UINT w, UINT h, ErrorLog* log = NULL);
+
         ~Effect(VOID);
     };
 
-    class EffectChain
+    class EffectChain : public IEffectChain
     {
     private:
-        std::list<d3d::Effect*> m_effects;
-        d3d::RenderTarget* m_src;
+        std::vector<std::unique_ptr<IEffect>> m_effects;
+        IRenderTarget* m_pSrc;
+        IRenderTarget* m_pTarget;
         UINT m_w, m_h;
-        Effect* m_leaf;
+        IEffect* m_leaf;
+        IEffectFactory* m_pEffectFactory;
+        IShader* m_pVertexShader;
+
     public:
 
-        EffectChain(d3d::RenderTarget* src, UINT w, UINT h);
+        EffectChain(IEffectFactory* factroy);
 
-        Effect* CreateEffect(LPCSTR pixelShader, FLOAT percentofw = 1.0f, FLOAT percentofh = 1.0f);
+        IEffect* VCreateEffect(CONST CMShaderDescription& desc, FLOAT percentofw = 1.0f, FLOAT percentofh = 1.0f);
 
-        VOID Process(VOID);
+        VOID VProcess(VOID);
 
-        VOID OnRestore(UINT w, UINT h);
+        VOID VSetSource(IRenderTarget* src);
+
+        VOID VSetTarget(IRenderTarget* target);
+
+        IRenderTarget* VGetResult(VOID);
+
+        VOID VOnRestore(UINT w, UINT h);
 
         ~EffectChain(VOID);
-        
-        static d3d::VertexShader* m_spScreenQuadVShader;
-        static d3d::PixelShader* m_spScreenQuadPShader;
-
-        static BOOL StaticCreate(VOID);
-        static VOID StaticDestroy(VOID);
     };
+
+	class EffectFactroy : public IEffectFactory
+	{
+	public:
+		IEffect* VCreateEffect(VOID)
+		{
+			return new Effect();
+		}
+
+		IEffectChain* VCreateEffectChain(VOID)
+		{
+			return new EffectChain(CmGetApp()->VGetHumanView()->VGetEffectFactory());
+		}
+	};
 }

@@ -1,16 +1,8 @@
 #include "PhysicsSystem.h"
 #include "Components.h"
-#include "GameApp.h"
-#include "physx/PxToolkit.h"
-#include "GameLogic.h"
-#include "EventManager.h"
 #include "Mesh.h"
-#include "math.h"
-
-#include "GameApp.h"
-#include "GameView.h"
-#include "SceneGraph.h"
-#include "Camera.h"
+#include "Event.h"
+#include "physx/PxToolkit.h"
 
 #define NDEBUG
 
@@ -34,7 +26,7 @@
     #pragma comment (lib, "PhysXVisualDebuggerSDK.lib")
 #endif
 
-namespace tbd 
+namespace chimera 
 {
 
     using namespace physx;
@@ -51,7 +43,7 @@ namespace tbd
             return PxFilterFlag::eDEFAULT;
         }
         // generate contacts for all that were not filtered above
-        pairFlags = PxPairFlag::eCONTACT_DEFAULT;
+        pairFlags = PxPairFlag::eCONTACT_DEFAULT | PxPairFlag::eNOTIFY_CONTACT_POINTS;
 
         // trigger the contact callback for pairs (A,B) where
         // the filtermask of A contains the ID of B and vice versa.
@@ -94,12 +86,17 @@ namespace tbd
 
                 if(cp.events & PxPairFlag::eNOTIFY_TOUCH_FOUND)
                 {
+                    PxContactPairPoint* pts = new PxContactPairPoint[cp.contactCount];
+                    cp.extractContacts(pts, cp.contactCount * sizeof(PxContactPairPoint));
                     ActorId id0 = m_pPhysix->m_pxActorToActorId[pairHeader.actors[0]];
                     ActorId id1 = m_pPhysix->m_pxActorToActorId[pairHeader.actors[1]];
-                    event::CollisionEvent* ce = new event::CollisionEvent();
+                    CollisionEvent* ce = new CollisionEvent();
                     ce->m_actor0 = id0;
                     ce->m_actor1 = id1;
+                    ce->m_impulse.Set(pts[0].impulse.x, pts[0].impulse.y, pts[0].impulse.z);
+                    ce->m_position.Set(pts[0].position.x, pts[0].position.y, pts[0].position.z);
                     QUEUE_EVENT(ce);
+                    SAFE_ARRAY_DELETE(pts);
                 }
             }
         }
@@ -117,7 +114,7 @@ namespace tbd
                 physx::PxActor* a1 = &pairs[i].otherShape->getActor();
                 ActorId id0 = m_pPhysix->m_pxActorToActorId[a0];
                 ActorId id1 = m_pPhysix->m_pxActorToActorId[a1];
-                event::TriggerEvent* te = new event::TriggerEvent();
+                chimera::TriggerEvent* te = new chimera::TriggerEvent();
                 te->m_triggerActor = id0;
                 te->m_didTriggerActor = id1;
                 QUEUE_EVENT(te);
@@ -198,11 +195,9 @@ namespace tbd
         //m_materials["bouncy"].m_material->setFlag(physx::PxMaterialFlag::eDISABLE_STRONG_FRICTION, FALSE);
         //end
 
-        event::EventListener listener = fastdelegate::MakeDelegate(this, &PhysX::NewComponentDelegate);
-        event::IEventManager::Get()->VAddEventListener(listener, event::NewComponentCreatedEvent::TYPE);
-
-        ADD_EVENT_LISTENER(this, &PhysX::ApplyForceTorqueDelegate, event::ApplyForceEvent::TYPE);
-        ADD_EVENT_LISTENER(this, &PhysX::ApplyForceTorqueDelegate, event::ApplyTorqueEvent::TYPE);
+        ADD_EVENT_LISTENER(this, &PhysX::NewComponentDelegate, CM_EVENT_COMPONENT_CREATED);
+        ADD_EVENT_LISTENER(this, &PhysX::ApplyForceTorqueDelegate, CM_EVENT_APPLY_FORCE);
+        ADD_EVENT_LISTENER(this, &PhysX::ApplyForceTorqueDelegate, CM_EVENT_APPLY_TORQUE);
 
     #ifdef _DEBUG
         // DEBUGGING
@@ -227,10 +222,10 @@ namespace tbd
         return TRUE;
     }
 
-    VOID PhysX::VCreateStaticPlane(CONST util::Vec3& dimension, std::shared_ptr<tbd::Actor> actor, std::string& material) {
+    VOID PhysX::VCreateStaticPlane(CONST util::Vec3& dimension, IActor* actor, std::string& material) {
     
         physx::PxMaterial* mat = m_materials[material].m_material;
-        std::shared_ptr<tbd::TransformComponent> comp = actor->GetComponent<tbd::TransformComponent>(tbd::TransformComponent::COMPONENT_ID).lock();
+        TransformComponent* comp = GetActorCompnent<TransformComponent>(actor, CM_CMP_TRANSFORM);
         util::Vec3 trans = comp->GetTransformation()->GetTranslation();
         physx::PxRigidStatic* plane = PxCreatePlane(*m_pPhysx, physx::PxPlane(physx::PxVec3(trans.x, trans.y, trans.z), physx::PxVec3(0, 1, 0)), *mat);
 
@@ -240,50 +235,50 @@ namespace tbd
         this->m_pxActorToActorId[plane] = actor->GetId();
     }
 
-    VOID PhysX::VCreateSphere(FLOAT radius, std::shared_ptr<tbd::Actor> actor, CONST util::Vec3& offsetPosition, std::string& material) {
+    VOID PhysX::VCreateSphere(FLOAT radius, IActor* actor, CONST util::Vec3& offsetPosition, std::string& material) {
         physx::PxSphereGeometry geo(radius);
         this->AddActor(geo, actor, offsetPosition, material, physx::PxPi * 4.0f/3.0f * radius * radius * radius);
     }
 
-    VOID PhysX::VCreateCube(CONST util::Vec3& dimension, std::shared_ptr<tbd::Actor> actor, CONST util::Vec3& offsetPosition, std::string& material) {
+    VOID PhysX::VCreateCube(CONST util::Vec3& dimension, IActor* actor, CONST util::Vec3& offsetPosition, std::string& material) {
         physx::PxBoxGeometry geo(dimension.x * 0.5f, dimension.y * 0.5f, dimension.z * 0.5f);
         this->AddActor(geo, actor, offsetPosition, material, dimension.x * dimension.y * dimension.z);
     }
 
-    VOID PhysX::CreateTriangleConcaveMesh(std::shared_ptr<tbd::Actor> actor, CONST tbd::Mesh* mesh, CONST util::Vec3& offsetPosition, std::string& material)
+    VOID PhysX::CreateTriangleConcaveMesh(IActor* actor, CONST IMesh* mesh, CONST util::Vec3& offsetPosition, std::string& material)
     {
         physx::PxTriangleMeshDesc meshDesc;
 
-        UINT stride = mesh->GetVertexStride() / sizeof(UINT);
-        UINT count = mesh->GetVertexCount();
+        UINT stride = mesh->VGetVertexStride() / sizeof(UINT);
+        UINT count = mesh->VGetVertexCount();
 
-        physx::PxVec3* verts = new physx::PxVec3[mesh->GetVertexCount()];
+        physx::PxVec3* verts = new physx::PxVec3[mesh->VGetVertexCount()];
 
-        for(UINT i = 0; i < mesh->GetVertexCount(); ++i)
+        for(UINT i = 0; i < mesh->VGetVertexCount(); ++i)
         {
             physx::PxVec3 v;
-            v.x = mesh->GetVertices()[i * stride + 0];
-            v.y = mesh->GetVertices()[i * stride + 1];
-            v.z = mesh->GetVertices()[i * stride + 2];
+            v.x = mesh->VGetVertices()[i * stride + 0];
+            v.y = mesh->VGetVertices()[i * stride + 1];
+            v.z = mesh->VGetVertices()[i * stride + 2];
             verts[i] = v;
         }
         meshDesc.points.count = count;
         meshDesc.points.stride = sizeof(physx::PxVec3);
         meshDesc.points.data = verts;
 
-        physx::PxU32* indices32 = new physx::PxU32[mesh->GetIndexCount()];
+        physx::PxU32* indices32 = new physx::PxU32[mesh->VGetIndexCount()];
         UINT index = 0;
-        for(UINT i = 0; i < mesh->GetIndexCount() / 3; ++i)
+        for(UINT i = 0; i < mesh->VGetIndexCount() / 3; ++i)
         {
-            UINT i0 = mesh->GetIndices()[3 * i + 0];
-            UINT i1 = mesh->GetIndices()[3 * i + 1];
-            UINT i2 = mesh->GetIndices()[3 * i + 2];
+            UINT i0 = mesh->VGetIndices()[3 * i + 0];
+            UINT i1 = mesh->VGetIndices()[3 * i + 1];
+            UINT i2 = mesh->VGetIndices()[3 * i + 2];
             indices32[3 * i + 0] = i0;
             indices32[3 * i + 1] = i2;
             indices32[3 * i + 2] = i1;
         }
 
-        meshDesc.triangles.count = mesh->GetIndexCount() / 3;
+        meshDesc.triangles.count = mesh->VGetIndexCount() / 3;
         meshDesc.triangles.stride = 3 * sizeof(physx::PxU32);
         meshDesc.triangles.data = indices32;
 
@@ -296,7 +291,7 @@ namespace tbd
         PxToolkit::MemoryInputData readBuffer(writeBuffer.getData(), writeBuffer.getSize());
         physx::PxTriangleMesh* pxmesh = m_pPhysx->createTriangleMesh(readBuffer);
         physx::PxMeshScale scale;
-        scale.scale.z = scale.scale.y = scale.scale.x = actor->GetComponent<tbd::TransformComponent>(tbd::TransformComponent::COMPONENT_ID).lock()->GetTransformation()->GetScale().x;
+        scale.scale.z = scale.scale.y = scale.scale.x = GetActorCompnent<TransformComponent>(actor, CM_CMP_TRANSFORM)->GetTransformation()->GetScale().x;
         physx::PxTriangleMeshGeometry geo(pxmesh, scale);
 
         AddActor(geo, actor, offsetPosition, material, 1);
@@ -305,21 +300,21 @@ namespace tbd
         SAFE_ARRAY_DELETE(verts);
     }
 
-    VOID PhysX::CreateTriangleConvexMesh(std::shared_ptr<tbd::Actor> actor, CONST tbd::Mesh* mesh, CONST util::Vec3& offsetPosition, std::string& material)
+    VOID PhysX::CreateTriangleConvexMesh(IActor* actor, CONST IMesh* mesh, CONST util::Vec3& offsetPosition, std::string& material)
     {
         physx::PxConvexMeshDesc meshDesc;
 
-        UINT stride = mesh->GetVertexStride() / sizeof(UINT);
-        UINT count = mesh->GetVertexCount();
+        UINT stride = mesh->VGetVertexStride() / sizeof(UINT);
+        UINT count = mesh->VGetVertexCount();
 
-        physx::PxVec3* verts = new physx::PxVec3[mesh->GetVertexCount()];
+        physx::PxVec3* verts = new physx::PxVec3[mesh->VGetVertexCount()];
 
-        for(UINT i = 0; i < mesh->GetVertexCount(); ++i)
+        for(UINT i = 0; i < mesh->VGetVertexCount(); ++i)
         {
             physx::PxVec3 v;
-            v.x = mesh->GetVertices()[i * stride + 0];
-            v.y = mesh->GetVertices()[i * stride + 1];
-            v.z = mesh->GetVertices()[i * stride + 2];
+            v.x = mesh->VGetVertices()[i * stride + 0];
+            v.y = mesh->VGetVertices()[i * stride + 1];
+            v.z = mesh->VGetVertices()[i * stride + 2];
             verts[i] = v;
         }
         meshDesc.points.count = count;
@@ -327,19 +322,19 @@ namespace tbd
         meshDesc.points.data = verts;
         meshDesc.flags = physx::PxConvexFlag::eCOMPUTE_CONVEX;
 
-        physx::PxU32* indices32 = new physx::PxU32[mesh->GetIndexCount()];
+        physx::PxU32* indices32 = new physx::PxU32[mesh->VGetIndexCount()];
         UINT index = 0;
-        for(UINT i = 0; i < mesh->GetIndexCount() / 3; ++i)
+        for(UINT i = 0; i < mesh->VGetIndexCount() / 3; ++i)
         {
-            UINT i0 = mesh->GetIndices()[3 * i + 0];
-            UINT i1 = mesh->GetIndices()[3 * i + 1];
-            UINT i2 = mesh->GetIndices()[3 * i + 2];
+            UINT i0 = mesh->VGetIndices()[3 * i + 0];
+            UINT i1 = mesh->VGetIndices()[3 * i + 1];
+            UINT i2 = mesh->VGetIndices()[3 * i + 2];
             indices32[3 * i + 0] = i0;
             indices32[3 * i + 1] = i2;
             indices32[3 * i + 2] = i1;
         }
 
-        meshDesc.triangles.count = mesh->GetIndexCount() / 3;
+        meshDesc.triangles.count = mesh->VGetIndexCount() / 3;
         meshDesc.triangles.stride = 3 * sizeof(physx::PxU32);
         meshDesc.triangles.data = indices32;
 
@@ -352,7 +347,7 @@ namespace tbd
         PxToolkit::MemoryInputData readBuffer(writeBuffer.getData(), writeBuffer.getSize());
         physx::PxConvexMesh* pxmesh = m_pPhysx->createConvexMesh(readBuffer);
         physx::PxMeshScale scale;
-        scale.scale.z = scale.scale.y = scale.scale.x = actor->GetComponent<tbd::TransformComponent>(tbd::TransformComponent::COMPONENT_ID).lock()->GetTransformation()->GetScale().x;
+        scale.scale.z = scale.scale.y = scale.scale.x = GetActorCompnent<TransformComponent>(actor, CM_CMP_TRANSFORM)->GetTransformation()->GetScale().x;
         physx::PxConvexMeshGeometry geo(pxmesh, scale);
 
         AddActor(geo, actor, offsetPosition, material, 1);
@@ -361,7 +356,7 @@ namespace tbd
         SAFE_ARRAY_DELETE(verts);
     }
 
-    VOID PhysX::VCreateTriangleMesh(std::shared_ptr<tbd::Actor> actor, CONST tbd::Mesh* mesh, CONST util::Vec3& offsetPosition, std::string& material, std::string& shapeType)
+    VOID PhysX::VCreateTriangleMesh(IActor*actor, CONST IMesh* mesh, CONST util::Vec3& offsetPosition, std::string& material, std::string& shapeType)
     {
         if(shapeType == "convex")
         {
@@ -377,7 +372,7 @@ namespace tbd
         }
     }
 
-    VOID PhysX::VCreateTrigger(FLOAT radius, std::shared_ptr<tbd::Actor> actor) 
+    VOID PhysX::VCreateTrigger(FLOAT radius, IActor* actor) 
     {
         physx::PxSphereGeometry geo(radius);
         std::string m("static");
@@ -402,7 +397,7 @@ namespace tbd
         }
     }
 
-    VOID PhysX::VApplyForce(CONST util::Vec3& dir, FLOAT newtons, std::shared_ptr<tbd::Actor> actor) 
+    VOID PhysX::VApplyForce(CONST util::Vec3& dir, FLOAT newtons, IActor* actor) 
     {
         auto iit = m_actorIdToPxActorMap.find(actor->GetId());
         if(iit != m_actorIdToPxActorMap.end())
@@ -419,7 +414,7 @@ namespace tbd
         }
     }
 
-    VOID PhysX::VApplyTorque(CONST util::Vec3& dir, FLOAT newtons, std::shared_ptr<tbd::Actor> actor) 
+    VOID PhysX::VApplyTorque(CONST util::Vec3& dir, FLOAT newtons, IActor* actor) 
     {
         auto iit = m_actorIdToPxActorMap.find(actor->GetId());
         if(iit != m_actorIdToPxActorMap.end())
@@ -459,7 +454,36 @@ namespace tbd
         m_controller[id] = c;
     }
 
-    VOID PhysX::VMoveKinematic(std::shared_ptr<tbd::Actor> actor, CONST util::Vec3* pos, CONST util::Vec3* axis, FLOAT angle, FLOAT deltaMillis, BOOL isDeltaMove, BOOL isJump) 
+    VOID ScaleGeometry(FLOAT scale,  physx::PxShape* shape)
+    {
+        switch(shape->getGeometryType())
+        {
+        case physx::PxGeometryType::eBOX : 
+            {
+                physx::PxBoxGeometry geo;
+                shape->getBoxGeometry(geo);
+                geo.halfExtents = physx::PxVec3(scale);
+                shape->setGeometry(geo);
+            } break;
+        case physx::PxGeometryType::eSPHERE : 
+            {
+                physx::PxSphereGeometry geo;
+                shape->getSphereGeometry(geo);
+                geo.radius = scale;
+                shape->setGeometry(geo);
+
+            } break;
+        case physx::PxGeometryType::eCONVEXMESH : 
+            {
+                physx::PxConvexMeshGeometry geo;
+                shape->getConvexMeshGeometry(geo);
+                geo.scale = physx::PxMeshScale(physx::PxVec3(scale), physx::PxQuat(0,0,0,1));
+                shape->setGeometry(geo);
+            } break;
+        }
+    }
+
+    VOID PhysX::VMoveKinematic(IActor* actor, CONST util::Vec3* pos, CONST util::Vec3* axis, FLOAT angle, FLOAT deltaMillis, BOOL isDeltaMove, BOOL isJump) 
     {
         XMVECTOR quat = XMQuaternionRotationNormal(XMLoadFloat3(&axis->m_v), angle);
         util::Vec4 q;
@@ -467,7 +491,7 @@ namespace tbd
         VMoveKinematic(actor, pos, &q, deltaMillis, isDeltaMove, isJump);
     }
 
-    VOID PhysX::VMoveKinematic(std::shared_ptr<tbd::Actor> actor, CONST util::Vec3* pos, CONST util::Vec4* quat, FLOAT deltaMillis, BOOL isDeltaMove, BOOL isJump)
+    VOID PhysX::VMoveKinematic(IActor* actor, CONST util::Vec3* pos, CONST util::Vec4* quat, FLOAT deltaMillis, BOOL isDeltaMove, BOOL isJump)
     {
         auto it = m_controller.find(actor->GetId());
         if(it != m_controller.end() && pos)
@@ -536,6 +560,17 @@ namespace tbd
                         ad->clearTorque();
                         ad->setLinearVelocity(physx::PxVec3(0,0,0));
                     }
+
+                    FLOAT scale = GetActorCompnent<TransformComponent>(actor, CM_CMP_TRANSFORM)->GetTransformation()->GetScale().x;
+                    UINT shapeCount = ad->getNbShapes();
+                    physx::PxShape** shapes = new physx::PxShape*[shapeCount];
+                    ad->getShapes(shapes, shapeCount, 0);
+                    for(UINT i = 0; i < shapeCount; ++i)
+                    {
+                        physx::PxShape* shape = shapes[i];
+                        ScaleGeometry(scale, shape);
+                    }
+                    SAFE_ARRAY_DELETE(shapes);
                 }
             }
         }
@@ -546,11 +581,11 @@ namespace tbd
 
     }
 
-    physx::PxActor* PhysX::AddActor(physx::PxGeometry& geo, std::shared_ptr<tbd::Actor> actor, CONST util::Vec3& offsetPosition, std::string& mat, FLOAT density)
+    physx::PxActor* PhysX::AddActor(physx::PxGeometry& geo, IActor* actor, CONST util::Vec3& offsetPosition, std::string& mat, FLOAT density)
     {
         px::Material& material = CheckMaterial(mat);
 
-        std::shared_ptr<tbd::TransformComponent> comp = actor->GetComponent<tbd::TransformComponent>(tbd::TransformComponent::COMPONENT_ID).lock();
+        TransformComponent* comp = GetActorCompnent<TransformComponent>(actor, CM_CMP_TRANSFORM);
         util::Vec3 trans = comp->GetTransformation()->GetTranslation() + offsetPosition;;
 
         physx::PxShape* shape;
@@ -603,14 +638,14 @@ namespace tbd
             physx::PxActiveTransform& t = transforms[i];
             ActorId actorid = this->m_pxActorToActorId[t.actor];
         
-            std::shared_ptr<tbd::Actor> actor = app::g_pApp->GetLogic()->VFindActor(actorid);
+            IActor* actor = CmGetApp()->VGetLogic()->VFindActor(actorid);
 
             if(!actor)
             {
                 continue;
             }
 
-            std::shared_ptr<tbd::TransformComponent> comp = actor->GetComponent<tbd::TransformComponent>(tbd::TransformComponent::COMPONENT_ID).lock();
+            TransformComponent* comp = GetActorCompnent<TransformComponent>(actor, CM_CMP_TRANSFORM);
 
             comp->GetTransformation()->SetTranslate(t.actor2World.p.x, t.actor2World.p.y, t.actor2World.p.z);
             //comp->GetTransformation()->GetTranslation().Print();
@@ -629,8 +664,7 @@ namespace tbd
                 util::Vec3& rot = controller->second.m_rotation;
                 //comp->GetTransformation()->SetRotation(rot.x, rot.y, rot.z);
             } */
-            event::IEventPtr aMoved(new event::ActorMovedEvent(actor));
-            app::g_pApp->GetEventMgr()->VQueueEvent(aMoved);
+            QUEUE_EVENT(new chimera::ActorMovedEvent(actor));
         }
     
         for(auto it = m_controller.begin(); it != m_controller.end(); ++it)
@@ -653,25 +687,25 @@ namespace tbd
         time = 0;
     }
 
-    VOID PhysX::ApplyForceTorqueDelegate(event::IEventPtr data)
+    VOID PhysX::ApplyForceTorqueDelegate(IEventPtr data)
     {
-        if(data->VGetEventType() == event::ApplyForceEvent::TYPE)
+        if(data->VGetEventType() == CM_EVENT_APPLY_FORCE)
         {
-            std::shared_ptr<event::ApplyForceEvent> pCastEventData = std::static_pointer_cast<event::ApplyForceEvent>(data);
+            std::shared_ptr<ApplyForceEvent> pCastEventData = std::static_pointer_cast<ApplyForceEvent>(data);
 
             VApplyForce(pCastEventData->m_dir, pCastEventData->m_newtons, pCastEventData->m_actor);
         }
         else
         {
-            std::shared_ptr<event::ApplyTorqueEvent> pCastEventData = std::static_pointer_cast<event::ApplyTorqueEvent>(data);
+            std::shared_ptr<ApplyTorqueEvent> pCastEventData = std::static_pointer_cast<ApplyTorqueEvent>(data);
 
             VApplyTorque(pCastEventData->m_torque, pCastEventData->m_newtons, pCastEventData->m_actor);
         }
     }
 
-    VOID PhysX::CreateFromActor(std::shared_ptr<tbd::Actor> actor)
+    VOID PhysX::CreateFromActor(IActor* actor)
     {
-        std::shared_ptr<tbd::PhysicComponent> physComp = actor->GetComponent<tbd::PhysicComponent>(tbd::PhysicComponent::COMPONENT_ID).lock();
+        PhysicComponent* physComp = GetActorCompnent<PhysicComponent>(actor, CM_CMP_PHX);
         if(!actor)
         {
             LOG_CRITICAL_ERROR("Actor does not exist");
@@ -683,13 +717,13 @@ namespace tbd
             return; //should not happen
         }
 
-        std::shared_ptr<tbd::TransformComponent> transComp = actor->GetComponent<tbd::TransformComponent>(tbd::TransformComponent::COMPONENT_ID).lock();
+        TransformComponent* transComp = GetActorCompnent<TransformComponent>(actor, CM_CMP_TRANSFORM);
 
         if(!transComp)
         {
             LOG_CRITICAL_ERROR("No TrasnformComponent");
         }
-        std::shared_ptr<tbd::RenderComponent> renderCmp = actor->GetComponent<tbd::RenderComponent>(tbd::RenderComponent::COMPONENT_ID).lock();
+        RenderComponent* renderCmp = GetActorCompnent<RenderComponent>(actor, CM_CMP_RENDERING);
 
         if(renderCmp && !renderCmp->m_instances.empty())
         {
@@ -730,9 +764,9 @@ namespace tbd
             }
             else if(physComp->m_shapeStyle == "mesh")
             {
-                std::shared_ptr<tbd::Mesh> mesh = std::static_pointer_cast<tbd::Mesh>(app::g_pApp->GetCache()->GetHandle(physComp->m_meshFile));
+                std::shared_ptr<Mesh> mesh = std::static_pointer_cast<Mesh>(CmGetApp()->VGetCache()->VGetHandle(physComp->m_meshFile));
                 VCreateTriangleMesh(actor, mesh.get(), util::Vec3(), physComp->m_material, physComp->m_shapeType);
-                m_resourceToActor[mesh->GetResource().m_name] = actor->GetId();
+                m_resourceToActor[mesh->VGetResource().m_name] = actor->GetId();
             }
             else if(physComp->m_shapeStyle == "trigger")
             {
@@ -743,42 +777,38 @@ namespace tbd
                 LOG_CRITICAL_ERROR("ShapeType not implemented");
             }
         }
-        physComp->VSetHandled();
     }
 
-    VOID PhysX::NewComponentDelegate(event::IEventPtr pEventData) 
+    VOID PhysX::NewComponentDelegate(chimera::IEventPtr pEventData) 
     {
 
-        std::shared_ptr<event::NewComponentCreatedEvent> pCastEventData = std::static_pointer_cast<event::NewComponentCreatedEvent>(pEventData);
+        std::shared_ptr<chimera::NewComponentCreatedEvent> pCastEventData = std::static_pointer_cast<chimera::NewComponentCreatedEvent>(pEventData);
 
-        if(pCastEventData->m_id == tbd::PhysicComponent::COMPONENT_ID)
+        if(pCastEventData->m_id == CM_CMP_PHX)
         {
-            std::shared_ptr<tbd::Actor> actor = app::g_pApp->GetLogic()->VFindActor(pCastEventData->m_actorId);
+            IActor* actor = CmGetApp()->VGetLogic()->VFindActor(pCastEventData->m_actorId);
             CreateFromActor(actor);
         }
     }
 
-    VOID PhysX::OnResourceChanged(event::IEventPtr data)
+    VOID PhysX::OnResourceChanged(IEventPtr data)
     {
-        std::shared_ptr<event::ResourceChangedEvent> event = std::static_pointer_cast<event::ResourceChangedEvent>(data);
+        std::shared_ptr<ResourceChangedEvent> event = std::static_pointer_cast<ResourceChangedEvent>(data);
 
         auto it = m_resourceToActor.find(event->m_resource);
         if(it != m_resourceToActor.end())
         {
             VRemoveActor(it->second);
-            std::shared_ptr<tbd::Actor> actor = app::g_pApp->GetLogic()->VFindActor(it->second);
+            IActor* actor = CmGetApp()->VGetLogic()->VFindActor(it->second);
             CreateFromActor(actor);
         }
     }
 
     PhysX::~PhysX(VOID)
     {
-    
-        event::EventListener listener = fastdelegate::MakeDelegate(this, &PhysX::NewComponentDelegate);
-        event::IEventManager::Get()->VRemoveEventListener(listener, event::NewComponentCreatedEvent::TYPE);
-
-        REMOVE_EVENT_LISTENER(this, &PhysX::ApplyForceTorqueDelegate, event::ApplyForceEvent::TYPE);
-        REMOVE_EVENT_LISTENER(this, &PhysX::ApplyForceTorqueDelegate, event::ApplyTorqueEvent::TYPE);
+        REMOVE_EVENT_LISTENER(this, &PhysX::NewComponentDelegate, CM_EVENT_COMPONENT_CREATED);
+        REMOVE_EVENT_LISTENER(this, &PhysX::ApplyForceTorqueDelegate, CM_EVENT_APPLY_FORCE);
+        REMOVE_EVENT_LISTENER(this, &PhysX::ApplyForceTorqueDelegate, CM_EVENT_APPLY_TORQUE);
 
         m_actorIdToPxActorMap.clear();
 

@@ -1,33 +1,18 @@
 #include "GraphicsSettings.h"
-#include "GameApp.h"
-#include "D3DRenderer.h"
-#include "GeometryFactory.h"
-#include "GameLogic.h"
-#include "PointLightNode.h"
-#include "d3d.h"
-#include "vector_types.h"
-#include "Effect.h"
-#include "SceneGraph.h"
 #include "CascadedShadowMapper.h"
-#include "Picker.h"
-#include "tbdFont.h"
-#include "ShaderProgram.h"
-#include "Profiling.h"
-#include "GuiComponent.h"
-#include "util.h"
 
-namespace tbd
+namespace chimera
 {  
-    VOID DrawAlbedo(d3d::ShaderProgram* prog, d3d::ShaderProgram* instancedProg)
+    VOID DrawAlbedo(IShaderProgram* prog, IShaderProgram* instancedProg)
     {
-        instancedProg->Bind();
-        app::g_pApp->GetHumanView()->GetSceneGraph()->OnRender(tbd::eDRAW_TO_ALBEDO_INSTANCED);
+        instancedProg->VBind();
+        CmGetApp()->VGetHumanView()->VGetSceneGraph()->VOnRender(CM_RENDERPATH_ALBEDO_INSTANCED);
 
-        prog->Bind();
-        app::g_pApp->GetHumanView()->GetSceneGraph()->OnRender(tbd::eDRAW_TO_ALBEDO);
+        prog->VBind();
+        CmGetApp()->VGetHumanView()->VGetSceneGraph()->VOnRender(CM_RENDERPATH_ALBEDO);
     }
 
-    class LuminanceParameter : public d3d::IEffectParmaters
+    /*class LuminanceParameter : public chimera::IEffectParmaters
     {
     private:
         FLOAT m_scale;
@@ -36,15 +21,16 @@ namespace tbd
 
         VOID VApply(VOID)
         {
-            d3d::ConstBuffer* buffer = app::g_pApp->GetHumanView()->GetRenderer()->GetBuffer(d3d::eGuiColorBuffer);
+            chimera::ConstBuffer* buffer = chimera::g_pApp->GetHumanView()->GetRenderer()->GetBuffer(chimera::eGuiColorBuffer);
             float4* f4 = (float4*)buffer->Map();
             f4->w = 1;
             f4->x = f4->y = f4->z = m_scale;
             buffer->Unmap();
         }
-    };
+    };*/
 
-    ShaderPathSetting::ShaderPathSetting(UINT path, LPCSTR progName, LPCSTR settingName) : IGraphicSetting(settingName), m_renderPath(path), m_progName(progName), m_pProgram(NULL)
+    ShaderPathSetting::ShaderPathSetting(RenderPath path, LPCSTR programName, LPCSTR settingName) 
+        : IGraphicSetting(settingName), m_programName(programName), m_renderPath(path), m_pProgram(NULL)
     {
 
     }
@@ -53,57 +39,111 @@ namespace tbd
     {
         if(!m_pProgram)
         {
-            m_pProgram = d3d::ShaderProgram::GetProgram(m_progName.c_str()).get();
+            m_pProgram = CmGetApp()->VGetHumanView()->VGetRenderer()->VGetShaderCache()->VCreateShaderProgram(m_programName.c_str(), &m_desc);
+
         }
         return TRUE;
     }
 
     VOID ShaderPathSetting::VRender(VOID)
     {
-        m_pProgram->Bind();
-        app::g_pApp->GetHumanView()->GetSceneGraph()->OnRender(m_renderPath);
+        m_pProgram->VBind();
+        CmGetApp()->VGetHumanView()->VGetSceneGraph()->VOnRender((RenderPath)m_renderPath);
     }
 
-    GloablLightingSetting::GloablLightingSetting(VOID) : IGraphicSetting("GlobalLighting"), m_pGlobalLightProgram(NULL)
+    AlbedoSetting::AlbedoSetting(VOID) : ShaderPathSetting(CM_RENDERPATH_ALBEDO, DEFERRED_SHADER_NAME, DEFERRED_SHADER_NAME)
+    {
+
+    }
+
+    BOOL AlbedoSetting::VOnRestore(UINT w, UINT h)
+    {
+        VGetProgramDescription()->vs.file = DEFERRED_SHADER_FILE;
+        VGetProgramDescription()->vs.function = DEFERRED_SHADER_VS_FUNCTION;
+
+        VGetProgramDescription()->vs.layoutCount = 3;
+
+        VGetProgramDescription()->vs.inputLayout[0].instanced = FALSE;
+        VGetProgramDescription()->vs.inputLayout[0].name = "POSITION";
+        VGetProgramDescription()->vs.inputLayout[0].position = 0;
+        VGetProgramDescription()->vs.inputLayout[0].slot = 0;
+        VGetProgramDescription()->vs.inputLayout[0].format = eFormat_R32G32B32_FLOAT;
+
+        VGetProgramDescription()->vs.inputLayout[1].instanced = FALSE;
+        VGetProgramDescription()->vs.inputLayout[1].name = "NORMAL";
+        VGetProgramDescription()->vs.inputLayout[1].position = 1;
+        VGetProgramDescription()->vs.inputLayout[1].slot = 0;
+        VGetProgramDescription()->vs.inputLayout[1].format = eFormat_R32G32B32_FLOAT;
+
+        VGetProgramDescription()->vs.inputLayout[2].instanced = FALSE;
+        VGetProgramDescription()->vs.inputLayout[2].name = "TEXCOORD";
+        VGetProgramDescription()->vs.inputLayout[2].position = 2;
+        VGetProgramDescription()->vs.inputLayout[2].slot = 0;
+        VGetProgramDescription()->vs.inputLayout[2].format = eFormat_R32G32_FLOAT;
+
+        VGetProgramDescription()->fs.file = DEFERRED_SHADER_FILE;
+        VGetProgramDescription()->fs.function = DEFERRED_SHADER_FS_FUNCTION;
+
+        return ShaderPathSetting::VOnRestore(w, h);
+    }
+
+    GloablLightingSetting::GloablLightingSetting(VOID) : ShaderPathSetting(CM_RENDERPATH_LIGHTING, GLOBAL_LIGHTING_SHADER_NAME, GLOBAL_LIGHTING_SHADER_NAME)
     {
 
     }
 
     BOOL GloablLightingSetting::VOnRestore(UINT w, UINT h)
     {
-        if(!m_pGlobalLightProgram) //if this is 0 everything else is 0
-        {
-            m_pGlobalLightProgram = d3d::ShaderProgram::GetProgram("GlobalLighting").get();
-        }
-        return TRUE;
+        m_desc.fs.file = GLOBAL_LIGHTING_SHADER_FILE;
+        m_desc.fs.function = GLOBAL_LIGHTING_SHADER_FS_FUNCTION;
+
+        m_desc.vs.layoutCount = 2;
+
+        m_desc.vs.inputLayout[0].format = eFormat_R32G32B32_FLOAT;
+        m_desc.vs.inputLayout[0].instanced = FALSE;
+        m_desc.vs.inputLayout[0].name = "POSITION";
+        m_desc.vs.inputLayout[0].position = 0;
+        m_desc.vs.inputLayout[0].slot = 0;
+
+        m_desc.vs.inputLayout[1].format = eFormat_R32G32_FLOAT;
+        m_desc.vs.inputLayout[1].instanced = FALSE;
+        m_desc.vs.inputLayout[1].name = "TEXCOORD";
+        m_desc.vs.inputLayout[1].position = 1;
+        m_desc.vs.inputLayout[1].slot = 0;
+
+        m_desc.vs.file = GLOBAL_LIGHTING_SHADER_FILE;
+        m_desc.vs.function = GLOBAL_LIGHTING_SHADER_VS_FUNCTION;
+
+        return ShaderPathSetting::VOnRestore(w, h);
     }
 
     VOID GloablLightingSetting::VRender(VOID)
     {
-        app::g_pApp->GetHumanView()->GetRenderer()->GetCurrentrenderTarget()->Clear();
-        app::g_pApp->GetHumanView()->GetRenderer()->GetCurrentrenderTarget()->Bind();
+		/*CmGetApp()->VGetHumanView()->VGetRenderer()->VGetCurrentRenderTarget()->VClear();
+        CmGetApp()->VGetHumanView()->VGetRenderer()->VGetCurrentRenderTarget()->VBind();*/
 
-        app::g_pApp->GetHumanView()->GetRenderer()->VPreRender();
+        /*CmGetApp()->VGetHumanView()->VGetRenderer()->VPreRender();*/
 
-        m_pGlobalLightProgram->Bind();
-        d3d::GetContext()->OMSetDepthStencilState(d3d::m_pNoDepthNoStencilState, 0);
-        GeometryFactory::GetGlobalScreenQuad()->Bind();
-        GeometryFactory::GetGlobalScreenQuad()->Draw();
+        //CmGetApp()->VGetHumanView()->VGetRenderer()->VClearAndBindBackBuffer();
+
+        m_pProgram->VBind();
+        //chimera::GetContext()->OMSetDepthStencilState(chimera::m_pNoDepthNoStencilState, 0);
+		CmGetApp()->VGetHumanView()->VGetRenderer()->VDrawScreenQuad();
     }
 
     BOOL CSMSetting::VOnRestore(UINT w, UINT h)
     {
         if(!m_pCSM)
         {
-            m_pCSM = new d3d::CascadedShadowMapper(3);
+            m_pCSM = new CascadedShadowMapper(3);
         }
-        m_pCSM->OnRestore();
+        m_pCSM->VOnRestore();
         return TRUE;
     }
 
     VOID CSMSetting::VRender(VOID)
     {
-        m_pCSM->Render(app::g_pApp->GetHumanView()->GetSceneGraph());
+        m_pCSM->VRender(CmGetApp()->VGetHumanView()->VGetSceneGraph());
     }
 
     CSMSetting::~CSMSetting(VOID)
@@ -114,80 +154,95 @@ namespace tbd
     VOID LightingSetting::VRender(VOID)
     {
         //d3d::GetContext()->OMSetDepthStencilState(d3d::m_pDepthNoStencilState, 0);
-        app::g_pApp->GetHumanView()->GetSceneGraph()->OnRender(tbd::eDRAW_LIGHTING);
+        CmGetApp()->VGetHumanView()->VGetSceneGraph()->VOnRender(CM_RENDERPATH_LIGHTING);
     }
     
-    VOID PostFXSetting::SetPreResult(d3d::RenderTarget* pPreResult)
+    VOID PostFXSetting::VSetTarget(IRenderTarget* target)
     {
-        m_pPreResult = pPreResult;
+        m_pTarget = target;
     }
 
-    VOID PostFXSetting::SetScene(d3d::RenderTarget* pScene)
+    VOID PostFXSetting::VSetSource(IRenderTarget* src)
     {
-        m_pScene = pScene;
-    }
+        m_pSource = src;
+	}
 
     BOOL PostFXSetting::VOnRestore(UINT w, UINT h)
     {
         if(!m_pEffectChain)
         {
-            m_pEffectChain = new d3d::EffectChain(m_pPreResult, w, h);
+			IEffectFactory* eff = CmGetApp()->VGetHumanView()->VGetEffectFactory();
+			m_pEffectChain = eff->VCreateEffectChain();
 
-            d3d::Effect* lumi = m_pEffectChain->CreateEffect("Luminance");
-            lumi->SetSource(m_pPreResult);
+			m_pEffectChain->VSetTarget(NULL);
+
+			CMShaderDescription desc;
+			desc.file = L"Effects.hlsl";
+			desc.function = "Luminance";
+
+	        IEffect* lumi = m_pEffectChain->VCreateEffect(desc);
+            lumi->VSetSource(m_pSource);
 
             //lumi->SetParameters(std::shared_ptr<LuminanceParameter>(new LuminanceParameter(1.0f)));
-
-            d3d::Effect* e = NULL;
-
+            
+            IEffect* e = NULL;
+			
             for(INT i = w / 2; i > 1; i = i >> 1)
             {
                 FLOAT s = (FLOAT)i / (FLOAT)w;
                 if(e == NULL)
                 {
-                    d3d::Effect* ds = m_pEffectChain->CreateEffect("Sample", s, s);
-                    ds->AddRequirement(lumi);
+					desc.function = "Sample";
+                    IEffect* ds = m_pEffectChain->VCreateEffect(desc, s, s);
+                    ds->VAddRequirement(lumi);
                     e = ds;
                 }
                 else
                 {
-                    d3d::Effect* ds = m_pEffectChain->CreateEffect("Sample", s, s);
-                    ds->AddRequirement(e);
+					desc.function = "Sample";
+                    IEffect* ds = m_pEffectChain->VCreateEffect(desc, s, s);
+                    ds->VAddRequirement(e);
                     e = ds;
                 }
             }
-
-            d3d::Effect* ds = m_pEffectChain->CreateEffect("Sample", 1.0f / w, 1.0f / h);
-            ds->AddRequirement(e);
+          
+			desc.function = "Sample";
+            IEffect* ds = m_pEffectChain->VCreateEffect(desc, 1.0f / w, 1.0f / h);
+            ds->VAddRequirement(e);
             e = ds;
 
             FLOAT brightPathSize = 0.25f;
 
-            d3d::Effect* bright = m_pEffectChain->CreateEffect("Brightness", brightPathSize, brightPathSize);
-            bright->SetSource(m_pPreResult);
+			desc.function = "Brightness";
 
-            d3d::Effect* e0 = m_pEffectChain->CreateEffect("BlurH", brightPathSize, brightPathSize);
-            e0->AddRequirement(bright);
+            IEffect* bright = m_pEffectChain->VCreateEffect(desc, brightPathSize, brightPathSize);
+            bright->VSetSource(m_pSource);
 
-            d3d::Effect* e1 = m_pEffectChain->CreateEffect("BlurV", brightPathSize, brightPathSize);
-            e1->AddRequirement(e0);
+			desc.function = "BlurH";
+            IEffect* e0 = m_pEffectChain->VCreateEffect(desc, brightPathSize, brightPathSize);
+            e0->VAddRequirement(bright);
 
-            d3d::Effect* e2 = m_pEffectChain->CreateEffect("ToneMap");
-            e2->SetSource(m_pPreResult);
-            e2->AddRequirement(e1);
-            e2->AddRequirement(e);
-            e2->SetTarget(m_pScene);
+			desc.function = "BlurV";
+            IEffect* e1 = m_pEffectChain->VCreateEffect(desc, brightPathSize, brightPathSize);
+            e1->VAddRequirement(e0);
+
+			desc.function = "ToneMap";
+            IEffect* e2 = m_pEffectChain->VCreateEffect(desc);
+            e2->VSetSource(m_pSource);
+            e2->VAddRequirement(e1);
+
+			m_pEffectChain->VOnRestore(w, h);
         }
         else
         {
-            m_pEffectChain->OnRestore(w, h);
+            m_pEffectChain->VOnRestore(w, h);
         }
         return TRUE;
     }
 
     VOID PostFXSetting::VRender(VOID)
     {
-        m_pEffectChain->Process();
+        m_pEffectChain->VProcess();
     }
 
     PostFXSetting::~PostFXSetting(VOID)
@@ -195,24 +250,24 @@ namespace tbd
         SAFE_DELETE(m_pEffectChain);
     }
 
-    BoundingGeoSetting::BoundingGeoSetting(VOID) : ShaderPathSetting(eDRAW_BOUNDING_DEBUG, "BoundingGeo", "bgeo")
+    BoundingGeoSetting::BoundingGeoSetting(VOID) : ShaderPathSetting(CM_RENDERPATH_BOUNDING, "BoundingGeo", "bgeo")
     {
-
+         //CmGetApp()->VGetHumanView()->VGetGraphicsFactory()->VCreateStateFactory()->VCreateRasterState()
     }
 
     VOID BoundingGeoSetting::VRender(VOID)
     {
-        app::g_pApp->GetHumanView()->GetRenderer()->PushRasterizerState(d3d::g_pRasterizerStateWrireframe);
+        //CmGetApp()->VGetRenderer()->VPushRasterState(chimera::g_pRasterizerStateWrireframe);
         ShaderPathSetting::VRender();
-        app::g_pApp->GetHumanView()->GetRenderer()->PopRasterizerState();
+        //CmGetApp()->VGetHumanView()->VGetRenderer()->VPopRasterState();
     }
-
+    /*
     ProfileSetting::ProfileSetting(IGraphicSetting* setting) : IGraphicSetting("profile"), m_pSetting(setting)
     {
 
     }
 
-    ProfileSetting& operator<<(ProfileSetting& settings, tbd::Query* q)
+    ProfileSetting& operator<<(ProfileSetting& settings, chimera::Query* q)
     {
         settings.m_pQuerys.push_back(q);
         return settings;
@@ -259,7 +314,7 @@ namespace tbd
         {
             SAFE_DELETE(*it);
         }
-    }
+    }*/
 
     EditModeSetting::EditModeSetting(VOID) : IGraphicSetting("edit")
     {
@@ -268,64 +323,57 @@ namespace tbd
 
     VOID EditModeSetting::VRender(VOID)
     {
-        app::g_pApp->GetHumanView()->GetSceneGraph()->OnRender(tbd::eDRAW_EDIT_MODE);
+        CmGetApp()->VGetHumanView()->VGetSceneGraph()->VOnRender(CM_RENDERPATH_EDITOR);
     }
     
     //Settings...
 
-    IGraphicsSettings::IGraphicsSettings(VOID)
+    GraphicsSettings::GraphicsSettings(VOID) : m_lastW(0), m_lastH(0)
     {
 
     }
 
-    GraphicsSettings::GraphicsSettings(VOID) : m_pPostFX(NULL), m_pScene(NULL), m_pPreResult(NULL), m_lastW(0), m_lastH(0)
+    VOID GraphicsSettings::VAddSetting(std::unique_ptr<IGraphicSetting> setting, GraphicsSettingType type)
     {
-
-    }
-
-    VOID GraphicsSettings::AddSetting(IGraphicSetting* setting, SettingType type)
-    {
-        if(type == eAlbedo)
+        if(type == eGraphicsSetting_Albedo)
         {
-            m_albedoSettings.push_back(setting);
+            m_albedoSettings.push_back(std::move(setting));
         }
-        else if(type == eLighting)
+        else if(type == eGraphicsSetting_Lighting)
         {
-            m_lightSettings.push_back(setting);
+            m_lightSettings.push_back(std::move(setting));
         }
     }
 
-    VOID GraphicsSettings::SetPostFX(IGraphicSetting* setting)
+    VOID GraphicsSettings::VSetPostFX(std::unique_ptr<IPostFXSetting> setting)
     {
-        m_pPostFX = setting;
+        m_pPostFX = std::move(setting);
 
-        if(!m_pPreResult)
+        /*if(!m_pPreResult)
         {
-            m_pPreResult = new d3d::RenderTarget();
-        }
+            m_pPreResult = std::move(CmGetApp()->VGetHumanView()->VGetGraphicsFactory()->VCreateRenderTarget());
+        } */
     }
 
     GraphicsSettings::~GraphicsSettings(VOID)
     {
-        SAFE_DELETE(m_pPostFX);
-
+		/*
+        m_pPostFX.reset();
+	
         TBD_FOR(m_lightSettings)
         {
-            SAFE_DELETE(*it);
+            it->reset();
         }
 
         TBD_FOR(m_albedoSettings)
         {
-            SAFE_DELETE(*it);
-        }
-
-        SAFE_DELETE(m_pScene);
-        SAFE_DELETE(m_pPreResult);
+            it->reset();
+        }*/
     }
 
-    d3d::RenderTarget* GraphicsSettings::VGetResult(VOID)
+    IRenderTarget* GraphicsSettings::VGetResult(VOID)
     {
-        return m_pScene;
+        return m_pScene.get();
     }
 
     BOOL GraphicsSettings::VOnRestore(UINT w, UINT h)
@@ -334,33 +382,18 @@ namespace tbd
         m_lastH = h;
         if(!m_pScene)
         {
-            m_pScene = new d3d::RenderTarget();
+            m_pScene = std::move(CmGetApp()->VGetHumanView()->VGetGraphicsFactory()->VCreateRenderTarget());
         }
 
-        if(m_pPreResult)
+        /*if(m_pPreResult)
         {
-            m_pPreResult->OnRestore(w, h, DXGI_FORMAT_R32G32B32A32_FLOAT);
-        }
-
+            m_pPreResult->VOnRestore(w, h, eFormat_R32G32B32A32_FLOAT);
+        }*/
+        
         if(m_pPostFX)
         {
-            PostFXSetting* fx = dynamic_cast<PostFXSetting*>(m_pPostFX);
-            if(!fx)
-            {
-                ProfileSetting* ps = dynamic_cast<ProfileSetting*>(m_pPostFX);
-                if(!ps)
-                {
-                    LOG_CRITICAL_ERROR("Error while casting!");
-                }
-                fx = dynamic_cast<PostFXSetting*>(ps->m_pSetting);
-                if(!fx)
-                {
-                    LOG_CRITICAL_ERROR("Error while casting!");
-                }
-            }
-            fx->SetPreResult(m_pPreResult);
-            fx->SetScene(m_pScene);
-            m_pPostFX->VOnRestore(w, h);
+			m_pPostFX->VSetSource(m_pScene.get());
+			m_pPostFX->VOnRestore(w, h);
         }
 
         TBD_FOR(m_albedoSettings)
@@ -372,65 +405,118 @@ namespace tbd
         {
             (*it)->VOnRestore(w, h);
         }
+        
+        m_pScene->VOnRestore(w, h, eFormat_R32G32B32A32_FLOAT);
 
-        m_pScene->OnRestore(w, h, DXGI_FORMAT_R32G32B32A32_FLOAT);
+        std::unique_ptr<IGraphicsStateFactroy> factory = CmGetApp()->VGetHumanView()->VGetGraphicsFactory()->VCreateStateFactory();
+        
+        RasterStateDesc rasterDesc;
+        ZeroMemory(&rasterDesc, sizeof(RasterStateDesc));
+        rasterDesc.CullMode = eCullMode_Back;
+        rasterDesc.FillMode = eFillMode_Solid;
+        rasterDesc.DepthClipEnable = TRUE;
+        rasterDesc.FrontCounterClockwise = TRUE;
+        rasterDesc.MultisampleEnable = FALSE;
+        rasterDesc.AntialiasedLineEnable = FALSE;
+
+        m_pRasterizerStateFrontFaceSolid.reset();
+        m_pRasterizerStateFrontFaceSolid = std::unique_ptr<IRasterState>(factory->VCreateRasterState(&rasterDesc));
+
+        DepthStencilStateDesc dDesc;
+        ZeroMemory(&dDesc, sizeof(DepthStencilStateDesc));
+        dDesc.DepthEnable = TRUE;
+        dDesc.DepthWriteMask = eDepthWriteMask_All;
+        dDesc.DepthFunc = eCompareFunc_Less_Equal;
+        dDesc.StencilEnable = FALSE;
+
+        m_pDepthNoStencilState.reset();
+        m_pDepthNoStencilState = std::unique_ptr<IDepthStencilState>(factory->VCreateDepthStencilState(&dDesc));
+
+        DepthStencilStateDesc dsDesc;
+        ZeroMemory(&dsDesc, sizeof(DepthStencilStateDesc));
+
+        dsDesc.DepthEnable = TRUE;
+        dsDesc.DepthWriteMask = eDepthWriteMask_All;
+        dsDesc.DepthFunc = eCompareFunc_Less_Equal;
+        dsDesc.StencilEnable = FALSE;
+
+        dsDesc.StencilEnable = TRUE;
+        dsDesc.StencilWriteMask = 0xFF;
+        dsDesc.StencilReadMask = 0xFF;
+
+        dsDesc.FrontFace.StencilFailOp = eStencilOP_Keep;
+        dsDesc.FrontFace.StencilDepthFailOp = eStencilOP_Keep;
+        dsDesc.FrontFace.StencilPassOp = eStencilOP_Incr;
+        dsDesc.FrontFace.StencilFunc = eCompareFunc_Always;
+
+        dsDesc.BackFace.StencilFailOp = eStencilOP_Keep;
+        dsDesc.BackFace.StencilDepthFailOp = eStencilOP_Keep;
+        dsDesc.BackFace.StencilPassOp = eStencilOP_Incr; 
+        dsDesc.BackFace.StencilFunc = eCompareFunc_Always;
+
+        m_pDepthWriteStencilState.reset();
+        m_pDepthWriteStencilState = std::unique_ptr<IDepthStencilState>(factory->VCreateDepthStencilState(&dsDesc));
 
         return TRUE;
     }
 
     VOID GraphicsSettings::VOnActivate(VOID)
     {
-        if(m_pPreResult)
+        /*if(m_pPreResult)
         {
-            app::g_pApp->GetHumanView()->GetRenderer()->SetCurrentRendertarget(m_pPreResult);
+            CmGetApp()->VGetHumanView()->VGetRenderer()->VPushCurrentRenderTarget(m_pPreResult.get());
         }
-        else
+        else*/
         {
-            app::g_pApp->GetHumanView()->GetRenderer()->SetCurrentRendertarget(m_pScene);
+            CmGetApp()->VGetHumanView()->VGetRenderer()->VPushCurrentRenderTarget(m_pScene.get());
         }
     }
 
     VOID GraphicsSettings::VRender(VOID)
     {
-        app::g_pApp->GetHumanView()->GetRenderer()->GetDeferredShader()->ClearAndBindRenderTargets();
+        CmGetApp()->VGetHumanView()->VGetRenderer()->VPushDepthStencilState(m_pDepthWriteStencilState.get(), -1);
 
-        d3d::GetContext()->OMSetDepthStencilState(d3d::m_pDepthWriteStencilState, -1);
+        CmGetApp()->VGetRenderer()->VPostRender();
 
         TBD_FOR(m_albedoSettings)
         {
             (*it)->VRender();
         }
 
+        CmGetApp()->VGetRenderer()->VPreRender();
+
         //todo choose first
-        /*if(m_pPostFX)
+        if(m_pPostFX)
         {
-            m_pPreResult->Clear();
-            m_pPreResult->Bind();
+            m_pScene->VClear();
+            m_pScene->VBind();
         }
-        else 
+        else
         {
-            m_pScene->Clear();
-            m_pScene->Bind();
-        }*/
+            CmGetApp()->VGetHumanView()->VGetRenderer()->VClearAndBindBackBuffer();
+        }
 
-        d3d::GetContext()->OMSetDepthStencilState(d3d::m_pDepthNoStencilState, 0);
+        CmGetApp()->VGetHumanView()->VGetRenderer()->VPopDepthStencilState();
 
-        app::g_pApp->GetHumanView()->GetRenderer()->PushRasterizerState(d3d::g_pRasterizerStateFrontFaceSolid);
+        CmGetApp()->VGetHumanView()->VGetRenderer()->VPushDepthStencilState(m_pDepthNoStencilState.get());
+
+        CmGetApp()->VGetHumanView()->VGetRenderer()->VPushRasterState(m_pRasterizerStateFrontFaceSolid.get());
 
         TBD_FOR(m_lightSettings)
         {
             (*it)->VRender();
         }
 
-        app::g_pApp->GetHumanView()->GetRenderer()->VPostRender();
-
         if(m_pPostFX) //TODO
         {
             m_pPostFX->VRender();
         }
-        app::g_pApp->GetHumanView()->GetRenderer()->PopRasterizerState();
+        CmGetApp()->VGetHumanView()->VGetRenderer()->VPopDepthStencilState();
+
+        CmGetApp()->VGetRenderer()->VPopRasterState();
     }
 
+    /*
     IGraphicSetting* GraphicsSettings::GetSetting(LPCSTR name)
     {
         TBD_FOR(m_lightSettings)
@@ -452,76 +538,99 @@ namespace tbd
             return m_pPostFX;
         }
         return NULL;
-    }
+    } */
 
     DefaultGraphicsSettings::DefaultGraphicsSettings(VOID)
     {
-        AddSetting(new tbd::ShaderPathSetting(tbd::eDRAW_TO_ALBEDO, "DefShader", "albedo"), tbd::eAlbedo);
-        AddSetting(new tbd::ShaderPathSetting(tbd::eDRAW_TO_ALBEDO_INSTANCED, "DefShaderInstanced", "albedoInstanced"), tbd::eAlbedo);
-        AddSetting(new tbd::ShaderPathSetting(tbd::eDRAW_PARTICLE_EFFECTS, "Particles", "particles"), tbd::eAlbedo);
-        AddSetting(new tbd::ShaderPathSetting(tbd::eDRAW_SKY, "Sky", "sky"), tbd::eAlbedo);
+        VAddSetting(std::unique_ptr<IGraphicSetting>(new AlbedoSetting()), eGraphicsSetting_Albedo);
+        /*VAddSetting(std::unique_ptr<IGraphicSetting>(new ShaderPathSetting(eRenderPath_DrawToAlbedoInstanced, "DefShaderInstanced", "albedoInstanced")), eGraphicsSetting_Albedo);
+        VAddSetting(std::unique_ptr<IGraphicSetting>(new ShaderPathSetting(eRenderPath_DrawParticles, "Particles", "particles")), eGraphicsSetting_Albedo);*/
 
-        AddSetting(new tbd::CSMSetting(), tbd::eLighting);
-        AddSetting(new tbd::GloablLightingSetting(), tbd::eLighting);
-        AddSetting(new tbd::LightingSetting(), tbd::eLighting);
+        ShaderPathSetting* skySettings = new ShaderPathSetting(CM_RENDERPATH_SKY, "Sky", "sky");
 
-        SetPostFX(new tbd::PostFXSetting());
+        skySettings->VGetProgramDescription()->vs.file = L"Sky.hlsl";
+        skySettings->VGetProgramDescription()->vs.function = "Sky_VS";
+
+        skySettings->VGetProgramDescription()->vs.layoutCount = 2;
+        skySettings->VGetProgramDescription()->vs.inputLayout[0].format = eFormat_R32G32B32_FLOAT;
+        skySettings->VGetProgramDescription()->vs.inputLayout[0].instanced = FALSE;
+        skySettings->VGetProgramDescription()->vs.inputLayout[0].name = "POSITION";
+        skySettings->VGetProgramDescription()->vs.inputLayout[0].position = 0;
+        skySettings->VGetProgramDescription()->vs.inputLayout[0].slot = 0;
+
+        skySettings->VGetProgramDescription()->vs.inputLayout[1].format = eFormat_R32G32_FLOAT;
+        skySettings->VGetProgramDescription()->vs.inputLayout[1].instanced = FALSE;
+        skySettings->VGetProgramDescription()->vs.inputLayout[1].name = "TEXCOORD";
+        skySettings->VGetProgramDescription()->vs.inputLayout[1].position = 1;
+        skySettings->VGetProgramDescription()->vs.inputLayout[1].slot = 0;
+
+        skySettings->VGetProgramDescription()->fs.file = L"Sky.hlsl";
+        skySettings->VGetProgramDescription()->fs.function = "Sky_PS";
+
+        VAddSetting(std::unique_ptr<IGraphicSetting>(skySettings), eGraphicsSetting_Albedo);
+
+        VAddSetting(std::unique_ptr<IGraphicSetting>(new CSMSetting()), eGraphicsSetting_Lighting);
+        VAddSetting(std::unique_ptr<IGraphicSetting>(new GloablLightingSetting()), eGraphicsSetting_Lighting);
+        //VAddSetting(std::unique_ptr<IGraphicSetting>(new LightingSetting()), chimera::eLighting);
+
+        VSetPostFX(std::unique_ptr<IPostFXSetting>(new PostFXSetting()));
     }
 
+    /*
     ProfileGraphicsSettings::ProfileGraphicsSettings(VOID)
     {
-        ProfileSetting* ps = new ProfileSetting(new tbd::ShaderPathSetting(tbd::eDRAW_TO_ALBEDO, "DefShader", "Albedo"));
-        *ps << new tbd::D3DTimeDeltaQuery();
+        ProfileSetting* ps = new ProfileSetting(new chimera::ShaderPathSetting(chimera::eDRAW_TO_ALBEDO, "DefShader", "Albedo"));
+        *ps << new chimera::D3DTimeDeltaQuery();
         //*ps << new tbd::D3DPipelineStatisticsQuery();
-        *ps << new tbd::D3DOcclusionQuery();
-        AddSetting(ps, tbd::eAlbedo);
+        *ps << new chimera::D3DOcclusionQuery();
+        AddSetting(ps, chimera::eAlbedo);
 
-        ps = new ProfileSetting(new tbd::ShaderPathSetting(tbd::eDRAW_TO_ALBEDO_INSTANCED, "DefShaderInstanced", "AlbedoInstanced"));
-        *ps << new tbd::D3DTimeDeltaQuery();
+        ps = new ProfileSetting(new chimera::ShaderPathSetting(chimera::eDRAW_TO_ALBEDO_INSTANCED, "DefShaderInstanced", "AlbedoInstanced"));
+        *ps << new chimera::D3DTimeDeltaQuery();
         //*ps << new tbd::D3DPipelineStatisticsQuery();
-        *ps << new tbd::D3DOcclusionQuery();
-        AddSetting(ps, tbd::eAlbedo);
+        *ps << new chimera::D3DOcclusionQuery();
+        AddSetting(ps, chimera::eAlbedo);
 
-        ps = new ProfileSetting(new tbd::ShaderPathSetting(tbd::eDRAW_PARTICLE_EFFECTS, "Particles", "Particles"));
-        *ps << new tbd::D3DTimeDeltaQuery();
+        ps = new ProfileSetting(new chimera::ShaderPathSetting(chimera::eDRAW_PARTICLE_EFFECTS, "Particles", "Particles"));
+        *ps << new chimera::D3DTimeDeltaQuery();
         //*ps << new tbd::D3DPipelineStatisticsQuery();
-        *ps << new tbd::D3DOcclusionQuery();
-        AddSetting(ps, tbd::eAlbedo);
+        *ps << new chimera::D3DOcclusionQuery();
+        AddSetting(ps, chimera::eAlbedo);
 
-        ps = new ProfileSetting(new tbd::ShaderPathSetting(tbd::eDRAW_SKY, "Sky", "Sky"));
-        *ps << new tbd::D3DTimeDeltaQuery();
+        ps = new ProfileSetting(new chimera::ShaderPathSetting(chimera::eDRAW_SKY, "Sky", "Sky"));
+        *ps << new chimera::D3DTimeDeltaQuery();
         //*ps << new tbd::D3DPipelineStatisticsQuery();
-        *ps << new tbd::D3DOcclusionQuery();
-        AddSetting(ps, tbd::eAlbedo);
+        *ps << new chimera::D3DOcclusionQuery();
+        AddSetting(ps, chimera::eAlbedo);
 
-        ps = new ProfileSetting(new tbd::CSMSetting());
-        *ps << new tbd::D3DTimeDeltaQuery();
+        ps = new ProfileSetting(new chimera::CSMSetting());
+        *ps << new chimera::D3DTimeDeltaQuery();
         //*ps << new tbd::D3DPipelineStatisticsQuery();
-        *ps << new tbd::D3DOcclusionQuery();
-        AddSetting(ps, tbd::eLighting);
+        *ps << new chimera::D3DOcclusionQuery();
+        AddSetting(ps, chimera::eLighting);
 
-        ps = new ProfileSetting(new tbd::GloablLightingSetting());
-        *ps << new tbd::D3DTimeDeltaQuery();
+        ps = new ProfileSetting(new chimera::GloablLightingSetting());
+        *ps << new chimera::D3DTimeDeltaQuery();
         //*ps << new tbd::D3DPipelineStatisticsQuery();
-        *ps << new tbd::D3DOcclusionQuery();
-        AddSetting(ps, tbd::eLighting);
+        *ps << new chimera::D3DOcclusionQuery();
+        AddSetting(ps, chimera::eLighting);
 
-        ps = new ProfileSetting(new tbd::LightingSetting());
-        *ps << new tbd::D3DTimeDeltaQuery();
+        ps = new ProfileSetting(new chimera::LightingSetting());
+        *ps << new chimera::D3DTimeDeltaQuery();
         //*ps << new tbd::D3DPipelineStatisticsQuery();
-        *ps << new tbd::D3DOcclusionQuery();
-        AddSetting(ps, tbd::eLighting);
+        *ps << new chimera::D3DOcclusionQuery();
+        AddSetting(ps, chimera::eLighting);
 
-        ps = new ProfileSetting(new tbd::PostFXSetting());
-        *ps << new tbd::D3DTimeDeltaQuery();
+        ps = new ProfileSetting(new chimera::PostFXSetting());
+        *ps << new chimera::D3DTimeDeltaQuery();
         //*ps << new tbd::D3DPipelineStatisticsQuery();
-        *ps << new tbd::D3DOcclusionQuery();
+        *ps << new chimera::D3DOcclusionQuery();
 
         SetPostFX(ps);
 
-        m_pGui = new tbd::gui::D3D_GUI();
-        m_pText = new tbd::gui::GuiTextComponent();
-        Dimension dim;
+        m_pGui = new chimera::gui::D3D_GUI();
+        m_pText = new chimera::gui::GuiTextComponent();
+        CMDimension dim;
         dim.x = 0;//(INT)(0.4 * d3d::g_width);
         dim.y = 200;
         dim.w = 200;
@@ -590,52 +699,54 @@ namespace tbd
 
     EditorGraphicsSettings::EditorGraphicsSettings(VOID) : DefaultGraphicsSettings()
     {
-        AddSetting(new tbd::EditModeSetting(), eAlbedo);
+        AddSetting(new chimera::EditModeSetting(), eAlbedo);
     }
 
     VOID EditorGraphicsSettings::VRender(VOID)
     {
         DefaultGraphicsSettings::VRender();
 
-        app::g_pApp->GetHumanView()->GetSceneGraph()->OnRender(tbd::eDRAW_DEBUG_INFOS);
+        chimera::g_pApp->GetHumanView()->GetSceneGraph()->OnRender(chimera::eDRAW_DEBUG_INFOS);
 
         //clear current actor
-        app::g_pApp->GetHumanView()->GetRenderer()->SetActorId(INVALID_ACTOR_ID);
-        d3d::ConstBuffer* buffer = app::g_pApp->GetHumanView()->GetRenderer()->GetBuffer(d3d::eSelectedActorIdBuffer);
+        chimera::g_pApp->GetHumanView()->GetRenderer()->SetActorId(CM_INVALID_ACTOR_ID);
+        chimera::ConstBuffer* buffer = chimera::g_pApp->GetHumanView()->GetRenderer()->GetBuffer(chimera::eSelectedActorIdBuffer);
         UINT* b = (UINT*)buffer->Map();
-        b[0] = INVALID_ACTOR_ID;
+        b[0] = CM_INVALID_ACTOR_ID;
         buffer->Unmap();
         //DEBUG_OUT("1");
     }
 
     AlbedoSettings::AlbedoSettings(VOID)
     {
-        AddSetting(new tbd::ShaderPathSetting(tbd::eDRAW_TO_ALBEDO, "DefShader", "albedo"), tbd::eAlbedo);
-        AddSetting(new tbd::ShaderPathSetting(tbd::eDRAW_TO_ALBEDO_INSTANCED, "DefShaderInstanced", "albedoInstanced"), tbd::eAlbedo);
+        AddSetting(new chimera::ShaderPathSetting(chimera::eDRAW_TO_ALBEDO, "DefShader", "albedo"), chimera::eAlbedo);
+        AddSetting(new chimera::ShaderPathSetting(chimera::eDRAW_TO_ALBEDO_INSTANCED, "DefShaderInstanced", "albedoInstanced"), chimera::eAlbedo);
+        AddSetting(new chimera::ShaderPathSetting(chimera::eDRAW_PARTICLE_EFFECTS, "Particles", "particles"), chimera::eAlbedo);
+        //AddSetting(new tbd::BoundingGeoSetting(), tbd::eAlbedo);
     }
 
     VOID AlbedoSettings::VRender(VOID)
     {
-        app::g_pApp->GetHumanView()->GetRenderer()->GetDeferredShader()->ClearAndBindRenderTargets();
+        chimera::g_pApp->GetHumanView()->GetRenderer()->GetDeferredShader()->ClearAndBindRenderTargets();
 
-        d3d::GetContext()->OMSetDepthStencilState(d3d::m_pDepthNoStencilState, 0);
+        chimera::GetContext()->OMSetDepthStencilState(chimera::m_pDepthNoStencilState, 0);
 
         TBD_FOR(m_albedoSettings)
         {
             (*it)->VRender();
         }
-        app::g_pApp->GetHumanView()->GetRenderer()->VPostRender();
+        chimera::g_pApp->GetHumanView()->GetRenderer()->VPostRender();
     }
 
     BoundingGeoDebugSettings::BoundingGeoDebugSettings(VOID)
     {
-        AddSetting(new tbd::ShaderPathSetting(tbd::eDRAW_TO_ALBEDO, "DefShader", "albedo"), tbd::eAlbedo);
-        AddSetting(new tbd::ShaderPathSetting(tbd::eDRAW_TO_ALBEDO_INSTANCED, "DefShaderInstanced", "albedoInstanced"), tbd::eAlbedo);
-        AddSetting(new tbd::ShaderPathSetting(tbd::eDRAW_PARTICLE_EFFECTS, "Particles", "particles"), tbd::eAlbedo);
-        AddSetting(new tbd::BoundingGeoSetting(), tbd::eAlbedo);
+        AddSetting(new chimera::ShaderPathSetting(chimera::eDRAW_TO_ALBEDO, "DefShader", "albedo"), chimera::eAlbedo);
+        AddSetting(new chimera::ShaderPathSetting(chimera::eDRAW_TO_ALBEDO_INSTANCED, "DefShaderInstanced", "albedoInstanced"), chimera::eAlbedo);
+        AddSetting(new chimera::ShaderPathSetting(chimera::eDRAW_PARTICLE_EFFECTS, "Particles", "particles"), chimera::eAlbedo);
+        AddSetting(new chimera::BoundingGeoSetting(), chimera::eAlbedo);
 
-        AddSetting(new tbd::GloablLightingSetting(), tbd::eLighting);
-        AddSetting(new tbd::LightingSetting(), tbd::eLighting);
+        AddSetting(new chimera::GloablLightingSetting(), chimera::eLighting);
+        AddSetting(new chimera::LightingSetting(), chimera::eLighting);
     }
 
     /*

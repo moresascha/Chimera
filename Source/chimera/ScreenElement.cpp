@@ -1,17 +1,15 @@
 #include "ScreenElement.h"
-#include "GraphicsSettings.h"
-#include "D3DRenderer.h"
-#include "GameView.h"
-#include "GameApp.h"
-#include "d3d.h"
-#include "Effect.h"
-namespace tbd
+#include "stdafx.h"
+#include "Vec4.h"
+
+namespace chimera
 {
-    ScreenElement::ScreenElement(VOID) : m_color(util::Color(1,1,1,1)), m_isActive(TRUE), m_isEnable(TRUE), m_name("unknown")
+    ScreenElement::ScreenElement(VOID) : m_color(Color(1,1,1,1)), m_isActive(TRUE), m_isEnable(TRUE), m_name("unknown")
     {
+
     }
 
-    Dimension ScreenElement::VGetDimension(VOID)
+    CONST CMDimension& ScreenElement::VGetDimension(VOID)
     {
         return m_dimension;
     }
@@ -46,12 +44,12 @@ namespace tbd
         m_isActive = active;
     }
 
-    VOID ScreenElement::VSetDimension(CONST Dimension& dim)
+    VOID ScreenElement::VSetDimension(CONST CMDimension& dim)
     {
-        m_dimensionPercent.x = dim.x / (FLOAT)app::g_pApp->GetWindowWidth();
-        m_dimensionPercent.y = dim.y / (FLOAT)app::g_pApp->GetWindowHeight();
-        m_dimensionPercent.w = dim.w / (FLOAT)app::g_pApp->GetWindowWidth();
-        m_dimensionPercent.h = dim.h / (FLOAT)app::g_pApp->GetWindowHeight();
+        m_dimensionPercent.x = dim.x / (FLOAT)CmGetApp()->VGetWindowWidth();
+        m_dimensionPercent.y = dim.y / (FLOAT)CmGetApp()->VGetWindowHeight();
+        m_dimensionPercent.w = dim.w / (FLOAT)CmGetApp()->VGetWindowWidth();
+        m_dimensionPercent.h = dim.h / (FLOAT)CmGetApp()->VGetWindowHeight();
         ScreenElement::VOnRestore();
     }
 
@@ -92,7 +90,7 @@ namespace tbd
         m_color.b = b;
     }
 
-    CONST util::Color& ScreenElement::VGetBackgroundColor(VOID) CONST
+    CONST Color& ScreenElement::VGetBackgroundColor(VOID) CONST
     {
         return m_color;
     }
@@ -104,10 +102,10 @@ namespace tbd
 
     BOOL ScreenElement::VOnRestore(VOID)
     {
-        m_dimension.x = (UINT)(m_dimensionPercent.x * d3d::GetWindowWidth());
-        m_dimension.y = (UINT)(m_dimensionPercent.y * d3d::GetWindowHeight());
-        m_dimension.w = (UINT)(m_dimensionPercent.w * d3d::GetWindowWidth());
-        m_dimension.h = (UINT)(m_dimensionPercent.h * d3d::GetWindowHeight());
+        m_dimension.x = (UINT)(m_dimensionPercent.x * CmGetApp()->VGetWindowWidth());
+        m_dimension.y = (UINT)(m_dimensionPercent.y * CmGetApp()->VGetWindowHeight());
+        m_dimension.w = (UINT)(m_dimensionPercent.w * CmGetApp()->VGetWindowWidth());
+        m_dimension.h = (UINT)(m_dimensionPercent.h * CmGetApp()->VGetWindowHeight());
         return TRUE;
     }
 
@@ -139,7 +137,7 @@ namespace tbd
         }
         return it->second;
     }
-    
+
     VOID ScreenElementContainer::VSetBackgroundColor(FLOAT r, FLOAT g, FLOAT b)
     {
         TBD_FOR(m_components)
@@ -147,7 +145,7 @@ namespace tbd
             it->second->VSetBackgroundColor(r, g, b);
         }
     }
-    
+
     BOOL ScreenElementContainer::VOnRestore(VOID)
     {
         ScreenElement::VOnRestore();
@@ -171,7 +169,7 @@ namespace tbd
             }
         }
     }
-    
+
     VOID ScreenElementContainer::VDraw(VOID)
     {
         if(VIsActive())
@@ -194,31 +192,61 @@ namespace tbd
         }
     }
 
-    RenderScreen::RenderScreen(std::shared_ptr<IGraphicsSettings> settings) : m_pSettings(settings)
+    RenderScreen::RenderScreen(std::unique_ptr<IGraphicsSettings> settings) : m_pSettings(std::move(settings)), m_pFDrawMethod(NULL)
     {
 
+    }
+
+    VOID RenderScreen::_DrawFulscreenQuad(VOID)
+    {
+        CmGetApp()->VGetHumanView()->VGetRenderer()->VDrawScreenQuad();
+    }
+
+    VOID RenderScreen::_DrawQuad(VOID)
+    {
+        CmGetApp()->VGetHumanView()->VGetRenderer()->VDrawScreenQuad(m_dimension.x, m_dimension.y, m_dimension.w, m_dimension.h);
+    }
+
+    VOID RenderScreen::VSetDimension(CONST CMDimension& dim)
+    {
+        ScreenElement::VSetDimension(dim);
     }
 
     VOID RenderScreen::VDraw(VOID)
     {
         m_pSettings->VRender();
+		/*
+        IRenderer* renderer = CmGetApp()->VGetHumanView()->VGetRenderer();
 
-        d3d::BindBackbuffer();
+        renderer->VClearAndBindBackBuffer();
 
-        app::g_pApp->GetHumanView()->GetRenderer()->SetSampler(d3d::eDiffuseColorSampler, m_pSettings->VGetResult()->GetShaderRessourceView());
+        renderer->VSetTexture(chimera::eEffect0, m_pSettings->VGetResult()->VGetTexture());
 
         assert(((m_dimension.w > 0) && (m_dimension.h > 0)));
-        
-        app::g_pApp->GetHumanView()->GetRenderer()->PushRasterizerState(d3d::g_pRasterizerStateFrontFaceSolid);
 
-        d3d::DrawScreenQuad(m_dimension.x, m_dimension.y, m_dimension.w, m_dimension.h);
+        //renderer->VPushRasterState()
 
-        app::g_pApp->GetHumanView()->GetRenderer()->PopRasterizerState();
+        m_pFDrawMethod();
+        //renderer->VDrawScreenQuad(m_dimension.x, m_dimension.y, m_dimension.w, m_dimension.h);
+
+        //renderer->PopRasterizerState();
+
+         renderer->VSetTexture(chimera::eEffect0, NULL);*/
     }
 
     BOOL RenderScreen::VOnRestore(VOID)
     {
         ScreenElement::VOnRestore();
+
+        if(m_dimension.x > 0 || m_dimension.y > 0 || m_dimension.w != CmGetApp()->VGetWindowWidth() || m_dimension.h != CmGetApp()->VGetWindowHeight())
+        {
+            m_pFDrawMethod = fastdelegate::MakeDelegate(this, &RenderScreen::_DrawQuad);
+        }
+        else
+        {
+            m_pFDrawMethod = fastdelegate::MakeDelegate(this, &RenderScreen::_DrawFulscreenQuad);
+        }
+
         return m_pSettings->VOnRestore(m_dimension.w, m_dimension.h);
     }
 
@@ -227,56 +255,59 @@ namespace tbd
 
     }
 
-    RendertargetScreen::RendertargetScreen(d3d::RenderTarget* target) : m_pTarget(target)
+    RenderTargetScreen::RenderTargetScreen(IRenderTarget* target) : m_pTarget(target)
     {
     }
 
-    VOID RendertargetScreen::VDraw(VOID)
+    VOID RenderTargetScreen::VDraw(VOID)
     {
-        d3d::BindBackbuffer();
+        IRenderer* renderer = CmGetApp()->VGetHumanView()->VGetRenderer();
 
-        app::g_pApp->GetHumanView()->GetRenderer()->SetSampler(d3d::eDiffuseColorSampler, m_pTarget->GetShaderRessourceView());
+        renderer->VBindBackBuffer();
+
+        renderer->VSetTexture(eDiffuseColorSampler, m_pTarget->VGetTexture());
 
         assert(((m_dimension.w > 0) && (m_dimension.h > 0)));
 
-        d3d::DrawScreenQuad(m_dimension.x, m_dimension.y, m_dimension.w, m_dimension.h);
+        renderer->VDrawScreenQuad(m_dimension.x, m_dimension.y, m_dimension.w, m_dimension.h);
 
-        app::g_pApp->GetHumanView()->GetRenderer()->SetSampler(d3d::eDiffuseColorSampler, NULL);
+        renderer->VSetTexture(eDiffuseColorSampler, NULL);
     }
 
-    RendertargetScreen::~RendertargetScreen(VOID)
+    RenderTargetScreen::~RenderTargetScreen(VOID)
     {
 
     }
 
     //---
-    DefShaderRenderScreen::DefShaderRenderScreen(UINT target) : RenderScreen(NULL), m_target(target)
+    TextureSlotScreen::TextureSlotScreen(UINT target) : RenderScreen(NULL), m_target(target)
     {
-        m_pSettings = std::shared_ptr<tbd::AlbedoSettings>(new tbd::AlbedoSettings());
+       // m_pSettings = std::shared_ptr<chimera::AlbedoSettings>(new chimera::AlbedoSettings());
     }
 
-    VOID DefShaderRenderScreen::VDraw(VOID)
+    VOID TextureSlotScreen::VDraw(VOID)
     {
+        /*
         m_pSettings->VRender();
 
-        d3d::BindBackbuffer();
+        chimera::BindBackbuffer();
 
-        app::g_pApp->GetHumanView()->GetRenderer()->SetSampler(d3d::eDiffuseColorSampler, 
-            app::g_pApp->GetRenderer()->GetDeferredShader()->GetTarget((d3d::Diff_RenderTargets)m_target)->GetShaderRessourceView());
+        chimera::g_pApp->GetHumanView()->GetRenderer()->SetSampler(chimera::eDiffuseColorSampler, 
+            chimera::g_pApp->GetRenderer()->GetDeferredShader()->GetTarget((chimera::Diff_RenderTargets)m_target)->GetShaderRessourceView());
 
         assert(((m_dimension.w > 0) && (m_dimension.h > 0)));
 
-        d3d::DrawScreenQuad(m_dimension.x, m_dimension.y, m_dimension.w, m_dimension.h);
+        chimera::DrawScreenQuad(m_dimension.x, m_dimension.y, m_dimension.w, m_dimension.h);
 
-        app::g_pApp->GetHumanView()->GetRenderer()->SetSampler(d3d::eDiffuseColorSampler, NULL);
+        chimera::g_pApp->GetHumanView()->GetRenderer()->SetSampler(chimera::eDiffuseColorSampler, NULL); */
     }
 
-    DefShaderRenderScreen::~DefShaderRenderScreen(VOID)
+    TextureSlotScreen::~TextureSlotScreen(VOID)
     {
 
     }
 
-    DefShaderRenderScreenContainer::DefShaderRenderScreenContainer(std::shared_ptr<IGraphicsSettings> settings) : m_settings(settings)
+    DefShaderRenderScreenContainer::DefShaderRenderScreenContainer(std::unique_ptr<IGraphicsSettings> settings) : m_settings(std::move(settings))
     {
 
     }
@@ -284,7 +315,7 @@ namespace tbd
     BOOL DefShaderRenderScreenContainer::VOnRestore(VOID)
     {
         LOG_CRITICAL_ERROR("todo");
-        m_settings->VOnRestore(d3d::GetWindowWidth(), d3d::GetWindowHeight());
+       // m_settings->VOnRestore(chimera::GetWindowWidth(), chimera::GetWindowHeight());
         TBD_FOR(m_screens)
         {
             (*it)->VOnRestore();
@@ -292,9 +323,9 @@ namespace tbd
         return TRUE;
     }
 
-    VOID DefShaderRenderScreenContainer::AddComponent(DefShaderRenderScreen* screen)
+    VOID DefShaderRenderScreenContainer::AddComponent(std::unique_ptr<TextureSlotScreen> screen)
     {
-        m_screens.push_back(screen);
+        m_screens.push_back(std::move(screen));
     }
 
     VOID DefShaderRenderScreenContainer::VDraw(VOID)
@@ -308,9 +339,6 @@ namespace tbd
 
     DefShaderRenderScreenContainer::~DefShaderRenderScreenContainer(VOID)
     {
-        TBD_FOR(m_screens)
-        {
-            SAFE_DELETE(*it);
-        }
+
     }
 }

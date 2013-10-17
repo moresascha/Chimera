@@ -13,18 +13,18 @@
 #include "CameraTracking.h"
 #include <fstream>
 
-namespace tbd
+namespace chimera
 {
     VOID CreateStaticPlane(BaseLevel* level)
     {
-        tbd::ActorDescription desc = app::g_pApp->GetLogic()->GetActorFactory()->CreateActorDescription();
+        chimera::ActorDescription desc = chimera::g_pApp->GetLogic()->GetActorFactory()->CreateActorDescription();
 
-        tbd::TransformComponent* comp = desc->AddComponent<tbd::TransformComponent>("TransformComponent");
+        chimera::TransformComponent* comp = desc->AddComponent<chimera::TransformComponent>("TransformComponent");
 
-        tbd::RenderComponent* renderComp = desc->AddComponent<tbd::RenderComponent>("RenderComponent");
-        renderComp->m_meshFile = "plane.obj";
+        chimera::RenderComponent* renderComp = desc->AddComponent<chimera::RenderComponent>("RenderComponent");
+        renderComp->m_resource = "plane.obj";
 
-        tbd::PhysicComponent* physicComponent = desc->AddComponent<tbd::PhysicComponent>("PhysicComponent");
+        chimera::PhysicComponent* physicComponent = desc->AddComponent<chimera::PhysicComponent>("PhysicComponent");
         physicComponent->m_dim.x = 2; physicComponent->m_dim.z = 2; physicComponent->m_dim.y = 2;
         physicComponent->m_material = "static";
         physicComponent->m_shapeStyle = "plane";
@@ -32,38 +32,38 @@ namespace tbd
         level->VAddActor(desc);
     }
 
-    std::shared_ptr<tbd::Actor> CreateCube(CONST util::Vec3& pos, BaseLevel* level)
+    std::shared_ptr<chimera::Actor> CreateCube(CONST util::Vec3& pos, BaseLevel* level)
     {
-        tbd::ActorDescription desc = app::g_pApp->GetLogic()->GetActorFactory()->CreateActorDescription();
+        chimera::ActorDescription desc = chimera::g_pApp->GetLogic()->GetActorFactory()->CreateActorDescription();
 
-        tbd::TransformComponent* comp = desc->AddComponent<tbd::TransformComponent>("TransformComponent");
+        chimera::TransformComponent* comp = desc->AddComponent<chimera::TransformComponent>("TransformComponent");
         comp->GetTransformation()->SetTranslate(pos.x, pos.y, pos.z);
 
-        tbd::RenderComponent* renderComp = desc->AddComponent<tbd::RenderComponent>("RenderComponent");
-        renderComp->m_meshFile = "box.obj";
+        chimera::RenderComponent* renderComp = desc->AddComponent<chimera::RenderComponent>("RenderComponent");
+        renderComp->m_resource = "box.obj";
 
-        tbd::PhysicComponent* physicComponent = desc->AddComponent<tbd::PhysicComponent>("PhysicComponent");
+        chimera::PhysicComponent* physicComponent = desc->AddComponent<chimera::PhysicComponent>("PhysicComponent");
         physicComponent->m_dim.x = 2; physicComponent->m_dim.z = 2; physicComponent->m_dim.y = 2;
         physicComponent->m_material = "kinematic";
         physicComponent->m_shapeStyle = "box";
         physicComponent->m_radius = 1;
 
-        desc->AddComponent<tbd::PickableComponent>(tbd::PickableComponent::COMPONENT_ID);
+        desc->AddComponent<chimera::PickableComponent>(chimera::PickableComponent::COMPONENT_ID);
 
         return level->VAddActor(desc);
     }
 
-    std::shared_ptr<tbd::Actor> CreateSphere(CONST util::Vec3& pos, BaseLevel* level)
+    std::shared_ptr<chimera::Actor> CreateSphere(CONST util::Vec3& pos, BaseLevel* level)
     {
-        tbd::ActorDescription desc = app::g_pApp->GetLogic()->GetActorFactory()->CreateActorDescription();
+        chimera::ActorDescription desc = chimera::g_pApp->GetLogic()->GetActorFactory()->CreateActorDescription();
 
-        tbd::TransformComponent* comp = desc->AddComponent<tbd::TransformComponent>("TransformComponent");
+        chimera::TransformComponent* comp = desc->AddComponent<chimera::TransformComponent>("TransformComponent");
         comp->GetTransformation()->SetTranslate(pos.x, pos.y, pos.z);
 
-        tbd::RenderComponent* renderComp = desc->AddComponent<tbd::RenderComponent>("RenderComponent");
-        renderComp->m_meshFile = "sphere.obj";
+        chimera::RenderComponent* renderComp = desc->AddComponent<chimera::RenderComponent>("RenderComponent");
+        renderComp->m_resource = "sphere.obj";
 
-        tbd::PhysicComponent* physicComponent = desc->AddComponent<tbd::PhysicComponent>("PhysicComponent");
+        chimera::PhysicComponent* physicComponent = desc->AddComponent<chimera::PhysicComponent>("PhysicComponent");
         physicComponent->m_dim.x = 2; physicComponent->m_dim.z = 2; physicComponent->m_dim.y = 2;
         physicComponent->m_material = "kinematic";
         physicComponent->m_shapeStyle = "sphere";
@@ -72,17 +72,17 @@ namespace tbd
         return level->VAddActor(desc);
     }
 
-    std::shared_ptr<tbd::Actor> CreateMesh(CONST util::Vec3& pos, BaseLevel* level, LPCSTR meshFile, LPCSTR physicShape, LPCSTR material)
+    std::shared_ptr<chimera::Actor> CreateMesh(CONST util::Vec3& pos, BaseLevel* level, LPCSTR meshFile, LPCSTR physicShape, LPCSTR material)
     {
-        tbd::ActorDescription desc = app::g_pApp->GetLogic()->GetActorFactory()->CreateActorDescription();
+        chimera::ActorDescription desc = chimera::g_pApp->GetLogic()->GetActorFactory()->CreateActorDescription();
 
-        tbd::TransformComponent* comp = desc->AddComponent<tbd::TransformComponent>("TransformComponent");
+        chimera::TransformComponent* comp = desc->AddComponent<chimera::TransformComponent>("TransformComponent");
         comp->GetTransformation()->SetTranslate(pos.x, pos.y, pos.z);
 
-        tbd::RenderComponent* renderComp = desc->AddComponent<tbd::RenderComponent>("RenderComponent");
-        renderComp->m_meshFile = meshFile;
+        chimera::RenderComponent* renderComp = desc->AddComponent<chimera::RenderComponent>("RenderComponent");
+        renderComp->m_resource = meshFile;
 
-        tbd::PhysicComponent* physicComponent = desc->AddComponent<tbd::PhysicComponent>("PhysicComponent");
+        chimera::PhysicComponent* physicComponent = desc->AddComponent<chimera::PhysicComponent>("PhysicComponent");
         physicComponent->m_dim.x = 2; physicComponent->m_dim.z = 2; physicComponent->m_dim.y = 2;
         physicComponent->m_material = material;
         physicComponent->m_shapeStyle = physicShape;
@@ -91,31 +91,31 @@ namespace tbd
         return level->VAddActor(desc);
     }
 
-    std::shared_ptr<tbd::Actor> CreatePointlight(util::Vec3& pos, BaseLevel* level, util::Vec4& color, FLOAT radius, FLOAT intensity)
+    std::shared_ptr<chimera::Actor> CreatePointlight(util::Vec3& pos, BaseLevel* level, util::Vec4& color, FLOAT radius, FLOAT intensity)
     {
-        tbd::ActorDescription desc = app::g_pApp->GetLogic()->GetActorFactory()->CreateActorDescription();
+        chimera::ActorDescription desc = chimera::g_pApp->GetLogic()->GetActorFactory()->CreateActorDescription();
 
-        tbd::LightComponent* lightComponent = desc->AddComponent<tbd::LightComponent>("LightComponent");
+        chimera::LightComponent* lightComponent = desc->AddComponent<chimera::LightComponent>("LightComponent");
         lightComponent->m_type = "point";
         lightComponent->m_color = color;
         lightComponent->m_intensity = intensity;
 
-        tbd::TransformComponent* comp = desc->AddComponent<tbd::TransformComponent>("TransformComponent");
+        chimera::TransformComponent* comp = desc->AddComponent<chimera::TransformComponent>("TransformComponent");
         comp->GetTransformation()->SetTranslate(pos.x, pos.y, pos.z);
         comp->GetTransformation()->SetScale(radius);
 
-        std::shared_ptr<tbd::Actor> actor = level->VAddActor(desc);
+        std::shared_ptr<chimera::Actor> actor = level->VAddActor(desc);
 
         return actor;
     }
 
-    BaseLevel::BaseLevel(CONST std::string& file, tbd::ActorFactory* factory) : m_file(file), m_name("unnamed"), m_pActorFactory(factory)
+    BaseLevel::BaseLevel(CONST std::string& file, chimera::ActorFactory* factory) : m_file(file), m_name("unnamed"), m_pActorFactory(factory)
     {
-        event::EventListener listener = fastdelegate::MakeDelegate(this, &XMLLevel::ActorCreatedDelegate);
-        event::IEventManager::Get()->VAddEventListener(listener, event::ActorCreatedEvent::TYPE);
+        chimera::EventListener listener = fastdelegate::MakeDelegate(this, &XMLLevel::ActorCreatedDelegate);
+        chimera::IEventManager::Get()->VAddEventListener(listener, chimera::ActorCreatedEvent::TYPE);
     }
 
-    std::shared_ptr<tbd::Actor> BaseLevel::VFindActor(ActorId id)
+    std::shared_ptr<chimera::Actor> BaseLevel::VFindActor(ActorId id)
     {
         auto it = m_actors.find(id);
         if(it == m_actors.end()) 
@@ -135,24 +135,24 @@ namespace tbd
         m_actors.erase(id);
     }
 
-    VOID BaseLevel::ActorCreatedDelegate(event::IEventPtr eventData)
+    VOID BaseLevel::ActorCreatedDelegate(chimera::IEventPtr eventData)
     {
-        std::shared_ptr<event::ActorCreatedEvent> data = std::static_pointer_cast<event::ActorCreatedEvent>(eventData);
+        std::shared_ptr<chimera::ActorCreatedEvent> data = std::static_pointer_cast<chimera::ActorCreatedEvent>(eventData);
         auto it = std::find(m_idsToLoad.begin(), m_idsToLoad.end(), data->m_id);
         if(it != m_idsToLoad.end())
         {
             m_idsToLoad.erase(it);
             if(m_idsToLoad.empty())
             {
-                event::IEventPtr levelLoadedEvent(new event::LevelLoadedEvent(std::string(VGetName())));
-                event::IEventManager::Get()->VQueueEventThreadSave(levelLoadedEvent);
+                chimera::IEventPtr levelLoadedEvent(new chimera::LevelLoadedEvent(std::string(VGetName())));
+                chimera::IEventManager::Get()->VQueueEventThreadSave(levelLoadedEvent);
             }
         }
     }
 
-    std::shared_ptr<tbd::Actor> BaseLevel::VAddActor(ActorDescription& desc)
+    std::shared_ptr<chimera::Actor> BaseLevel::VAddActor(ActorDescription& desc)
     {
-        std::shared_ptr<tbd::Actor> actor = m_pActorFactory->CreateActor(desc);
+        std::shared_ptr<chimera::Actor> actor = m_pActorFactory->CreateActor(desc);
         this->m_actors[actor->GetId()] = actor;
         this->m_idsToLoad.push_back(actor->GetId());
         return actor;
@@ -167,32 +167,32 @@ namespace tbd
     {
         for(auto it = m_actors.begin(); it != m_actors.end(); ++it)
         {
-            event::IEventPtr deletActorEvent(new event::DeleteActorEvent(it->first));
-            event::IEventManager::Get()->VQueueEvent(deletActorEvent);
+            chimera::IEventPtr deletActorEvent(new chimera::DeleteActorEvent(it->first));
+            chimera::IEventManager::Get()->VQueueEvent(deletActorEvent);
         }
     }
 
     BaseLevel::~BaseLevel(VOID)
     {
         VUnload();
-        event::EventListener listener = fastdelegate::MakeDelegate(this, &XMLLevel::ActorCreatedDelegate);
-        event::IEventManager::Get()->VRemoveEventListener(listener, event::ActorCreatedEvent::TYPE);
+        chimera::EventListener listener = fastdelegate::MakeDelegate(this, &XMLLevel::ActorCreatedDelegate);
+        chimera::IEventManager::Get()->VRemoveEventListener(listener, chimera::ActorCreatedEvent::TYPE);
     }
 
-    XMLLevel::XMLLevel(CONST std::string& file, tbd::ActorFactory* factory) : BaseLevel(file, factory)
+    XMLLevel::XMLLevel(CONST std::string& file, chimera::ActorFactory* factory) : BaseLevel(file, factory)
     {
 
     }
 
-    std::shared_ptr<tbd::Actor> XMLLevel::VAddActor(tinyxml2::XMLElement* pNode)
+    std::shared_ptr<chimera::Actor> XMLLevel::VAddActor(tinyxml2::XMLElement* pNode)
     {
         if(!pNode) 
         {
             LOG_CRITICAL_ERROR("TiXmlElement cant be NULL");
         }
-        std::shared_ptr<tbd::Actor> actor = NULL;
-        std::shared_ptr<tbd::Actor> parent = NULL;
-        std::vector<std::shared_ptr<tbd::Actor>> actors;
+        std::shared_ptr<chimera::Actor> actor = NULL;
+        std::shared_ptr<chimera::Actor> parent = NULL;
+        std::vector<std::shared_ptr<chimera::Actor>> actors;
         parent = m_pActorFactory->CreateActor(pNode, actors);
         TBD_FOR(actors)
         {
@@ -207,9 +207,9 @@ namespace tbd
     {
         tinyxml2::XMLDocument doc;
 
-        tbd::Resource r(app::g_pApp->GetConfig()->GetString("sLevelPath") + VGetFile().c_str());
+        chimera::CMResource r(chimera::g_pApp->GetConfig()->GetString("sLevelPath") + VGetFile().c_str());
 
-        std::shared_ptr<tbd::ResHandle> handle = app::g_pApp->GetCache()->GetHandle(r);
+        std::shared_ptr<chimera::ResHandle> handle = chimera::g_pApp->GetCache()->GetHandle(r);
 
         if(!handle)
         {
@@ -235,7 +235,7 @@ namespace tbd
         return save.VSaveLevel(this, file);
     }
 
-    RandomLevel::RandomLevel(CONST std::string& file, tbd::ActorFactory* factory) : BaseLevel(file, factory)
+    RandomLevel::RandomLevel(CONST std::string& file, chimera::ActorFactory* factory) : BaseLevel(file, factory)
     {
     }
 
@@ -293,11 +293,11 @@ namespace tbd
         }
     };*/
 
-    VOID TriggerDelegate(event::IEventPtr data)
+    VOID TriggerDelegate(chimera::IEventPtr data)
     {
-        std::shared_ptr<event::TriggerEvent> te = std::static_pointer_cast<event::TriggerEvent>(data);
+        std::shared_ptr<chimera::TriggerEvent> te = std::static_pointer_cast<chimera::TriggerEvent>(data);
         ActorId trigger = te->m_triggerActor;
-        QUEUE_EVENT(new event::DeleteActorEvent(trigger));
+        QUEUE_EVENT(new chimera::DeleteActorEvent(trigger));
         DEBUG_OUT("On Trigger\n");
     }
 
@@ -309,17 +309,18 @@ namespace tbd
         {
             for(CHAR j = 0; j < 1; ++j)
             {
-                tbd::ActorDescription desc = app::g_pApp->GetLogic()->GetActorFactory()->CreateActorDescription();
-                desc->AddComponent<tbd::ParticleComponent>("ParticleComponent");
-                tbd::TransformComponent* t = desc->AddComponent<tbd::TransformComponent>("TransformComponent");
+                chimera::ActorDescription desc = chimera::g_pApp->GetLogic()->GetActorFactory()->CreateActorDescription();
+                desc->AddComponent<chimera::ParticleComponent>("ParticleComponent");
+                chimera::TransformComponent* t = desc->AddComponent<chimera::TransformComponent>("TransformComponent");
                 t->GetTransformation()->SetTranslate(0,5,0);//3 * i - 3,0.1f, 3 * j - j);
-                tbd::PickableComponent* pick = desc->AddComponent<tbd::PickableComponent>("PickableComponent");
+                chimera::PickableComponent* pick = desc->AddComponent<chimera::PickableComponent>("PickableComponent");
                 //std::shared_ptr<Actor> actor = VAddActor(desc);
             }
         } 
 
+        
         //CreatePointlight(util::Vec3(0, 7, 0), this, util::Color(1,1,1,1), 40, 0.5f);
-
+        return TRUE;
         FLOAT s = 10;
 
         for(INT i = 0; i < 0; ++i)
@@ -352,65 +353,65 @@ namespace tbd
         VAddActor(desc); */
         
         ActorDescription desc = m_pActorFactory->CreateActorDescription();
-        tbd::TransformComponent* tcomp = desc->AddComponent<tbd::TransformComponent>(tbd::TransformComponent::COMPONENT_ID);
+        chimera::TransformComponent* tcomp = desc->AddComponent<chimera::TransformComponent>(chimera::TransformComponent::COMPONENT_ID);
         tcomp->GetTransformation()->SetTranslate(0,0,0);
 
-        tbd::RenderComponent* renderCmp = desc->AddComponent<tbd::RenderComponent>(tbd::RenderComponent::COMPONENT_ID);
+        chimera::RenderComponent* renderCmp = desc->AddComponent<chimera::RenderComponent>(chimera::RenderComponent::COMPONENT_ID);
         renderCmp->m_type = "skydome";
         renderCmp->m_info = "skydome3.jpg";
         VAddActor(desc);
 
         desc = m_pActorFactory->CreateActorDescription();
-        tcomp = desc->AddComponent<tbd::TransformComponent>(tbd::TransformComponent::COMPONENT_ID);
+        tcomp = desc->AddComponent<chimera::TransformComponent>(chimera::TransformComponent::COMPONENT_ID);
         tcomp->GetTransformation()->SetTranslate(0,-2,10);
         tcomp->GetTransformation()->SetScale(1.0f);
-        renderCmp = desc->AddComponent<tbd::RenderComponent>(tbd::RenderComponent::COMPONENT_ID);
-        renderCmp->m_meshFile = "terrain.obj";
+        renderCmp = desc->AddComponent<chimera::RenderComponent>(chimera::RenderComponent::COMPONENT_ID);
+        renderCmp->m_resource = "terrain.obj";
 
-        tbd::PhysicComponent* phxCmp = desc->AddComponent<tbd::PhysicComponent>(tbd::PhysicComponent::COMPONENT_ID);
+        chimera::PhysicComponent* phxCmp = desc->AddComponent<chimera::PhysicComponent>(chimera::PhysicComponent::COMPONENT_ID);
         phxCmp->m_shapeStyle = "static_mesh";
         phxCmp->m_meshFile = "terrain.obj";
         phxCmp->m_material = "static";
         VAddActor(desc);
         
         util::Vec3 p(0,1,10);
-        std::shared_ptr<tbd::Actor> a;// = CreateCube(p, this);
+        std::shared_ptr<chimera::Actor> a;// = CreateCube(p, this);
 
-        desc = app::g_pApp->GetLogic()->GetActorFactory()->CreateActorDescription();
+        desc = chimera::g_pApp->GetLogic()->GetActorFactory()->CreateActorDescription();
 
-        tbd::TransformComponent* comp = desc->AddComponent<tbd::TransformComponent>("TransformComponent");
+        chimera::TransformComponent* comp = desc->AddComponent<chimera::TransformComponent>("TransformComponent");
 
         util::Vec3 pos(0,1,17);
 
         comp->GetTransformation()->SetTranslate(pos.x, pos.y, pos.z);
 
 
-        tbd::RenderComponent* renderComp = desc->AddComponent<tbd::RenderComponent>("RenderComponent");
-        renderComp->m_meshFile = "box.obj";
+        chimera::RenderComponent* renderComp = desc->AddComponent<chimera::RenderComponent>("RenderComponent");
+        renderComp->m_resource = "box.obj";
 
-        tbd::PhysicComponent* physicComponent = desc->AddComponent<tbd::PhysicComponent>("PhysicComponent");
+        chimera::PhysicComponent* physicComponent = desc->AddComponent<chimera::PhysicComponent>("PhysicComponent");
         physicComponent->m_dim.x = 2; physicComponent->m_dim.z = 2; physicComponent->m_dim.y = 2;
         physicComponent->m_material = "static";
         physicComponent->m_shapeStyle = "box";
         physicComponent->m_radius = 1;
 
-        desc->AddComponent<tbd::PickableComponent>(tbd::PickableComponent::COMPONENT_ID);
+        desc->AddComponent<chimera::PickableComponent>(chimera::PickableComponent::COMPONENT_ID);
 
         //VAddActor(desc);
 
         //spotlight thingie
 
-        desc = app::g_pApp->GetLogic()->GetActorFactory()->CreateActorDescription();
+        desc = chimera::g_pApp->GetLogic()->GetActorFactory()->CreateActorDescription();
         
-        desc->AddComponent<tbd::PickableComponent>(tbd::PickableComponent::COMPONENT_ID);
+        desc->AddComponent<chimera::PickableComponent>(chimera::PickableComponent::COMPONENT_ID);
 
-        comp = desc->AddComponent<tbd::TransformComponent>("TransformComponent");
+        comp = desc->AddComponent<chimera::TransformComponent>("TransformComponent");
         comp->GetTransformation()->SetTranslate(0, 2, 2);
 
-        renderComp = desc->AddComponent<tbd::RenderComponent>("RenderComponent");
-        renderComp->m_meshFile = "spottwotest.obj";
+        renderComp = desc->AddComponent<chimera::RenderComponent>("RenderComponent");
+        renderComp->m_resource = "spottwotest.obj";
 
-        physicComponent = desc->AddComponent<tbd::PhysicComponent>("PhysicComponent");
+        physicComponent = desc->AddComponent<chimera::PhysicComponent>("PhysicComponent");
         physicComponent->m_material = "dynamic";
         physicComponent->m_shapeStyle = "sphere";
         physicComponent->m_radius = 1;
@@ -421,7 +422,7 @@ namespace tbd
 
         desc = m_pActorFactory->CreateActorDescription();
 
-        tbd::LightComponent* lightComponent = desc->AddComponent<tbd::LightComponent>("LightComponent");
+        chimera::LightComponent* lightComponent = desc->AddComponent<chimera::LightComponent>("LightComponent");
         lightComponent->m_type = "spot";
         lightComponent->m_color.x = 1;//0.5f + 2 * rand() / (FLOAT)RAND_MAX;
         lightComponent->m_color.y = 0.5f;//0.5f + 2 * rand() / (FLOAT)RAND_MAX;
@@ -430,21 +431,21 @@ namespace tbd
         lightComponent->m_angle = 55;
         lightComponent->m_intensity = 24;
 
-        tcomp = desc->AddComponent<tbd::TransformComponent>(tbd::TransformComponent::COMPONENT_ID);
+        tcomp = desc->AddComponent<chimera::TransformComponent>(chimera::TransformComponent::COMPONENT_ID);
         tcomp->GetTransformation()->SetScale(50);
         tcomp->GetTransformation()->RotateX(-XM_PIDIV2);
         tcomp->GetTransformation()->Translate(0, 0, 0);
 
         //desc->AddComponent<tbd::PickableComponent>(tbd::PickableComponent::COMPONENT_ID);
 
-        tbd::ParentComponent* pc = desc->AddComponent<tbd::ParentComponent>("ParentComponent");
+        chimera::ParentComponent* pc = desc->AddComponent<chimera::ParentComponent>("ParentComponent");
         pc->m_parentId = a->GetId();
 
         VAddActor(desc);
 
         desc = m_pActorFactory->CreateActorDescription();
 
-        lightComponent = desc->AddComponent<tbd::LightComponent>("LightComponent");
+        lightComponent = desc->AddComponent<chimera::LightComponent>("LightComponent");
         lightComponent->m_type = "spot";
         lightComponent->m_color.x = 1;//0.5f + 2 * rand() / (FLOAT)RAND_MAX;
         lightComponent->m_color.y = 0.5f;//0.5f + 2 * rand() / (FLOAT)RAND_MAX;
@@ -453,14 +454,14 @@ namespace tbd
         lightComponent->m_angle = 55;
         lightComponent->m_intensity = 24;
 
-        tcomp = desc->AddComponent<tbd::TransformComponent>(tbd::TransformComponent::COMPONENT_ID);
+        tcomp = desc->AddComponent<chimera::TransformComponent>(chimera::TransformComponent::COMPONENT_ID);
         tcomp->GetTransformation()->SetScale(50);
         tcomp->GetTransformation()->RotateX(XM_PIDIV2);
         tcomp->GetTransformation()->Translate(0, 0, 0);
 
         //desc->AddComponent<tbd::PickableComponent>(tbd::PickableComponent::COMPONENT_ID);
 
-        pc = desc->AddComponent<tbd::ParentComponent>("ParentComponent");
+        pc = desc->AddComponent<chimera::ParentComponent>("ParentComponent");
         pc->m_parentId = a->GetId();
 
         VAddActor(desc);
@@ -660,22 +661,22 @@ namespace tbd
         comupteNormalsBSpline((VertexData*)buffer->ptr, gws, blockSize, VERTEX_STRIDE, elements, stream->GetPtr()); */
     }
 
-    d3d::Geometry* CreateSphere(VOID)
+    chimera::Geometry* CreateSphere(VOID)
     {
         return GeometryFactory::CreateSphere(255, 127, FALSE);
     }
 
-    d3d::Geometry* CreateGrid(VOID)
+    chimera::Geometry* CreateGrid(VOID)
     {
         return GeometryFactory::CreateNormedGrid(127, 127, 2, FALSE);
     }
 
-    d3d::Geometry* CreateGridBSpline(VOID)
+    chimera::Geometry* CreateGridBSpline(VOID)
     {
         return GeometryFactory::CreateNormedGrid(VERTEX_STRIDE - 1, VERTEX_STRIDE - 1, SPLINE_SCALE, FALSE);
     }
 
-    TransformShowRoom::TransformShowRoom(CONST std::string& file, tbd::ActorFactory* factory) : BaseLevel(file, factory)
+    TransformShowRoom::TransformShowRoom(CONST std::string& file, chimera::ActorFactory* factory) : BaseLevel(file, factory)
     {
 
     }
@@ -685,23 +686,23 @@ namespace tbd
         CreateStaticPlane(this);
 
         ActorDescription desc = m_pActorFactory->CreateActorDescription();
-        tbd::TransformComponent* tcomp = desc->AddComponent<tbd::TransformComponent>(tbd::TransformComponent::COMPONENT_ID);
+        chimera::TransformComponent* tcomp = desc->AddComponent<chimera::TransformComponent>(chimera::TransformComponent::COMPONENT_ID);
         tcomp->GetTransformation()->SetTranslate(0,0,0);
 
-        tbd::RenderComponent* renderCmp = desc->AddComponent<tbd::RenderComponent>(tbd::RenderComponent::COMPONENT_ID);
+        chimera::RenderComponent* renderCmp = desc->AddComponent<chimera::RenderComponent>(chimera::RenderComponent::COMPONENT_ID);
         renderCmp->m_type = "skydome";
         renderCmp->m_info = "skydome3.jpg";
         VAddActor(desc);
 
-        desc = app::g_pApp->GetLogic()->GetActorFactory()->CreateActorDescription();
+        desc = chimera::g_pApp->GetLogic()->GetActorFactory()->CreateActorDescription();
 
-        tbd::TransformComponent* comp = desc->AddComponent<tbd::TransformComponent>("TransformComponent");
+        chimera::TransformComponent* comp = desc->AddComponent<chimera::TransformComponent>("TransformComponent");
         comp->GetTransformation()->SetTranslate(0, 2, 15);
         comp->GetTransformation()->SetRotateX(-XM_PIDIV2*0.25f);
 
-        tbd::RenderComponent* renderComp = desc->AddComponent<tbd::RenderComponent>("RenderComponent");
-        tbd::CudaTransformationNode* node = new tbd::CudaTransformationNode(&Trans1, &CreateGrid);
-        renderComp->m_sceneNode = std::shared_ptr<tbd::CudaTransformationNode>(node);
+        chimera::RenderComponent* renderComp = desc->AddComponent<chimera::RenderComponent>("RenderComponent");
+        chimera::CudaTransformationNode* node = new chimera::CudaTransformationNode(&Trans1, &CreateGrid);
+        renderComp->m_sceneNode = std::shared_ptr<chimera::CudaTransformationNode>(node);
         node->SetNormaleTexture("normal/leatherN.jpg");
         node->SetTexture("leather.jpg");
         node->GetMaterial().m_reflectance = 0.55f;
@@ -709,15 +710,15 @@ namespace tbd
 
         VAddActor(desc);
 
-        desc = app::g_pApp->GetLogic()->GetActorFactory()->CreateActorDescription();
+        desc = chimera::g_pApp->GetLogic()->GetActorFactory()->CreateActorDescription();
 
-        comp = desc->AddComponent<tbd::TransformComponent>("TransformComponent");
+        comp = desc->AddComponent<chimera::TransformComponent>("TransformComponent");
         comp->GetTransformation()->SetTranslate(-5, 3, 5);
         comp->GetTransformation()->SetScale(1);
 
-        renderComp = desc->AddComponent<tbd::RenderComponent>("RenderComponent");
-        node = new tbd::CudaTransformationNode(&Trans0, &CreateSphere);
-        renderComp->m_sceneNode = std::shared_ptr<tbd::CudaTransformationNode>(node);
+        renderComp = desc->AddComponent<chimera::RenderComponent>("RenderComponent");
+        node = new chimera::CudaTransformationNode(&Trans0, &CreateSphere);
+        renderComp->m_sceneNode = std::shared_ptr<chimera::CudaTransformationNode>(node);
         node->SetNormaleTexture("normal/fleshN.jpg");
         node->SetTexture("flesh.jpg");
         node->GetMaterial().m_reflectance = 0.75f;
@@ -725,9 +726,9 @@ namespace tbd
 
         VAddActor(desc);
 
-        desc = app::g_pApp->GetLogic()->GetActorFactory()->CreateActorDescription();
+        desc = chimera::g_pApp->GetLogic()->GetActorFactory()->CreateActorDescription();
 
-        node = new tbd::UniformBSplineNode(&CreateGridBSpline, &BSplineTrans, VERTEX_STRIDE, CONTROL_PNTS_WIDTH);
+        node = new chimera::UniformBSplineNode(&CreateGridBSpline, &BSplineTrans, VERTEX_STRIDE, CONTROL_PNTS_WIDTH);
 
         util::UniformBSpline& spline = ((UniformBSplineNode*)node)->GetSpline();
         INT size = CONTROL_PNTS_WIDTH;
@@ -744,14 +745,14 @@ namespace tbd
             }
         }
 
-        renderComp = desc->AddComponent<tbd::RenderComponent>("RenderComponent");
-        renderComp->m_sceneNode = std::shared_ptr<tbd::CudaTransformationNode>(node);
+        renderComp = desc->AddComponent<chimera::RenderComponent>("RenderComponent");
+        renderComp->m_sceneNode = std::shared_ptr<chimera::CudaTransformationNode>(node);
         node->SetNormaleTexture("normal/tilesN.png");
         node->SetTexture("7992-D.jpg");
         node->GetMaterial().m_reflectance = 0.75f;
         node->GetMaterial().m_texScale = 16;
 
-        comp = desc->AddComponent<tbd::TransformComponent>("TransformComponent");
+        comp = desc->AddComponent<chimera::TransformComponent>("TransformComponent");
         comp->GetTransformation()->SetTranslate(20, 1, 15);
         comp->GetTransformation()->SetScale(1);
 
@@ -760,16 +761,16 @@ namespace tbd
         //lights
         srand(0);
 
-        tbd::ActorDescription ldesc = app::g_pApp->GetLogic()->GetActorFactory()->CreateActorDescription();
+        chimera::ActorDescription ldesc = chimera::g_pApp->GetLogic()->GetActorFactory()->CreateActorDescription();
 
-        tbd::LightComponent* lightComponent = ldesc->AddComponent<tbd::LightComponent>("LightComponent");
+        chimera::LightComponent* lightComponent = ldesc->AddComponent<chimera::LightComponent>("LightComponent");
         lightComponent->m_type = "point";
         lightComponent->m_color.x = 0.5f + 2 * rand() / (FLOAT)RAND_MAX;
         lightComponent->m_color.y = 0.5f + 2 * rand() / (FLOAT)RAND_MAX;
         lightComponent->m_color.z = 0.5f + 2 * rand() / (FLOAT)RAND_MAX;
         lightComponent->m_color.w = 1;
 
-        comp = ldesc->AddComponent<tbd::TransformComponent>("TransformComponent");
+        comp = ldesc->AddComponent<chimera::TransformComponent>("TransformComponent");
         util::Vec3 point;
         point.x = 15; 
         point.y = 5;
@@ -777,66 +778,66 @@ namespace tbd
         comp->GetTransformation()->SetTranslate(point.x, point.y, point.z);
         comp->GetTransformation()->SetScale(10);
 
-        ldesc->AddComponent<tbd::PickableComponent>(tbd::PickableComponent::COMPONENT_ID);
+        ldesc->AddComponent<chimera::PickableComponent>(chimera::PickableComponent::COMPONENT_ID);
 
         VAddActor(ldesc);
 
-        ldesc = app::g_pApp->GetLogic()->GetActorFactory()->CreateActorDescription();
+        ldesc = chimera::g_pApp->GetLogic()->GetActorFactory()->CreateActorDescription();
 
-        lightComponent = ldesc->AddComponent<tbd::LightComponent>("LightComponent");
+        lightComponent = ldesc->AddComponent<chimera::LightComponent>("LightComponent");
         lightComponent->m_type = "point";
         lightComponent->m_color.x = 0.5f + 2 * rand() / (FLOAT)RAND_MAX;
         lightComponent->m_color.y = 0.5f + 2 * rand() / (FLOAT)RAND_MAX;
         lightComponent->m_color.z = 0.5f + 2 * rand() / (FLOAT)RAND_MAX;
         lightComponent->m_color.w = 1;
 
-        comp = ldesc->AddComponent<tbd::TransformComponent>("TransformComponent");
+        comp = ldesc->AddComponent<chimera::TransformComponent>("TransformComponent");
         comp->GetTransformation()->SetTranslate(-10, 5, 5);
         comp->GetTransformation()->SetScale(10);
         
-        ldesc->AddComponent<tbd::PickableComponent>(tbd::PickableComponent::COMPONENT_ID);
+        ldesc->AddComponent<chimera::PickableComponent>(chimera::PickableComponent::COMPONENT_ID);
         
         VAddActor(ldesc);
 
-        ldesc = app::g_pApp->GetLogic()->GetActorFactory()->CreateActorDescription();
+        ldesc = chimera::g_pApp->GetLogic()->GetActorFactory()->CreateActorDescription();
 
-        lightComponent = ldesc->AddComponent<tbd::LightComponent>("LightComponent");
+        lightComponent = ldesc->AddComponent<chimera::LightComponent>("LightComponent");
         lightComponent->m_type = "point";
         lightComponent->m_color.x = 0.5f + 2 * rand() / (FLOAT)RAND_MAX;
         lightComponent->m_color.y = 0.5f + 2 * rand() / (FLOAT)RAND_MAX;
         lightComponent->m_color.z = 0.5f + 2 * rand() / (FLOAT)RAND_MAX;
         lightComponent->m_color.w = 1;
 
-        comp = ldesc->AddComponent<tbd::TransformComponent>("TransformComponent");
+        comp = ldesc->AddComponent<chimera::TransformComponent>("TransformComponent");
         comp->GetTransformation()->SetTranslate(3, 5, 5);
         comp->GetTransformation()->SetScale(10);
 
-        ldesc->AddComponent<tbd::PickableComponent>(tbd::PickableComponent::COMPONENT_ID);
+        ldesc->AddComponent<chimera::PickableComponent>(chimera::PickableComponent::COMPONENT_ID);
 
         VAddActor(ldesc);
 
-        ldesc = app::g_pApp->GetLogic()->GetActorFactory()->CreateActorDescription();
+        ldesc = chimera::g_pApp->GetLogic()->GetActorFactory()->CreateActorDescription();
 
-        lightComponent = ldesc->AddComponent<tbd::LightComponent>("LightComponent");
+        lightComponent = ldesc->AddComponent<chimera::LightComponent>("LightComponent");
         lightComponent->m_type = "point";
         lightComponent->m_color.x = 0.5f + 2 * rand() / (FLOAT)RAND_MAX;
         lightComponent->m_color.y = 0.5f + 2 * rand() / (FLOAT)RAND_MAX;
         lightComponent->m_color.z = 0.5f + 2 * rand() / (FLOAT)RAND_MAX;
         lightComponent->m_color.w = 1;
 
-        comp = ldesc->AddComponent<tbd::TransformComponent>("TransformComponent");
+        comp = ldesc->AddComponent<chimera::TransformComponent>("TransformComponent");
         comp->GetTransformation()->SetTranslate(0, 5, 15);
         comp->GetTransformation()->SetScale(10);
 
-        ldesc->AddComponent<tbd::PickableComponent>(tbd::PickableComponent::COMPONENT_ID);
+        ldesc->AddComponent<chimera::PickableComponent>(chimera::PickableComponent::COMPONENT_ID);
 
         VAddActor(ldesc);
 
         //camera tracking
 
-        std::shared_ptr<tbd::Actor> trackingShotActor = app::g_pApp->GetLogic()->VCreateActor("freelookCamera.xml");
+        std::shared_ptr<chimera::Actor> trackingShotActor = chimera::g_pApp->GetLogic()->VCreateActor("freelookCamera.xml");
         trackingShotActor->SetName("track0");
-        std::shared_ptr<proc::TrackingShot> ts = std::shared_ptr<proc::TrackingShot>(new proc::TrackingShot(trackingShotActor, TRUE));
+        std::shared_ptr<chimera::TrackingShot> ts = std::shared_ptr<chimera::TrackingShot>(new chimera::TrackingShot(trackingShotActor, TRUE));
         
         util::Vec3 focus(20, 1, 15);
         FLOAT h = 6;
@@ -852,11 +853,11 @@ namespace tbd
         ts->AddBasePoint(p3, focus);
         ts->SetDivisions(256);
         
-        app::g_pApp->GetLogic()->GetProcessManager()->Attach(ts);
+        chimera::g_pApp->GetLogic()->GetProcessManager()->Attach(ts);
 
-        trackingShotActor = app::g_pApp->GetLogic()->VCreateActor("freelookCamera.xml");
+        trackingShotActor = chimera::g_pApp->GetLogic()->VCreateActor("freelookCamera.xml");
         trackingShotActor->SetName("track1");
-        ts = std::shared_ptr<proc::TrackingShot>(new proc::TrackingShot(trackingShotActor, TRUE));
+        ts = std::shared_ptr<chimera::TrackingShot>(new chimera::TrackingShot(trackingShotActor, TRUE));
 
         focus.Set(-5, 3, 5);
         h = 6;
@@ -872,7 +873,7 @@ namespace tbd
         ts->AddBasePoint(p3, focus);
         ts->SetDivisions(256);
 
-        app::g_pApp->GetLogic()->GetProcessManager()->Attach(ts);
+        chimera::g_pApp->GetLogic()->GetProcessManager()->Attach(ts);
        
         return TRUE;
     }
@@ -887,19 +888,18 @@ namespace tbd
 #define VERTEX_STRIDE0 THIRDS0 * 12
 #define SPLINE_SCALE0 10
 
-    BSplinePatchLevel::BSplinePatchLevel(CONST std::string& file, tbd::ActorFactory* factory) : BaseLevel(file, factory)
+    BSplinePatchLevel::BSplinePatchLevel(CONST std::string& file, chimera::ActorFactory* factory) : BaseLevel(file, factory)
     {
 
     }
 
     VOID BSplineTrans0(cudah::cuda_buffer buffer, cudah::cuda_buffer staticNormals, cudah::cuda_buffer staticPositions, cudah::cuda_buffer iu, UINT elements, UINT blockSize, ULONG time, cudah::cuda_stream stream)
     {
-        UINT gws = cudah::cudah::GetThreadCount(CONTROL_PNTS_WIDTH0 * CONTROL_PNTS_WIDTH0, blockSize);
-        gws = cudah::cudah::GetThreadCount(elements, blockSize);
+        UINT gws = cudahu::GetThreadCount(elements, blockSize);
         //comupteNormalsBSpline((VertexData*)buffer->ptr, gws, blockSize, VERTEX_STRIDE0, elements, stream->GetPtr());
     }
 
-    d3d::Geometry* CreateGridBSpline0(VOID)
+    chimera::Geometry* CreateGridBSpline0(VOID)
     {
         return GeometryFactory::CreateNormedGrid(VERTEX_STRIDE0 - 1, VERTEX_STRIDE0 - 1, SPLINE_SCALE0, FALSE);
     }
@@ -908,25 +908,25 @@ namespace tbd
     {
         CreateStaticPlane(this);
 
-        tbd::ActorDescription desc = m_pActorFactory->CreateActorDescription();
-        tbd::TransformComponent* tcomp = desc->AddComponent<tbd::TransformComponent>(tbd::TransformComponent::COMPONENT_ID);
+        chimera::ActorDescription desc = m_pActorFactory->CreateActorDescription();
+        chimera::TransformComponent* tcomp = desc->AddComponent<chimera::TransformComponent>(chimera::TransformComponent::COMPONENT_ID);
         tcomp->GetTransformation()->SetTranslate(0,0,0);
 
-        tbd::RenderComponent* renderCmp = desc->AddComponent<tbd::RenderComponent>(tbd::RenderComponent::COMPONENT_ID);
+        chimera::RenderComponent* renderCmp = desc->AddComponent<chimera::RenderComponent>(chimera::RenderComponent::COMPONENT_ID);
         renderCmp->m_type = "skydome";
         renderCmp->m_info = "skydome3.jpg";
         VAddActor(desc);
 
-        ADD_EVENT_LISTENER(this, &BSplinePatchLevel::OnControlPointMove, event::ActorMovedEvent::TYPE);
+        ADD_EVENT_LISTENER(this, &BSplinePatchLevel::OnControlPointMove, chimera::ActorMovedEvent::TYPE);
 
-        desc = app::g_pApp->GetLogic()->GetActorFactory()->CreateActorDescription();
+        desc = chimera::g_pApp->GetLogic()->GetActorFactory()->CreateActorDescription();
 
-        m_node = new tbd::UniformBSplineNode(&CreateGridBSpline0, &BSplineTrans0, VERTEX_STRIDE0, CONTROL_PNTS_WIDTH0, TRUE);
+        m_node = new chimera::UniformBSplineNode(&CreateGridBSpline0, &BSplineTrans0, VERTEX_STRIDE0, CONTROL_PNTS_WIDTH0, TRUE);
 
         util::UniformBSpline& spline = ((UniformBSplineNode*)m_node)->GetSpline();
         INT size = CONTROL_PNTS_WIDTH0;
 
-        m_controlPoints = new std::shared_ptr<tbd::Actor>[size * size];
+        m_controlPoints = new std::shared_ptr<chimera::Actor>[size * size];
 
         srand(0);
 
@@ -941,16 +941,16 @@ namespace tbd
                 point.y = 10 * rand() / (FLOAT)RAND_MAX;
                 point.z = (-1.0f + 2.0f * y / (FLOAT)(size-1)) * SPLINE_SCALE0;
 
-                tbd::ActorDescription sdesc = app::g_pApp->GetLogic()->GetActorFactory()->CreateActorDescription();
+                chimera::ActorDescription sdesc = chimera::g_pApp->GetLogic()->GetActorFactory()->CreateActorDescription();
 
-                tbd::TransformComponent* comp = sdesc->AddComponent<tbd::TransformComponent>("TransformComponent");
+                chimera::TransformComponent* comp = sdesc->AddComponent<chimera::TransformComponent>("TransformComponent");
                 comp->GetTransformation()->SetTranslate(point.x, point.y, point.z);
                 comp->GetTransformation()->SetScale(0.25f);
 
-                tbd::RenderComponent* renderComp = sdesc->AddComponent<tbd::RenderComponent>("RenderComponent");
-                renderComp->m_meshFile = "debug_sphere.obj";
+                chimera::RenderComponent* renderComp = sdesc->AddComponent<chimera::RenderComponent>("RenderComponent");
+                renderComp->m_resource = "debug_sphere.obj";
 
-                sdesc->AddComponent<tbd::PickableComponent>("PickableComponent");
+                sdesc->AddComponent<chimera::PickableComponent>("PickableComponent");
 
                 m_controlPoints[index++] = VAddActor(sdesc);
 
@@ -958,31 +958,31 @@ namespace tbd
             }
         }
 
-        renderCmp = desc->AddComponent<tbd::RenderComponent>("RenderComponent");
-        renderCmp->m_sceneNode = std::shared_ptr<tbd::CudaTransformationNode>(m_node);
+        renderCmp = desc->AddComponent<chimera::RenderComponent>("RenderComponent");
+        renderCmp->m_sceneNode = std::shared_ptr<chimera::CudaTransformationNode>(m_node);
         m_node->SetNormaleTexture("normal/tilesN.png");
         m_node->SetTexture("7992-D.jpg");
         m_node->GetMaterial().m_reflectance = 0.75f;
         m_node->GetMaterial().m_texScale = 16;
 
-        tcomp = desc->AddComponent<tbd::TransformComponent>("TransformComponent");
+        tcomp = desc->AddComponent<chimera::TransformComponent>("TransformComponent");
         tcomp->GetTransformation()->SetTranslate(+0, 0, 0);
         VAddActor(desc);
 
         TBD_FOR_INT(3)
         {
-            tbd::ActorDescription ldesc = app::g_pApp->GetLogic()->GetActorFactory()->CreateActorDescription();
+            chimera::ActorDescription ldesc = chimera::g_pApp->GetLogic()->GetActorFactory()->CreateActorDescription();
             
-            ldesc->AddComponent<tbd::PickableComponent>(tbd::PickableComponent::COMPONENT_ID);
+            ldesc->AddComponent<chimera::PickableComponent>(chimera::PickableComponent::COMPONENT_ID);
 
-            tbd::LightComponent* lightComponent = ldesc->AddComponent<tbd::LightComponent>("LightComponent");
+            chimera::LightComponent* lightComponent = ldesc->AddComponent<chimera::LightComponent>("LightComponent");
             lightComponent->m_type = "point";
             lightComponent->m_color.x = 0.5f + 2 * rand() / (FLOAT)RAND_MAX;
             lightComponent->m_color.y = 0.5f + 2 * rand() / (FLOAT)RAND_MAX;
             lightComponent->m_color.z = 0.5f + 2 * rand() / (FLOAT)RAND_MAX;
             lightComponent->m_color.w = 1;
 
-            tbd::TransformComponent* comp = ldesc->AddComponent<tbd::TransformComponent>("TransformComponent");
+            chimera::TransformComponent* comp = ldesc->AddComponent<chimera::TransformComponent>("TransformComponent");
             util::Vec3 point;
             point.x = (-1.0f + 2.0f * (rand() / (FLOAT)RAND_MAX)) * (SPLINE_SCALE0/2); 
             point.y = 10;
@@ -996,9 +996,9 @@ namespace tbd
         return TRUE;
     }
 
-    VOID BSplinePatchLevel::OnControlPointMove(event::IEventPtr data)
+    VOID BSplinePatchLevel::OnControlPointMove(chimera::IEventPtr data)
     {
-        std::shared_ptr<event::ActorMovedEvent> movedEvent = std::static_pointer_cast<event::ActorMovedEvent>(data);
+        std::shared_ptr<chimera::ActorMovedEvent> movedEvent = std::static_pointer_cast<chimera::ActorMovedEvent>(data);
 
         TBD_FOR_INT(CONTROL_PNTS_WIDTH0 * CONTROL_PNTS_WIDTH0)
         {
@@ -1007,7 +1007,7 @@ namespace tbd
                 std::string name("controlPoints");
                 cudah::cuda_buffer buffer = m_node->GetCudaBuffer(name);
                 cudah::cudah* cuda = m_node->GetCuda();
-                tbd::TransformComponent* tc = m_controlPoints[i]->GetComponent<tbd::TransformComponent>(tbd::TransformComponent::COMPONENT_ID).lock().get();
+                chimera::TransformComponent* tc = m_controlPoints[i]->GetComponent<chimera::TransformComponent>(chimera::TransformComponent::COMPONENT_ID).lock().get();
                 float3 data;
                 data.x = tc->GetTransformation()->GetTranslation().x;
                 data.y = tc->GetTransformation()->GetTranslation().y;
@@ -1026,11 +1026,11 @@ namespace tbd
 
     BSplinePatchLevel::~BSplinePatchLevel(VOID)
     {
-        REMOVE_EVENT_LISTENER(this, &BSplinePatchLevel::OnControlPointMove, event::ActorMovedEvent::TYPE);
+        REMOVE_EVENT_LISTENER(this, &BSplinePatchLevel::OnControlPointMove, chimera::ActorMovedEvent::TYPE);
         SAFE_ARRAY_DELETE(m_controlPoints);
     }
 
-    GroupedObjLevel::GroupedObjLevel(LPCSTR file, tbd::ActorFactory* factory) : BaseLevel(file, factory)
+    GroupedObjLevel::GroupedObjLevel(LPCSTR file, chimera::ActorFactory* factory) : BaseLevel(file, factory)
     {
 
     }
@@ -1046,15 +1046,15 @@ namespace tbd
         CreateStaticPlane(this);
 
         ActorDescription desc = m_pActorFactory->CreateActorDescription();
-        tbd::TransformComponent* tcomp = desc->AddComponent<tbd::TransformComponent>(tbd::TransformComponent::COMPONENT_ID);
+        chimera::TransformComponent* tcomp = desc->AddComponent<chimera::TransformComponent>(chimera::TransformComponent::COMPONENT_ID);
         tcomp->GetTransformation()->SetTranslate(0,0,0);
 
-        tbd::RenderComponent* renderCmp = desc->AddComponent<tbd::RenderComponent>(tbd::RenderComponent::COMPONENT_ID);
+        chimera::RenderComponent* renderCmp = desc->AddComponent<chimera::RenderComponent>(chimera::RenderComponent::COMPONENT_ID);
         renderCmp->m_type = "skydome";
         renderCmp->m_info = "skydome3.jpg";
         VAddActor(desc);
 
-        std::string dir = "../Assets/" + app::g_pApp->GetConfig()->GetString("sMeshPath") + VGetFile();
+        std::string dir = "../Assets/" + chimera::g_pApp->GetConfig()->GetString("sMeshPath") + VGetFile();
         std::string objList = dir + "/filelist.txt";
         std::ifstream stream(objList.c_str());
 
@@ -1066,11 +1066,11 @@ namespace tbd
             if(meshFile.size() == 0) continue;
 
             desc = m_pActorFactory->CreateActorDescription();
-            tbd::TransformComponent* comp = desc->AddComponent<tbd::TransformComponent>("TransformComponent");
-            tbd::RenderComponent* renderComp = desc->AddComponent<tbd::RenderComponent>("RenderComponent");
-            renderComp->m_meshFile = VGetFile() + "/" + meshFile;
+            chimera::TransformComponent* comp = desc->AddComponent<chimera::TransformComponent>("TransformComponent");
+            chimera::RenderComponent* renderComp = desc->AddComponent<chimera::RenderComponent>("RenderComponent");
+            renderComp->m_resource = VGetFile() + "/" + meshFile;
 
-            tbd::PhysicComponent* physicComponent = desc->AddComponent<tbd::PhysicComponent>("PhysicComponent");
+            chimera::PhysicComponent* physicComponent = desc->AddComponent<chimera::PhysicComponent>("PhysicComponent");
             physicComponent->m_dim.x = 2; physicComponent->m_dim.z = 2; physicComponent->m_dim.y = 2;
             physicComponent->m_material = "static";
             physicComponent->m_shapeStyle = "mesh";

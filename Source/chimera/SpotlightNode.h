@@ -4,27 +4,27 @@
 #include "Mat4.h"
 #include "Frustum.h"
 
-namespace tbd
+namespace chimera
 {
     class LightComponent;
-    class SpotlightNode : public tbd::SceneNode
+    class SpotlightNode : public chimera::SceneNode
     {
     private:
         util::ICamera* m_pCamera;
-        std::shared_ptr<tbd::LightComponent> m_lightComponent;
-        d3d::ShaderProgram* m_drawShadow;
-        d3d::ShaderProgram* m_drawShadowInstanced;
-        d3d::ShaderProgram* m_drawLighting;
+        std::shared_ptr<chimera::LightComponent> m_lightComponent;
+        chimera::ShaderProgram* m_drawShadow;
+        chimera::ShaderProgram* m_drawShadowInstanced;
+        chimera::ShaderProgram* m_drawLighting;
         util::Vec3 m_middle;
         FLOAT m_distance;
 
     public:
-        static d3d::RenderTarget* g_pShadowRenderTarget;
+        static chimera::RenderTarget* g_pShadowRenderTarget;
     public:
         SpotlightNode(ActorId actorid);
-        VOID _VRender(tbd::SceneGraph* graph, tbd::RenderPath& path);
+        VOID _VRender(chimera::SceneGraph* graph, chimera::RenderPath& path);
         BOOL VIsVisible(SceneGraph* graph);
-        VOID VOnRestore(tbd::SceneGraph* graph);
+        VOID VOnRestore(chimera::SceneGraph* graph);
         VOID VOnActorMoved(VOID);
         UINT VGetRenderPaths(VOID);
         ~SpotlightNode(VOID);

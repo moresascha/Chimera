@@ -8,7 +8,6 @@ typedef VOID (*WriteLogCallBack) (std::string);
 
 namespace Logger 
 {
-
     class LogManager 
     {
     private:
@@ -33,7 +32,8 @@ namespace Logger
             m_writeCallBack = cb;
         }
 
-        ~LogManager(VOID) {
+        ~LogManager(VOID) 
+        {
             DeleteCriticalSection(&m_critSection);
         }
     };
@@ -60,7 +60,7 @@ namespace Logger
 do \
 { \
     _GET_TEXT(cstr, __VA_ARGS__) \
-    Logger::s_pLogMgr->CriticalError("ERROR", __msg__, __FUNCTION__, __FILE__, __LINE__); \
+    CmCriticalError("ERROR", __msg__, __FUNCTION__, __FILE__, __LINE__); \
 } \
 while(0)
 
@@ -68,7 +68,7 @@ while(0)
     do \
 { \
     _GET_TEXT(cstr, __VA_ARGS__) \
-    Logger::s_pLogMgr->Log("ERROR", __msg__, __FUNCTION__, __FILE__, __LINE__); \
+    CmLog("ERROR", __msg__, __FUNCTION__, __FILE__, __LINE__); \
 } \
 while(0)
 
@@ -79,7 +79,7 @@ while(0)
 do \
 { \
     _GET_TEXT(cstr, __VA_ARGS__) \
-    Logger::s_pLogMgr->Log("WARNING", __msg__, __FUNCTION__, __FILE__, __LINE__); \
+    CmLog("WARNING", __msg__, __FUNCTION__, __FILE__, __LINE__); \
 } \
 while(0)
 
@@ -87,7 +87,7 @@ while(0)
 do \
 { \
     _GET_TEXT(cstr, __VA_ARGS__) \
-    Logger::s_pLogMgr->Log("INFO", __msg__, __FUNCTION__, __FILE__, __LINE__); \
+    CmLog("INFO", __msg__, __FUNCTION__, __FILE__, __LINE__); \
 } \
 while(0)
 
@@ -104,7 +104,7 @@ while(0)
     do \
 { \
     _GET_TEXT(cstr, "") \
-    Logger::s_pLogMgr->CriticalError("ERROR", __msg__, __FUNCTION__, __FILE__, __LINE__); \
+    CmCriticalError("ERROR", __msg__, __FUNCTION__, __FILE__, __LINE__); \
 } \
 while(0)
 
@@ -112,7 +112,7 @@ while(0)
     do \
 { \
     _GET_TEXT(cstr) \
-    Logger::s_pLogMgr->Log("ERROR", __msg__, __FUNCTION__, __FILE__, __LINE__); \
+    CmLog("ERROR", __msg__, __FUNCTION__, __FILE__, __LINE__); \
 } \
 while(0)
 
@@ -123,7 +123,7 @@ while(0)
     do \
 { \
     _GET_TEXT(cstr, "") \
-    Logger::s_pLogMgr->Log("WARNING", __msg__, __FUNCTION__, __FILE__, __LINE__); \
+    CmLog("WARNING", __msg__, __FUNCTION__, __FILE__, __LINE__); \
 } \
 while(0)
 
@@ -131,7 +131,7 @@ while(0)
     do \
 { \
     _GET_TEXT(cstr, "") \
-    Logger::s_pLogMgr->Log("INFO", __msg__, __FUNCTION__, __FILE__, __LINE__); \
+    CmLog("INFO", __msg__, __FUNCTION__, __FILE__, __LINE__); \
 } \
 while(0)
 

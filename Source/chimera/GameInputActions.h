@@ -7,65 +7,65 @@ namespace gameinput
 {
     VOID PlayTestSound();
 
-    BOOL SetRenderMode(tbd::Command& cmd);
+    BOOL SetRenderMode(chimera::Command& cmd);
 
-    BOOL SetDefaultPlayer(tbd::Command& cmd);
+    BOOL SetDefaultPlayer(chimera::Command& cmd);
 
     //CSM debugging
-    BOOL SetCascadeViewCamera(tbd::Command& cmd);
+    BOOL SetCascadeViewCamera(chimera::Command& cmd);
 
-    BOOL SetCascadeLightCamera(tbd::Command& cmd);
+    BOOL SetCascadeLightCamera(chimera::Command& cmd);
 
-    BOOL SetCascadeCam0(tbd::Command& cmd);
+    BOOL SetCascadeCam0(chimera::Command& cmd);
 
-    BOOL SetCascadeCam1(tbd::Command& cmd);
+    BOOL SetCascadeCam1(chimera::Command& cmd);
 
-    BOOL SetCascadeCam2(tbd::Command& cmd);
+    BOOL SetCascadeCam2(chimera::Command& cmd);
 
-    BOOL PickActor(tbd::Command& cmd);
+    BOOL PickActor(chimera::Command& cmd);
 
-    BOOL ApplyPlayerForce(tbd::Command& cmd);
+    BOOL ApplyPlayerForce(chimera::Command& cmd);
 
-    BOOL RotatXPickedActor(tbd::Command& cmd);
+    BOOL RotatXPickedActor(chimera::Command& cmd);
     
-    BOOL RotatYPickedActor(tbd::Command& cmd);
+    BOOL RotatYPickedActor(chimera::Command& cmd);
 
-    BOOL RotatZPickedActor(tbd::Command& cmd);
+    BOOL RotatZPickedActor(chimera::Command& cmd);
 
-    BOOL ToggleRotationDir(tbd::Command& cmd);
+    BOOL ToggleRotationDir(chimera::Command& cmd);
 
-    BOOL ApplyForce(tbd::Command& cmd);
+    BOOL ApplyForce(chimera::Command& cmd);
 
-    BOOL ApplyTorque(tbd::Command& cmd);
+    BOOL ApplyTorque(chimera::Command& cmd);
 
-    BOOL SpawnBasicMeshActor(tbd::Command& cmd);
+    BOOL SpawnBasicMeshActor(chimera::Command& cmd);
 
-    BOOL SpawnSpotLight(tbd::Command& cmd);
+    BOOL SpawnSpotLight(chimera::Command& cmd);
 
-    BOOL ToggleActorPropPhysical(tbd::Command& cmd);
+    BOOL ToggleActorPropPhysical(chimera::Command& cmd);
 
-    BOOL DeletePickedActor(tbd::Command& cmd);
+    BOOL DeletePickedActor(chimera::Command& cmd);
 
     VOID MouseWheelActorPositionModify(INT x, INT y, INT delta);
 
-    BOOL FlushVRam(tbd::Command& cmd);
+    BOOL FlushVRam(chimera::Command& cmd);
 
     VOID MovePicked(VOID);
 
     VOID ScaleActorAction(FLOAT factor);
 
-    BOOL ScaleActorBigger(tbd::Command& cmd);
+    BOOL ScaleActorBigger(chimera::Command& cmd);
 
-    BOOL ScaleActorSmaller(tbd::Command& cmd);
+    BOOL ScaleActorSmaller(chimera::Command& cmd);
 
-    BOOL Jump(tbd::Command& cmd);
+    BOOL Jump(chimera::Command& cmd);
 
-    BOOL ToogleCamera(tbd::Command& cmd);
+    BOOL ToogleCamera(chimera::Command& cmd);
 
-    BOOL SpawnSpheres(tbd::Command& cmd);
+    BOOL SpawnSpheres(chimera::Command& cmd);
 
-    BOOL SetRasterState(tbd::Command& cmd);
+    BOOL SetRasterState(chimera::Command& cmd);
 
     //set actions here
-    VOID RegisterCommands(tbd::ActorController& controller, tbd::CommandInterpreter& interpreter);
+    VOID RegisterCommands(chimera::ActorController& controller, chimera::CommandInterpreter& interpreter);
 }

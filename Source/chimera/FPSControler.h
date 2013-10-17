@@ -2,45 +2,46 @@
 #include "stdafx.h"
 #include "Input.h"
 #include "Camera.h"
-namespace util {
+namespace util 
+{
+    struct MatrixBuffer 
+    {
+        XMFLOAT4X4 view;
+        XMFLOAT4X4 proj;
+    };
 
-struct DLL_EXPORT MatrixBuffer {
-    XMFLOAT4X4 view;
-    XMFLOAT4X4 proj;
-};
+    class FPSControler : public chimera::IKeyListener, public chimera::IMouseListener 
+    {
+    private:
+        INT m_lastPosX;
+        INT m_lastPosY;
+        FLOAT m_minSpeed;
+        FLOAT m_maxSpeed;
+        BOOL m_isKeyDown[0xFE];
 
-class DLL_EXPORT FPSControler : public tbd::IKeyListener, public tbd::IMouseListener {
+    protected:
+        MatrixBuffer* m_pBuffer;
+        std::shared_ptr<ICamera> p_camera;
 
-private:
-    INT m_lastPosX;
-    INT m_lastPosY;
-    FLOAT m_minSpeed;
-    FLOAT m_maxSpeed;
-    BOOL m_isKeyDown[0xFE];
+    public:
 
-protected:
-    MatrixBuffer* m_pBuffer;
-    std::shared_ptr<ICamera> p_camera;
+        FPSControler(std::shared_ptr<ICamera> camera);
 
-public:
+        virtual VOID VOnUpdate() = 0;
 
-    FPSControler(std::shared_ptr<ICamera> camera);
+        VOID Update(UINT millis);
 
-    virtual VOID VOnUpdate() = 0;
+        virtual BOOL VOnKeyDown(UINT CONST code);
+        virtual BOOL VOnKeyPressed(UINT CONST code);
+        virtual BOOL VOnKeyReleased(UINT CONST code);
 
-    VOID Update(UINT millis);
+        virtual BOOL VOnMouseButtonDown(INT x, INT y, INT button);
+        virtual BOOL VOnMouseButtonReleased(INT x, INT y, INT button);
+        virtual BOOL VOnMousePressed(INT x, INT y, INT button);
+        virtual BOOL VOnMouseMoved(INT x, INT y);
+        virtual BOOL VOnMouseDragged(INT x, INT y, INT button);
+        virtual BOOL VOnMouseWheel(INT x, INT y, INT delta);
 
-    virtual BOOL VOnKeyDown(UINT CONST code);
-    virtual BOOL VOnKeyPressed(UINT CONST code);
-    virtual BOOL VOnKeyReleased(UINT CONST code);
-
-    virtual BOOL VOnMouseButtonDown(INT x, INT y, INT button);
-    virtual BOOL VOnMouseButtonReleased(INT x, INT y, INT button);
-    virtual BOOL VOnMousePressed(INT x, INT y, INT button);
-    virtual BOOL VOnMouseMoved(INT x, INT y);
-    virtual BOOL VOnMouseDragged(INT x, INT y, INT button);
-    virtual BOOL VOnMouseWheel(INT x, INT y, INT delta);
-
-     ~FPSControler(VOID);
-};
+         ~FPSControler(VOID);
+    };
 }

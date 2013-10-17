@@ -12,22 +12,25 @@
 #include "Camera.h"
 #include "Frustum.h"
 #include "Components.h"
-namespace tbd
+#include "EventManager.h"
+#include "FileSystem.h"
+
+namespace chimera
 {
     ParticleNode::ParticleNode(ActorId id) : SceneNode(id), m_pParticleSystem(NULL), m_time(0)
     {
     }
 
-    VOID ParticleNode::_VRender(tbd::SceneGraph* graph, tbd::RenderPath& path)
+    VOID ParticleNode::_VRender(chimera::SceneGraph* graph, chimera::RenderPath& path)
     {
-        if(m_pParticleSystem->IsReady())
+        if(m_pParticleSystem->VIsReady())
         {
             m_pParticleSystem->Update();
-            std::shared_ptr<d3d::Geometry> geo = m_pParticleSystem->GetGeometry();
+            std::shared_ptr<chimera::Geometry> geo = m_pParticleSystem->GetGeometry();
 
             switch(path)
             {
-            case eDRAW_EDIT_MODE : 
+            case eRenderPath_DrawEditMode : 
                 {
 
                     DrawAnchorSphere(m_actor, GetTransformation(), 0.25f);
@@ -45,14 +48,14 @@ namespace tbd
                     GeometryFactory::GetGlobalDefShadingCube()->Draw(); */
                     break;
                 }
-            case eDRAW_PICKING :
+            case eRenderPath_DrawPicking :
                 {
                     DrawPickingSphere(m_actor, GetTransformation(), 1);
                     //DrawPickingCube(m_actor, m_transformation->GetTransformation(), m_pParticleSystem->GetAxisAlignedBB());
                 } break;
-            case eDRAW_BOUNDING_DEBUG : 
+            case eRenderPath_DrawBounding : 
                 {
-                    DrawBox(GetTransformation(), m_pParticleSystem->GetAxisAlignedBB());
+                    DrawBox(m_pParticleSystem->GetAxisAlignedBB());
                 } break;
                 /*
             case eDRAW_TO_SHADOW_MAP :
@@ -73,18 +76,18 @@ namespace tbd
 
                     break;
                 } */
-            case eDRAW_DEBUG_INFOS:
+            case eRenderPath_DrawDebugInfo:
                 {
                     DrawActorInfos(m_actor, GetTransformation(), graph->GetCamera());
                 } break;
-            case eDRAW_PARTICLE_EFFECTS : 
+            case eRenderPath_DrawParticles : 
             {
 
                 util::Mat4 model;
                 model.RotateX(graph->GetCamera()->GetTheta());
                 model.RotateY(graph->GetCamera()->GetPhi());
                 //model = util::Mat4::Mul(*m_transformation->GetTransformation(), model);
-                app::g_pApp->GetHumanView()->GetRenderer()->VPushWorldTransform(model);
+                chimera::g_pApp->GetHumanView()->GetRenderer()->VPushWorldTransform(model);
                 geo->SetInstanceBuffer(m_pParticleSystem->GetParticleBuffer());
                 geo->Bind();
                 geo->Draw();
@@ -107,7 +110,8 @@ namespace tbd
 
     VOID ParticleNode::VOnUpdate(ULONG millis, SceneGraph* graph)
     {
-        if(m_pParticleSystem->IsReady())
+        VOnActorMoved();
+        if(m_pParticleSystem->VIsReady())
         {
             if(VIsVisible(graph))
             {
@@ -122,9 +126,28 @@ namespace tbd
         }
     }
 
-    VOID ParticleNode::VOnRestore(tbd::SceneGraph* graph)
+    VOID Hover(ULONG dt, std::shared_ptr<chimera::Actor> a)
     {
-        if(m_pParticleSystem == NULL || !m_pParticleSystem->IsReady())
+        static FLOAT time = 0;
+        time += dt * 1e-3f;
+        chimera::TransformComponent* tc = a->GetComponent<chimera::TransformComponent>(chimera::TransformComponent::COMPONENT_ID).lock().get();
+        util::Vec3 t;
+        t.y = 0.05f * sin(time);
+        t.x = 0.05f * cos(time);
+        t.z = 0.05f * sin(time) * cos(time);
+        tc->GetTransformation()->Translate(t);
+        QUEUE_EVENT(new chimera::ActorMovedEvent(a));
+    }
+
+    chimera::GradientField* gf;
+    VOID ParticleNode::OnFileChanged(VOID)
+    {
+        gf->VOnRestore(m_pParticleSystem.get());
+    }
+
+    VOID ParticleNode::VOnRestore(chimera::SceneGraph* graph)
+    {
+        if(m_pParticleSystem == NULL || !m_pParticleSystem->VIsReady())
         {
             util::AxisAlignedBB aabb;
             FLOAT bounds = 50;
@@ -132,13 +155,13 @@ namespace tbd
             aabb.AddPoint(util::Vec3(+bounds, bounds, +bounds));
             aabb.Construct();
 
-            tbd::BaseEmitter* emitter;// = new SurfaceEmitter("torus.obj", util::Vec3(0,0.1f,0), (UINT)(1.5f * (FLOAT)(1 << 19)), 0, 15000);
+            chimera::BaseEmitter* emitter;// = new SurfaceEmitter("torus.obj", util::Vec3(0,0.1f,0), (UINT)(1.5f * (FLOAT)(1 << 19)), 0, 15000);
 
-            emitter = new tbd::BoxEmitter(util::Vec3(0.5f, 0.1f, 0.5f), util::Vec3(0,0.1f,0), 192 * 1000, 0, 3); //6000 ((FLOAT)(1 << 8)
+            emitter = new chimera::BoxEmitter(util::Vec3(0.5f, 0.1f, 0.5f), util::Vec3(0,0.1f,0), 1024 * 1024, 0, 10); //6000 ((FLOAT)(1 << 8)
 
-            m_pParticleSystem = std::shared_ptr<tbd::ParticleSystem>(new tbd::ParticleSystem(emitter));
+            m_pParticleSystem = std::shared_ptr<chimera::ParticleSystem>(new chimera::ParticleSystem(emitter));
 
-            tbd::BaseModifier* mod = new tbd::Gravity(-9.81f, 1);
+            /*tbd::BaseModifier* mod = new tbd::Gravity(-9.81f, 1);
 
             m_pParticleSystem->AddModifier(mod);
 
@@ -146,13 +169,19 @@ namespace tbd
 
             //m_pParticleSystem->AddModifier(mod);
 
-            m_pParticleSystem->AddModifier(new tbd::GravityField(util::Vec3(10,10,-10), 1, 1, eAttract));
+            m_pParticleSystem->AddModifier(new tbd::GravityField(util::Vec3(10,10,-10), 1, 5, eAttract));
 
             m_pParticleSystem->AddModifier(new tbd::GravityField(util::Vec3(10,10,10), 1, 5, eRepel));
 
-            m_pParticleSystem->AddModifier(new tbd::VelocityDamper(0.995f));
+            m_pParticleSystem->AddModifier(new tbd::VelocityDamper(0.995f)); */
+            gf = new GradientField();
+            m_pParticleSystem->AddModifier(gf);
 
-            m_pParticleSystem->AddModifier(new GradientField());
+			/*
+            util::Plane p;
+            p.Init(util::Vec3(0,1,0), 0);
+            m_pParticleSystem->AddModifier(new tbd::Plane(p)); */
+			m_pParticleSystem->AddModifier(new chimera::BoundingBox());
 
             m_pParticleSystem->SetAxisAlignedBB(aabb);
 
@@ -162,10 +191,19 @@ namespace tbd
             std::stringstream ss;
             ss << "particlesystem";
             ss << m_actorId;
-            app::g_pApp->GetHumanView()->GetVRamManager()->AppendAndCreateHandle(ss.str(), m_pParticleSystem);
+            chimera::g_pApp->GetHumanView()->GetVRamManager()->AppendAndCreateHandle(ss.str(), m_pParticleSystem);
+
+            std::shared_ptr<proc::Process> proc = std::shared_ptr<proc::Process>(new proc::ActorDelegateProcess(Hover, m_actor));
+            //app::g_pApp->GetLogic()->AttachProcess(proc);
+
+            chimera::FileSystem* loader = chimera::g_pApp->GetDLLLoader();
+            fastdelegate::FastDelegate0<> l = fastdelegate::MakeDelegate(this, &ParticleNode::OnFileChanged);
+            loader->RegisterCallback("ParticleData.dll", "../../ParticleData/ParticleData/x64/Debug/", l);
 
             //m_timer.Reset();
         }
+
+        VOnActorMoved();
     }
 
     VOID ParticleNode::VOnActorMoved(VOID)
@@ -176,7 +214,7 @@ namespace tbd
 
     UINT ParticleNode::VGetRenderPaths(VOID)
     {
-        return eDRAW_PARTICLE_EFFECTS | eDRAW_PICKING | eDRAW_BOUNDING_DEBUG | eDRAW_EDIT_MODE;
+        return eRenderPath_DrawParticles | eRenderPath_DrawPicking | eRenderPath_DrawBounding | eRenderPath_DrawEditMode;
     }
 
     ParticleNode::~ParticleNode(VOID)

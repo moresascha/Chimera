@@ -12,7 +12,7 @@
 #include "Effect.h"
 #include "math.h"
 
-namespace tbd
+namespace chimera
 {
     namespace gui
     {
@@ -24,7 +24,7 @@ namespace tbd
 
         BOOL D3D_GUI::VOnRestore(VOID)
         {
-            m_pVertexShader = d3d::VertexShader::CreateShader("GuiDefaultVertexShader", L"Gui.hlsl", "GuiDefault_VS");
+            m_pVertexShader = chimera::VertexShader::CreateShader("GuiDefaultVertexShader", L"Gui.hlsl", "GuiDefault_VS");
             if(!m_pVertexShader->GetInputLayout())
             {
                 m_pVertexShader->SetInputAttr("POSITION", 0, 0, DXGI_FORMAT_R32G32B32_FLOAT);
@@ -37,10 +37,10 @@ namespace tbd
         VOID D3D_GUI::VDraw(VOID)
         {
             m_pVertexShader->Bind();
-            app::g_pApp->GetRenderer()->PushRasterizerState(d3d::g_pRasterizerStateFrontFaceSolid);
+            chimera::g_pApp->GetRenderer()->PushRasterizerState(chimera::g_pRasterizerStateFrontFaceSolid);
             ScreenElementContainer::VDraw();
             m_pVertexShader->Unbind();
-            app::g_pApp->GetRenderer()->PopRasterizerState();
+            chimera::g_pApp->GetRenderer()->PopRasterizerState();
         }
 
         D3D_GUI::~D3D_GUI(VOID)
@@ -60,7 +60,7 @@ namespace tbd
 
         BOOL D3DGuiComponent::VOnRestore(VOID)
         {
-            m_pPixelShader = d3d::PixelShader::CreateShader(m_shaderName.c_str(), L"Gui.hlsl", m_shaderName.c_str());
+            m_pPixelShader = chimera::PixelShader::CreateShader(m_shaderName.c_str(), L"Gui.hlsl", m_shaderName.c_str());
             return ScreenElement::VOnRestore();
         }
 
@@ -81,13 +81,13 @@ namespace tbd
         {
             if(VGetAlpha() < 1)
             {
-                app::g_pApp->GetHumanView()->GetRenderer()->PushBlendState(d3d::g_pBlendStateBlendAlpha);
+                chimera::g_pApp->GetHumanView()->GetRenderer()->PushBlendState(chimera::g_pBlendStateBlendAlpha);
             }
 
-            FLOAT x = -1.0f + 2 * VGetPosX() / (FLOAT)d3d::g_width;
-            FLOAT y = 1.0f - 2 * VGetPosY() / (FLOAT)d3d::g_height;
-            FLOAT w = x + 2 * VGetWidth() / (FLOAT)d3d::g_width;
-            FLOAT h = y - 2 * VGetHeight() / (FLOAT)d3d::g_height;
+            FLOAT x = -1.0f + 2 * VGetPosX() / (FLOAT)chimera::g_width;
+            FLOAT y = 1.0f - 2 * VGetPosY() / (FLOAT)chimera::g_height;
+            FLOAT w = x + 2 * VGetWidth() / (FLOAT)chimera::g_width;
+            FLOAT h = y - 2 * VGetHeight() / (FLOAT)chimera::g_height;
             FLOAT localVertices[20] = 
             {
                 x, h, 0, m_tx, m_ty,
@@ -96,7 +96,7 @@ namespace tbd
                 w, y, 0, m_u, m_v,
             };
 
-            d3d::ConstBuffer* buffer = app::g_pApp->GetHumanView()->GetRenderer()->GetBuffer(d3d::eGuiColorBuffer);
+            chimera::ConstBuffer* buffer = chimera::g_pApp->GetHumanView()->GetRenderer()->GetBuffer(chimera::eGuiColorBuffer);
 
             XMFLOAT4* color = (XMFLOAT4*)buffer->Map();
             color->x = m_color.r;
@@ -111,7 +111,7 @@ namespace tbd
             }
 #endif
             m_pPixelShader->Bind();
-            d3d::Geometry* quad = GeometryFactory::GetGlobalScreenQuadCPU();
+            chimera::Geometry* quad = GeometryFactory::GetGlobalScreenQuadCPU();
             D3D11_MAPPED_SUBRESOURCE* ress = quad->GetVertexBuffer()->Map();
             memcpy(ress->pData, localVertices, 20 * sizeof(FLOAT));
             quad->GetVertexBuffer()->Unmap();
@@ -120,7 +120,7 @@ namespace tbd
 
             if(VGetAlpha() < 1)
             {
-                app::g_pApp->GetHumanView()->GetRenderer()->PopBlendState();
+                chimera::g_pApp->GetHumanView()->GetRenderer()->PopBlendState();
             }
         }
 
@@ -139,17 +139,17 @@ namespace tbd
         {
             if(m_textureHandle)
             {
-                if(m_textureHandle->IsReady())
+                if(m_textureHandle->VIsReady())
                 {
                     m_textureHandle->Update();
-                    app::g_pApp->GetHumanView()->GetRenderer()->SetSampler(d3d::eGuiSampler, m_textureHandle->GetShaderResourceView());
+                    chimera::g_pApp->GetHumanView()->GetRenderer()->SetSampler(chimera::eGuiSampler, m_textureHandle->GetShaderResourceView());
                     GuiRectangle::VDraw();
-                    app::g_pApp->GetHumanView()->GetRenderer()->SetSampler(d3d::eGuiSampler, NULL);
+                    chimera::g_pApp->GetHumanView()->GetRenderer()->SetSampler(chimera::eGuiSampler, NULL);
                 }
                 else
                 {
-                    std::shared_ptr<tbd::VRamHandle> handle = app::g_pApp->GetHumanView()->GetVRamManager()->GetHandle(m_resource);
-                    m_textureHandle = std::static_pointer_cast<d3d::Texture2D>(handle);
+                    std::shared_ptr<chimera::VRamHandle> handle = chimera::g_pApp->GetHumanView()->GetVRamManager()->GetHandle(m_resource);
+                    m_textureHandle = std::static_pointer_cast<chimera::D3DTexture2D>(handle);
                 }
             }
             else
@@ -173,8 +173,8 @@ namespace tbd
 
         BOOL GuiTextureComponent::VOnRestore(VOID)
         {
-            std::shared_ptr<tbd::VRamHandle> handle = app::g_pApp->GetHumanView()->GetVRamManager()->GetHandle(m_resource);
-            m_textureHandle = std::static_pointer_cast<d3d::Texture2D>(handle);
+            std::shared_ptr<chimera::VRamHandle> handle = chimera::g_pApp->GetHumanView()->GetVRamManager()->GetHandle(m_resource);
+            m_textureHandle = std::static_pointer_cast<chimera::D3DTexture2D>(handle);
             return GuiRectangle::VOnRestore();
         }
 
@@ -198,9 +198,9 @@ namespace tbd
 
         VOID GuiSpriteComponent::VDraw(VOID)
         {
-            app::g_pApp->GetHumanView()->GetRenderer()->PushBlendState(d3d::g_pBlendStateBlendAlpha);
+            chimera::g_pApp->GetHumanView()->GetRenderer()->PushBlendState(chimera::g_pBlendStateBlendAlpha);
             GuiTextureComponent::VDraw();
-            app::g_pApp->GetHumanView()->GetRenderer()->PopBlendState();
+            chimera::g_pApp->GetHumanView()->GetRenderer()->PopBlendState();
         }
 
         GuiInputComponent::GuiInputComponent(VOID) : m_onReturnDeactivate(TRUE)
@@ -249,10 +249,10 @@ namespace tbd
             line.text = text;
             for(INT i = 0; i < text.size(); ++i)
             {
-                CONST CharMetric* metric = app::g_pApp->GetFontManager()->GetCurrentFont()->VGetCharMetric(text[i]);
+                CONST CMCharMetric* metric = chimera::g_pApp->GetFontManager()->GetCurrentFont()->VGetCharMetric(text[i]);
                 if(!metric)
                 {
-                    metric = app::g_pApp->GetFontManager()->GetCurrentFont()->VGetCharMetric('?');
+                    metric = chimera::g_pApp->GetFontManager()->GetCurrentFont()->VGetCharMetric('?');
                 }
                 line.width += metric->xadvance;
             }
@@ -290,14 +290,14 @@ namespace tbd
                 while(w > (INT)(VGetPosX() + VGetWidth()))
                 {
                     CHAR c = text.substr(text.size() - 1, text.size())[0];
-                    w -= app::g_pApp->GetFontManager()->GetCurrentFont()->VGetCharMetric(c)->xadvance;
+                    w -= chimera::g_pApp->GetFontManager()->GetCurrentFont()->VGetCharMetric(c)->xadvance;
                     text = text.substr(0, text.size() - 1);
                 }
-                app::g_pApp->GetFontManager()->RenderText(text, mx / (FLOAT)d3d::g_width, y / (FLOAT)d3d::g_height, &m_textColor);
+                chimera::g_pApp->GetFontManager()->RenderText(text, mx / (FLOAT)chimera::g_width, y / (FLOAT)chimera::g_height, &m_textColor);
             }
             else
             {
-                app::g_pApp->GetFontManager()->RenderText(line.text, mx / (FLOAT)d3d::g_width, y / (FLOAT)d3d::g_height, &m_textColor);
+                chimera::g_pApp->GetFontManager()->RenderText(line.text, mx / (FLOAT)chimera::g_width, y / (FLOAT)chimera::g_height, &m_textColor);
             }
         }
 
@@ -312,7 +312,7 @@ namespace tbd
 
             INT y = VGetPosY();
             
-            INT lineheight = app::g_pApp->GetFontManager()->GetCurrentFont()->VGetLineHeight();
+            INT lineheight = chimera::g_pApp->GetFontManager()->GetCurrentFont()->VGetLineHeight();
 
             /*if(m_appendDir == eUp)
             {
@@ -376,8 +376,8 @@ namespace tbd
 
         GuiTextInput::GuiTextInput(VOID) : m_time(0), m_drawCurser(FALSE), m_curserPos(0), m_textColor(1,1,1,1)
         {
-            tbd::KeyboardButtonPressedListener l0 = fastdelegate::MakeDelegate(this, &GuiTextInput::ComputeInput);
-            tbd::KeyboardButtonRepeatListener l1 = fastdelegate::MakeDelegate(this, &GuiTextInput::ComputeInput);
+            chimera::KeyboardButtonPressedListener l0 = fastdelegate::MakeDelegate(this, &GuiTextInput::ComputeInput);
+            chimera::KeyboardButtonRepeatListener l1 = fastdelegate::MakeDelegate(this, &GuiTextInput::ComputeInput);
             AddKeyPressedListener(l0);
             AddKeyRepeatListener(l1);
         }
@@ -400,7 +400,7 @@ namespace tbd
 
         VOID GuiTextInput::AddChar(CHAR c)
         {
-            INT nextPos = m_curserPos + app::g_pApp->GetFontManager()->GetCurrentFont()->VGetCharMetric(c)->xadvance;
+            INT nextPos = m_curserPos + chimera::g_pApp->GetFontManager()->GetCurrentFont()->VGetCharMetric(c)->xadvance;
             if(nextPos > (INT)(VGetWidth())-10)
             {
                 return;
@@ -415,7 +415,7 @@ namespace tbd
             {
                 CHAR c = m_textLine.substr(m_textLine.size() - 1, m_textLine.size())[0];
                 m_textLine = m_textLine.substr(0, m_textLine.size() - 1);
-                m_curserPos -= app::g_pApp->GetFontManager()->GetCurrentFont()->VGetCharMetric(c)->xadvance; //todo
+                m_curserPos -= chimera::g_pApp->GetFontManager()->GetCurrentFont()->VGetCharMetric(c)->xadvance; //todo
             }
         }
 
@@ -449,7 +449,7 @@ namespace tbd
                 {
                     std::string s;
                     s = (CHAR)code;
-                    if(app::g_pApp->GetInputHandler()->IsKeyDown(KEY_LSHIFT))
+                    if(chimera::g_pApp->GetInputHandler()->IsKeyDown(KEY_LSHIFT))
                     {
                         std::transform(s.begin(), s.end(), s.begin(), ::towupper);
                     }
@@ -480,18 +480,18 @@ namespace tbd
         {
             GuiRectangle::VDraw();
 
-            FLOAT y = VGetPosY() / (FLOAT)d3d::g_height;
-            FLOAT x = VGetPosX() / (FLOAT)d3d::g_width;
+            FLOAT y = VGetPosY() / (FLOAT)chimera::g_height;
+            FLOAT x = VGetPosX() / (FLOAT)chimera::g_width;
 
-            INT lh = app::g_pApp->GetFontManager()->GetCurrentFont()->VGetLineHeight();
+            INT lh = chimera::g_pApp->GetFontManager()->GetCurrentFont()->VGetLineHeight();
 
-            FLOAT lineheight = lh / (FLOAT)d3d::g_height;
+            FLOAT lineheight = lh / (FLOAT)chimera::g_height;
 
-            app::g_pApp->GetFontManager()->RenderText(m_textLine.c_str(), 2.0f / (FLOAT)d3d::g_width + x, y, &m_textColor);
+            chimera::g_pApp->GetFontManager()->RenderText(m_textLine.c_str(), 2.0f / (FLOAT)chimera::g_width + x, y, &m_textColor);
 
             if(m_drawCurser && IsActive())
             {
-                app::g_pApp->GetFontManager()->RenderText("|", 2.0f / (FLOAT)d3d::g_width + m_curserPos / (FLOAT)d3d::g_width, y, &m_textColor);
+                chimera::g_pApp->GetFontManager()->RenderText("|", 2.0f / (FLOAT)chimera::g_width + m_curserPos / (FLOAT)chimera::g_width, y, &m_textColor);
             }
         }
 
@@ -513,8 +513,8 @@ namespace tbd
             m_pAutoComplete = new GuiTextComponent();
             AddComponent("autocomplete", m_pAutoComplete);
 
-            tbd::KeyboardButtonPressedListener l0 = fastdelegate::MakeDelegate(this, &GuiConsole::ComputeInput);
-            tbd::KeyboardButtonRepeatListener l1 = fastdelegate::MakeDelegate(this, &GuiConsole::ComputeInput);
+            chimera::KeyboardButtonPressedListener l0 = fastdelegate::MakeDelegate(this, &GuiConsole::ComputeInput);
+            chimera::KeyboardButtonRepeatListener l1 = fastdelegate::MakeDelegate(this, &GuiConsole::ComputeInput);
 
             m_pTextInput->AddKeyPressedListener(l0);
             m_pTextInput->AddKeyRepeatListener(l1);
@@ -544,7 +544,7 @@ namespace tbd
             
             util::Color c(0.5f, 0.5f, 0.5f, 0);
 
-            Dimension dim;
+            CMDimension dim;
             dim.x = VGetPosX();
             dim.y = VGetPosY() + (INT)(VGetHeight() * 0.75);
             dim.w = VGetWidth();
@@ -585,7 +585,7 @@ namespace tbd
 
         VOID GuiConsole::SetAutoComplete(VOID)
         {
-            CLAMP(m_currentAutoCompleteIndex, 0, (INT)m_pAutoComplete->GetTextLines().size()-1);
+            m_currentAutoCompleteIndex = CLAMP(m_currentAutoCompleteIndex, 0, (INT)m_pAutoComplete->GetTextLines().size()-1);
             if(m_pAutoComplete->GetTextLines().size() > 0 )
             {
                 m_pTextInput->SetText(m_pAutoComplete->GetTextLines()[m_currentAutoCompleteIndex].text);
@@ -603,13 +603,13 @@ namespace tbd
                 m_pTextLabel->AppendText(m_pTextInput->GetText());
                 if(!m_pTextInput->GetText().compare("exit"))
                 {
-                    app::g_pApp->GetHumanView()->ToggleConsole();
+                    chimera::g_pApp->GetHumanView()->ToggleConsole();
                 }
                 else
                 {
                     m_commandHistory.push_back(m_pTextInput->GetText());
                     m_currentHistoryLine++;
-                    if(!app::g_pApp->GetLogic()->GetCommandInterpreter()->CallCommand(m_pTextInput->GetText().c_str()))
+                    if(!chimera::g_pApp->GetLogic()->GetCommandInterpreter()->CallCommand(m_pTextInput->GetText().c_str()))
                     {
                         m_pTextLabel->AppendText("Unknown command: " + m_pTextInput->GetText());
                     }
@@ -656,9 +656,9 @@ namespace tbd
             }
             else if(code == KEY_CIRCUMFLEX)
             {
-                app::g_pApp->GetHumanView()->ToggleConsole();
+                chimera::g_pApp->GetHumanView()->ToggleConsole();
             }
-            else if(code == KEY_TAB)
+            else if(code == CM_KEY_TAB)
             {
                 SetAutoComplete();
                 m_currentAutoCompleteIndex = 0;
@@ -668,7 +668,7 @@ namespace tbd
 
             if(m_pTextInput->GetText().size() > 0)
             {
-                std::list<std::string> l = app::g_pApp->GetLogic()->GetCommandInterpreter()->GetCommands();
+                std::list<std::string> l = chimera::g_pApp->GetLogic()->GetCommandInterpreter()->GetCommands();
                 for(auto it = l.begin(); it != l.end(); ++it)
                 {
                     CONST std::string& text = m_pTextInput->GetText();
@@ -734,7 +734,7 @@ namespace tbd
                 FLOAT v = m_pFloats[i];
                 INT h0 = (INT)(last * VGetHeight());
                 INT h1 = (INT)(v * VGetHeight());
-                d3d::DrawLine((INT)(pos + VGetPosX() + 0.5f), d3d::g_height - VGetPosY() - VGetHeight() + h0, (INT)(delta+0.5f), h1 - h0);
+                chimera::DrawLine((INT)(pos + VGetPosX() + 0.5f), chimera::g_height - VGetPosY() - VGetHeight() + h0, (INT)(delta+0.5f), h1 - h0);
 
                 pos += delta;
                 last = v;

@@ -2,36 +2,32 @@
 #include "stdafx.h"
 #include "ts_queue.h"
 #include "Process.h"
-namespace proc
+
+namespace chimera
 {
-    class ProcessManager;
-    class RealtimeProcess;
-}
-namespace tbd
-{
-    class Scheduler : public proc::RealtimeProcess
+    class Scheduler : public RealtimeProcess, public IScheduler
     {
     private:
         HANDLE m_event;
         util::Locker m_locker;
-        util::ts_queue<std::shared_ptr<proc::RealtimeProcess>> m_processQueue;
+        std::queue<std::shared_ptr<IProcess>> m_processQueue;
         UINT m_systemCores;
-        proc::ProcessManager* m_manager;
-        std::shared_ptr<proc::RealtimeProcess>* m_currentRunning;
+        ProcessManager* m_manager;
+        std::shared_ptr<IProcess>* m_currentRunning;
         UINT m_currentRunningSize;
 
         INT CreateFreeSlot(VOID);
         
         VOID FreeSlot(UCHAR slot);
 
-    public:
-        Scheduler(UINT cores, proc::ProcessManager* manager);
+        BOOL HasFreeSlot(VOID);
 
-        VOID AddProcess(std::shared_ptr<proc::RealtimeProcess> proc);
+    public:
+        Scheduler(UINT cores, ProcessManager* manager);
+
+        IProcess* VAddProcess(std::shared_ptr<IProcess> proc);
 
         VOID VThreadProc(VOID);
-
-        BOOL HasFreeSlot(VOID);
 
         ~Scheduler(VOID);
     };

@@ -1,14 +1,8 @@
 #include "GameView.h"
-#include "GameApp.h"
-#include "Commands.h"
-#include "EventManager.h"
+#include "Event.h"
 #include "Components.h"
-#include "Camera.h"
-#include <math.h>
-#include "GameLogic.h"
-#include "math.h"
 
-namespace tbd
+namespace chimera
 {
     ActorController::ActorController(VOID) 
         : m_lastPosX(-1), m_lastPosY(-1), m_minSpeed(1), m_maxSpeed(3), m_updateAction(NULL), m_scrollAction(NULL)
@@ -24,12 +18,24 @@ namespace tbd
         }
     }
 
+	VOID ActorController::VActivate(VOID)
+	{
+		CmGetApp()->VGetInputHandler()->VPushKeyListener(this);
+		CmGetApp()->VGetInputHandler()->VPushMouseListener(this);
+	}
+
+	VOID ActorController::VDeactivate(VOID)
+	{
+		CmGetApp()->VGetInputHandler()->VRemoveKeyListener(this);
+		CmGetApp()->VGetInputHandler()->VRemoveMouseListener(this);
+	}
+
     BOOL ActorController::VOnKeyDown(UINT CONST code) 
     {
         auto itt = m_keyBoadButtonDownCommand.find(code);
         if(itt != m_keyBoadButtonDownCommand.end())
         {
-            app::g_pApp->GetLogic()->GetCommandInterpreter()->CallCommand(itt->second.c_str());
+            CmGetApp()->VGetLogic()->VGetCommandInterpreter()->VCallCommand(itt->second.c_str());
         }
 
         return TRUE;
@@ -45,7 +51,7 @@ namespace tbd
         auto itt = m_keyBoadButtonPressedCommand.find(code);
         if(itt != m_keyBoadButtonPressedCommand.end())
         {
-            app::g_pApp->GetLogic()->GetCommandInterpreter()->CallCommand(itt->second.c_str());
+            CmGetApp()->VGetLogic()->VGetCommandInterpreter()->VCallCommand(itt->second.c_str());
         }
         return TRUE;
     }
@@ -55,7 +61,7 @@ namespace tbd
         auto itt = m_keyBoadButtonReleasedCommand.find(code);
         if(itt != m_keyBoadButtonReleasedCommand.end())
         {
-            app::g_pApp->GetLogic()->GetCommandInterpreter()->CallCommand(itt->second.c_str());
+            CmGetApp()->VGetLogic()->VGetCommandInterpreter()->VCallCommand(itt->second.c_str());
         }
         return TRUE;
     }
@@ -81,8 +87,7 @@ namespace tbd
     BOOL ActorController::VOnMouseMoved(INT x, INT y, INT dx, INT dy) 
     {
         LOG_CRITICAL_ERROR("this does currently not work");
-        event::IEventPtr event(new event::MoveActorEvent(this->m_actor->GetId(), util::Vec3(2 * dx * 1e-3f, 2 * dy * 1e-3f, 0)));
-        event::IEventManager::Get()->VQueueEvent(event);
+        QUEUE_EVENT(new MoveActorEvent(this->m_actor->GetId(), util::Vec3(2 * dx * 1e-3f, 2 * dy * 1e-3f, 0)));
         this->m_lastPosX = x;
         this->m_lastPosY = y;
         return TRUE;
@@ -99,7 +104,7 @@ namespace tbd
         return TRUE; 
     };
 
-    VOID ActorController::RegisterKeyPressedCommand(UINT key, CONST std::string& command)
+    VOID ActorController::VRegisterKeyPressedCommand(UINT key, CONST std::string& command)
     {
         auto it = m_keyBoadButtonPressedCommand.find(key);
 
@@ -112,7 +117,7 @@ namespace tbd
         m_keyBoadButtonPressedCommand[key] = command;
     }
 
-    VOID ActorController::RegisterKeyDownCommand(UINT key, CONST std::string& command)
+    VOID ActorController::VRegisterKeyDownCommand(UINT key, CONST std::string& command)
     {
         auto it = m_keyBoadButtonDownCommand.find(key);
 
@@ -125,7 +130,7 @@ namespace tbd
         m_keyBoadButtonDownCommand[key] = command;
     }
 
-    VOID ActorController::RegisterKeyReleasedCommand(UINT key, CONST std::string& command)
+    VOID ActorController::VRegisterKeyReleasedCommand(UINT key, CONST std::string& command)
     {
         auto it = m_keyBoadButtonReleasedCommand.find(key);
 
@@ -138,7 +143,7 @@ namespace tbd
         m_keyBoadButtonReleasedCommand[key] = command;
     }
 
-    VOID ActorController::RegisterKeyCommand(UINT key, CONST std::string& command)
+    VOID ActorController::VRegisterKeyCommand(UINT key, CONST std::string& command)
     {
         if(!command.compare("left"))
         {
@@ -160,7 +165,7 @@ namespace tbd
             m_backKey = key;
             return;
         }
-        RegisterKeyPressedCommand(key, command);
+        VRegisterKeyPressedCommand(key, command);
     }
 
     /*
@@ -204,12 +209,12 @@ namespace tbd
         m_mouseButtonPressedActions[mouseButton] = action;
     } */
 
-    VOID ActorController::SetMouseScrollAction(MouseScrollAction action)
+    VOID ActorController::VSetMouseScrollAction(MouseScrollAction action)
     {
         m_scrollAction = action;
     }
 
-    VOID ActorController::SetUpdateAction(UpdateAction action)
+    VOID ActorController::VSetUpdateAction(UpdateAction action)
     {
         m_updateAction = action;
     }
@@ -221,12 +226,12 @@ namespace tbd
 
     BOOL CharacterController::VOnMouseMoved(INT x, INT y, INT dx, INT dy) 
     {
-        if(!app::g_pApp->GetInputHandler()->VIsMouseGrabbed())
+        if(!CmGetApp()->VGetInputHandler()->VIsMouseGrabbed())
         {
             return FALSE;
         }
         
-        std::shared_ptr<tbd::TransformComponent> comp = m_actor->GetComponent<tbd::TransformComponent>(tbd::TransformComponent::COMPONENT_ID).lock();
+        TransformComponent* comp = GetActorCompnent<TransformComponent>(m_actor, CM_CMP_TRANSFORM);
         comp->m_phi -= -2 * dx * 1e-3f;
         comp->m_theta += 2 * dy * 1e-3f;
 
@@ -241,8 +246,7 @@ namespace tbd
         XMVECTOR q = XMQuaternionMultiply(XMLoadFloat4(&m.GetRotation().m_v), XMLoadFloat4(&m1.GetRotation().m_v));        
         comp->GetTransformation()->SetRotateQuat(q.m128_f32[0], q.m128_f32[1], q.m128_f32[2], q.m128_f32[3]);
 
-        event::IEventPtr event(new event::ActorMovedEvent(this->m_actor));
-        event::IEventManager::Get()->VQueueEvent(event);
+        QUEUE_EVENT(new ActorMovedEvent(m_actor));
 
         return TRUE;
     }
@@ -251,7 +255,7 @@ namespace tbd
     {
         ActorController::VOnKeyDown(code);
 
-        ULONG millis = app::g_pApp->GetUpdateTimer()->GetLastMillis();
+        ULONG millis = CmGetApp()->VGetUpdateTimer()->VGetLastMillis();
         //DEBUG_OUT(millis);
         util::Vec3 move;
         FLOAT factor = 1e-3f * millis;
@@ -276,9 +280,9 @@ namespace tbd
 
         if(move.x != 0 || move.z != 0)
         {
-            std::shared_ptr<util::ICamera> camera = m_cameraComp->GetCamera();
+            std::shared_ptr<ICamera> camera = m_cameraComp->GetCamera();
 
-            speed = app::g_pApp->GetInputHandler()->IsKeyDown(KEY_LSHIFT) ? m_maxSpeed : m_minSpeed;
+            speed = CmGetApp()->VGetInputHandler()->VIsKeyDown(KEY_LSHIFT) ? m_maxSpeed : m_minSpeed;
             move.Scale(speed);
             util::Vec3 deltaX(camera->GetSideDir());
             deltaX.Scale(move.x);
@@ -292,16 +296,16 @@ namespace tbd
             //deltaX.Add(deltaY);
             deltaX.Add(deltaZ);
 
-            QUEUE_EVENT(new event::MoveActorEvent(this->m_actor->GetId(), deltaX));
+            QUEUE_EVENT(new chimera::MoveActorEvent(this->m_actor->GetId(), deltaX));
         }
 
         return TRUE;
     }
 
-    VOID CharacterController::VSetTarget(std::shared_ptr<tbd::Actor> actor)
+    VOID CharacterController::VSetTarget(IActor* actor)
     {
-        IGameView::VSetTarget(actor);
-        m_cameraComp = actor->GetComponent<tbd::CameraComponent>(tbd::CameraComponent::COMPONENT_ID).lock();
+        IView::VSetTarget(actor);
+        m_cameraComp = GetActorCompnent<CameraComponent>(actor, CM_CMP_CAMERA);
     }
 
     VOID CharacterController::VOnUpdate(ULONG millis)
@@ -312,7 +316,7 @@ namespace tbd
     BOOL CharacterController::VOnMouseButtonPressed(INT x, INT y, INT button)
     {
         ActorController::VOnMouseButtonPressed(x, y, button);
-        if(!app::g_pApp->GetInputHandler()->VGrabMouse(button & MOUSE_BTN_RIGHT))
+        if(!CmGetApp()->VGetInputHandler()->VGrabMouse(button & MOUSE_BTN_RIGHT))
         {
             LOG_CRITICAL_ERROR("failed to grab mouse...");
         }
@@ -320,17 +324,17 @@ namespace tbd
         return TRUE;
     }
 
-    VOID CharacterController::VOnAttach(GameViewId viewId, std::shared_ptr<tbd::Actor> actor)
+    VOID CharacterController::VOnAttach(GameViewId viewId, IActor* actor)
     {
-        IGameView::VOnAttach(viewId, actor);
+        IView::VOnAttach(viewId, actor);
 
-        if(!actor->HasComponent<tbd::CameraComponent>(tbd::CameraComponent::COMPONENT_ID))
+        if(!actor->VHasComponent(CM_CMP_CAMERA))
         {
             LOG_CRITICAL_ERROR("Actor needs a camera component");
         }
         else
         {
-            m_cameraComp = actor->GetComponent<tbd::CameraComponent>(tbd::CameraComponent::COMPONENT_ID).lock();
+            m_cameraComp = GetActorCompnent<CameraComponent>(actor, CM_CMP_CAMERA);
         }
     }
 }

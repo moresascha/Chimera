@@ -18,57 +18,57 @@ namespace gameinput
     BOOL m_editMode = TRUE;
     BOOL m_bMovePicked = FALSE;
     FLOAT m_actorPlaceScale = 4;
-    ActorId m_toModify = INVALID_ACTOR_ID;
+    ActorId m_toModify = CM_INVALID_ACTOR_ID;
     BOOL m_kinematicPhysical = TRUE;
     INT g_rotationDir = 1;
 
     VOID PlayTestSound();
 
-    BOOL ToggleFlashlight(tbd::Command& cmd)
+    BOOL ToggleFlashlight(chimera::Command& cmd)
     {
-        std::shared_ptr<tbd::Actor> a = app::g_pApp->GetHumanView()->GetTarget();
-        std::shared_ptr<tbd::ISceneNode> node = app::g_pApp->GetHumanView()->GetSceneGraph()->FindActorNode(a->GetId());
+        std::shared_ptr<chimera::Actor> a = chimera::g_pApp->GetHumanView()->GetTarget();
+        std::shared_ptr<chimera::ISceneNode> node = chimera::g_pApp->GetHumanView()->GetSceneGraph()->FindActorNode(a->GetId());
         if(node && node->GetChilds().size() > 0)
         {
-            std::shared_ptr<tbd::ISceneNode>& child = node->GetChilds()[0];
-            std::shared_ptr<tbd::Actor> light = app::g_pApp->GetLogic()->VFindActor(child->VGetActorId());
-            if(light->HasComponent<tbd::LightComponent>(tbd::LightComponent::COMPONENT_ID))
+            std::shared_ptr<chimera::ISceneNode>& child = node->GetChilds()[0];
+            std::shared_ptr<chimera::Actor> light = chimera::g_pApp->GetLogic()->VFindActor(child->VGetActorId());
+            if(light->HasComponent<chimera::LightComponent>(chimera::LightComponent::COMPONENT_ID))
             {
-                std::shared_ptr<tbd::LightComponent> flashLight = light->GetComponent<tbd::LightComponent>(tbd::LightComponent::COMPONENT_ID).lock();
+                std::shared_ptr<chimera::LightComponent> flashLight = light->GetComponent<chimera::LightComponent>(chimera::LightComponent::COMPONENT_ID).lock();
                 flashLight->m_activated = !flashLight->m_activated;
             }
         }
         return TRUE;
     }
 
-    BOOL CreateSpotlightThing(tbd::Command& cmd)
+    BOOL CreateSpotlightThing(chimera::Command& cmd)
     {
-        std::shared_ptr<tbd::CameraComponent> camera = app::g_pApp->GetHumanView()->GetTarget()->GetComponent<tbd::CameraComponent>(tbd::CameraComponent::COMPONENT_ID).lock();
+        std::shared_ptr<chimera::CameraComponent> camera = chimera::g_pApp->GetHumanView()->GetTarget()->GetComponent<chimera::CameraComponent>(chimera::CameraComponent::COMPONENT_ID).lock();
         CONST util::Vec3& dir = camera->GetCamera()->GetViewDir();
         util::Vec3 pos = camera->GetCamera()->GetEyePos();
 
-        tbd::ActorDescription desc = app::g_pApp->GetLogic()->GetActorFactory()->CreateActorDescription();
+        chimera::ActorDescription desc = chimera::g_pApp->GetLogic()->GetActorFactory()->VCreateActorDescription();
 
-        desc->AddComponent<tbd::PickableComponent>(tbd::PickableComponent::COMPONENT_ID);
+        desc->AddComponent<chimera::PickableComponent>(chimera::PickableComponent::COMPONENT_ID);
 
         pos = pos + dir * 3;
 
-        tbd::TransformComponent* comp = desc->AddComponent<tbd::TransformComponent>("TransformComponent");
+        chimera::TransformComponent* comp = desc->AddComponent<chimera::TransformComponent>("TransformComponent");
         comp->GetTransformation()->SetTranslate(pos);
 
-        tbd::RenderComponent * renderComp = desc->AddComponent<tbd::RenderComponent>("RenderComponent");
-        renderComp->m_meshFile = "spottwotest.obj";
+        chimera::RenderComponent * renderComp = desc->AddComponent<chimera::RenderComponent>("RenderComponent");
+        renderComp->m_resource = "spottwotest.obj";
 
-        tbd::PhysicComponent* physicComponent = desc->AddComponent<tbd::PhysicComponent>("PhysicComponent");
+        chimera::PhysicComponent* physicComponent = desc->AddComponent<chimera::PhysicComponent>("PhysicComponent");
         physicComponent->m_material = "dynamic";
         physicComponent->m_shapeStyle = "sphere";
         physicComponent->m_radius = 1;
 
-        std::shared_ptr<tbd::Actor> a = app::g_pApp->GetLogic()->VCreateActor(desc, TRUE);
+        std::shared_ptr<chimera::Actor> a = chimera::g_pApp->GetLogic()->VCreateActor(desc, TRUE);
 
-        desc = app::g_pApp->GetLogic()->GetActorFactory()->CreateActorDescription();
+        desc = chimera::g_pApp->GetLogic()->GetActorFactory()->CreateActorDescription();
 
-        tbd::LightComponent* lightComponent = desc->AddComponent<tbd::LightComponent>("LightComponent");
+        chimera::LightComponent* lightComponent = desc->AddComponent<chimera::LightComponent>("LightComponent");
         lightComponent->m_type = "spot";
         lightComponent->m_color.x = 1;//0.5f + 2 * rand() / (FLOAT)RAND_MAX;
         lightComponent->m_color.y = 0.5f;//0.5f + 2 * rand() / (FLOAT)RAND_MAX;
@@ -77,21 +77,21 @@ namespace gameinput
         lightComponent->m_angle = 55;
         lightComponent->m_intensity = 24;
 
-        comp = desc->AddComponent<tbd::TransformComponent>(tbd::TransformComponent::COMPONENT_ID);
+        comp = desc->AddComponent<chimera::TransformComponent>(chimera::TransformComponent::COMPONENT_ID);
         comp->GetTransformation()->SetScale(50);
         comp->GetTransformation()->RotateX(-XM_PIDIV2);
         comp->GetTransformation()->Translate(0, 0, 0);
 
         //desc->AddComponent<tbd::PickableComponent>(tbd::PickableComponent::COMPONENT_ID);
 
-        tbd::ParentComponent* pc = desc->AddComponent<tbd::ParentComponent>("ParentComponent");
+        chimera::ParentComponent* pc = desc->AddComponent<chimera::ParentComponent>("ParentComponent");
         pc->m_parentId = a->GetId();
 
-        app::g_pApp->GetLogic()->VCreateActor(desc, TRUE);
+        chimera::g_pApp->GetLogic()->VCreateActor(desc, TRUE);
 
-        desc = app::g_pApp->GetLogic()->GetActorFactory()->CreateActorDescription();
+        desc = chimera::g_pApp->GetLogic()->GetActorFactory()->CreateActorDescription();
 
-        lightComponent = desc->AddComponent<tbd::LightComponent>("LightComponent");
+        lightComponent = desc->AddComponent<chimera::LightComponent>("LightComponent");
         lightComponent->m_type = "spot";
         lightComponent->m_color.x = 1;//0.5f + 2 * rand() / (FLOAT)RAND_MAX;
         lightComponent->m_color.y = 0.5f;//0.5f + 2 * rand() / (FLOAT)RAND_MAX;
@@ -100,22 +100,22 @@ namespace gameinput
         lightComponent->m_angle = 55;
         lightComponent->m_intensity = 24;
 
-        comp = desc->AddComponent<tbd::TransformComponent>(tbd::TransformComponent::COMPONENT_ID);
+        comp = desc->AddComponent<chimera::TransformComponent>(chimera::TransformComponent::COMPONENT_ID);
         comp->GetTransformation()->SetScale(50);
         comp->GetTransformation()->RotateX(XM_PIDIV2);
         comp->GetTransformation()->Translate(0, 0, 0);
 
         //desc->AddComponent<tbd::PickableComponent>(tbd::PickableComponent::COMPONENT_ID);
 
-        pc = desc->AddComponent<tbd::ParentComponent>("ParentComponent");
+        pc = desc->AddComponent<chimera::ParentComponent>("ParentComponent");
         pc->m_parentId = a->GetId();
 
-        app::g_pApp->GetLogic()->VCreateActor(desc, TRUE);
+        chimera::g_pApp->GetLogic()->VCreateActor(desc, TRUE);
 
         return TRUE;
     }
 
-    BOOL SetRenderMode(tbd::Command& cmd)
+    BOOL SetRenderMode(chimera::Command& cmd)
     {
         std::string mode = cmd.GetNextCharStr();
         if(cmd.IsError())
@@ -131,87 +131,87 @@ namespace gameinput
         {
             m_editMode = TRUE;
         }
-        app::g_pApp->GetHumanView()->ActivateScene(mode.c_str());
+        chimera::g_pApp->GetHumanView()->ActivateScene(mode.c_str());
         return TRUE;
     }
 
-    BOOL SetDefaultPlayer(tbd::Command& cmd)
+    BOOL SetDefaultPlayer(chimera::Command& cmd)
     {
         //set default camera
-        std::shared_ptr<tbd::Actor> player = app::g_pApp->GetLogic()->VFindActor("player");
-        app::g_pApp->GetHumanView()->VSetTarget(player);
-        app::g_pApp->GetLogic()->VFindGameView("GameController")->VSetTarget(player);
+        std::shared_ptr<chimera::Actor> player = chimera::g_pApp->GetLogic()->VFindActor("player");
+        chimera::g_pApp->GetHumanView()->VSetTarget(player);
+        chimera::g_pApp->GetLogic()->VFindGameView("GameController")->VSetTarget(player);
         return TRUE;
     }
 
     //CSM debugging
-    BOOL SetCascadeViewCamera(tbd::Command& cmd)
+    BOOL SetCascadeViewCamera(chimera::Command& cmd)
     {
-        std::shared_ptr<tbd::Actor> player = app::g_pApp->GetLogic()->VFindActor("cascadeViewCamera");
-        app::g_pApp->GetHumanView()->VSetTarget(player);
-        app::g_pApp->GetLogic()->VFindGameView("GameController")->VSetTarget(player);
+        std::shared_ptr<chimera::Actor> player = chimera::g_pApp->GetLogic()->VFindActor("cascadeViewCamera");
+        chimera::g_pApp->GetHumanView()->VSetTarget(player);
+        chimera::g_pApp->GetLogic()->VFindGameView("GameController")->VSetTarget(player);
         return TRUE;
     }
 
-    BOOL SetCascadeLightCamera(tbd::Command& cmd)
+    BOOL SetCascadeLightCamera(chimera::Command& cmd)
     {
         //set light camera
-        std::shared_ptr<tbd::Actor> player = app::g_pApp->GetLogic()->VFindActor("cascadeLightCamera");
-        app::g_pApp->GetHumanView()->VSetTarget(player);
-        app::g_pApp->GetLogic()->VFindGameView("GameController")->VSetTarget(player);
+        std::shared_ptr<chimera::Actor> player = chimera::g_pApp->GetLogic()->VFindActor("cascadeLightCamera");
+        chimera::g_pApp->GetHumanView()->VSetTarget(player);
+        chimera::g_pApp->GetLogic()->VFindGameView("GameController")->VSetTarget(player);
         return TRUE;
     }
 
-    BOOL SetCascadeCam0(tbd::Command& cmd)
+    BOOL SetCascadeCam0(chimera::Command& cmd)
     {
         //set cascade0 camera
-        std::shared_ptr<tbd::Actor> player = app::g_pApp->GetLogic()->VFindActor("cascadeCam0");
-        app::g_pApp->GetHumanView()->VSetTarget(player);
-        app::g_pApp->GetLogic()->VFindGameView("GameController")->VSetTarget(player);
+        std::shared_ptr<chimera::Actor> player = chimera::g_pApp->GetLogic()->VFindActor("cascadeCam0");
+        chimera::g_pApp->GetHumanView()->VSetTarget(player);
+        chimera::g_pApp->GetLogic()->VFindGameView("GameController")->VSetTarget(player);
         return TRUE;
     }
 
-    BOOL SetCascadeCam1(tbd::Command& cmd)
+    BOOL SetCascadeCam1(chimera::Command& cmd)
     {
         //set cascade0 camera
-        std::shared_ptr<tbd::Actor> player = app::g_pApp->GetLogic()->VFindActor("cascadeCam1");
-        app::g_pApp->GetHumanView()->VSetTarget(player);
-        app::g_pApp->GetLogic()->VFindGameView("GameController")->VSetTarget(player);
+        std::shared_ptr<chimera::Actor> player = chimera::g_pApp->GetLogic()->VFindActor("cascadeCam1");
+        chimera::g_pApp->GetHumanView()->VSetTarget(player);
+        chimera::g_pApp->GetLogic()->VFindGameView("GameController")->VSetTarget(player);
         return TRUE;
     }
 
-    BOOL SetCascadeCam2(tbd::Command& cmd)
+    BOOL SetCascadeCam2(chimera::Command& cmd)
     {
         //set cascade0 camera
-        std::shared_ptr<tbd::Actor> player = app::g_pApp->GetLogic()->VFindActor("cascadeCam2");
-        app::g_pApp->GetHumanView()->VSetTarget(player);
-        app::g_pApp->GetLogic()->VFindGameView("GameController")->VSetTarget(player);
+        std::shared_ptr<chimera::Actor> player = chimera::g_pApp->GetLogic()->VFindActor("cascadeCam2");
+        chimera::g_pApp->GetHumanView()->VSetTarget(player);
+        chimera::g_pApp->GetLogic()->VFindGameView("GameController")->VSetTarget(player);
         return TRUE;
     }
 
-    BOOL PickActor(tbd::Command& cmd)
+    BOOL PickActor(chimera::Command& cmd)
     {
-        app::g_pApp->GetHumanView()->GetRenderer()->PushRasterizerState(d3d::g_pRasterizerStateFrontFaceSolid);
-        app::g_pApp->GetHumanView()->GetPicker()->VRender();
-        app::g_pApp->GetHumanView()->GetPicker()->VPostRender();
-        app::g_pApp->GetHumanView()->GetRenderer()->PopRasterizerState();
+        chimera::g_pApp->GetHumanView()->GetRenderer()->PushRasterizerState(chimera::g_pRasterizerStateFrontFaceSolid);
+        chimera::g_pApp->GetHumanView()->GetPicker()->VRender();
+        chimera::g_pApp->GetHumanView()->GetPicker()->VPostRender();
+        chimera::g_pApp->GetHumanView()->GetRenderer()->PopRasterizerState();
 
-        if(app::g_pApp->GetHumanView()->GetPicker()->VHasPicked() && app::g_pApp->GetHumanView()->GetPicker()->VPick() != m_toModify)
+        if(chimera::g_pApp->GetHumanView()->GetPicker()->VHasPicked() && chimera::g_pApp->GetHumanView()->GetPicker()->VPick() != m_toModify)
         {
-            m_toModify = app::g_pApp->GetHumanView()->GetPicker()->VPick();
+            m_toModify = chimera::g_pApp->GetHumanView()->GetPicker()->VPick();
             m_bMovePicked = TRUE;
         }
         else
         {
-            m_toModify = INVALID_ACTOR_ID;
+            m_toModify = CM_INVALID_ACTOR_ID;
             m_bMovePicked = FALSE;
         }
         return TRUE;
     }
 
-    BOOL ApplyPlayerForce(tbd::Command& cmd)
+    BOOL ApplyPlayerForce(chimera::Command& cmd)
     {
-        std::shared_ptr<tbd::CameraComponent> camera = app::g_pApp->GetHumanView()->GetTarget()->GetComponent<tbd::CameraComponent>(tbd::CameraComponent::COMPONENT_ID).lock();
+        std::shared_ptr<chimera::CameraComponent> camera = chimera::g_pApp->GetHumanView()->GetTarget()->GetComponent<chimera::CameraComponent>(chimera::CameraComponent::COMPONENT_ID).lock();
         CONST util::Vec3& dir = camera->GetCamera()->GetViewDir();
 
         util::Vec3 tdir = dir;
@@ -221,21 +221,21 @@ namespace gameinput
         ss << tdir.x << " ";
         ss << tdir.y << " ";
         ss << tdir.z;
-        app::g_pApp->GetLogic()->GetCommandInterpreter()->CallCommand(ss.str().c_str());
+        chimera::g_pApp->GetLogic()->GetCommandInterpreter()->CallCommand(ss.str().c_str());
         
         ss.str("");
         ss << "torque ";
         ss << dir.x << " ";
         ss << dir.y << " ";
         ss << dir.z;
-        app::g_pApp->GetLogic()->GetCommandInterpreter()->CallCommand(ss.str().c_str());
+        chimera::g_pApp->GetLogic()->GetCommandInterpreter()->CallCommand(ss.str().c_str());
 
         return TRUE;
     }
 
-    BOOL ApplyForce(tbd::Command& cmd)
+    BOOL ApplyForce(chimera::Command& cmd)
     {
-        if(m_toModify == INVALID_ACTOR_ID)
+        if(m_toModify == CM_INVALID_ACTOR_ID)
         {
             return TRUE;
         }
@@ -251,8 +251,8 @@ namespace gameinput
 
         util::Vec3 dir(x, y, z);
 
-        event::ApplyForceEvent* ev = new event::ApplyForceEvent();
-        ev->m_actor = app::g_pApp->GetLogic()->VFindActor(m_toModify);
+        chimera::ApplyForceEvent* ev = new chimera::ApplyForceEvent();
+        ev->m_actor = chimera::g_pApp->GetLogic()->VFindActor(m_toModify);
         ev->m_dir = dir;
         ev->m_newtons = 100000;
 
@@ -265,9 +265,9 @@ namespace gameinput
         return TRUE;
     }
 
-    BOOL ApplyTorque(tbd::Command& cmd)
+    BOOL ApplyTorque(chimera::Command& cmd)
     {
-        if(m_toModify == INVALID_ACTOR_ID)
+        if(m_toModify == CM_INVALID_ACTOR_ID)
         {
             return TRUE;
         }
@@ -283,23 +283,23 @@ namespace gameinput
 
         util::Vec3 dir(x, y, z);
 
-        event::ApplyTorqueEvent* ev = new event::ApplyTorqueEvent();
-        ev->m_actor = app::g_pApp->GetLogic()->VFindActor(m_toModify);
+        chimera::ApplyTorqueEvent* ev = new chimera::ApplyTorqueEvent();
+        ev->m_actor = chimera::g_pApp->GetLogic()->VFindActor(m_toModify);
         ev->m_torque = dir;
         ev->m_newtons = 100000;
 
         QUEUE_EVENT(ev);
 
-        m_toModify = INVALID_ACTOR_ID;
+        m_toModify = CM_INVALID_ACTOR_ID;
 
         m_bMovePicked = FALSE;
 
         return TRUE;
     }
 
-    BOOL SpawnBasicMeshActor(tbd::Command& cmd)
+    BOOL SpawnBasicMeshActor(chimera::Command& cmd)
     {
-        tbd::ActorDescription desc = app::g_pApp->GetLogic()->GetActorFactory()->CreateActorDescription();
+        chimera::ActorDescription desc = chimera::g_pApp->GetLogic()->GetActorFactory()->CreateActorDescription();
 
         std::string meshFile = cmd.GetNextCharStr();
         std::string shapeType = "convex";
@@ -307,14 +307,14 @@ namespace gameinput
 
         CHECK_COMMAND(cmd);
 
-        tbd::Resource r(meshFile);
-        if(!app::g_pApp->GetCache()->HasResource(r))
+        chimera::CMResource r(meshFile);
+        if(!chimera::g_pApp->GetCache()->HasResource(r))
         {
             return FALSE;
         }
 
-        tbd::TransformComponent* comp = desc->AddComponent<tbd::TransformComponent>("TransformComponent");
-        std::shared_ptr<tbd::CameraComponent> cameraComp = app::g_pApp->GetHumanView()->GetTarget()->GetComponent<tbd::CameraComponent>(tbd::CameraComponent::COMPONENT_ID).lock();
+        chimera::TransformComponent* comp = desc->AddComponent<chimera::TransformComponent>("TransformComponent");
+        std::shared_ptr<chimera::CameraComponent> cameraComp = chimera::g_pApp->GetHumanView()->GetTarget()->GetComponent<chimera::CameraComponent>(chimera::CameraComponent::COMPONENT_ID).lock();
 
         util::Vec3 pos;
         util::Vec3 dir = cameraComp->GetCamera()->GetViewDir();
@@ -322,10 +322,10 @@ namespace gameinput
         pos = cameraComp->GetCamera()->GetEyePos() + dir;
         comp->GetTransformation()->SetTranslate(pos.x, pos.y, pos.z);
 
-        tbd::RenderComponent* renderComp = desc->AddComponent<tbd::RenderComponent>("RenderComponent");
-        renderComp->m_meshFile = meshFile;
+        chimera::RenderComponent* renderComp = desc->AddComponent<chimera::RenderComponent>("RenderComponent");
+        renderComp->m_resource = meshFile;
 
-        tbd::PhysicComponent* physicComponent = desc->AddComponent<tbd::PhysicComponent>("PhysicComponent");
+        chimera::PhysicComponent* physicComponent = desc->AddComponent<chimera::PhysicComponent>("PhysicComponent");
         physicComponent->m_dim.x = 2; physicComponent->m_dim.z = 2; physicComponent->m_dim.y = 2;
         physicComponent->m_material = "dynamic";//m_kinematicPhysical ? "kinematic" : "dynamic";
         physicComponent->m_shapeStyle = shapeStyle;
@@ -333,21 +333,21 @@ namespace gameinput
         physicComponent->m_radius = 1; 
         physicComponent->m_meshFile = meshFile;
 
-        desc->AddComponent<tbd::PickableComponent>("PickableComponent");
+        desc->AddComponent<chimera::PickableComponent>("PickableComponent");
 
-        event::IEventPtr createActorEvent(new event::CreateActorEvent(desc));
-        event::IEventManager::Get()->VQueueEvent(createActorEvent);
+        chimera::IEventPtr createActorEvent(new chimera::CreateActorEvent(desc));
+        chimera::IEventManager::Get()->VQueueEvent(createActorEvent);
 
         //PlayTestSound();
         return TRUE;
     }
 
-    BOOL SpawnSpotLight(tbd::Command& cmd)
+    BOOL SpawnSpotLight(chimera::Command& cmd)
     {
-        tbd::ActorDescription desc = app::g_pApp->GetLogic()->GetActorFactory()->CreateActorDescription();
+        chimera::ActorDescription desc = chimera::g_pApp->GetLogic()->GetActorFactory()->CreateActorDescription();
 
-        tbd::TransformComponent* comp = desc->AddComponent<tbd::TransformComponent>("TransformComponent");
-        std::shared_ptr<tbd::CameraComponent> cameraComp = app::g_pApp->GetHumanView()->GetTarget()->GetComponent<tbd::CameraComponent>(tbd::CameraComponent::COMPONENT_ID).lock();
+        chimera::TransformComponent* comp = desc->AddComponent<chimera::TransformComponent>("TransformComponent");
+        std::shared_ptr<chimera::CameraComponent> cameraComp = chimera::g_pApp->GetHumanView()->GetTarget()->GetComponent<chimera::CameraComponent>(chimera::CameraComponent::COMPONENT_ID).lock();
 
         util::Vec3 pos;
         
@@ -359,14 +359,14 @@ namespace gameinput
 
         if(!m_kinematicPhysical)
         {
-            tbd::PhysicComponent* physicComponent = desc->AddComponent<tbd::PhysicComponent>("PhysicComponent");
+            chimera::PhysicComponent* physicComponent = desc->AddComponent<chimera::PhysicComponent>("PhysicComponent");
             physicComponent->m_dim.x = 2; physicComponent->m_dim.z = 2; physicComponent->m_dim.y = 2;
             physicComponent->m_material = "bouncy";
             physicComponent->m_shapeStyle = "sphere";
             physicComponent->m_radius = 1;
         }
 
-        tbd::LightComponent* lightComponent = desc->AddComponent<tbd::LightComponent>("LightComponent");
+        chimera::LightComponent* lightComponent = desc->AddComponent<chimera::LightComponent>("LightComponent");
         lightComponent->m_type = "point";
         lightComponent->m_color.x = 0.5f + 2 * rand() / (FLOAT)RAND_MAX;
         lightComponent->m_color.y = 0.5f + 2 * rand() / (FLOAT)RAND_MAX;
@@ -374,29 +374,29 @@ namespace gameinput
         lightComponent->m_color.w = 1;
         //lightComponent->m_radius = 10.0f;// * rand() / (FLOAT)RAND_MAX;
 
-        desc->AddComponent<tbd::PickableComponent>("PickableComponent");
+        desc->AddComponent<chimera::PickableComponent>("PickableComponent");
 
-        event::IEventPtr createActorEvent(new event::CreateActorEvent(desc));
-        event::IEventManager::Get()->VQueueEvent(createActorEvent);
+        chimera::IEventPtr createActorEvent(new chimera::CreateActorEvent(desc));
+        chimera::IEventManager::Get()->VQueueEvent(createActorEvent);
 
         //std::shared_ptr<proc::StrobeLightProcess> lightProc = std::shared_ptr<proc::StrobeLightProcess>(new proc::StrobeLightProcess(lightComponent, 0.5f, 100));
         //app::g_pApp->GetLogic()->AttachProcess(lightProc); 
         return TRUE;
     }
 
-    BOOL ToggleActorPropPhysical(tbd::Command& cmd)
+    BOOL ToggleActorPropPhysical(chimera::Command& cmd)
     {
         m_kinematicPhysical = !m_kinematicPhysical;
         return TRUE;
     }
 
-    BOOL DeletePickedActor(tbd::Command& cmd)
+    BOOL DeletePickedActor(chimera::Command& cmd)
     {
-        if(m_toModify != INVALID_ACTOR_ID)
+        if(m_toModify != CM_INVALID_ACTOR_ID)
         {
-            event::IEventPtr deletActorEvent(new event::DeleteActorEvent(m_toModify));
-            event::IEventManager::Get()->VQueueEvent(deletActorEvent);
-            m_toModify = INVALID_ACTOR_ID;
+            chimera::IEventPtr deletActorEvent(new chimera::DeleteActorEvent(m_toModify));
+            chimera::IEventManager::Get()->VQueueEvent(deletActorEvent);
+            m_toModify = CM_INVALID_ACTOR_ID;
         }
         return TRUE;
     }
@@ -408,16 +408,16 @@ namespace gameinput
             m_actorPlaceScale += delta / (6.0f * abs(delta));
             m_actorPlaceScale = CLAMP(m_actorPlaceScale, 4, 50);
 
-            std::shared_ptr<tbd::CameraComponent> camera = app::g_pApp->GetHumanView()->GetTarget()->GetComponent<tbd::CameraComponent>(tbd::CameraComponent::COMPONENT_ID).lock();
+            std::shared_ptr<chimera::CameraComponent> camera = chimera::g_pApp->GetHumanView()->GetTarget()->GetComponent<chimera::CameraComponent>(chimera::CameraComponent::COMPONENT_ID).lock();
             util::Vec3 trans;
             util::Vec3 transDir = camera->GetCamera()->GetViewDir();
             transDir.Scale(m_actorPlaceScale);
             trans = camera->GetCamera()->GetEyePos() + transDir;// - targetTrans;
 
-            std::shared_ptr<tbd::Actor> target = app::g_pApp->GetLogic()->VFindActor(m_toModify);
+            std::shared_ptr<chimera::Actor> target = chimera::g_pApp->GetLogic()->VFindActor(m_toModify);
             if(target)
             {
-                std::shared_ptr<tbd::TransformComponent> tc = target->GetComponent<tbd::TransformComponent>(tbd::TransformComponent::COMPONENT_ID).lock();
+                std::shared_ptr<chimera::TransformComponent> tc = target->GetComponent<chimera::TransformComponent>(chimera::TransformComponent::COMPONENT_ID).lock();
                 event::IEventPtr event(new event::MoveActorEvent(m_toModify, trans, FALSE));
                 event::IEventManager::Get()->VQueueEvent(event);
             }
@@ -426,20 +426,20 @@ namespace gameinput
 
     VOID RotateActor(util::Vec3& axis, FLOAT angle)
     {
-        if(m_toModify != INVALID_ACTOR_ID)
+        if(m_toModify != CM_INVALID_ACTOR_ID)
         {
             event::IEventPtr event(new event::MoveActorEvent(m_toModify, axis, g_rotationDir * angle));
             event::IEventManager::Get()->VQueueEvent(event);
         }
     }
 
-    BOOL ToggleRotationDir(tbd::Command& cmd)
+    BOOL ToggleRotationDir(chimera::Command& cmd)
     {
         g_rotationDir *= -1;
         return TRUE;
     }
 
-    BOOL RotatXPickedActor(tbd::Command& cmd)
+    BOOL RotatXPickedActor(chimera::Command& cmd)
     {
         FLOAT rx = cmd.GetNextFloat();
         CHECK_COMMAND(cmd);
@@ -448,7 +448,7 @@ namespace gameinput
         return TRUE;
     }
 
-    BOOL RotatYPickedActor(tbd::Command& cmd)
+    BOOL RotatYPickedActor(chimera::Command& cmd)
     {
         FLOAT ry = cmd.GetNextFloat();
         CHECK_COMMAND(cmd);
@@ -457,7 +457,7 @@ namespace gameinput
         return TRUE;
     }
 
-    BOOL RotatZPickedActor(tbd::Command& cmd)
+    BOOL RotatZPickedActor(chimera::Command& cmd)
     {
         FLOAT rz = cmd.GetNextFloat();
         CHECK_COMMAND(cmd);
@@ -466,30 +466,30 @@ namespace gameinput
         return TRUE;
     }
 
-    BOOL FlushVRam(tbd::Command& cmd)
+    BOOL FlushVRam(chimera::Command& cmd)
     {
-        app::g_pApp->GetHumanView()->GetVRamManager()->Flush();
+        chimera::g_pApp->GetHumanView()->GetVRamManager()->Flush();
         return TRUE;
     }
 
-    VOID MovePicked(event::IEventPtr data)
+    VOID MovePicked(chimera::IEventPtr data)
     {
-        std::shared_ptr<event::ActorMovedEvent> moved = std::static_pointer_cast<event::ActorMovedEvent>(data);
-        std::shared_ptr<tbd::Actor> player = app::g_pApp->GetLogic()->VFindActor("player");
+        std::shared_ptr<chimera::ActorMovedEvent> moved = std::static_pointer_cast<chimera::ActorMovedEvent>(data);
+        std::shared_ptr<chimera::Actor> player = chimera::g_pApp->GetLogic()->VFindActor("player");
         //DEBUG_OUT_A("%d, %d, %d, %d\n", moved->m_actor->GetId(), player->GetId(), m_bMovePicked, m_editMode);
         //TODO, CameraComponent
-        if(m_editMode && m_bMovePicked && (moved->m_actor->GetId() == player->GetId() || moved->m_actor->GetId() == app::g_pApp->GetLogic()->VFindActor("free")->GetId()))
+        if(m_editMode && m_bMovePicked && (moved->m_actor->GetId() == player->GetId() || moved->m_actor->GetId() == chimera::g_pApp->GetLogic()->VFindActor("free")->GetId()))
         {
-            std::shared_ptr<tbd::CameraComponent> camera = app::g_pApp->GetHumanView()->GetTarget()->GetComponent<tbd::CameraComponent>(tbd::CameraComponent::COMPONENT_ID).lock();
+            std::shared_ptr<chimera::CameraComponent> camera = chimera::g_pApp->GetHumanView()->GetTarget()->GetComponent<chimera::CameraComponent>(chimera::CameraComponent::COMPONENT_ID).lock();
             util::Vec3 trans;
             util::Vec3 transDir = camera->GetCamera()->GetViewDir();
             transDir.Scale(m_actorPlaceScale);
             trans = camera->GetCamera()->GetEyePos() + transDir;// - targetTrans;
 
-            std::shared_ptr<tbd::Actor> target = app::g_pApp->GetLogic()->VFindActor(m_toModify);
+            std::shared_ptr<chimera::Actor> target = chimera::g_pApp->GetLogic()->VFindActor(m_toModify);
             if(target)
             {
-                std::shared_ptr<tbd::TransformComponent> tc = target->GetComponent<tbd::TransformComponent>(tbd::TransformComponent::COMPONENT_ID).lock();
+                std::shared_ptr<chimera::TransformComponent> tc = target->GetComponent<chimera::TransformComponent>(chimera::TransformComponent::COMPONENT_ID).lock();
                 event::IEventPtr event(new event::MoveActorEvent(m_toModify, trans, FALSE));
                 event::IEventManager::Get()->VQueueEvent(event);
             }
@@ -498,63 +498,64 @@ namespace gameinput
 
     VOID ScaleActorAction(FLOAT factor)
     {
-        if(m_toModify != INVALID_ACTOR_ID)
+        if(m_toModify != CM_INVALID_ACTOR_ID)
         {
-            std::shared_ptr<tbd::Actor> actor = app::g_pApp->GetLogic()->VFindActor(m_toModify);
-            std::shared_ptr<tbd::TransformComponent> cmp = actor->GetComponent<tbd::TransformComponent>(tbd::TransformComponent::COMPONENT_ID).lock();
+            std::shared_ptr<chimera::Actor> actor = chimera::g_pApp->GetLogic()->VFindActor(m_toModify);
+            std::shared_ptr<chimera::TransformComponent> cmp = actor->GetComponent<chimera::TransformComponent>(chimera::TransformComponent::COMPONENT_ID).lock();
             CONST util::Vec3& scale = cmp->GetTransformation()->GetScale();
             FLOAT s = scale.x + factor;
             cmp->GetTransformation()->SetScale(s < 0.05f ? 0.05f : s);
+            QUEUE_EVENT(new chimera::ActorMovedEvent(actor));
         }
     }
 
-    BOOL ScaleActorBigger(tbd::Command& cmd)
+    BOOL ScaleActorBigger(chimera::Command& cmd)
     {
         ScaleActorAction(0.05f);
         return TRUE;
     }
 
-    BOOL ScaleActorSmaller(tbd::Command& cmd)
+    BOOL ScaleActorSmaller(chimera::Command& cmd)
     {
         ScaleActorAction(-0.05f);
         return TRUE;
     }
 
-    BOOL Jump(tbd::Command& cmd)
+    BOOL Jump(chimera::Command& cmd)
     {
         FLOAT height = cmd.GetNextFloat();
         CHECK_COMMAND(cmd);
 
-        ActorId id = app::g_pApp->GetHumanView()->GetTarget()->GetId();
-        event::MoveActorEvent* me = new event::MoveActorEvent(id, util::Vec3(0, height, 0));
+        ActorId id = chimera::g_pApp->GetHumanView()->GetTarget()->GetId();
+        chimera::MoveActorEvent* me = new chimera::MoveActorEvent(id, util::Vec3(0, height, 0));
         me->m_isJump = TRUE;
         QUEUE_EVENT(me);
         return TRUE;
     }
 
     BOOL ptToggle = FALSE;
-    ActorId lastTorus = INVALID_ACTOR_ID;
+    ActorId lastTorus = CM_INVALID_ACTOR_ID;
 
-    BOOL ToogleCamera(tbd::Command& cmd)
+    BOOL ToogleCamera(chimera::Command& cmd)
     {
         ptToggle = !ptToggle;
 
         //we spawn a rotating torus to indicate the players position
         if(ptToggle)
         {
-            tbd::ActorDescription desc = app::g_pApp->GetLogic()->GetActorFactory()->CreateActorDescription();
+            chimera::ActorDescription desc = chimera::g_pApp->GetLogic()->GetActorFactory()->CreateActorDescription();
 
-            tbd::TransformComponent* comp = desc->AddComponent<tbd::TransformComponent>("TransformComponent");
+            chimera::TransformComponent* comp = desc->AddComponent<chimera::TransformComponent>("TransformComponent");
             util::Vec3 pos = 
-                app::g_pApp->GetHumanView()->GetTarget()->GetComponent<tbd::TransformComponent>(
-                tbd::TransformComponent::COMPONENT_ID).lock()->GetTransformation()->GetTranslation();
+                chimera::g_pApp->GetHumanView()->GetTarget()->GetComponent<chimera::TransformComponent>(
+                chimera::TransformComponent::COMPONENT_ID).lock()->GetTransformation()->GetTranslation();
 
             comp->GetTransformation()->SetTranslate(pos.x, pos.y, pos.z);
 
-            tbd::RenderComponent* renderComp = desc->AddComponent<tbd::RenderComponent>("RenderComponent");
-            renderComp->m_meshFile = "torus.obj";
+            chimera::RenderComponent* renderComp = desc->AddComponent<chimera::RenderComponent>("RenderComponent");
+            renderComp->m_resource = "torus.obj";
 
-            desc->AddComponent<tbd::PickableComponent>(tbd::PickableComponent::COMPONENT_ID);
+            desc->AddComponent<chimera::PickableComponent>(chimera::PickableComponent::COMPONENT_ID);
 
             /*std::shared_ptr<tbd::Actor> actor = app::g_pApp->GetLogic()->VCreateActor(desc);
             lastTorus = actor->GetId();
@@ -563,50 +564,50 @@ namespace gameinput
         }
         else
         {
-            std::shared_ptr<event::DeleteActorEvent> deleteEvent = std::shared_ptr<event::DeleteActorEvent>(new event::DeleteActorEvent(lastTorus));
+            std::shared_ptr<chimera::DeleteActorEvent> deleteEvent = std::shared_ptr<chimera::DeleteActorEvent>(new chimera::DeleteActorEvent(lastTorus));
             //event::EventManager::Get()->VQueueEvent(deleteEvent);
         }
 
 
-        return tbd::commands::SetTarget(ptToggle ? "free" : "player");
+        return chimera::commands::SetTarget(ptToggle ? "free" : "player");
     }
 
-    BOOL SpawnSpheres(tbd::Command& cmd)
+    BOOL SpawnSpheres(chimera::Command& cmd)
     {
         INT count = 0;
         while(count++ < 80)
         {
-            tbd::ActorDescription desc = app::g_pApp->GetLogic()->GetActorFactory()->CreateActorDescription();
+            chimera::ActorDescription desc = chimera::g_pApp->GetLogic()->GetActorFactory()->CreateActorDescription();
 
             FLOAT scale = 4;
             FLOAT x = 2 * (rand() / (FLOAT)RAND_MAX - 0.5f);
             FLOAT z = 2 * (rand() / (FLOAT)RAND_MAX - 0.5f);
             FLOAT dy = rand() / (FLOAT)RAND_MAX;
 
-            tbd::TransformComponent* comp = desc->AddComponent<tbd::TransformComponent>("TransformComponent");
+            chimera::TransformComponent* comp = desc->AddComponent<chimera::TransformComponent>("TransformComponent");
             comp->GetTransformation()->SetTranslate(scale * x, 40 + 10 * dy, 20 + scale * z);
 
             FLOAT disDas = rand() / (FLOAT)RAND_MAX;
 
-            tbd::RenderComponent* renderComp = desc->AddComponent<tbd::RenderComponent>("RenderComponent");
-            renderComp->m_meshFile = disDas < 0.5 ? "box.obj" : "sphere.obj";
+            chimera::RenderComponent* renderComp = desc->AddComponent<chimera::RenderComponent>("RenderComponent");
+            renderComp->m_resource = disDas < 0.5 ? "box.obj" : "sphere.obj";
 
-            tbd::PhysicComponent* physicComponent = desc->AddComponent<tbd::PhysicComponent>("PhysicComponent");
+            chimera::PhysicComponent* physicComponent = desc->AddComponent<chimera::PhysicComponent>("PhysicComponent");
             physicComponent->m_dim.x = 2; physicComponent->m_dim.z = 2; physicComponent->m_dim.y = 2;
             physicComponent->m_material = disDas < 0.5 ? "dynamic" : "bouncy";
             physicComponent->m_shapeStyle = disDas < 0.5 ? "box" : "sphere";
             physicComponent->m_radius = 1;
 
-            desc->AddComponent<tbd::PickableComponent>("PickableComponent");
+            desc->AddComponent<chimera::PickableComponent>("PickableComponent");
 
-            event::IEventPtr createActorEvent(new event::CreateActorEvent(desc));
-            event::IEventManager::Get()->VQueueEvent(createActorEvent);
+            chimera::IEventPtr createActorEvent(new chimera::CreateActorEvent(desc));
+            chimera::IEventManager::Get()->VQueueEvent(createActorEvent);
 
         }
         return TRUE;
     }
 
-    BOOL SetRasterState(tbd::Command& cmd)
+    BOOL SetRasterState(chimera::Command& cmd)
     {
         std::string state = cmd.GetNextCharStr();
         CHECK_COMMAND(cmd);
@@ -614,40 +615,40 @@ namespace gameinput
 
         if(state == "wire")
         {
-            rs = d3d::g_pRasterizerStateWrireframe;
+            rs = chimera::g_pRasterizerStateWrireframe;
         }
         else if(state == "nocull")
         {
-            rs = d3d::g_pRasterizerStateNoCullingSolid;
+            rs = chimera::g_pRasterizerStateNoCullingSolid;
         }
         else if(state == "frontfaces")
         {
-            rs = d3d::g_pRasterizerStateFrontFaceSolid;
+            rs = chimera::g_pRasterizerStateFrontFaceSolid;
         }
         else if(state == "backfaces")
         {
-            rs = d3d::g_pRasterizerStateBackFaceSolid;
+            rs = chimera::g_pRasterizerStateBackFaceSolid;
         }
         else
         {
             return FALSE;
         }
 
-        app::g_pApp->GetRenderer()->SetDefaultRasterizerState(rs);
+        chimera::g_pApp->GetRenderer()->SetDefaultRasterizerState(rs);
 
         return TRUE;
     }
 
-    BOOL DrawCP(tbd::Command& cmd)
+    BOOL DrawCP(chimera::Command& cmd)
     {
         BOOL draw = cmd.GetNextBool();
         CHECK_COMMAND(cmd);
-        tbd::UniformBSplineNode::drawCP_CP = draw;
+        chimera::UniformBSplineNode::drawCP_CP = draw;
         return TRUE;
     }
 
 
-    BOOL SetFullscreen(tbd::Command& cmd)
+    BOOL SetFullscreen(chimera::Command& cmd)
     {
         BOOL fs = cmd.GetNextBool();
         CHECK_COMMAND(cmd);
@@ -655,17 +656,17 @@ namespace gameinput
         UINT h = 0;
         if(!fs)
         {
-            w = app::g_pApp->GetConfig()->GetInteger("iWidth");
-            h = app::g_pApp->GetConfig()->GetInteger("iHeight");
+            w = chimera::g_pApp->GetConfig()->GetInteger("iWidth");
+            h = chimera::g_pApp->GetConfig()->GetInteger("iHeight");
         }
 
-        d3d::SetFullscreenState(fs, w, h);
+        chimera::SetFullscreenState(fs, w, h);
 
         return TRUE;
     }
 
     //set actions here
-    VOID RegisterCommands(tbd::ActorController& controller, tbd::CommandInterpreter& interpreter)
+    VOID RegisterCommands(chimera::ActorController& controller, chimera::CommandInterpreter& interpreter)
     {
 
         interpreter.RegisterCommand("sc0", SetCascadeCam0);
@@ -697,8 +698,10 @@ namespace gameinput
         interpreter.RegisterCommand("force", ApplyForce, "force x y z [n]");
         interpreter.RegisterCommand("torque", ApplyTorque, "torque x y z [n]");
         interpreter.RegisterCommand("pforce", ApplyPlayerForce, "pforce n");
+		interpreter.RegisterCommand("flushVR", FlushVRam, "");
+
         controller.SetMouseScrollAction(MouseWheelActorPositionModify);
 
-        ADD_EVENT_LISTENER_STATIC(&MovePicked, event::ActorMovedEvent::TYPE);
+        ADD_EVENT_LISTENER_STATIC(&MovePicked, chimera::ActorMovedEvent::TYPE);
     }
 }

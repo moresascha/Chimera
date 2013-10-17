@@ -4,11 +4,11 @@
 
 namespace
 {
-    tbd::ActorFactory;
+    chimera::ActorFactory;
 }
 namespace packman
 {
-    class Maze : public tbd::BaseLevel
+    class Maze : public chimera::BaseLevel
     {
     private:
         INT m_size;
@@ -18,7 +18,7 @@ namespace packman
         BOOL** m_vals;
 
     public:
-        Maze(INT size, INT enemies, tbd::ActorFactory* factory);
+        Maze(INT size, INT enemies, chimera::ActorFactory* factory);
 
         BOOL VLoad(BOOL block);
 

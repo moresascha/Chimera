@@ -11,7 +11,7 @@
     #pragma comment(lib, "dxguid.lib")
 #endif
 
-namespace tbd
+namespace chimera
 {
 
     VOID BaseSoundSystem::VPauseAll(VOID)
@@ -63,7 +63,7 @@ namespace tbd
 
         RETURN_IF_FAILED(hr == S_OK);
 
-        hr = m_pDirectSound->SetCooperativeLevel(app::g_pApp->GetWindowHandle(), DSSCL_PRIORITY);
+        hr = m_pDirectSound->SetCooperativeLevel(chimera::g_pApp->GetWindowHandle(), DSSCL_PRIORITY);
 
         RETURN_IF_FAILED(hr == S_OK);
 
@@ -105,7 +105,7 @@ namespace tbd
         SAFE_DELETE(buffer);
     }
 
-    ISoundBuffer* DirectSoundSystem::VCreateSoundBuffer(std::shared_ptr<tbd::ResHandle> handle)
+    ISoundBuffer* DirectSoundSystem::VCreateSoundBuffer(std::shared_ptr<chimera::ResHandle> handle)
     {
         ISoundBuffer* sound = new DirectWaveBuffer(this, handle);
         if(!sound->VInit())
@@ -124,7 +124,7 @@ namespace tbd
         }
     }
 
-    DirectWaveBuffer::DirectWaveBuffer(DirectSoundSystem* system, std::shared_ptr<tbd::ResHandle> handle) 
+    DirectWaveBuffer::DirectWaveBuffer(DirectSoundSystem* system, std::shared_ptr<chimera::ResHandle> handle) 
         : m_pSystem(system), m_pHandle(handle), m_pSoundBuffer(NULL), m_initialized(FALSE)
     {
 
@@ -146,7 +146,7 @@ namespace tbd
             DSBCAPS_CTRLPAN | DSBCAPS_CTRLVOLUME | DSBCAPS_CTRLFREQUENCY
             | DSBCAPS_GLOBALFOCUS; 
         desc.dwBufferBytes = m_pHandle->Size();
-        desc.lpwfxFormat = &std::static_pointer_cast<tbd::WaveSoundExtraDatra>(m_pHandle->GetExtraData())->m_format;
+        desc.lpwfxFormat = &std::static_pointer_cast<chimera::WaveSoundExtraDatra>(m_pHandle->GetExtraData())->m_format;
 
         LPDIRECTSOUNDBUFFER pBuffer;
         HR_RETURN_IF_FAILED(m_pSystem->m_pDirectSound->CreateSoundBuffer(&desc, &pBuffer, NULL));

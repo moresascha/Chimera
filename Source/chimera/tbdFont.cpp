@@ -11,15 +11,15 @@
 #include "Texture.h"
 #include "D3DRenderer.h"
 #include "GameView.h"
-namespace tbd
+namespace chimera
 {
-    VOID IFont::Print(VOID) CONST
+    /*VOID IFont::Print(VOID) CONST
     {
         std::stringstream ss;
         ss << "Size=" << VGetSize() << ", File="  << VGetFileName() << ", LineHeight=" << VGetLineHeight() << ", TexWidth=" << VGetTextureWidth();
         ss << ", TexHeight=" << VGetTextureHeight() << ", Italic=" << VIsItalic() << ", Bold=" << VIsBold();
         DEBUG_OUT(ss.str().c_str());
-    }
+    } */
 
     BMFont::BMFont(VOID) : m_initialized(FALSE), m_fontTexture(NULL)
     {
@@ -104,7 +104,7 @@ namespace tbd
         }
         CHAR* data = util::GetTextureData(map);
 
-        m_fontTexture = new d3d::Texture2D(data, map->GetWidth(), map->GetHeight(), DXGI_FORMAT_R8G8B8A8_UNORM);
+        m_fontTexture = new chimera::D3DTexture2D(data, map->GetWidth(), map->GetHeight(), DXGI_FORMAT_R8G8B8A8_UNORM);
         m_fontTexture->SetBindflags(D3D11_BIND_SHADER_RESOURCE);
         m_fontTexture->VCreate();
 
@@ -113,7 +113,7 @@ namespace tbd
         return TRUE;
     }
 
-    CONST FontStyle& BMFont::VGetStyle(VOID) CONST
+    CONST CMFontStyle& BMFont::VGetStyle(VOID) CONST
     {
         return m_style;
     }
@@ -133,7 +133,7 @@ namespace tbd
         return m_style.size;
     }
 
-    CONST CharMetric* BMFont::VGetCharMetric(UCHAR c) CONST
+    CONST CMCharMetric* BMFont::VGetCharMetric(UCHAR c) CONST
     {
         auto it = m_metrics.find(c);
 //#ifdef _DEBUG
@@ -179,7 +179,7 @@ namespace tbd
 
     VOID BMFont::VActivate(VOID)
     {
-       app::g_pApp->GetHumanView()->GetRenderer()->SetSampler(d3d::eGuiSampler, m_fontTexture->GetShaderResourceView());
+       chimera::g_pApp->GetHumanView()->GetRenderer()->SetSampler(chimera::eGuiSampler, m_fontTexture->GetShaderResourceView());
     }
 
     BMFont::~BMFont(VOID)
@@ -265,12 +265,12 @@ namespace tbd
 
     D3DFontRenderer::D3DFontRenderer(VOID) : m_quad(NULL)
     {
-        m_program = d3d::ShaderProgram::CreateProgram("Font", L"Gui.hlsl", "Font_VS", "Font_PS", NULL);
+        m_program = chimera::ShaderProgram::CreateProgram("Font", L"Gui.hlsl", "Font_VS", "Font_PS", NULL);
         m_program->SetInputAttr("POSITION", 0, 0, DXGI_FORMAT_R32G32B32_FLOAT);
         m_program->SetInputAttr("TEXCOORD", 1, 0, DXGI_FORMAT_R32G32_FLOAT);
         m_program->GenerateLayout();
         m_program->Bind();
-        m_program = d3d::ShaderProgram::GetProgram("Font");
+        m_program = chimera::ShaderProgram::GetProgram("Font");
         m_quad = GeometryFactory::GetGlobalScreenQuadCPU();
     }
 
@@ -289,7 +289,7 @@ namespace tbd
 
         font->VActivate();
 
-        d3d::ConstBuffer* buffer = app::g_pApp->GetHumanView()->GetRenderer()->GetBuffer(d3d::eGuiColorBuffer);
+        chimera::ConstBuffer* buffer = chimera::g_pApp->GetHumanView()->GetRenderer()->GetBuffer(chimera::eGuiColorBuffer);
 
         XMFLOAT4* c = (XMFLOAT4*)buffer->Map();
         c->x = color ? color->r : 1;
@@ -304,17 +304,17 @@ namespace tbd
         UINT curserX = 0;
         UINT curserY = 0;
         
-        d3d::GetContext()->OMSetBlendState(d3d::g_pBlendStateBlendAlpha, NULL, 0xffffff);
+        chimera::GetContext()->OMSetBlendState(chimera::g_pBlendStateBlendAlpha, NULL, 0xffffff);
 
-        FLOAT w = (FLOAT) d3d::g_width;
-        FLOAT h = (FLOAT) d3d::g_height;
+        FLOAT w = (FLOAT) chimera::g_width;
+        FLOAT h = (FLOAT) chimera::g_height;
 
         for(UINT i = 0; i < text.size(); ++i)
         {
             CHAR c = str[i];
 
             //assert (c < (s_charCount+32) && c > 31);
-            CONST CharMetric* metric = font->VGetCharMetric(c);
+            CONST CMCharMetric* metric = font->VGetCharMetric(c);
             if(metric != NULL || c == '\n')
             {
                 if(c == '\n')
@@ -375,6 +375,6 @@ namespace tbd
             }
         }
 
-        d3d::GetContext()->OMSetBlendState(d3d::g_pBlendStateNoBlending, NULL, 0xffffff);
+        chimera::GetContext()->OMSetBlendState(chimera::g_pBlendStateNoBlending, NULL, 0xffffff);
     }
 }

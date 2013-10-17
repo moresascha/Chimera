@@ -8,18 +8,18 @@
 #include "GameView.h"
 #include "EventManager.h"
 #include "Picker.h"
-namespace tbd
+namespace chimera
 {
     class TransformComponent;
     namespace gui
     {
-        class InformationWindow : public tbd::gui::GuiTextComponent
+        class InformationWindow : public chimera::gui::GuiTextComponent
         {
-            tbd::gui::Histogram m_eventHisto;
+            chimera::gui::Histogram m_eventHisto;
         public:
             InformationWindow(VOID) : m_eventHisto(100)
             {
-                SetAlignment(tbd::gui::eRight);
+                SetAlignment(chimera::gui::eRight);
                 SetTextColor(util::Vec4(0.75f, 0.75f, 0.75f, 0));
             }
 
@@ -31,10 +31,10 @@ namespace tbd
 
             BOOL VOnRestore(VOID)
             {
-                Dimension dim;
+                CMDimension dim;
                 dim.x = 0;//(INT)(0.4 * d3d::g_width);
                 dim.y = 0;
-                dim.w = (INT)(0.25 * app::g_pApp->GetWindowWidth());
+                dim.w = (INT)(0.25 * chimera::g_pApp->GetWindowWidth());
                 dim.h = 70;
                 m_eventHisto.VSetDimension(dim);
                 m_eventHisto.VSetAlpha(0.5f);
@@ -45,24 +45,24 @@ namespace tbd
             VOID VUpdate(ULONG millis)
             {
                 ClearText();
-                tbd::TransformComponent* tc = app::g_pApp->GetHumanView()->GetTarget()->GetComponent<tbd::TransformComponent>(tbd::TransformComponent::COMPONENT_ID).lock().get();
+                chimera::TransformComponent* tc = chimera::g_pApp->GetHumanView()->GetTarget()->GetComponent<chimera::TransformComponent>(chimera::TransformComponent::COMPONENT_ID).lock().get();
                 std::stringstream ss;
                 ss << "FPS:";
-                ss << app::g_pApp->GetRenderingTimer()->GetFPS();
+                ss << chimera::g_pApp->GetRenderingTimer()->GetFPS();
                 AppendText(ss.str());
                 ss.str("");
 
                 ss << "Ticks:";
-                ss << app::g_pApp->GetUpdateTimer()->GetFPS();
+                ss << chimera::g_pApp->GetUpdateTimer()->GetFPS();
                 AppendText(ss.str());
                 ss.str("");
 
-                ss << d3d::GetAdapterName();
+                ss << chimera::GetAdapterName();
                 AppendText(ss.str());
                 ss.str("");
 
                 ss << "Position: ";
-                ss << app::g_pApp->GetHumanView()->GetTarget()->GetName();
+                ss << chimera::g_pApp->GetHumanView()->GetTarget()->GetName();
                 ss << " (";
                 ss << tc->GetTransformation()->GetTranslation().x;
                 ss << ", ";
@@ -74,33 +74,33 @@ namespace tbd
                 ss.str("");
 
                 ss << "CacheLoad: ";
-                ss << app::g_pApp->GetCache()->GetWorkload();
+                ss << chimera::g_pApp->GetCache()->GetWorkload();
                 ss << "%";
                 AppendText(ss.str());
                 ss.str("");
 
                 ss << "VRamLoad: ";
-                ss << app::g_pApp->GetHumanView()->GetVRamManager()->GetWorkload();
+                ss << chimera::g_pApp->GetHumanView()->GetVRamManager()->GetWorkload();
                 ss << "%";
                 AppendText(ss.str());
                 ss.str("");
 
                 ss << "LastEventsFired ";
-                ss << app::g_pApp->GetEventMgr()->LastEventsFired();
+                ss << chimera::g_pApp->GetEventMgr()->LastEventsFired();
                 AppendText(ss.str());
                 ss.str("");
 
-                m_eventHisto.AddValue(app::g_pApp->GetEventMgr()->LastEventsFired());
+                m_eventHisto.AddValue(chimera::g_pApp->GetEventMgr()->LastEventsFired());
 
-                if(app::g_pApp->GetHumanView()->GetPicker()->VHasPicked())
+                if(chimera::g_pApp->GetHumanView()->GetPicker()->VHasPicked())
                 {
                     ss << "Actor: ";
-                    ss << app::g_pApp->GetHumanView()->GetPicker()->VPick();
+                    ss << chimera::g_pApp->GetHumanView()->GetPicker()->VPick();
                     AppendText(ss.str());
 
                     ss.str("");
                     AppendText("Components:");
-                    std::shared_ptr<tbd::Actor> picked = app::g_pApp->GetLogic()->VFindActor(app::g_pApp->GetHumanView()->GetPicker()->VPick());
+                    std::shared_ptr<chimera::Actor> picked = chimera::g_pApp->GetLogic()->VFindActor(chimera::g_pApp->GetHumanView()->GetPicker()->VPick());
                     if(picked)
                     {
                         TBD_FOR(picked->GetComponents())

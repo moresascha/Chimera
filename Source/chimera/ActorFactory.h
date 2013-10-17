@@ -2,32 +2,31 @@
 #include "stdafx.h"
 #include "Actor.h"
 
-class tinyxml2::XMLElement;
-
-namespace tbd
+namespace chimera
 {
-    class ActorComponent;
-
-    typedef tbd::ActorComponent* (*ActorComponentCreator)(VOID);
-
-    class ActorFactory
+    class ActorFactory : public IActorFactory
     {
-        friend class _ActorDescription;
     private:
-        static ActorId m_lastActorId;
+        ActorId m_lastActorId;
         ActorId GetNextActorId(VOID) { return ++m_lastActorId; }
     protected:
         std::map<std::string, ActorComponentCreator> m_creators;
         std::map<ComponentId, ActorComponentCreator> m_creatorsId;
-        virtual std::shared_ptr<tbd::ActorComponent> CreateComponent(tinyxml2::XMLElement* pData);
     public:
         ActorFactory(VOID);
-        std::shared_ptr<tbd::Actor> CreateActor(CONST CHAR* ressource, std::vector<std::shared_ptr<tbd::Actor>>& actors);
-        std::shared_ptr<tbd::Actor> CreateActor(tinyxml2::XMLElement* pData, std::vector<std::shared_ptr<tbd::Actor>>& actors);
-        std::shared_ptr<tbd::Actor> CreateActor(ActorDescription actorDesc);
-        ActorDescription CreateActorDescription(VOID) { return ActorDescription(new _ActorDescription(this)); }
-        VOID ReplaceComponent(std::shared_ptr<tbd::Actor> actor, tinyxml2::XMLElement* pData);
-        VOID AddComponentCreator(ActorComponentCreator creator, LPCSTR name, ComponentId id);
+
+        std::unique_ptr<IActor> VCreateActor(CONST CMResource& resource, std::vector<std::unique_ptr<IActor>>& actors);
+
+        std::unique_ptr<IActor> VCreateActor(std::unique_ptr<ActorDescription> actorDesc);
+
+        std::unique_ptr<IActorComponent> VCreateComponent(LPCSTR name);
+
+        std::unique_ptr<IActorComponent> VCreateComponent(ComponentId id);
+
+        std::unique_ptr<ActorDescription> VCreateActorDescription(VOID) { return std::unique_ptr<ActorDescription>(new ActorDescription(this)); }
+
+        VOID VAddComponentCreator(ActorComponentCreator creator, LPCSTR name, ComponentId id);
+
         virtual ~ActorFactory(VOID) { }
     };
 };

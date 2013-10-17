@@ -3,6 +3,7 @@
 struct PixelInput 
 {
     float4 position : SV_POSITION;
+    float2 texCoord : TEXCOORD0;
 };
 
 struct PixelOutput 
@@ -27,6 +28,7 @@ PixelInput Sphere_VS(VertexInput input)
 {
     PixelInput op;
     op.position = mul(g_projection, mul(g_view, mul(g_model, float4(g_sphereMiddle + g_sphereScale * input.position, 1))));
+    op.texCoord = input.texCoord;
     return op;
 }
 

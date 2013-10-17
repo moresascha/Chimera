@@ -1,12 +1,10 @@
 #pragma once
 #include "stdafx.h"
-#include "RenderTarget.h"
-#include "SceneGraph.h"
-#include "ShaderProgram.h"
-#include "Effect.h"
-#include "Event.h"
 
-namespace d3d
+#include "Mat4.h"
+#include "Vec3.h"
+
+namespace chimera
 {
     struct CascadeSettings
     {
@@ -15,28 +13,35 @@ namespace d3d
         util::Mat4 m_projection;
     };
 
-    class CascadedShadowMapper
+    class CascadedShadowMapper : public IEnvironmentLighting
     {
     private:
-        d3d::RenderTarget** m_ppTargets;
-        d3d::RenderTarget** m_ppBlurredTargets;
+        IRenderTarget** m_ppTargets;
+        IRenderTarget** m_ppBlurredTargets;
         UCHAR m_cascades;
-        d3d::ShaderProgram* m_pProgram;
-        d3d::ShaderProgram* m_pProgramInstanced;
-        d3d::EffectChain** m_ppBlurChain;
+        IShaderProgram* m_pProgram;
+        IShaderProgram* m_pProgramInstanced;
+        IEffectChain** m_ppBlurChain;
         CascadeSettings* m_pCascadesSettings;
-        std::shared_ptr<tbd::Actor> m_cascadeCameraActor[3];
-        std::shared_ptr<tbd::Actor> m_lightActorCamera;
-        std::shared_ptr<tbd::Actor> m_viewActor;
-    public:
-        CascadedShadowMapper(UCHAR cascades);
-        BOOL OnRestore(VOID);
-        VOID Render(tbd::SceneGraph* graph);
-        VOID Destroy(VOID);
-        UCHAR GetSlices(VOID) { return m_cascades; }
-        d3d::RenderTarget** GetTargets(VOID) { return m_ppTargets; }
+        IActor* m_cascadeCameraActor[3];
+        IActor* m_lightActorCamera;
+        IActor* m_viewActor;
 
-        VOID SetSunPositionDelegate(event::IEventPtr data);
+        VOID Destroy(VOID);
+
+    public:
+
+        CascadedShadowMapper(UCHAR cascades);
+
+        BOOL VOnRestore(VOID);
+
+        VOID VRender(ISceneGraph* graph);
+
+        UCHAR VGetSlices(VOID) { return m_cascades; }
+
+        IRenderTarget** VGetTargets(VOID) { return m_ppTargets; }
+
+        VOID SetSunPositionDelegate(IEventPtr data);
 
         ~CascadedShadowMapper(VOID);
     };

@@ -15,7 +15,7 @@
     #pragma comment (lib, "LuaPlus.lib")
 #endif
 
-namespace tbd
+namespace chimera
 {
     namespace script
     {
@@ -72,20 +72,20 @@ namespace tbd
                     LOG_ERROR_NR("Failed to create Actor 'position' and 'Rotation' have to be a table");
                 }
                 util::Vec3 position;
-                if(!tbd::script::ConvertTableToVec3(position, luaPosition))
+                if(!chimera::script::ConvertTableToVec3(position, luaPosition))
                 {
                     LOG_ERROR_NR("Failed to create Actor, couldn't parse 'position'");
                 }
 
                 util::Vec3 rotation;
-                if(!tbd::script::ConvertTableToVec3(rotation, luaRotation))
+                if(!chimera::script::ConvertTableToVec3(rotation, luaRotation))
                 {
                     LOG_ERROR_NR("Failed to create Actor, couldn't parse 'rotation'");
                 }
 
-                std::shared_ptr<tbd::Actor> actor = app::g_pApp->GetLogic()->VCreateActor(xmlFile);
-                std::shared_ptr<event::MoveActorEvent> move = std::shared_ptr<event::MoveActorEvent>(new event::MoveActorEvent(actor->GetId(), position, rotation, FALSE));
-                event::IEventManager::Get()->VQueueEvent(move);
+                std::shared_ptr<chimera::Actor> actor = chimera::g_pApp->GetLogic()->VCreateActor(xmlFile);
+                std::shared_ptr<chimera::MoveActorEvent> move = std::shared_ptr<chimera::MoveActorEvent>(new chimera::MoveActorEvent(actor->GetId(), position, rotation, FALSE));
+                chimera::IEventManager::Get()->VQueueEvent(move);
             }
 
             VOID MoveActor(LuaPlus::LuaObject luaid, LuaPlus::LuaObject luaPosition, LuaPlus::LuaObject luaRotation, LuaPlus::LuaObject luadelta)
@@ -95,18 +95,18 @@ namespace tbd
                     LOG_ERROR_NR("Failed to MoveActor Actor 'position' and 'Rotation' have to be a table");
                 }
                 util::Vec3 position;
-                if(!tbd::script::ConvertTableToVec3(position, luaPosition))
+                if(!chimera::script::ConvertTableToVec3(position, luaPosition))
                 {
                     LOG_ERROR_NR("Failed to MoveActor Actor, couldn't parse 'position'");
                 }
 
                 util::Vec3 rotation;
-                if(!tbd::script::ConvertTableToVec3(rotation, luaRotation))
+                if(!chimera::script::ConvertTableToVec3(rotation, luaRotation))
                 {
                     LOG_ERROR_NR("Failed to MoveActor Actor, couldn't parse 'rotation'");
                 }
 
-                ActorId id = INVALID_ACTOR_ID;
+                ActorId id = CM_INVALID_ACTOR_ID;
                 if(luaid.IsInteger())
                 {
                     id = luaid.GetInteger();
@@ -123,7 +123,7 @@ namespace tbd
 
             VOID RegisterEventListener(EventType type, LuaPlus::LuaObject funciton)
             {
-                app::g_pApp->GetScriptEventManager()->AddListener(funciton, type);
+                chimera::g_pApp->GetScriptEventManager()->AddListener(funciton, type);
             }
 
             VOID Print(LuaPlus::LuaObject text)
@@ -151,14 +151,14 @@ namespace tbd
             
             VOID Register(VOID)
             {
-                LuaScript* script = app::g_pApp->GetScript();
+                LuaScript* script = chimera::g_pApp->GetScript();
                 script->ResgisterFunction("CreateActor", &internalexports::CreateActor);
                 script->ResgisterFunction("MoveActor", &internalexports::MoveActor);
                 script->ResgisterFunction("Printf", &internalexports::Print);
                 script->ResgisterFunction("RegisterEventListener", &internalexports::RegisterEventListener);
 
 
-                tbd::script::RegisterScriptEvents();
+                chimera::script::RegisterScriptEvents();
             }
         }
     }

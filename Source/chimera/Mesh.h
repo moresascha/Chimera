@@ -1,56 +1,18 @@
 #pragma once
 #include "stdafx.h"
-#include "Resources.h"
 #include <vector>
+#include "Cache.h"
 #include "AxisAlignedBB.h"
-namespace tbd 
+namespace chimera 
 {
-    struct Triple 
-    {
-        UINT position;
-        UINT texCoord;
-        UINT normal;
-        ULONG hash;
-        UINT index;
-        Triple() : position(0), texCoord(0), normal(0), hash(0), index(0) { }
-
-        BOOL Triple::operator==(const Triple& t0)
-        {
-            return t0.position == position && t0.texCoord == texCoord && t0.normal == normal;
-        }
-
-        friend bool operator==(const Triple& t0, const Triple& t1)
-        {
-            return t0.position == t1.position && t0.texCoord == t1.texCoord && t0.normal == t1.normal;
-        }
-
-        friend bool operator<(const Triple& t0, const Triple& t1)
-        {
-            return t0.position < t1.position;
-        }
-    };
-
-    struct Face 
-    {
-        std::vector<Triple> m_triples;
-    };
-
-    struct IndexBufferInterval 
-    {
-        UINT start;
-        UINT count;
-        UINT material;
-        IndexBufferInterval(VOID) : start(0), count(0), material(0) {}
-    };
-
-    class Mesh : public tbd::ResHandle 
+    class Mesh : public IMesh
     {
         friend class ObjLoader;
 
     private:
-        std::list<tbd::Face> m_faces;
-        std::vector<tbd::IndexBufferInterval> m_indexIntervals;
-        tbd::Resource m_materials;
+        std::list<Face> m_faces;
+        std::vector<IndexBufferInterval> m_indexIntervals;
+        CMResource m_materials;
         FLOAT* m_vertices;
         UINT* m_indices;
         UINT m_indexCount;
@@ -61,43 +23,44 @@ namespace tbd
 
         Mesh(VOID) { }
 
-        tbd::Resource& GetMaterials(VOID)
+        CMResource& VGetMaterials(VOID)
         {
             return m_materials;
         }
 
-        VOID AddIndexBufferInterval(UINT start, UINT count, UINT material);
+        VOID VAddIndexBufferInterval(UINT start, UINT count, UINT material)
+        {
+            IndexBufferInterval bi;
+            bi.start = start;
+            bi.count = count;
+            bi.material = material;
+            m_indexIntervals.push_back(bi);
+        }
 
-        UINT GetIndexCount(VOID) CONST { return m_indexCount; }
+        UINT VGetIndexCount(VOID) CONST { return m_indexCount; }
 
-        UINT GetVertexCount(VOID) CONST { return m_vertexCount; }
+        UINT VGetVertexCount(VOID) CONST { return m_vertexCount; }
 
-        UINT GetVertexStride(VOID) CONST { return m_vertexStride; }
+        UINT VGetVertexStride(VOID) CONST { return m_vertexStride; }
 
-        CONST FLOAT* GetVertices(VOID) CONST { return m_vertices; }
+        CONST FLOAT* VGetVertices(VOID) CONST { return m_vertices; }
 
-        CONST std::list<tbd::Face>& GetFaces(VOID) CONST { return m_faces; }
+        CONST std::list<chimera::Face>& VGetFaces(VOID) CONST { return m_faces; }
 
-        util::AxisAlignedBB& GetAABB(VOID) { return m_aabb; }
+        util::AxisAlignedBB& VGetAABB(VOID) { return m_aabb; }
 
-        CONST UINT* GetIndices(VOID) CONST { return m_indices; }
+        CONST UINT* VGetIndices(VOID) CONST { return m_indices; }
 
-        VOID SetIndices(UINT* indices, UINT count) { this->m_indices = indices; m_indexCount = count; }
+        VOID VSetIndices(UINT* indices, UINT count) { this->m_indices = indices; m_indexCount = count; }
 
-        VOID SetVertices(FLOAT* vertices, UINT count, UINT stride) { this->m_vertices = vertices; m_vertexCount = count; m_vertexStride = stride; }
+        VOID VSetVertices(FLOAT* vertices, UINT count, UINT stride) { this->m_vertices = vertices; m_vertexCount = count; m_vertexStride = stride; }
 
-        std::vector<tbd::IndexBufferInterval>& GetIndexBufferIntervals(VOID) { return m_indexIntervals; }
+        std::vector<chimera::IndexBufferInterval>& VGetIndexBufferIntervals(VOID) { return m_indexIntervals; }
 
         ~Mesh(VOID) 
         {
-            if(m_vertices)
-            {
-                delete[] m_vertices;
-            }
-            if(m_indices)
-            {
-                delete[] m_indices;
-            }
+			SAFE_ARRAY_DELETE(m_vertices);
+			SAFE_ARRAY_DELETE(m_indices);
         }
     };
 }

@@ -1,44 +1,30 @@
 #include "SceneNode.h"
-#include "GameApp.h"
-#include "Texture.h"
-#include "VRamManager.h"
-#include "GeometryFactory.h"
-#include "D3DRenderer.h"
-#include "Mat4.h"
-#include "SceneGraph.h"
-#include "D3DRenderer.h"
-#include "GameView.h"
-#include "GameLogic.h"
-#include "tbdFont.h"
-#include "EventManager.h"
-#include "Frustum.h"
-#include "Camera.h"
+#include "Event.h"
 #include "Components.h"
 
-namespace tbd 
+namespace chimera 
 {
-
-    class tbd::SceneGraph;
-
     struct uint4
     {
         UINT x, y, z, w;
     };
 
-    VOID DrawPickingSphere(std::shared_ptr<tbd::Actor> actor, CONST util::Mat4* matrix, FLOAT radius)
+    /*
+
+    VOID DrawPickingSphere(std::shared_ptr<chimera::Actor> actor, CONST util::Mat4* matrix, FLOAT radius)
     {
-        if(actor->HasComponent<tbd::PickableComponent>(tbd::PickableComponent::COMPONENT_ID))
+        if(actor->HasComponent<chimera::PickableComponent>(chimera::PickableComponent::COMPONENT_ID))
         {
-            app::g_pApp->GetHumanView()->GetRenderer()->VPushWorldTransform(*matrix);
-            app::g_pApp->GetHumanView()->GetRenderer()->SetActorId(actor->GetId());
+            chimera::g_pApp->GetHumanView()->GetRenderer()->VPushWorldTransform(*matrix);
+            chimera::g_pApp->GetHumanView()->GetRenderer()->SetActorId(actor->GetId());
             GeometryFactory::GetSphere()->Bind();
             GeometryFactory::GetSphere()->Draw();
         }
     }
 
-    VOID DrawPickingCube(std::shared_ptr<tbd::Actor> actor, CONST util::Mat4* matrix, CONST util::AxisAlignedBB& aabb)
+    VOID DrawPickingCube(std::shared_ptr<chimera::Actor> actor, CONST util::Mat4* matrix, CONST util::AxisAlignedBB& aabb)
     {
-        if(actor->HasComponent<tbd::PickableComponent>(tbd::PickableComponent::COMPONENT_ID))
+        if(actor->HasComponent<chimera::PickableComponent>(chimera::PickableComponent::COMPONENT_ID))
         {
             util::Vec3 v = aabb.GetMax() - aabb.GetMin();
             v.Scale(0.5f);
@@ -46,8 +32,8 @@ namespace tbd
             m.SetScale(v.x, v.y, v.z);
             m.Translate(aabb.GetMiddle().x, aabb.GetMiddle().y, aabb.GetMiddle().z);
 
-            app::g_pApp->GetHumanView()->GetRenderer()->VPushWorldTransform(m);
-            app::g_pApp->GetHumanView()->GetRenderer()->SetActorId(actor->GetId());
+            chimera::g_pApp->GetHumanView()->GetRenderer()->VPushWorldTransform(m);
+            chimera::g_pApp->GetHumanView()->GetRenderer()->SetActorId(actor->GetId());
             GeometryFactory::GetGlobalBoundingBoxCube()->Bind();
             GeometryFactory::GetGlobalBoundingBoxCube()->Draw();
         }
@@ -55,9 +41,9 @@ namespace tbd
 
     VOID DrawSphere(CONST util::Mat4* matrix, CONST FLOAT radius)
     {
-        app::g_pApp->GetHumanView()->GetRenderer()->SetNormalMapping(FALSE);
-        app::g_pApp->GetHumanView()->GetRenderer()->VPushWorldTransform(*matrix);
-        d3d::ConstBuffer* buffer = app::g_pApp->GetHumanView()->GetRenderer()->GetBuffer(d3d::eBoundingGeoBuffer);
+        chimera::g_pApp->GetHumanView()->GetRenderer()->SetNormalMapping(FALSE);
+        chimera::g_pApp->GetHumanView()->GetRenderer()->VPushWorldTransform(*matrix);
+        chimera::ConstBuffer* buffer = chimera::g_pApp->GetHumanView()->GetRenderer()->GetBuffer(chimera::eBoundingGeoBuffer);
         XMFLOAT4* f = (XMFLOAT4*)buffer->Map();
         f->x = radius;
         f->y = 0;
@@ -70,9 +56,13 @@ namespace tbd
 
     VOID DrawSphere(CONST util::Mat4* matrix, CONST util::AxisAlignedBB& aabb)
     {
-        app::g_pApp->GetHumanView()->GetRenderer()->SetNormalMapping(FALSE);
-        app::g_pApp->GetHumanView()->GetRenderer()->VPushWorldTransform(*matrix);
-        d3d::ConstBuffer* buffer = app::g_pApp->GetHumanView()->GetRenderer()->GetBuffer(d3d::eBoundingGeoBuffer);
+        if(aabb.GetRadius() > 900) //todo
+        {
+            return;
+        }
+        chimera::g_pApp->GetHumanView()->GetRenderer()->SetNormalMapping(FALSE);
+        chimera::g_pApp->GetHumanView()->GetRenderer()->VPushWorldTransform(*matrix);
+        chimera::ConstBuffer* buffer = chimera::g_pApp->GetHumanView()->GetRenderer()->GetBuffer(chimera::eBoundingGeoBuffer);
         XMFLOAT4* f = (XMFLOAT4*)buffer->Map();
         f->x = aabb.GetRadius();
         f->y = aabb.GetMiddle().x;
@@ -85,16 +75,17 @@ namespace tbd
 
     VOID DrawBox(CONST util::Mat4* matrix, CONST util::AxisAlignedBB& aabb)
     {
-        app::g_pApp->GetHumanView()->GetRenderer()->SetNormalMapping(FALSE);
+        chimera::g_pApp->GetHumanView()->GetRenderer()->SetNormalMapping(FALSE);
+        
         util::Mat4 m(*matrix);
         util::Vec3 v = aabb.GetMax() - aabb.GetMin();
         v.Scale(0.5f);
         m.SetScale(v.x, v.y, v.z);
         m.Translate(aabb.GetMiddle().x, aabb.GetMiddle().y, aabb.GetMiddle().z);
 
-        app::g_pApp->GetHumanView()->GetRenderer()->VPushWorldTransform(m);
+        chimera::g_pApp->GetHumanView()->GetRenderer()->VPushWorldTransform(m);
 
-        d3d::ConstBuffer* buffer = app::g_pApp->GetHumanView()->GetRenderer()->GetBuffer(d3d::eBoundingGeoBuffer);
+        chimera::ConstBuffer* buffer = chimera::g_pApp->GetHumanView()->GetRenderer()->GetBuffer(chimera::eBoundingGeoBuffer);
         //aabb.GetMiddle().Print();
         XMFLOAT4* f  = (XMFLOAT4*)buffer->Map();
         f->x = 1;//aabb.GetRadius();
@@ -106,14 +97,37 @@ namespace tbd
         GeometryFactory::GetGlobalBoundingBoxCube()->Draw();
     }
 
-    VOID DrawAnchorSphere(std::shared_ptr<tbd::Actor> actor, CONST util::Mat4* matrix, FLOAT radius)
+    VOID DrawBox(CONST util::AxisAlignedBB& aabb)
     {
-        app::g_pApp->GetHumanView()->GetRenderer()->SetNormalMapping(FALSE);
+        chimera::g_pApp->GetHumanView()->GetRenderer()->SetNormalMapping(FALSE);
+        util::Vec3 v = aabb.GetMax() - aabb.GetMin();
+        v.Scale(0.5f);
+        util::Mat4 m;
+        m.SetScale(v.x, v.y, v.z);
+        m.Translate(aabb.GetMiddle().x, aabb.GetMiddle().y, aabb.GetMiddle().z);
+
+        chimera::g_pApp->GetHumanView()->GetRenderer()->VPushWorldTransform(m);
+
+        chimera::ConstBuffer* buffer = chimera::g_pApp->GetHumanView()->GetRenderer()->GetBuffer(chimera::eBoundingGeoBuffer);
+        //aabb.GetMiddle().Print();
+        XMFLOAT4* f  = (XMFLOAT4*)buffer->Map();
+        f->x = 1;//aabb.GetRadius();
+        f->y = 0;//aabb.GetMiddle().x;
+        f->z = 0;//aabb.GetMiddle().y;
+        f->w = 0;//aabb.GetMiddle().z;
+        buffer->Unmap();
+        GeometryFactory::GetGlobalBoundingBoxCube()->Bind();
+        GeometryFactory::GetGlobalBoundingBoxCube()->Draw();
+    }
+
+    VOID DrawAnchorSphere(std::shared_ptr<chimera::Actor> actor, CONST util::Mat4* matrix, FLOAT radius)
+    {
+        chimera::g_pApp->GetHumanView()->GetRenderer()->SetNormalMapping(FALSE);
         util::Mat4 m = *matrix;
         m.Scale(radius);
-        app::g_pApp->GetHumanView()->GetRenderer()->VPushWorldTransform(m);
-        app::g_pApp->GetHumanView()->GetRenderer()->SetDefaultMaterial();
-        app::g_pApp->GetHumanView()->GetRenderer()->SetActorId(actor->GetId());
+        chimera::g_pApp->GetHumanView()->GetRenderer()->VPushWorldTransform(m);
+        chimera::g_pApp->GetHumanView()->GetRenderer()->SetDefaultMaterial();
+        chimera::g_pApp->GetHumanView()->GetRenderer()->SetActorId(actor->GetId());
         GeometryFactory::GetSphere()->Bind();
         GeometryFactory::GetSphere()->Draw();
     }
@@ -129,13 +143,13 @@ namespace tbd
         }
         pos.x = 0.5f * pos.x + 0.5f;
         pos.y = 0.5f * (-pos.y) + 0.5f;
-        app::g_pApp->GetFontManager()->RenderText(text.c_str(), pos.x, pos.y);
+        chimera::g_pApp->GetFontManager()->RenderText(text.c_str(), pos.x, pos.y);
     }
 
-    VOID DrawFrustum(tbd::Frustum& frustum)
+    VOID DrawFrustum(chimera::Frustum& frustum)
     {
-        d3d::Geometry* geo = GeometryFactory::GetFrustumGeometry();
-        app::g_pApp->GetHumanView()->GetRenderer()->PushRasterizerState(d3d::g_pRasterizerStateWrireframe);
+        chimera::Geometry* geo = GeometryFactory::GetFrustumGeometry();
+        chimera::g_pApp->GetHumanView()->GetRenderer()->PushRasterizerState(chimera::g_pRasterizerStateWrireframe);
 
         FLOAT vertexTmp[8 * 24] = 
         {
@@ -181,19 +195,19 @@ namespace tbd
         memcpy(ress->pData, vertexTmp, 24 * 8 * sizeof(FLOAT));
         geo->GetVertexBuffer()->Unmap();
 
-        app::g_pApp->GetHumanView()->GetRenderer()->VPushWorldTransform(util::Mat4::IDENTITY);
-        app::g_pApp->GetHumanView()->GetRenderer()->SetDefaultMaterial();
+        chimera::g_pApp->GetHumanView()->GetRenderer()->VPushWorldTransform(util::Mat4::IDENTITY);
+        chimera::g_pApp->GetHumanView()->GetRenderer()->SetDefaultMaterial();
 
         geo->Bind();
         geo->Draw();
 
-        app::g_pApp->GetHumanView()->GetRenderer()->PopRasterizerState();
-    }
+        chimera::g_pApp->GetHumanView()->GetRenderer()->PopRasterizerState();
+    } */
 
-    SceneNode::SceneNode(ActorId actorId) : m_actorId(actorId), m_wasVisibleOnLastTraverse(FALSE), m_forceVisibleCheck(FALSE), m_parent(NULL)
+    SceneNode::SceneNode(ActorId actorId) : m_actorId(actorId), m_wasVisibleOnLastTraverse(FALSE), m_forceVisibleCheck(FALSE), m_parent(NULL), m_paths(0)
     {
         VSetActor(actorId);
-        m_wParentTransformation = std::shared_ptr<tbd::TransformComponent>(new tbd::TransformComponent());
+        m_wParentTransformation = std::unique_ptr<TransformComponent>(new TransformComponent());
     }
 
     SceneNode::SceneNode(VOID) : m_parent(NULL)
@@ -203,26 +217,24 @@ namespace tbd
 
     VOID SceneNode::VSetActor(ActorId id)
     {
-        if(id != INVALID_ACTOR_ID)
+        if(id != CM_INVALID_ACTOR_ID)
         {
             m_actorId = id;
-            this->m_actor = app::g_pApp->GetLogic()->VFindActor(m_actorId);
-            this->m_transformation = m_actor->GetComponent<tbd::TransformComponent>(tbd::TransformComponent::COMPONENT_ID).lock();
+            m_actor = CmGetApp()->VGetLogic()->VFindActor(m_actorId);
+            m_transformation = GetActorCompnent<TransformComponent>(m_actor, CM_CMP_TRANSFORM);
             if(!m_transformation)
             {
                 LOG_CRITICAL_ERROR("Actor has no Transformcomponent");
             }
-            event::EventListener listener = fastdelegate::MakeDelegate(this, &SceneNode::ActorMovedDelegate);
-            app::g_pApp->GetEventMgr()->VAddEventListener(listener, event::ActorMovedEvent::TYPE);
+            ADD_EVENT_LISTENER(this, &SceneNode::ActorMovedDelegate, CM_EVENT_ACTOR_MOVED);
         }
     }
 
-    VOID SceneNode::VAddChild(std::shared_ptr<ISceneNode> child)
+    VOID SceneNode::VAddChild(std::unique_ptr<ISceneNode> child)
     {
-        this->m_childs.push_back(child);
-        std::shared_ptr<SceneNode> kid = std::static_pointer_cast<SceneNode>(child);
-        kid->m_parent = this;
+        child->VSetParent(this);
         child->VOnParentChanged();
+        m_childs.push_back(std::move(child));
     }
 
     UINT SceneNode::VGetRenderPaths(VOID)
@@ -232,10 +244,15 @@ namespace tbd
         {
             paths |= (*it)->VGetRenderPaths();
         }
-        return paths;
+        return paths | m_paths;
     }
 
-    VOID SceneNode::VOnRestore(tbd::SceneGraph* graph) 
+    VOID SceneNode::VSetRenderPaths(RenderPath paths)
+    {
+        m_paths = paths;
+    }
+
+    VOID SceneNode::VOnRestore(ISceneGraph* graph) 
     {
         for(auto it = m_childs.begin(); it != m_childs.end(); ++it)
         {
@@ -243,7 +260,7 @@ namespace tbd
         }
     }
 
-    VOID SceneNode::VPostRender(tbd::SceneGraph* graph)
+    VOID SceneNode::VPostRender(ISceneGraph* graph)
     {
         for(auto it = m_childs.begin(); it != m_childs.end(); ++it)
         {
@@ -251,7 +268,7 @@ namespace tbd
         }
     }
 
-    VOID SceneNode::VPreRender(tbd::SceneGraph* graph) 
+    VOID SceneNode::VPreRender(ISceneGraph* graph) 
     {
         for(auto it = m_childs.begin(); it != m_childs.end(); ++it)
         {
@@ -259,7 +276,7 @@ namespace tbd
         }
     }
 
-    VOID SceneNode::VOnUpdate(ULONG millis, SceneGraph* graph)
+    VOID SceneNode::VOnUpdate(ULONG millis, ISceneGraph* graph)
     {
         for(auto it = m_childs.begin(); it != m_childs.end(); ++it)
         {
@@ -274,12 +291,12 @@ namespace tbd
 
     BOOL SceneNode::VRemoveChild(ActorId actorId) 
     {
-        if(this->m_actorId == actorId)
+        if(m_actorId == actorId)
         {
             for(auto it = m_childs.begin(); it != m_childs.end(); ++it)
             {
                 (*it)->VSetParent(m_parent);
-                m_parent->VAddChild(*it);
+                m_parent->VAddChild(std::move(*it));
             }
             return TRUE;
         }
@@ -293,9 +310,9 @@ namespace tbd
         return FALSE;
     }
 
-    BOOL SceneNode::VIsVisible(SceneGraph* graph) 
+    BOOL SceneNode::VIsVisible(ISceneGraph* graph) 
     {
-        return TRUE; // TODO
+        return TRUE;
     }
 
     VOID SceneNode::VForceVisibilityCheck(VOID)
@@ -303,18 +320,13 @@ namespace tbd
         m_forceVisibleCheck = TRUE;
     }
 
-    VOID SceneNode::VRender(tbd::SceneGraph* graph, tbd::RenderPath& path) 
+    VOID SceneNode::VRender(ISceneGraph* graph, RenderPath& path) 
     {
-        if(graph->IsVisibilityReset() || m_forceVisibleCheck)
+        if(graph->VIsVisibilityReset() || m_forceVisibleCheck)
         {
             VSetVisibilityOnLastTraverse(VIsVisible(graph));
             m_forceVisibleCheck = FALSE;
         }
-
-        /*if(m_actorId == 3)
-        {
-            DEBUG_OUT_A("%d, %d", graph->IsVisibilityReset(), VWasVisibleOnLastTraverse());
-        } */
 
         if(VWasVisibleOnLastTraverse())
         {
@@ -333,10 +345,10 @@ namespace tbd
 
     BOOL SceneNode::HasParent(VOID)
     {
-        return m_parent != NULL && m_parent->VGetActorId() != INVALID_ACTOR_ID;
+        return m_parent != NULL && m_parent->VGetActorId() != CM_INVALID_ACTOR_ID;
     }
 
-    std::vector<std::shared_ptr<ISceneNode>>& SceneNode::GetChilds(VOID)
+    std::vector<std::unique_ptr<ISceneNode>>& SceneNode::VGetChilds(VOID)
     {
         return m_childs;
     }
@@ -351,12 +363,12 @@ namespace tbd
         return m_actorId;
     }
 
-    BOOL SceneNode::VRemoveChild(std::shared_ptr<ISceneNode> child) 
+    BOOL SceneNode::VRemoveChild(ISceneNode* child) 
     {
-        return this->VRemoveChild(child->VGetActorId());
+        return VRemoveChild(child->VGetActorId());
     }
 
-    VOID SceneNode::VRenderChildren(tbd::SceneGraph* graph, tbd::RenderPath& path)
+    VOID SceneNode::VRenderChildren(ISceneGraph* graph, RenderPath& path)
     {
         for(auto it = m_childs.begin(); it != m_childs.end(); ++it)
         {
@@ -364,9 +376,9 @@ namespace tbd
         } 
     }
 
-    VOID SceneNode::ActorMovedDelegate(event::IEventPtr pEventData)
+    VOID SceneNode::ActorMovedDelegate(chimera::IEventPtr pEventData)
     {
-        std::shared_ptr<event::ActorMovedEvent> movedEvent = std::static_pointer_cast<event::ActorMovedEvent>(pEventData);
+        std::shared_ptr<ActorMovedEvent> movedEvent = std::static_pointer_cast<ActorMovedEvent>(pEventData);
         if(movedEvent->m_actor->GetId() == m_actor->GetId())
         {
             VForceVisibilityCheck();
@@ -379,7 +391,7 @@ namespace tbd
         }
     }
 
-    util::Mat4* SceneNode::GetTransformation(VOID)
+    util::Mat4* SceneNode::VGetTransformation(VOID)
     {
         if(HasParent())
         {
@@ -392,7 +404,7 @@ namespace tbd
     {
         if(HasParent())
         {
-            util::Mat4* pt = m_parent->GetTransformation();
+            util::Mat4* pt = m_parent->VGetTransformation();
             util::Mat4* t = m_transformation->GetTransformation();
             
             util::Mat4* pwt = m_wParentTransformation->GetTransformation();
@@ -413,20 +425,20 @@ namespace tbd
         }
     }
 
-    std::shared_ptr<tbd::ISceneNode> SceneNode::VFindActor(ActorId id)
+    ISceneNode* SceneNode::VFindActor(ActorId id)
     {
         TBD_FOR(m_childs)
         {
-            std::shared_ptr<ISceneNode> node = *it;
+            ISceneNode* node = it->get();
             if(node->VGetActorId() == id)
             {
-                return *it;
+                return node;
             }
         }
         TBD_FOR(m_childs)
         {
-            std::shared_ptr<ISceneNode> node = *it;
-            std::shared_ptr<ISceneNode> pNode = node->VFindActor(id);
+            ISceneNode* node = it->get();
+            ISceneNode* pNode = node->VFindActor(id);
             if(pNode)
             {
                 pNode;
@@ -437,7 +449,6 @@ namespace tbd
 
     SceneNode::~SceneNode(VOID)
     {
-        event::EventListener listener = fastdelegate::MakeDelegate(this, &SceneNode::ActorMovedDelegate);
-        app::g_pApp->GetEventMgr()->VRemoveEventListener(listener, event::ActorMovedEvent::TYPE);
+        REMOVE_EVENT_LISTENER(this, &SceneNode::ActorMovedDelegate, CM_EVENT_ACTOR_MOVED);
     }
 }

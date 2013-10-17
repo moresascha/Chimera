@@ -1,51 +1,59 @@
 #pragma once
 #include "stdafx.h"
-namespace util 
+namespace chimera
 {
-    template <class T>
-    class tbdStack
+    namespace util 
     {
-    public:
-        std::list<T> m_stack;
-        tbdStack(VOID) {}
-
-        T Pop(VOID)
+        template <class T>
+        class tbdStack
         {
-            T t = m_stack.front();
-            m_stack.pop_front();
-            return t;
-        }
+        public:
+            std::list<T> m_stack;
+            tbdStack(VOID) {}
 
-        VOID Push(CONST T& t)
-        {
-            m_stack.push_front(t);
-        }
+            T Pop(VOID)
+            {
+                T t = m_stack.front();
+                m_stack.pop_front();
+                return t;
+            }
 
-        T Peek(VOID)
-        {
-            return m_stack.front();
-        }
+            VOID Push(CONST T& t)
+            {
+                m_stack.push_front(t);
+            }
 
-        T Front(VOID)
-        {
-            return m_stack.front();
-        }
+            T Peek(VOID)
+            {
+                return m_stack.front();
+            }
 
-        BOOL IsEmpty(VOID) CONST
-        {
-            return m_stack.empty();
-        }
+            T Front(VOID)
+            {
+                return m_stack.front();
+            }
 
-        VOID Clear(VOID)
-        {
-            m_stack.clear();
-        }
+            BOOL IsEmpty(VOID) CONST
+            {
+                return m_stack.empty();
+            }
 
-        size_t Size(VOID) CONST
-        {
-            return m_stack.size();
-        }
+            VOID Clear(VOID)
+            {
+                m_stack.clear();
+            }
 
-        ~tbdStack(VOID) {}
-    };
+			VOID Remove(T t)
+			{
+				m_stack.remove(t);
+			}
+
+            size_t Size(VOID) CONST
+            {
+                return m_stack.size();
+            }
+
+            ~tbdStack(VOID) {}
+        };
+    }
 }

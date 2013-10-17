@@ -3,7 +3,7 @@
 #include "GameApp.h"
 #include "luaplus/LuaPlus.h"
 
-namespace tbd
+namespace chimera
 {
     namespace script
     {
@@ -46,28 +46,28 @@ namespace tbd
         LuaPlus::LuaObject GetIntegerObject(INT i)
         {
             LuaPlus::LuaObject obj;
-            obj.AssignInteger(app::g_pApp->GetScript()->GetState(), i);
+            obj.AssignInteger(chimera::g_pApp->GetScript()->GetState(), i);
             return obj;
         }
 
         LuaPlus::LuaObject GetFloatObject(FLOAT f)
         {
             LuaPlus::LuaObject obj;
-            obj.AssignNumber(app::g_pApp->GetScript()->GetState(), (DOUBLE)f);
+            obj.AssignNumber(chimera::g_pApp->GetScript()->GetState(), (DOUBLE)f);
             return obj;
         }
 
         LuaPlus::LuaObject GetStringObject(CONST std::string& s)
         {
             LuaPlus::LuaObject obj;
-            obj.AssignString(app::g_pApp->GetScript()->GetState(), s.c_str());
+            obj.AssignString(chimera::g_pApp->GetScript()->GetState(), s.c_str());
             return obj;
         }
 
         LuaPlus::LuaObject GetVec3Object(CONST util::Vec3& vec)
         {
             LuaPlus::LuaObject obj;
-            obj.AssignNewTable(app::g_pApp->GetScript()->GetState());
+            obj.AssignNewTable(chimera::g_pApp->GetScript()->GetState());
             obj.SetNumber("x", vec.x);
             obj.SetNumber("y", vec.y);
             obj.SetNumber("z", vec.z);

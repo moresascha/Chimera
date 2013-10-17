@@ -1,7 +1,7 @@
 #include "CameraTracking.h"
 #include "Camera.h"
 #include "EventManager.h"
-namespace proc
+namespace chimera
 {
     util::Vec3 LinearInterpolation(CONST util::Vec3& start, CONST util::Vec3& end, FLOAT s)
     {
@@ -13,7 +13,7 @@ namespace proc
         return util::Vec3::lerp(start, end, s * s);
     }
 
-    TrackingShot::TrackingShot(std::shared_ptr<tbd::Actor> cameraActor, BOOL repeat) : ActorProcess(cameraActor), 
+    TrackingShot::TrackingShot(std::shared_ptr<chimera::Actor> cameraActor, BOOL repeat) : ActorProcess(cameraActor), 
         m_repeat(repeat), m_time(0)
     {
         m_eyeInterpol = &LinearInterpolation;
@@ -65,7 +65,7 @@ namespace proc
         
         m_pCamer->LookAt(newEye, newFocus);
 
-        QUEUE_EVENT(new event::MoveActorEvent(m_actor->GetId(), m_pCamer->GetEyePos(), 
+        QUEUE_EVENT(new chimera::MoveActorEvent(m_actor->GetId(), m_pCamer->GetEyePos(), 
             util::Vec3(m_pCamer->GetPhi(), m_pCamer->GetTheta(), 0), FALSE));
 
         /*m_pCurrentBasePoint->currentTime += deltaMillis;

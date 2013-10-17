@@ -6,9 +6,9 @@
 #include "SceneGraph.h"
 #include "Sound.h"
 #include "math.h"
-namespace proc
+namespace chimera
 {
-    SoundProcess::SoundProcess(std::shared_ptr<tbd::ResHandle> handle, INT soundType /* = 0 */, INT volume /* = 100 */, BOOL loop /* = FALSE */)
+    SoundProcess::SoundProcess(std::shared_ptr<chimera::ResHandle> handle, INT soundType /* = 0 */, INT volume /* = 100 */, BOOL loop /* = FALSE */)
         : ActorProcess(NULL), m_pHandle(handle), m_volume(volume), m_soundType(soundType), m_loop(loop), m_pSoundBuffer(NULL)
     {
 
@@ -20,26 +20,26 @@ namespace proc
 
         if(!m_pHandle->IsReady())
         {
-            m_pHandle = app::g_pApp->GetCache()->GetHandle(m_pHandle->GetResource());
+            m_pHandle = chimera::g_pApp->GetCache()->GetHandle(m_pHandle->GetResource());
         }
-        m_pSoundBuffer = app::g_pApp->GetHumanView()->GetSoundSystem()->VCreateSoundBuffer(m_pHandle);
+        m_pSoundBuffer = chimera::g_pApp->GetHumanView()->GetSoundSystem()->VCreateSoundBuffer(m_pHandle);
         m_pSoundBuffer->VSetVolume(m_volume);
         m_pSoundBuffer->VPlay(m_loop);
     }
 
     VOID SoundProcess::VOnAbort(VOID)
     {
-        app::g_pApp->GetHumanView()->GetSoundSystem()->VReleaseSoundBuffer(m_pSoundBuffer);
+        chimera::g_pApp->GetHumanView()->GetSoundSystem()->VReleaseSoundBuffer(m_pSoundBuffer);
     }
 
     VOID SoundProcess::VOnFail(VOID)
     {
-        app::g_pApp->GetHumanView()->GetSoundSystem()->VReleaseSoundBuffer(m_pSoundBuffer);
+        chimera::g_pApp->GetHumanView()->GetSoundSystem()->VReleaseSoundBuffer(m_pSoundBuffer);
     }
 
     VOID SoundProcess::VOnSuccess(VOID)
     {
-        app::g_pApp->GetHumanView()->GetSoundSystem()->VReleaseSoundBuffer(m_pSoundBuffer);
+        chimera::g_pApp->GetHumanView()->GetSoundSystem()->VReleaseSoundBuffer(m_pSoundBuffer);
     }
 
     VOID SoundProcess::VOnUpdate(ULONG deltaMillis)
@@ -88,9 +88,9 @@ namespace proc
     }
 
     SoundEmitterProcess::SoundEmitterProcess(
-        std::shared_ptr<tbd::Actor> actor,
-        std::shared_ptr<tbd::TransformComponent> transCmp, 
-        std::shared_ptr<tbd::ResHandle> handle,
+        std::shared_ptr<chimera::Actor> actor,
+        std::shared_ptr<chimera::TransformComponent> transCmp, 
+        std::shared_ptr<chimera::ResHandle> handle,
         FLOAT radius,
         INT soundType /* = 0 */, INT volume /* = 100 */, BOOL loop /* = FALSE */)
 
@@ -102,7 +102,7 @@ namespace proc
     VOID SoundEmitterProcess::VOnUpdate(ULONG deltaMillis)
     {
         SoundProcess::VOnUpdate(deltaMillis);
-        util::ICamera* camera = app::g_pApp->GetHumanView()->GetSceneGraph()->GetCamera().get();
+        util::ICamera* camera = chimera::g_pApp->GetHumanView()->GetSceneGraph()->GetCamera().get();
         ComputeVolumeFromDistance(m_transform->GetTransformation()->GetTranslation(), camera, m_radius);
     }
 
@@ -111,7 +111,7 @@ namespace proc
         Succeed();
     }
 
-    StaticSoundEmitterProcess::StaticSoundEmitterProcess(CONST util::Vec3& position, std::shared_ptr<tbd::ResHandle> handle, FLOAT radius, INT soundType /* = 0 */, INT volume /* = 100 */, BOOL loop /* = FALSE */)
+    StaticSoundEmitterProcess::StaticSoundEmitterProcess(CONST util::Vec3& position, std::shared_ptr<chimera::ResHandle> handle, FLOAT radius, INT soundType /* = 0 */, INT volume /* = 100 */, BOOL loop /* = FALSE */)
         :SoundProcess(handle, soundType, volume, loop), m_position(position), m_radius(radius)
     {
 
@@ -120,14 +120,14 @@ namespace proc
     VOID StaticSoundEmitterProcess::VOnInit(VOID)
     {
         SoundProcess::VOnInit();
-        util::ICamera* camera = app::g_pApp->GetHumanView()->GetSceneGraph()->GetCamera().get();
+        util::ICamera* camera = chimera::g_pApp->GetHumanView()->GetSceneGraph()->GetCamera().get();
         ComputeVolumeFromDistance(m_position, camera, m_radius);
     }
 
     VOID StaticSoundEmitterProcess::VOnUpdate(ULONG deltaMillis)
     {
         SoundProcess::VOnUpdate(deltaMillis);
-        util::ICamera* camera = app::g_pApp->GetHumanView()->GetSceneGraph()->GetCamera().get();
+        util::ICamera* camera = chimera::g_pApp->GetHumanView()->GetSceneGraph()->GetCamera().get();
         ComputeVolumeFromDistance(m_position, camera, m_radius);
     }
 }

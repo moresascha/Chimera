@@ -87,7 +87,7 @@ float3x3 GetTangentSpaceMatrix3(float3 N, float3 p, float2 uv)
     return transpose(float3x3( T * invmax, B * invmax, N ));
 }
 
-float3 GetTangent(float3 normal, float3 position, float2 texCoord)
+float3x3 GetTangentSpaceMatrix3_2(float3 normal, float3 position, float2 texCoord)
 {
 	float3 dp1 = ddx(position);
 	float3 dp2 = ddy(position);
@@ -98,7 +98,7 @@ float3 GetTangent(float3 normal, float3 position, float2 texCoord)
 	float2x3 inverseM = float2x3(cross(M[1], M[2]), cross(M[2], M[0]));
 	float3 T = mul(float2(duv1.x, duv2.x), inverseM);
 	float3 B = mul(float2(duv1.y, duv2.y), inverseM);
-	return normalize(T);
+	return transpose(float3x3(normalize(T), normalize(B), normalize(normal)));
 }
 
 PixelOutput DefShading_PS(PixelInput input)
@@ -111,12 +111,11 @@ PixelOutput DefShading_PS(PixelInput input)
     //float3 tangent = normalize(input.tangent);
     float3 iNormal = normalize(input.normal);
     //float3 bitangent = cross(tangent, iNormal);
-
-    float3x3 nm = GetTangentSpaceMatrix3(iNormal, input.world.xyz, input.texCoords);
     //tex += g_hasNormalMap.x;
     
     if(g_hasNormalMap.x > 0.5)
     {
+        float3x3 nm = GetTangentSpaceMatrix3(iNormal, input.world.xyz, input.texCoords);
         float3 normal = g_normalColor.Sample(g_samplerWrap, g_textureScale * input.texCoords).xyz;
         normal = 2 * normal - float3(1, 1, 1);
         normal = normalize(normal);
@@ -128,7 +127,7 @@ PixelOutput DefShading_PS(PixelInput input)
        op.normal = float4(normalize(input.normal), 0);
     }
 
-    //op.normal.w = dot(normalize(g_lightPos.xyz), iNormal); //peter panning hack sucks balls
+    op.normal.w = dot(normalize(g_CSMlightPos.xyz), iNormal); //peter panning hack sucks balls
 
     tex = tex * tex;//pow(abs(tex), 2.2);// * tex;//pow(tex, 1.0 / 2.0);// * tex; //gamma (2.0) correction 
 

@@ -1,3 +1,5 @@
+lighttestroomCube.004.obj
+lighttestroomCube.003.obj
 lighttestroomCube.002.obj
 lighttestroomCube.000.obj
 lighttestroomGrid.obj

@@ -9,7 +9,7 @@ namespace util
     class ICamera;
 }
 
-namespace proc
+namespace chimera
 {
     typedef util::Vec3 (*Interpolation)(CONST util::Vec3& v0, CONST util::Vec3& v1, FLOAT s);
 
@@ -33,7 +33,7 @@ namespace proc
         util::Vec3 m_currentEye;
         UINT m_animationLength; //millis
         UINT m_time;
-        util::ICamera* m_pCamer;
+        chimera::ICamera* m_pCamer;
         BOOL m_repeat;
         std::vector<BasePoint>::iterator m_pCurrentBasePoint;
         util::UniformBSpline m_eyeSpline;
@@ -43,7 +43,7 @@ namespace proc
         Interpolation m_focusInterpol;
 
     public:
-        TrackingShot(std::shared_ptr<tbd::Actor> cameraActor, BOOL repeat = FALSE);
+        TrackingShot(std::shared_ptr<chimera::Actor> cameraActor, BOOL repeat = FALSE);
         VOID AddBasePoint(CONST util::Vec3& eyeStart, CONST util::Vec3& focusStart, UINT millis = 5000);
         VOID VOnInit(VOID);
         VOID VOnUpdate(ULONG deltaMillis);

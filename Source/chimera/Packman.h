@@ -13,12 +13,12 @@
 
 namespace packman
 {
-    class Packman : public app::GameApp
+    class Packman : public chimera::GameApp
     {
         VOID VCreateLogicAndView(VOID);
     };
 
-    class AIComponent : public tbd::ActorComponent
+    class AIComponent : public chimera::ActorComponent
     {
     public:
         CONST static ComponentId COMPONENT_ID;

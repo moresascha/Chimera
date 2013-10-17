@@ -1,38 +1,8 @@
 #pragma once
 #include "stdafx.h"
 #include "Vec4.h"
-
-namespace d3d
+namespace chimera
 {
-    class RenderTarget;
-}
-
-namespace tbd
-{
-    struct Dimension
-    {
-        UINT x;
-        UINT y;
-        UINT w;
-        UINT h;
-
-        Dimension(VOID)
-        {
-            x = 0;
-            y = 0;
-            w = 0;
-            h = 0;
-        }
-
-        Dimension(CONST Dimension& dim)
-        {
-            x = dim.x;
-            y = dim.y;
-            w = dim.w;
-            h = dim.h;
-        }
-    };
-
     struct _Percentages
     {
         FLOAT x;
@@ -47,61 +17,12 @@ namespace tbd
         }
     };
 
-    class IGraphicsSettings;
-
-    class IScreenElement
-    {
-    public:
-
-        IScreenElement(VOID) {}
-
-        virtual Dimension VGetDimension(VOID) = 0;
-
-        virtual VOID VSetDimension(CONST Dimension& dim) = 0;
-
-        virtual UINT VGetPosX(VOID) CONST = 0;
-
-        virtual UINT VGetPosY(VOID) CONST = 0;
-
-        virtual UINT VGetWidth(VOID) CONST = 0;
-
-        virtual UINT VGetHeight(VOID) CONST = 0;
-
-        virtual LPCSTR VGetName(VOID) CONST = 0;
-
-        virtual VOID VSetName(LPCSTR name) = 0;
-
-        virtual VOID VDraw(VOID) = 0;
-
-        virtual BOOL VOnRestore(VOID) = 0;
-
-        virtual BOOL VIsEnable(VOID) CONST = 0;
-
-        virtual VOID VSetEnable(BOOL enable) = 0;
-
-        virtual BOOL VIsActive(VOID) CONST = 0;
-
-        virtual VOID VSetActive(BOOL active) = 0;
-
-        virtual VOID VUpdate(ULONG millis) = 0;
-
-        virtual VOID VSetAlpha(FLOAT alpha) = 0;
-
-        virtual VOID VSetBackgroundColor(FLOAT r, FLOAT g, FLOAT b) = 0;
-
-        virtual CONST util::Color& VGetBackgroundColor(VOID) CONST = 0;
-
-        virtual FLOAT VGetAlpha(VOID) CONST = 0;
-
-        virtual ~IScreenElement(VOID) {}
-    };
-
     class ScreenElement : public IScreenElement
     {
     protected:
         _Percentages m_dimensionPercent;
-        Dimension m_dimension;
-        util::Color m_color;
+        CMDimension m_dimension;
+        Color m_color;
         BOOL m_isEnable;
         BOOL m_isActive;
         std::string m_name;
@@ -113,9 +34,9 @@ namespace tbd
 
         VOID VSetName(LPCSTR name);
 
-        virtual VOID VSetDimension(CONST Dimension& dim);
+        virtual VOID VSetDimension(CONST CMDimension& dim);
 
-        Dimension VGetDimension(VOID);
+        CONST CMDimension& VGetDimension(VOID);
 
         BOOL VIsEnable(VOID) CONST;
 
@@ -135,7 +56,7 @@ namespace tbd
 
         FLOAT VGetAlpha(VOID) CONST;
 
-        CONST util::Color& VGetBackgroundColor(VOID) CONST;
+        CONST chimera::Color& VGetBackgroundColor(VOID) CONST;
 
         VOID VSetAlpha(FLOAT alpha);
 
@@ -173,57 +94,79 @@ namespace tbd
         virtual ~ScreenElementContainer(VOID);
     };
 
-    class RenderScreen : public ScreenElement
+    typedef fastdelegate::FastDelegate0<VOID> DrawMethod;
+    class RenderScreen : public ScreenElement, public IRenderScreen
     {
     protected:
-        std::shared_ptr<IGraphicsSettings> m_pSettings;
+        std::unique_ptr<IGraphicsSettings> m_pSettings;
+        DrawMethod m_pFDrawMethod;
+
+        VOID _DrawFulscreenQuad(VOID);
+        VOID _DrawQuad(VOID);
 
     public:
-        RenderScreen(std::shared_ptr<IGraphicsSettings> settings);
+        RenderScreen(std::unique_ptr<IGraphicsSettings> settings);
 
         virtual BOOL VOnRestore(VOID);
 
-        std::shared_ptr<IGraphicsSettings> GetSettings(VOID) { return m_pSettings; }
+        IGraphicsSettings* VGetSettings(VOID) { return m_pSettings.get(); }
 
         virtual VOID VDraw(VOID);
+
+        VOID VSetName(LPCSTR name)
+        {
+            ScreenElement::VSetName(name);
+        }
+
+        CONST CMDimension& VGetDimension(VOID)
+        {
+            return ScreenElement::VGetDimension();
+        }
+
+        VOID VSetDimension(CONST CMDimension& dim);
+
+        LPCSTR VGetName(VOID) CONST
+        {
+            return ScreenElement::VGetName();
+        }
 
         ~RenderScreen(VOID);
     };
 
-    class RendertargetScreen : public ScreenElement
+    class RenderTargetScreen : public ScreenElement// : public IRendertargetScreen
     {
     private:
-        d3d::RenderTarget* m_pTarget;
+        IRenderTarget* m_pTarget;
     public:
-        RendertargetScreen(d3d::RenderTarget* target);
+        RenderTargetScreen(IRenderTarget* target);
 
         VOID VDraw(VOID);
 
-        ~RendertargetScreen(VOID);
+        ~RenderTargetScreen(VOID);
     };
 
-    class DefShaderRenderScreen : public RenderScreen
+    class TextureSlotScreen : public RenderScreen
     {
     private:
         UINT m_target;
     public:
-        DefShaderRenderScreen(UINT target);
+        TextureSlotScreen(UINT slot);
 
         VOID VDraw(VOID);
 
-        ~DefShaderRenderScreen(VOID);
+        ~TextureSlotScreen(VOID);
     };
 
     class DefShaderRenderScreenContainer : public ScreenElement
     {
     private:
-        std::list<DefShaderRenderScreen*> m_screens;
-        std::shared_ptr<IGraphicsSettings> m_settings;
+        std::vector<std::unique_ptr<TextureSlotScreen>> m_screens;
+        std::unique_ptr<IGraphicsSettings> m_settings;
 
     public:
-        DefShaderRenderScreenContainer(std::shared_ptr<IGraphicsSettings> settings);
+        DefShaderRenderScreenContainer(std::unique_ptr<IGraphicsSettings> settings);
 
-        VOID AddComponent(DefShaderRenderScreen* screen);
+        VOID AddComponent(std::unique_ptr<TextureSlotScreen> screen);
 
         VOID VDraw(VOID);
 

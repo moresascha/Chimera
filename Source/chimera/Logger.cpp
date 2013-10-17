@@ -45,7 +45,7 @@ namespace Logger
 
     VOID LogManager::WriteTo(std::string& message) 
     {
-        EnterCriticalSection(&this->m_critSection);
+        EnterCriticalSection(&m_critSection);
         if(m_writeCallBack)
         {
             m_writeCallBack(message);

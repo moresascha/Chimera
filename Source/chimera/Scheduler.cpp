@@ -1,12 +1,15 @@
 #include "Scheduler.h"
 #include "ProcessManager.h"
-#include "GameApp.h"
-namespace tbd
+namespace chimera
 {
-
-    Scheduler::Scheduler(UINT cores, proc::ProcessManager* manager) : m_systemCores(cores), m_manager(manager), m_currentRunningSize(0), m_event(NULL)
+    /*std::unique_ptr<IProcess> operator=(CONST std::unique_ptr<IProcess>& p1)
     {
-        m_currentRunning = new std::shared_ptr<proc::RealtimeProcess>[m_systemCores];
+        return std::move(p1);
+    }*/
+
+    Scheduler::Scheduler(UINT cores, ProcessManager* manager) : m_systemCores(cores), m_manager(manager), m_currentRunningSize(0), m_event(NULL)
+    {
+        m_currentRunning = new std::shared_ptr<IProcess>[m_systemCores];
         for(UCHAR i = 0; i < m_systemCores; ++i)
         {
             m_currentRunning[i] = NULL;
@@ -40,7 +43,7 @@ namespace tbd
 
     VOID Scheduler::VThreadProc(VOID)
     {
-        while(app::g_pApp->IsRunning())
+        while(CmGetApp()->VIsRunning())
         {
             while(!m_processQueue.empty() && HasFreeSlot())
             {
@@ -51,14 +54,18 @@ namespace tbd
                     {
                         LOG_CRITICAL_ERROR("slot should not be -1");
                     }
-                    std::shared_ptr<proc::RealtimeProcess>& proc =  m_processQueue.pop();
+                    m_locker.Lock();
+                    std::shared_ptr<IProcess> proc = m_processQueue.front();
+                    m_processQueue.pop();
+                    m_locker.Unlock();
                     m_currentRunning[slot] = proc;
                     m_manager->SchedulerAdd(proc);
                 }
             }
+
             for(UCHAR i = 0; i < m_systemCores; ++i)
             {
-                std::shared_ptr<proc::RealtimeProcess>& proc = m_currentRunning[i];
+                std::shared_ptr<IProcess> proc = m_currentRunning[i];
                 if(proc != NULL)
                 {
                     if(proc->IsDead())
@@ -79,13 +86,18 @@ namespace tbd
         }
     }
 
-    VOID Scheduler::AddProcess(std::shared_ptr<proc::RealtimeProcess> proc)
+    IProcess* Scheduler::VAddProcess(std::shared_ptr<IProcess> proc)
     {
+        IProcess* raw = proc.get();
+        m_locker.Lock();
         m_processQueue.push(proc);
+        m_locker.Unlock();
 
       //  m_locker.Lock();
         SetEvent(m_event);
       //  m_locker.Unlock();
+
+        return raw;
     }
 
     Scheduler::~Scheduler(VOID)

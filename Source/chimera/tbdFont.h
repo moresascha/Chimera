@@ -1,49 +1,15 @@
 #pragma once
 #include "stdafx.h"
 #include "Vec4.h"
-namespace d3d
+namespace chimera
 {
-    class Texture2D;
+    class D3DTexture2D;
     class ShaderProgram;
     class Geometry;
 }
 
-namespace tbd
+namespace chimera
 {
-
-    struct FontMetrics
-    {
-        FLOAT leftU;
-        FLOAT rightU;
-        UINT pixelWidth;
-    };
-
-    struct CharMetric
-    {
-        UCHAR id;
-        UINT x;
-        UINT y;
-        UINT width;
-        UINT height;
-        INT xoffset;
-        INT yoffset;
-        UINT xadvance;
-    };
-
-    struct FontStyle
-    {
-        BOOL italic;
-        BOOL bold;
-        UINT charCount;
-        UINT lineHeight;
-        UINT texWidth;
-        UINT texHeight;
-        UINT size;
-        UINT base;
-        std::string textureFile;
-        std::string metricFile;
-        std::string name;
-    };
 
     /*
     lineHeight: is how much to move the cursor when going to the next line.
@@ -64,34 +30,14 @@ namespace tbd
 
     page: gives the texture where the character image is found.
     */
-    class IFont
-    {
-    public:
-        virtual BOOL VCreate(CONST std::string& file) = 0;
-        virtual BOOL VIsBold(VOID) CONST = 0;
-        virtual BOOL VIsItalic(VOID) CONST = 0;
-
-        virtual VOID VActivate(VOID) = 0;
-        virtual UINT VGetLineHeight(VOID) CONST = 0;
-        virtual UINT VGetSize(VOID) CONST = 0;
-        virtual UINT VGetCharCount (VOID) CONST = 0;
-        virtual LPCSTR VGetFileName(VOID) CONST = 0;
-        virtual UINT VGetTextureWidth(VOID) CONST = 0;
-        virtual UINT VGetTextureHeight(VOID) CONST = 0;
-        virtual UINT VGetBase(VOID) CONST = 0;
-        virtual CONST FontStyle& VGetStyle(VOID) CONST = 0;
-        virtual CONST CharMetric* VGetCharMetric(UCHAR c) CONST = 0;
-        VOID Print(VOID) CONST;
-        virtual ~IFont(VOID) {}
-    };
-
+  
     class BMFont : public IFont
     {
     private:
         //GlyphMetric* m_metrics;
-        std::map<UCHAR, CharMetric> m_metrics;
-        FontStyle m_style;
-        d3d::Texture2D* m_fontTexture;
+        std::map<UCHAR, CMCharMetric> m_metrics;
+        CMFontStyle m_style;
+        chimera::D3DTexture2D* m_fontTexture;
         BOOL m_initialized;
     public:
         BMFont(VOID);
@@ -108,29 +54,22 @@ namespace tbd
         LPCSTR VGetFileName(VOID) CONST;
         UINT VGetTextureWidth(VOID) CONST;
         UINT VGetTextureHeight(VOID) CONST;
-        CONST FontStyle& VGetStyle(VOID) CONST;
-        CONST CharMetric* VGetCharMetric(UCHAR c) CONST;
+        CONST CMFontStyle& VGetStyle(VOID) CONST;
+        CONST CMCharMetric* VGetCharMetric(UCHAR c) CONST;
         ~BMFont(VOID);
     };
 
-    class IFontRenderer
+      class D3DFontRenderer : public IFontRenderer
     {
-    public:
-        virtual VOID VRenderText(CONST std::string& text, IFont* font, FLOAT x, FLOAT y, util::Color* color = NULL) = 0;
-        virtual ~IFontRenderer(VOID) { }
-    };
-
-    class D3DFontRenderer : public IFontRenderer
-    {
-        std::shared_ptr<d3d::ShaderProgram> m_program;
-        d3d::Geometry* m_quad;
+        std::shared_ptr<chimera::ShaderProgram> m_program;
+        chimera::Geometry* m_quad;
     public:
         D3DFontRenderer(VOID);
         VOID VRenderText(CONST std::string& text, IFont* font, FLOAT x, FLOAT y, util::Color* color = NULL);
         ~D3DFontRenderer(VOID);
     };
 
-    class FontManager
+    class FontManager : public IFontManager
     {
     private:
         std::map<std::string, IFont*> m_fonts;
@@ -138,14 +77,14 @@ namespace tbd
         IFontRenderer* m_pCurrentRenderer;
     public:
         FontManager(VOID);
-        VOID SetFontRenderer(IFontRenderer* renderer);
-        VOID RenderText(std::string& text, FLOAT x, FLOAT y, util::Color* color = NULL);
-        VOID RenderText(LPCSTR text, FLOAT x, FLOAT y, util::Color* color = NULL);
-        VOID AddFont(CONST std::string& name, IFont* font);
-        VOID ActivateFont(CONST std::string& name);
-        VOID RemoveFont(CONST std::string& name);
-        IFont* GetCurrentFont(VOID);
-        IFont* GetFont(CONST std::string& name) CONST;
+        VOID VSetFontRenderer(IFontRenderer* renderer);
+        VOID VRenderText(std::string& text, FLOAT x, FLOAT y, chimera::Color* color = NULL);
+        VOID VRenderText(LPCSTR text, FLOAT x, FLOAT y, chimera::Color* color = NULL);
+        VOID VAddFont(CONST std::string& name, IFont* font);
+        VOID VActivateFont(CONST std::string& name);
+        VOID VRemoveFont(CONST std::string& name);
+        IFont* VGetCurrentFont(VOID);
+        IFont* VGetFont(CONST std::string& name) CONST;
         ~FontManager(VOID);
     };
 }

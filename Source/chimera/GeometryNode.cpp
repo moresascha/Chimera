@@ -12,61 +12,80 @@
 #include "SceneGraph.h"
 #include "Frustum.h"
 
-namespace tbd
+namespace chimera
 {
-    GeometryNode::GeometryNode(d3d::Geometry* geo) : m_pGeometry(geo), m_pMaterial(NULL)
+    GeometryNode::GeometryNode(GeoCreator geoC) : m_pFuncGeometry(geoC), m_pGeometry(NULL)
     {
-        m_pMaterial = new Material();
+        m_pMaterial = new chimera::Material();
     }
 
     UINT GeometryNode::VGetRenderPaths(VOID)
     {
-        return eDRAW_TO_ALBEDO | eDRAW_TO_SHADOW_MAP | eDRAW_BOUNDING_DEBUG | eDRAW_PICKING;
+        return eRenderPath_DrawToAlbedo | eRenderPath_DrawToShadowMap | eRenderPath_DrawBounding | eRenderPath_DrawPicking;
     }
 
-    VOID GeometryNode::SetMaterial(CONST tbd::Material* mat)
+    VOID GeometryNode::SetMaterial(CONST chimera::Material& mat)
     {
-        *m_pMaterial = *mat;
+        SAFE_DELETE(m_pMaterial);
+        m_pMaterial = new chimera::Material(mat);
     }
 
-    VOID GeometryNode::_VRender(tbd::SceneGraph* graph, tbd::RenderPath& path)
+    VOID GeometryNode::VOnRestore(chimera::SceneGraph* graph)
     {
-        switch(path)
+        if(!m_pGeometry || !m_pGeometry->VIsReady())
         {
-        case eDRAW_TO_SHADOW_MAP: 
+            std::stringstream ss;
+            ss << "Geometry";
+            ss << m_actorId;
+            m_pGeometry = std::shared_ptr<chimera::Geometry>(m_pFuncGeometry());
+            chimera::g_pApp->GetHumanView()->GetVRamManager()->AppendAndCreateHandle(ss.str(), m_pGeometry);
+        }
+    }
+
+    VOID GeometryNode::_VRender(chimera::SceneGraph* graph, chimera::RenderPath& path)
+    {
+        if(m_pGeometry->VIsReady())
+        {
+            m_pGeometry->Update();
+            switch(path)
             {
-                app::g_pApp->GetHumanView()->GetRenderer()->VPushWorldTransform(*GetTransformation());
-                m_pGeometry->Bind();
-                m_pGeometry->Draw();
-            } break;
-        case eDRAW_TO_ALBEDO :
-            {
-                app::g_pApp->GetHumanView()->GetRenderer()->VPushWorldTransform(*GetTransformation());
-                app::g_pApp->GetRenderer()->SetDefaultTexture();
-                app::g_pApp->GetRenderer()->VPushMaterial(*m_pMaterial);
-                app::g_pApp->GetHumanView()->GetRenderer()->SetNormalMapping(FALSE);
-                m_pGeometry->Bind();
-                m_pGeometry->Draw();
-            } break;
-        case eDRAW_BOUNDING_DEBUG :
-            {
-                DrawSphere(GetTransformation(), m_aabb);
-            } break;
-        case eDRAW_PICKING :
-            {
-                //DrawPicking(m_actor, m_transformation->GetTransformation(), m_mesh, m_geo);
-            } break;
-        case eDRAW_DEBUG_INFOS : 
-            {
-                tbd::DrawActorInfos(m_actor, GetTransformation(), graph->GetCamera());
-            } break;
+            case eRenderPath_DrawToShadowMap: 
+                {
+                    chimera::g_pApp->GetHumanView()->GetRenderer()->VPushWorldTransform(*GetTransformation());
+                    m_pGeometry->Bind();
+                    m_pGeometry->Draw();
+                } break;
+            case eRenderPath_DrawToAlbedo :
+                {
+                    chimera::g_pApp->GetHumanView()->GetRenderer()->VPushWorldTransform(*GetTransformation());
+                    chimera::g_pApp->GetRenderer()->SetDefaultTexture();
+                    chimera::g_pApp->GetRenderer()->VPushMaterial(*m_pMaterial);
+                    chimera::g_pApp->GetHumanView()->GetRenderer()->SetNormalMapping(FALSE);
+                    m_pGeometry->Bind();
+                    m_pGeometry->Draw();
+                } break;
+            case eRenderPath_DrawBounding :
+                {
+                    DrawSphere(GetTransformation(), m_aabb);
+                } break;
+            case eRenderPath_DrawPicking :
+                {
+                    //DrawPicking(m_actor, m_transformation->GetTransformation(), m_mesh, m_geo);
+                } break;
+            case eRenderPath_DrawDebugInfo : 
+                {
+                    chimera::DrawActorInfos(m_actor, GetTransformation(), graph->GetCamera());
+                } break;
+            }
+        }
+        else
+        {
+            VOnRestore(graph);
         }
     }
 
     GeometryNode::~GeometryNode(VOID)
     {
         SAFE_DELETE(m_pMaterial);
-        m_pGeometry->VDestroy();
-        SAFE_DELETE(m_pGeometry);
     }
 }

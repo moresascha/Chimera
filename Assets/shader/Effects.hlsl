@@ -36,10 +36,10 @@ PixelOutput Luminance(PixelInput input)
     return op;
 }
 
-PixelOutput Sample0(PixelInput input)
+PixelOutput SampleDiffuseTexture(PixelInput input)
 {
     PixelOutput op;
-    float4 color = g_diffuseColor.Sample(g_samplerClamp, input.texCoord);
+    float4 color = g_normals.Sample(g_samplerClamp, input.texCoord);
     op.color = color;
     return op;
 }
@@ -155,7 +155,7 @@ PixelOutput VSMBlurV(PixelInput input)
     uint w, h, levels;
     g_effectSource0.GetDimensions(0, w, h, levels);
     
-    float2 texelSize = float2(1.0 / 512.0, 0);
+    float2 texelSize = float2(1.0 / w, 0);
 
     float2 fs_in_tex = input.texCoord - texelSize * filterSize / 2;
     
@@ -176,7 +176,7 @@ PixelOutput VSMBlurH(PixelInput input)
     uint w, h, levels;
     g_effectSource0.GetDimensions(0, w, h, levels);
     
-    float2 texelSize = float2(0, 1.0 / 512.0);
+    float2 texelSize = float2(1.0 / h, 0);
 
     float2 fs_in_tex = input.texCoord - texelSize * filterSize / 2;
     
@@ -214,7 +214,7 @@ PixelOutput ToneMap(PixelInput input)
     float lumiScaled = yr / (1 + yr);
 
     color += bright;
-    color = color;// * lumiScaled;
+    //color = color;// * lumiScaled;
     
     //debugging
  

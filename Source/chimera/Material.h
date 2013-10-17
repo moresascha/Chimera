@@ -1,46 +1,56 @@
 #pragma once
 #include "stdafx.h"
 #include "Vec3.h"
-#include "Resources.h"
+#include "Cache.h"
 #include <vector>
 
-namespace tbd 
+namespace chimera 
 {
-    class IMaterial 
-    {
-    public:
-        virtual CONST util::Vec4& VGetSpecular(VOID) CONST = 0;
-        virtual CONST util::Vec4& VGetDiffuse(VOID) CONST = 0;
-        virtual CONST util::Vec4& VGetAmbient(VOID) CONST = 0;
-        virtual FLOAT VGetSpecularExpo(VOID) = 0;
-        virtual FLOAT VGetReflectance(VOID) = 0;
-        virtual FLOAT VGetTextureScale(VOID) = 0;
-        virtual CONST tbd::Resource& VGetTextureDiffuse(VOID) CONST = 0;
-        virtual CONST tbd::Resource& VGetTextureNormal(VOID) CONST = 0;
-    };
-
     class Material : public IMaterial 
     {
         friend class Geometry;
     public:
-        tbd::Resource m_textureDiffuse;
-        tbd::Resource m_textureNormal;
+        chimera::CMResource m_textureDiffuse;
+        chimera::CMResource m_textureNormal;
         util::Vec4 m_specular;
         util::Vec4 m_diffuse;
         util::Vec4 m_ambient;
         FLOAT m_specCoef, m_reflectance, m_texScale;
         BOOL m_hasNormal; //TODO
     public:
-        Material(VOID);
-        Material(CONST Material& mat);
+
+        Material(VOID) : m_specular(0.0f,0.0f,0.0f,0), m_diffuse(0.0f, 0.0f, 0.0f,0.0f), m_ambient(0.5f,0.5f,0.5f,0), m_specCoef(1), m_reflectance(0), m_texScale(1), m_hasNormal(FALSE), m_textureDiffuse("default.png")
+        {
+
+        }
+
+        Material(CONST Material& mat)
+        {
+            m_ambient = mat.m_ambient;
+            m_diffuse = mat.m_diffuse;
+            m_specular = mat.m_specular;
+            m_reflectance = mat.m_reflectance;
+            m_textureDiffuse = mat.m_textureDiffuse;
+            m_textureNormal = mat.m_textureNormal;
+            m_specCoef = mat.m_specCoef;
+            m_texScale = mat.m_texScale;
+        }
+
         CONST util::Vec4& VGetSpecular(VOID) CONST { return m_specular; }
+
         CONST util::Vec4& VGetDiffuse(VOID) CONST { return m_diffuse; }
+
         CONST util::Vec4& VGetAmbient(VOID) CONST { return m_ambient; }
+
         FLOAT VGetSpecularExpo(VOID) { return m_specCoef; }
+
         FLOAT VGetReflectance(VOID) { return m_reflectance; }
+
         FLOAT VGetTextureScale(VOID) { return m_texScale; }
-        CONST tbd::Resource& VGetTextureDiffuse(VOID) CONST { return m_textureDiffuse; }
-        CONST tbd::Resource& VGetTextureNormal(VOID) CONST { return m_textureNormal; }
+
+        CONST chimera::CMResource& VGetTextureDiffuse(VOID) CONST { return m_textureDiffuse; }
+
+        CONST chimera::CMResource& VGetTextureNormal(VOID) CONST { return m_textureNormal; }
 
         VOID Material::operator=(CONST Material& mat)
         {
@@ -58,7 +68,7 @@ namespace tbd
         ~Material(VOID) { }
     };
 
-    class MaterialSet : public tbd::ResHandle
+    class MaterialSet : public ResHandle
     {
     private:
         std::map<UINT, std::shared_ptr<IMaterial>> m_indexToMaterials;
@@ -79,7 +89,7 @@ namespace tbd
         FLOAT VGetSpecularExpo(UINT pos) { return m_indexToMaterials[pos]->VGetSpecularExpo(); }
         FLOAT GetReflectance(UINT pos) { return m_indexToMaterials[pos]->VGetReflectance(); }
         FLOAT GetTextureScale(UINT pos) { return m_indexToMaterials[pos]->VGetTextureScale(); }
-        CONST tbd::Resource& GetTexture(UINT pos) { return m_indexToMaterials[pos]->VGetTextureDiffuse(); }
-        CONST tbd::Resource& GetTextureNormal(UINT pos) { return m_indexToMaterials[pos]->VGetTextureNormal(); }
+        CONST chimera::CMResource& GetTexture(UINT pos) { return m_indexToMaterials[pos]->VGetTextureDiffuse(); }
+        CONST chimera::CMResource& GetTextureNormal(UINT pos) { return m_indexToMaterials[pos]->VGetTextureNormal(); }
     };
 };

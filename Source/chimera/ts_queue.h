@@ -3,48 +3,51 @@
 #include <queue>
 #include "Locker.h"
 
-namespace util {
-
-template<class T>
-class ts_queue
+namespace chimera
 {
-private:
-    std::queue<T> m_queue;
-    Locker locker;
-public:
-    ts_queue(VOID) { }
+    namespace util 
+    {
 
-    BOOL empty() CONST {
-        return m_queue.empty();
-    }
+        template<class T>
+        class ts_queue
+        {
+        private:
+            std::queue<T> m_queue;
+            Locker locker;
+        public:
+            ts_queue(VOID) { }
 
-    size_t size() CONST {
-        return m_queue.size();
-    }
+            BOOL empty() CONST {
+                return m_queue.empty();
+            }
 
-    T front() CONST {
-        return m_queue.front();
-    }
+            size_t size() CONST {
+                return m_queue.size();
+            }
 
-    T Back() CONST {
-        return m_queue.back();
-    }
+            CONST T& front() CONST {
+                return m_queue.front();
+            }
 
-    T pop(VOID) {
-        locker.Lock();
-        T t = front();
-        m_queue.pop();
-        locker.Unlock();
-        return t;
-    }
+            CONST T& Back() CONST {
+                return m_queue.back();
+            }
 
-    VOID push(T t) {
-        locker.Lock();
-        m_queue.push(t);
-        locker.Unlock();
-    }
+            T pop(VOID) {
+                locker.Lock();
+                T t = front();
+                m_queue.pop();
+                locker.Unlock();
+                return t;
+            }
 
-    ~ts_queue(VOID) { }
-};
+            VOID push(T t) {
+                locker.Lock();
+                m_queue.push(t);
+                locker.Unlock();
+            }
 
-};
+            ~ts_queue(VOID) { }
+        };
+    };
+}

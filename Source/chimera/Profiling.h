@@ -2,7 +2,7 @@
 #include "stdafx.h"
 #include "d3d.h"
 
-namespace tbd
+namespace chimera
 {
     class Query
     {

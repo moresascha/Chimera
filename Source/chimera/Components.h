@@ -1,52 +1,41 @@
 #pragma once
 #include "stdafx.h"
 #include "Mat4.h"
-#include "Actor.h"
-#include "Vec3.h"
-#include "Vec4.h"
-#include "Resources.h"
-#include "SceneNode.h"
 
-namespace tinyxml2
+#define CM_CMP_TRANSFORM 0xdb756713
+#define CM_CMP_RENDERING 0x8beb1acc
+#define CM_CMP_CAMERA 0xb8a716ca
+#define CM_CMP_PHX 0xc1514f
+#define CM_CMP_LIGHT 0x1b5b0ea4
+#define CM_CMP_PICKABLE 0xd295188c
+#define CM_CMP_SOUND 0x568a0c05
+#define CM_CMP_PARENT_ACTOR 0xde7b06f1
+
+#define CM_CREATE_CMP_HEADER(__type, __name) \
+    ComponentId VGetComponentId(VOID) CONST { return __type; } \
+    LPCSTR VGetName(VOID) CONST { return #__name; }
+
+namespace chimera 
 {
-    class XMLElement;
-    class XMLDocument;
-}
-
-namespace util
-{
-    class ICamera;
-}
-
-namespace tbd 
-{
-    class ISceneNode;
-    class Actor;
-
-    class ActorComponent
+    class ActorComponent : public IActorComponent
     {
-        friend class ActorFactory;
-    private:
-        BOOL m_waitTillHandled;
     protected:
-        VOID SetOwner(std::weak_ptr<tbd::Actor> pOwner) { m_owner = pOwner; }
-        std::weak_ptr<tbd::Actor> m_owner;
-        HANDLE m_handle;
-
+        IActor* m_owner;
     public:
         ActorComponent(VOID);
-        virtual BOOL VInit(tinyxml2::XMLElement* pData) { return TRUE; }
-        virtual VOID VSave(tinyxml2::XMLElement* pData) CONST {}
+
+        VOID VSetOwner(IActor* pOwner) { m_owner = pOwner; }
+
+        virtual BOOL VInitialize(IStream* stream) { return TRUE; }
+
+        virtual VOID VSerialize(IStream* stream) CONST { }
+
         virtual VOID VPostInit(VOID);
-        virtual VOID VUpdate(ULONG millis) {}
-        virtual VOID VDestroy(VOID) {}
-        virtual VOID VCreateResources(VOID) {}
-        virtual LPCSTR VGetName(VOID) = 0;
-        BOOL IsWaitTillHandled(VOID) { return m_waitTillHandled; }
-        HANDLE GetHandle(VOID) { return m_handle; }
-        VOID WaitTillHandled(VOID) { m_waitTillHandled = TRUE; }
-        VOID VSetHandled(VOID);
-        virtual ComponentId GetComponentId(VOID) CONST = 0;
+
+        virtual VOID VCreateResources(VOID) { }
+
+        IActor* VGetActor(VOID) { return m_owner; }
+
         virtual ~ActorComponent(VOID);
     };
 
@@ -55,23 +44,20 @@ namespace tbd
     private:
         util::Mat4 m_transformation;
     public:
-        CONST static ComponentId COMPONENT_ID;
-
         FLOAT m_phi;
         FLOAT m_theta;
 
         TransformComponent(VOID);
 
-        BOOL VInit(tinyxml2::XMLElement* pData);
+        BOOL VInitialize(IStream* stream);
+
+        VOID VSerialize(IStream* stream) CONST;
 
         util::Mat4* GetTransformation(VOID) {
             return &m_transformation;
         }
 
-        VOID VSave(tinyxml2::XMLElement* pData) CONST;
-        ComponentId GetComponentId(VOID) CONST { return COMPONENT_ID; }
-
-        LPCSTR VGetName(VOID) { return "TransformComponent"; }
+        CM_CREATE_CMP_HEADER(CM_CMP_TRANSFORM, TransformComponent);
     };
 
     class RenderComponent : public ActorComponent 
@@ -88,42 +74,38 @@ namespace tbd
 
         util::Vec3 m_anchorBoxHE;
 
-        std::string m_info;
-
-        std::shared_ptr<tbd::ISceneNode> m_sceneNode;
+        std::shared_ptr<chimera::ISceneNode> m_sceneNode;
 
         RenderComponent(VOID);
 
-        tbd::Resource m_meshFile;
+        CMResource m_resource;
 
-        CONST static ComponentId COMPONENT_ID;
+        BOOL VInitialize(IStream* stream);
 
-        BOOL VInit(tinyxml2::XMLElement* pData);
-
-        VOID VSave(tinyxml2::XMLElement* pData) CONST;
-
-        ComponentId GetComponentId(VOID) CONST { return COMPONENT_ID; }
+        VOID VSerialize(IStream* stream) CONST;
 
         VOID VCreateResources(VOID);
 
-        LPCSTR VGetName(VOID) { return "RenderComponent"; }
+        CM_CREATE_CMP_HEADER(CM_CMP_RENDERING, RenderComponent);
     };
 
     class CameraComponent : public ActorComponent
     {
     private:
-        std::shared_ptr<util::ICamera> m_camera;
+        std::shared_ptr<ICamera> m_camera;
         std::string m_type;
     public:
-        CONST static ComponentId COMPONENT_ID;
+		CameraComponent(VOID)
+		{
 
-        BOOL VInit(tinyxml2::XMLElement* pData);
+		}
+        BOOL VInitialize(IStream* stream);
 
-        std::shared_ptr<util::ICamera> GetCamera(VOID) { return m_camera; }
+        std::shared_ptr<ICamera> GetCamera(VOID) { return m_camera; }
 
-        ComponentId GetComponentId(VOID) CONST { return COMPONENT_ID; }
+		VOID SetCamera(std::shared_ptr<ICamera> cam) { m_camera = cam; }
 
-        LPCSTR VGetName(VOID) { return "CameraComponent"; }
+        CM_CREATE_CMP_HEADER(CM_CMP_CAMERA, CameraComponent);
     };
 
     class PhysicComponent : public ActorComponent 
@@ -134,27 +116,23 @@ namespace tbd
         std::string m_shapeType;
         std::string m_material;
 
-        tbd::Resource m_meshFile;
+        chimera::CMResource m_meshFile;
 
         FLOAT m_radius;
         util::Vec3 m_dim;
 
         PhysicComponent(VOID) : m_dim(1,1,1), m_radius(1)
         {
-            WaitTillHandled();
+
         }
 
-        CONST static ComponentId COMPONENT_ID;
+        BOOL VInitialize(IStream* stream);
 
-        BOOL VInit(tinyxml2::XMLElement* pData);
-
-        VOID VSave(tinyxml2::XMLElement* pData) CONST;
-
-        ComponentId GetComponentId(VOID) CONST { return COMPONENT_ID; }
+        VOID VSerialize(IStream* stream) CONST;
 
         VOID VCreateResources(VOID);
 
-        LPCSTR VGetName(VOID) { return "PhysicComponent"; }
+        CM_CREATE_CMP_HEADER(CM_CMP_PHX, PhysicComponent); 
     };
 
     class LightComponent : public ActorComponent
@@ -169,38 +147,23 @@ namespace tbd
 
         LightComponent(VOID) : m_angle(0), m_activated(TRUE), m_intensity(1)
         {
-            WaitTillHandled();
+
         }
 
-        CONST static ComponentId COMPONENT_ID;
+        BOOL VInitialize(IStream* stream);
 
-        BOOL VInit(tinyxml2::XMLElement* pData);
+        VOID VSerialize(IStream* stream) CONST;
 
-        VOID VSave(tinyxml2::XMLElement* pData) CONST;
-
-        ComponentId GetComponentId(VOID) CONST { return COMPONENT_ID; }
-
-        LPCSTR VGetName(VOID) { return "LightComponent"; }
+        CM_CREATE_CMP_HEADER(CM_CMP_LIGHT, LightComponent); 
     };
 
     class PickableComponent : public ActorComponent
     {
     public:
-        CONST static ComponentId COMPONENT_ID;
-        ComponentId GetComponentId(VOID) CONST { return COMPONENT_ID; }
         BOOL VInit(tinyxml2::XMLElement* pData) { return TRUE; }
-        VOID VSave(tinyxml2::XMLElement* pData) CONST;
-        LPCSTR VGetName(VOID) { return "PickableComponent"; }
-    };
+        VOID VSerialize(IStream* stream) CONST;
 
-    class ParticleComponent : public ActorComponent 
-    {
-    public:
-        CONST static ComponentId COMPONENT_ID;
-        ComponentId GetComponentId(VOID) CONST { return COMPONENT_ID; }
-        BOOL VInit(tinyxml2::XMLElement* pData);
-        VOID VSave(tinyxml2::XMLElement* pData) CONST;
-        LPCSTR VGetName(VOID) { return "ParticleComponent"; }
+        CM_CREATE_CMP_HEADER(CM_CMP_PICKABLE, PickableComponent); 
     };
 
     class SoundComponent : public ActorComponent
@@ -211,12 +174,11 @@ namespace tbd
         FLOAT m_radius;
         BOOL m_emitter;
         BOOL m_loop;
-        CONST static ComponentId COMPONENT_ID;
-        ComponentId GetComponentId(VOID) CONST { return COMPONENT_ID; }
-        BOOL VInit(tinyxml2::XMLElement* pData);
-        VOID VSave(tinyxml2::XMLElement* pData) CONST;
+        BOOL VInitialize(IStream* stream);
+        VOID VSerialize(IStream* stream) CONST;
         VOID VCreateResources(VOID);
-        LPCSTR VGetName(VOID) { return "SoundComponent"; }
+        
+        CM_CREATE_CMP_HEADER(CM_CMP_SOUND, SoundComponent); 
     };
 
     class ParentComponent : public ActorComponent
@@ -225,11 +187,9 @@ namespace tbd
         ActorId m_parentId;
     public:
         ActorId GetParent(VOID) { return m_parentId; }
-        CONST static ComponentId COMPONENT_ID;
-        LPCSTR VGetName(VOID) { return "ParentComponent"; }
-        BOOL VInit(tinyxml2::XMLElement* pData);
-        VOID VSave(tinyxml2::XMLElement* pData) CONST;
-        ComponentId GetComponentId(VOID) CONST { return COMPONENT_ID; }
+
         VOID VPostInit(VOID);
+
+        CM_CREATE_CMP_HEADER(CM_CMP_PARENT_ACTOR, ParentComponent); 
     };
 }

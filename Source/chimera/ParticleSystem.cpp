@@ -4,18 +4,19 @@
 #include "VRamManager.h"
 #include "GameView.h"
 #include "Geometry.h"
+#include "math.h"
 
-namespace tbd
+namespace chimera
 {
     VRamHandle* ParticleQuadGeometryHandleCreator::VGetHandle(VOID)
     {
-        return new d3d::Geometry(FALSE);
+        return new chimera::Geometry(FALSE);
     }
 
     VOID ParticleQuadGeometryHandleCreator::VCreateHandle(VRamHandle* handle)
     {
 
-        d3d::Geometry* geo = (d3d::Geometry*)handle;
+        chimera::Geometry* geo = (chimera::Geometry*)handle;
 
         FLOAT qscale = 0.01f;
 
@@ -37,18 +38,18 @@ namespace tbd
         geo->VCreate();
     }
 
-    std::shared_ptr<d3d::Geometry> ParticleSystem::GetGeometry(VOID)
+    std::shared_ptr<chimera::Geometry> ParticleSystem::GetGeometry(VOID)
     {
-        if(!m_geometry->IsReady())
+        if(!m_geometry->VIsReady())
         {
-            m_geometry = std::static_pointer_cast<d3d::Geometry>(app::g_pApp->GetHumanView()->GetVRamManager()->GetHandle(tbd::VRamResource(".ParticleQuadGeometry")));
+            m_geometry = std::static_pointer_cast<chimera::Geometry>(chimera::g_pApp->GetHumanView()->GetVRamManager()->GetHandle(chimera::VRamResource(".ParticleQuadGeometry")));
         }
         return m_geometry;
     }
 
     ParticleSystem::ParticleSystem(BaseEmitter* emitter, IRandomGenerator* generator) :
         m_randomValues(NULL), m_pCuda(NULL), m_acceleration(NULL), m_pEmitter(emitter), m_pRandGenerator(generator), m_pParticleBuffer(NULL), m_time(0), m_updateInterval(16) //60 fps
-            , m_localWorkSize(128)
+            , m_localWorkSize(256)
     {
     }
 
@@ -88,9 +89,10 @@ namespace tbd
     {
         m_pCuda->MapGraphicsResource(m_particles);
         //assert((INT)timer->GetTime() - (INT)m_startTime > 0);
-
-        FLOAT dtt = (float)(dt * 1e-3f);
-        FLOAT tf = time * 1e-3f;
+        dt = CLAMP(dt, dt, m_updateInterval);
+        m_time += dt;
+        FLOAT dtt = (FLOAT)(dt * 1e-3f);
+        FLOAT tf = m_time * 1e-3f;
         m_pEmitter->VUpdate(this, tf, dtt);
 
         for(auto it = m_mods.begin(); it != m_mods.end(); ++it)
@@ -154,12 +156,12 @@ namespace tbd
         }
     }
 
-    CONST util::AxisAlignedBB& ParticleSystem::GetAxisAlignedBB(VOID)
+    util::AxisAlignedBB& ParticleSystem::GetAxisAlignedBB(VOID)
     {
         return m_aabb;
     }
 
-    d3d::VertexBuffer* ParticleSystem::GetParticleBuffer(VOID)
+    chimera::VertexBuffer* ParticleSystem::GetParticleBuffer(VOID)
     {
         return m_pParticleBuffer;
     }
@@ -174,11 +176,11 @@ namespace tbd
     {
         SAFE_DELETE(m_pCuda);
 
-        m_pCuda = new cudah::cudah("Particles.ptx");
+        m_pCuda = new cudah::cudah("./chimera/ptx/Particles.ptx");
 
         m_kernel = m_pCuda->GetKernel("_integrate");
 
-        INT blockSize = cudah::cudah::GetMaxThreadsPerSM() / cudah::cudah::GetMaxBlocksPerSM();
+        INT blockSize = 256;//todo cudah::cudah::GetMaxThreadsPerSM() / cudah::cudah::GetMaxBlocksPerSM();
         m_localWorkSize = blockSize;
 
         if(m_pEmitter->GetParticleCount() % m_localWorkSize != 0)
@@ -195,11 +197,11 @@ namespace tbd
             m_randomValues = m_pCuda->CreateBuffer(std::string("randoms"), m_pRandGenerator->GetValuesCount() * 4, rands, 4);
         }
 
-        FLOAT* parts = (FLOAT*)m_pEmitter->CreateParticles();
+        FLOAT* parts = (FLOAT*)positions;
 
         SAFE_DELETE(m_pParticleBuffer);
 
-        m_pParticleBuffer = new d3d::VertexBuffer(parts, m_pEmitter->GetParticleCount(), 16);
+        m_pParticleBuffer = new chimera::VertexBuffer(parts, m_pEmitter->GetParticleCount(), 16);
 
         m_pParticleBuffer->Create();
 
@@ -227,17 +229,18 @@ namespace tbd
 
         m_velocities = m_pCuda->CreateBuffer(std::string("velo"), m_pEmitter->GetParticleCount() * 3 * 4, veloAccInit, 12);
 
-        m_geometry = std::static_pointer_cast<d3d::Geometry>(app::g_pApp->GetHumanView()->GetVRamManager()->GetHandle(tbd::VRamResource(".ParticleQuadGeometry")));
+        m_geometry = std::static_pointer_cast<chimera::Geometry>(chimera::g_pApp->GetHumanView()->GetVRamManager()->GetHandle(chimera::VRamResource(".ParticleQuadGeometry")));
 
         //integrate((float4*)m_particles->ptr, (float3*)m_acceleration->ptr, (float3*)m_velocities->ptr, (float)(dt * 1e-3f), GetParticlesCount(), GetLocalWorkSize());
-        INT threads = cudah::cudah::GetThreadCount(GetParticlesCount(), GetLocalWorkSize());
+        INT threads = cudahu::GetThreadCount(GetParticlesCount(), GetLocalWorkSize());
         m_kernel->m_blockDim.x = GetLocalWorkSize();
         m_kernel->m_gridDim.x = threads / m_kernel->m_blockDim.x;
 
         SAFE_ARRAY_DELETE(veloAccInit);
         SAFE_ARRAY_DELETE(rands);
         SAFE_ARRAY_DELETE(positions);
-        SAFE_ARRAY_DELETE(parts);
+
+        m_time = 0;
 
         return TRUE;
     }

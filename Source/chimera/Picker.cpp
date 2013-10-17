@@ -4,7 +4,7 @@
 #include "Camera.h"
 #include "GameView.h"
 #include "SceneGraph.h"
-namespace tbd
+namespace chimera
 {
     ActorId ActorPicker::VPick(VOID) CONST
     {
@@ -14,13 +14,13 @@ namespace tbd
     VOID ActorPicker::VPostRender(VOID)
     {
         D3D11_MAPPED_SUBRESOURCE res;
-        d3d::GetContext()->CopyResource(m_texture->GetTexture(), m_renderTarget->GetTexture());
-        d3d::GetContext()->Flush();
-        d3d::GetContext()->Map(m_texture->GetTexture(), 0, D3D11_MAP_READ, 0, &res);
+        chimera::GetContext()->CopyResource(m_texture->GetTexture(), m_renderTarget->GetTexture());
+        chimera::GetContext()->Flush();
+        chimera::GetContext()->Map(m_texture->GetTexture(), 0, D3D11_MAP_READ, 0, &res);
         m_currentActor = ((UINT*)(res.pData))[0];
-        d3d::GetContext()->Unmap(m_texture->GetTexture(), 0);
+        chimera::GetContext()->Unmap(m_texture->GetTexture(), 0);
         // app::g_pApp->GetHumanView()->GetRenderer()->SetActorId(m_currentActor);
-        d3d::ConstBuffer* buffer = app::g_pApp->GetHumanView()->GetRenderer()->GetBuffer(d3d::eSelectedActorIdBuffer);
+        chimera::ConstBuffer* buffer = chimera::g_pApp->GetHumanView()->GetRenderer()->GetBuffer(chimera::eSelectedActorIdBuffer);
         UINT* b = (UINT*)buffer->Map();
         b[0] = m_currentActor;
         buffer->Unmap();
@@ -31,9 +31,9 @@ namespace tbd
         m_shaderProgram->Bind();
         m_renderTarget->Bind();
         m_renderTarget->Clear();
-        app::g_pApp->GetHumanView()->GetRenderer()->VPushProjectionTransform(m_projection, 1000.0f);
-        app::g_pApp->GetHumanView()->GetSceneGraph()->OnRender(eDRAW_PICKING);
-        app::g_pApp->GetHumanView()->GetRenderer()->VPopProjectionTransform();
+        chimera::g_pApp->GetHumanView()->GetRenderer()->VPushProjectionTransform(m_projection, 1000.0f);
+        chimera::g_pApp->GetHumanView()->GetSceneGraph()->OnRender(eRenderPath_DrawPicking);
+        chimera::g_pApp->GetHumanView()->GetRenderer()->VPopProjectionTransform();
         /*d3d::BindBackbuffer();
         d3d::SetDefaultViewPort();
         LOG_CRITICAL_ERROR("todo"); */
@@ -41,7 +41,7 @@ namespace tbd
 
     BOOL ActorPicker::VHasPicked(VOID) CONST
     {
-        return m_currentActor != INVALID_ACTOR_ID;
+        return m_currentActor != CM_INVALID_ACTOR_ID;
     }
 
     BOOL ActorPicker::VCreate(VOID)
@@ -53,20 +53,20 @@ namespace tbd
 
         m_created = TRUE;
 
-        m_shaderProgram = d3d::ShaderProgram::CreateProgram("Picking", L"Picking.hlsl", "Picking_VS", "Picking_PS", NULL).get();
+        m_shaderProgram = chimera::ShaderProgram::CreateProgram("Picking", L"Picking.hlsl", "Picking_VS", "Picking_PS", NULL).get();
         m_shaderProgram->SetInputAttr("POSITION", 0, 0, DXGI_FORMAT_R32G32B32_FLOAT);
         m_shaderProgram->SetInputAttr("NORMAL", 1, 0, DXGI_FORMAT_R32G32B32_FLOAT);
         m_shaderProgram->SetInputAttr("TEXCOORD", 2, 0, DXGI_FORMAT_R32G32_FLOAT);
         m_shaderProgram->GenerateLayout();
         m_shaderProgram->Bind();
 
-        m_renderTarget = new d3d::RenderTarget();
+        m_renderTarget = new chimera::RenderTarget();
         m_renderTarget->SetUsage(D3D11_USAGE_DEFAULT);
         m_renderTarget->SetBindflags(D3D11_BIND_RENDER_TARGET);
         //m_renderTarget->SetClearColor(-1, -1, -1, -1);
         //m_renderTarget->SetCPUAccess(D3D11_CPU_ACCESS_READ);
         UINT w = 1, h = 1;
-        m_texture = new d3d::Texture2D();
+        m_texture = new chimera::D3DTexture2D();
         m_texture->SetWidth(w);
         m_texture->SetHeight(h);
         m_texture->SetFormat(DXGI_FORMAT_R32_UINT);
@@ -88,7 +88,7 @@ namespace tbd
         return TRUE;
     }
 
-    d3d::RenderTarget* ActorPicker::GetTarget(VOID)
+    chimera::RenderTarget* ActorPicker::GetTarget(VOID)
     {
         return m_renderTarget;
     }

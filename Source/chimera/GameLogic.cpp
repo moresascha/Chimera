@@ -2,94 +2,98 @@
 #include "Actor.h"
 #include "Components.h"
 #include "EventManager.h"
-#include "GameApp.h"
-#include "Resources.h"
+#include "Cache.h"
 #include "Commands.h"
+#include "ProcessManager.h"
+#include "Process.h"
+#include "GameView.h"
+#include "PhysicsSystem.h"
+#include "ActorFactory.h"
+#include "Level.h"
 
-namespace tbd 
+namespace chimera 
 {
 
-    BaseGameLogic::BaseGameLogic() : m_pPhysics(NULL), m_gameState(ePause), m_pLevel(NULL), m_pLevelManager(NULL)
+    BaseGameLogic::BaseGameLogic() : m_pPhysics(NULL), m_gameState(CM_STATE_RUNNING), m_pLevel(NULL)
     {
 
     }
 
-    BOOL BaseGameLogic::VInit(VOID) 
+    BOOL BaseGameLogic::VInitialise(FactoryPtr* facts) 
     {
-        if(this->m_pPhysics) return TRUE; //todo
+        IActorFactoryFactory* aff = FindFactory<IActorFactoryFactory>(facts, CM_FACTORY_ACTOR);
+        RETURN_IF_FAILED(aff);
+		m_pActorFactory = aff->VCreateActorFactroy();
 
-        this->m_pProcessManager = new proc::ProcessManager();
+        IHumanViewFactory* hgwf = FindFactory<IHumanViewFactory>(facts, CM_FACTORY_VIEW);
+        RETURN_IF_FAILED(hgwf);
+        m_pHumanView = hgwf->VCreateHumanView();
 
-        event::EventListener listener = fastdelegate::MakeDelegate(this, &BaseGameLogic::MoveActorDelegate);
-        event::IEventManager::Get()->VAddEventListener(listener, event::MoveActorEvent::TYPE);
+        m_pProcessManager = new ProcessManager();
 
-        listener = fastdelegate::MakeDelegate(this, &BaseGameLogic::CreateActorDelegate);
-        event::IEventManager::Get()->VAddEventListener(listener, event::CreateActorEvent::TYPE);
+        ADD_EVENT_LISTENER(this, &BaseGameLogic::MoveActorDelegate, CM_EVENT_MOVE_ACTOR);
 
-        listener = fastdelegate::MakeDelegate(this, &BaseGameLogic::ActorCreatedDelegate);
-        event::IEventManager::Get()->VAddEventListener(listener, event::ActorCreatedEvent::TYPE);
+        ADD_EVENT_LISTENER(this,  &BaseGameLogic::CreateActorDelegate, CM_EVENT_CREATE_ACTOR);
 
-        listener = fastdelegate::MakeDelegate(this, &BaseGameLogic::LevelLoadedDelegate);
-        event::IEventManager::Get()->VAddEventListener(listener, event::LevelLoadedEvent::TYPE);
+        ADD_EVENT_LISTENER(this,  &BaseGameLogic::ActorCreatedDelegate, CM_EVENT_ACTOR_CREATED);
 
-        listener = fastdelegate::MakeDelegate(this, &BaseGameLogic::DeleteActorDelegate);
-        event::IEventManager::Get()->VAddEventListener(listener, event::DeleteActorEvent::TYPE);
+        ADD_EVENT_LISTENER(this,  &BaseGameLogic::LevelLoadedDelegate, CM_EVENT_LEVEL_LOADED);
 
-        ADD_EVENT_LISTENER(this, &BaseGameLogic::LoadLevelDelegate, event::LoadLevelEvent::TYPE);
+        ADD_EVENT_LISTENER(this,  &BaseGameLogic::DeleteActorDelegate, CM_EVENT_DELETE_ACTOR);
 
-        this->m_pPhysics = new tbd::PhysX();
-        this->m_pPhysics->VInit();
+        ADD_EVENT_LISTENER(this, &BaseGameLogic::CreateProcessDelegate, CM_EVENT_CREATE_PROCESS);
 
-        m_pCmdInterpreter = new tbd::CommandInterpreter();
+        ADD_EVENT_LISTENER(this, &BaseGameLogic::LoadLevelDelegate, CM_EVENT_LOAD_LEVEL);
 
-        m_pLevelManager = new tbd::LevelManager();
+        m_pPhysics = new PhysX();
+        m_pPhysics->VInit();
+
+        m_pCmdInterpreter = new CommandInterpreter();
+
+        //m_pLevelManager = new chimera::LevelManager();
 
         return TRUE;
     }
 
-    VOID BaseGameLogic::AttachGameView(std::shared_ptr<tbd::IGameView> view, std::shared_ptr<tbd::Actor> actor) 
+    VOID BaseGameLogic::VAttachView(std::unique_ptr<IView> view, ActorId actor) 
     {
-        this->m_gameViewList.push_back(view);
-        m_actorToViewMap[actor->GetId()] = view;
-        view->VOnAttach((UINT)this->m_gameViewList.size(), actor);
-    }
-
-    VOID BaseGameLogic::AttachProcess(std::shared_ptr<proc::Process> process) 
-    {
-        this->m_pProcessManager->Attach(process);
+		IView* raw = view.get();
+        m_actorToViewMap[actor] = raw;
+		m_gameViewList.push_back(std::move(view));
+        raw->VOnAttach((UINT)m_gameViewList.size(), VFindActor(actor));
     }
 
     VOID BaseGameLogic::VOnUpdate(ULONG millis) 
     {
-        //TODO make member
-        /**static UINT time = 0;
-        time += millis;
-        if(time < 16) 
+
+        m_pPhysics->VUpdate(millis * 1e-3f);
+
+        m_pProcessManager->VUpdate(millis);
+
+        TBD_FOR(m_gameViewList)
         {
-            return;
+            (*it)->VOnUpdate(millis);
         }
-        DEBUG_OUT(time);
-        time = 0;
-        millis = 16;*/
+
+        m_pHumanView->VOnUpdate(millis);
+
+        CmGetApp()->VGetLogic()->VGetPhysics()->VSyncScene(); //PHX SYNC
+
+        /*
         switch(m_gameState)
         {
         case eRunning :
             {
-                this->m_pPhysics->VUpdate(millis * 1e-3f);
+                m_pPhysics->VUpdate(millis * 1e-3f);
 
-                this->m_pProcessManager->Update(millis);
+                m_pProcessManager->VUpdate(millis);
 
                 for(auto it = this->m_gameViewList.begin(); it != this->m_gameViewList.end(); ++it)
                 {
                     (*it)->VOnUpdate(millis);
                 }
 
-                /*for(auto it = this->m_actors.begin(); it != this->m_actors.end(); ++it) //not used at all
-                {
-                    it->second->Update(millis);
-                } */
-
-                app::g_pApp->GetLogic()->GetPhysics()->VSyncScene(); //PHX SYNC
+                chimera::g_pApp->GetLogic()->GetPhysics()->VSyncScene(); //PHX SYNC
 
             } break;
         case eLoadingLevel : 
@@ -114,7 +118,7 @@ namespace tbd
             } break;
 
         default : LOG_CRITICAL_ERROR("unknown game state"); break;
-        }
+        }*/
 
         /*
         if(this->m_pPhysics) 
@@ -127,29 +131,16 @@ namespace tbd
     {
         switch(m_gameState)
         {
-        case eRunning : 
+        case CM_STATE_RUNNING : 
             {
-                this->m_pPhysics->VSyncScene();
+                m_pPhysics->VSyncScene();
             } break;
         }
 
-        for(auto it = this->m_gameViewList.begin(); it != this->m_gameViewList.end(); ++it)
-        {
-            (*it)->VPreRender();
-        }
-
-        for(auto it = this->m_gameViewList.begin(); it != this->m_gameViewList.end(); ++it)
-        {
-            (*it)->VOnRender(0, 0); // TODO
-        }
-
-        for(auto it = this->m_gameViewList.begin(); it != this->m_gameViewList.end(); ++it)
-        {
-            (*it)->VPostRender();
-        }
+        m_pHumanView->VOnRender();
     }
 
-    std::shared_ptr<tbd::Actor> BaseGameLogic::VFindActor(ActorId id) 
+    IActor* BaseGameLogic::VFindActor(ActorId id) 
     {
         auto it = m_actors.find(id);
         if(it == m_actors.end()) 
@@ -162,48 +153,48 @@ namespace tbd
         }
         else
         {
-            return it->second;
+            return it->second.get();
         }
         return NULL;
     }
 
-    std::shared_ptr<tbd::Actor> BaseGameLogic::VFindActor(LPCSTR name)
+    IActor* BaseGameLogic::VFindActor(LPCSTR name)
     {
         //this implementation is really slow and should only be used for debugging atm
         TBD_FOR(m_actors)
         {
             if(it->second->GetName() == name)
             {
-                return it->second;
+                return it->second.get();
             }
         }
-        return std::shared_ptr<tbd::Actor>(NULL);
+        return NULL;
     }
 
-    std::shared_ptr<tbd::IGameView> BaseGameLogic::VFindGameView(GameViewId id)
+    IView* BaseGameLogic::VFindView(GameViewId id)
     {
         //this implementation is really slow and should only be used for debugging atm
         TBD_FOR(m_gameViewList)
         {
             if((*it)->GetId() == id)
             {
-                return *it;
+                return it->get();
             }
         }
-        return std::shared_ptr<tbd::IGameView>(NULL);
+        return NULL;
     }
 
-    std::shared_ptr<tbd::IGameView> BaseGameLogic::VFindGameView(LPCSTR name)
+    IView* BaseGameLogic::VFindView(LPCSTR name)
     {
         //this implementation is really slow and should only be used for debugging atm
         TBD_FOR(m_gameViewList)
         {
             if((*it)->GetName() == name)
             {
-                return *it;
+                return it->get();
             }
         }
-        return std::shared_ptr<tbd::IGameView>(NULL);
+        return NULL;
     }
     /*
     std::shared_ptr<tbd::Actor> BaseGameLogic::VCreateActor(TiXmlElement* pData) 
@@ -226,40 +217,43 @@ namespace tbd
         return std::shared_ptr<tbd::Actor>();
     } */
 
-    std::shared_ptr<tbd::Actor> BaseGameLogic::VCreateActor(tbd::ActorDescription desc, BOOL appendToLevel)
+    IActor* BaseGameLogic::VCreateActor(std::unique_ptr<ActorDescription> desc, BOOL appendToLevel)
     {
-        std::shared_ptr<tbd::Actor> actor = NULL;
+        IActor* actor = NULL;
         if(appendToLevel)
         {
-            actor = m_pLevel->VAddActor(desc);
+            actor = m_pLevel->VAddActor(std::move(desc));
+			return actor;
         }
         else
         {
-            std::shared_ptr<tbd::Actor> actor = m_actorFactory.CreateActor(desc);
-            m_actors[actor->GetId()] = actor;
+            std::unique_ptr<IActor> upa = m_pActorFactory->VCreateActor(std::move(desc));
+			actor = upa.get();
+            m_actors[actor->GetId()] = std::move(upa);
+			return actor;
         }
-        return actor;
     }
 
-    std::shared_ptr<tbd::Actor> BaseGameLogic::VCreateActor(CONST CHAR* resource, BOOL appendToLevel) 
+    IActor* BaseGameLogic::VCreateActor(CONST CHAR* resource, BOOL appendToLevel) 
     {
         if(!resource) 
         {
             LOG_CRITICAL_ERROR("Ressource cant be NULL");
         }
-        std::string path = app::g_pApp->GetConfig()->GetString("sActorPath") + resource;
-        std::vector<std::shared_ptr<tbd::Actor>> actors;
-        std::shared_ptr<tbd::Actor> parent = m_actorFactory.CreateActor(path.c_str(), actors);
+        std::string path = CmGetApp()->VGetConfig()->VGetString("sActorPath") + resource;
+        std::vector<std::unique_ptr<IActor>> actors;
+        CMResource res(resource);
+        std::unique_ptr<IActor> parent = m_pActorFactory->VCreateActor(res, actors);
         TBD_FOR(actors)
         {
             //throw actor created event
-            m_actors[(*it)->GetId()] = *it;
+            m_actors[(*it)->GetId()] = std::move(*it);
         }
         if(!parent)
         {
             LOG_CRITICAL_ERROR_A("Failed to create actor: %s", resource);
         }
-        return parent;
+        return parent.get();
     }
 
     VOID BaseGameLogic::VRemoveActor(ActorId id) 
@@ -273,12 +267,11 @@ namespace tbd
         m_pLevel->VRemoveActor(id);
     }
 
-    BOOL BaseGameLogic::VLoadLevel(tbd::ILevel* level)
+    BOOL BaseGameLogic::VLoadLevel(ILevel* level)
     {
-        m_gameState = eLoadingLevel;
+        m_gameState = CM_STATE_LOADING;
 
-        event::IEventPtr loadingLevelEvent(new event::LoadingLevelEvent(level->VGetName()));
-        event::IEventManager::Get()->VQueueEventThreadSave(loadingLevelEvent);
+        QUEUE_EVENT_TSAVE(new LoadingLevelEvent(level->VGetName()));
 
         if(m_pLevel == level)
         {
@@ -294,14 +287,13 @@ namespace tbd
 
     BOOL BaseGameLogic::VLoadLevel(CONST CHAR* resource) 
     {
-        m_gameState = eLoadingLevel;
+        m_gameState = CM_STATE_LOADING;
 
-        event::IEventPtr loadingLevelEvent(new event::LoadingLevelEvent(std::string(resource)));
-        event::IEventManager::Get()->VQueueEventThreadSave(loadingLevelEvent);
+        QUEUE_EVENT_TSAVE(new LoadingLevelEvent(std::string(resource)));
 
         SAFE_DELETE(m_pLevel);
 
-        m_pLevel = new tbd::XMLLevel(resource, &m_actorFactory); 
+        //m_pLevel = new XMLLevel(resource, m_pActorFactory); 
 
         m_pLevel->VLoad(FALSE);
 
@@ -318,18 +310,18 @@ namespace tbd
         return m_pLevel->VGetActorsCount();
     }
 
-    VOID BaseGameLogic::ActorCreatedDelegate(event::IEventPtr eventData)
+    VOID BaseGameLogic::ActorCreatedDelegate(IEventPtr eventData)
     {
 
     }
 
-    VOID BaseGameLogic::MoveActorDelegate(event::IEventPtr eventData) 
+    VOID BaseGameLogic::MoveActorDelegate(IEventPtr eventData) 
     {
-        std::shared_ptr<event::MoveActorEvent> data = std::static_pointer_cast<event::MoveActorEvent>(eventData);
-        std::shared_ptr<tbd::Actor> actor = this->VFindActor(data->m_id);
+        std::shared_ptr<MoveActorEvent> data = std::static_pointer_cast<MoveActorEvent>(eventData);
+        IActor* actor = VFindActor(data->m_id);
         if(actor)
         {
-            std::shared_ptr<tbd::PhysicComponent> physxCmp = actor->GetComponent<tbd::PhysicComponent>(tbd::PhysicComponent::COMPONENT_ID).lock();
+            PhysicComponent* physxCmp = GetActorCompnent<PhysicComponent>(actor, CM_CMP_PHX);
 
             if(physxCmp)
             {
@@ -371,7 +363,7 @@ namespace tbd
             }
             else
             {
-                std::shared_ptr<tbd::TransformComponent> comp = actor->GetComponent<tbd::TransformComponent>(tbd::TransformComponent::COMPONENT_ID).lock();
+                TransformComponent* comp = GetActorCompnent<TransformComponent>(actor, CM_CMP_TRANSFORM);
                 if(comp)
                 {
                     util::Mat4* transformation = comp->GetTransformation();
@@ -426,92 +418,103 @@ namespace tbd
                     }
                 }
 
-                QUEUE_EVENT(new event::ActorMovedEvent(actor));
+                QUEUE_EVENT(new ActorMovedEvent(actor));
             }
         }
     }
 
-    VOID BaseGameLogic::CreateActorDelegate(event::IEventPtr eventData) 
+    VOID BaseGameLogic::CreateActorDelegate(IEventPtr eventData) 
     {
-        std::shared_ptr<event::CreateActorEvent> data = std::static_pointer_cast<event::CreateActorEvent>(eventData);
+        std::shared_ptr<CreateActorEvent> data = std::static_pointer_cast<CreateActorEvent>(eventData);
 
-        VCreateActor(data->m_actorDesc, data->m_appendToCurrentLevel);
+        VCreateActor(std::move(data->m_actorDesc), data->m_appendToCurrentLevel);
 
         //actor factory takes care of it
         /*event::IEventPtr actorCreatedEvent(new event::ActorCreatedEvent(actor->GetId()));
         event::IEventManager::Get()->VQueueEvent(actorCreatedEvent); */
     }
 
-    VOID BaseGameLogic::DeleteActorDelegate(event::IEventPtr eventData)
+    VOID BaseGameLogic::DeleteActorDelegate(IEventPtr eventData)
     {
-        std::shared_ptr<event::DeleteActorEvent> data = std::static_pointer_cast<event::DeleteActorEvent>(eventData);
+        std::shared_ptr<DeleteActorEvent> data = std::static_pointer_cast<DeleteActorEvent>(eventData);
         ActorId id = data->m_id;
-        tbd::Actor* actor = VFindActor(id).get();
+        IActor* actor = VFindActor(id);
         if(actor)
         {
-            for(auto cmps = actor->GetComponents().begin(); cmps != actor->GetComponents().end(); ++cmps)
+            for(auto cmps = actor->VGetComponents().begin(); cmps != actor->VGetComponents().end(); ++cmps)
             {
                 //TODO extra event for components
             }
             //m_actors.erase(it);
             VRemoveActor(id);
             m_pPhysics->VRemoveActor(id);
-            event::IEventPtr actorDeletedEvent(new event::ActorDeletedEvent(id));
-            event::IEventManager::Get()->VQueueEvent(actorDeletedEvent);
+            QUEUE_EVENT(new ActorDeletedEvent(id));
         }
     }
 
-    VOID BaseGameLogic::LoadLevelDelegate(event::IEventPtr eventData)
+    VOID BaseGameLogic::LoadLevelDelegate(IEventPtr eventData)
     {
-        std::shared_ptr<event::LoadLevelEvent> data = std::static_pointer_cast<event::LoadLevelEvent>(eventData);
-        VLoadLevel(new tbd::XMLLevel(data->m_name.c_str(), &m_actorFactory));
+        /*std::shared_ptr<LoadLevelEvent> data = std::static_pointer_cast<LoadLevelEvent>(eventData);
+        VLoadLevel(new XMLLevel(data->m_name.c_str(), m_pActorFactory)); */
     }
 
-    VOID BaseGameLogic::LevelLoadedDelegate(event::IEventPtr eventData)
+    VOID BaseGameLogic::LevelLoadedDelegate(IEventPtr eventData)
     {
-        m_gameState = eRunning;
+        m_gameState = eProcessState_Running;
+    }
+
+    VOID BaseGameLogic::CreateProcessDelegate(IEventPtr eventData)
+    {
+        std::shared_ptr<CreateProcessEvent> e = std::static_pointer_cast<CreateProcessEvent>(eventData);
+        m_pProcessManager->VAttach(std::unique_ptr<IProcess>(e->m_pProcess));
     }
 
     BaseGameLogic::~BaseGameLogic() 
     {
         //m_pLevel->VSave();
 
-        SAFE_DELETE(m_pLevelManager);
+        //SAFE_DELETE(m_pLevelManager);
 
-        REMOVE_EVENT_LISTENER(this, &BaseGameLogic::LoadLevelDelegate, event::LoadLevelEvent::TYPE);
+        REMOVE_EVENT_LISTENER(this, &BaseGameLogic::LoadLevelDelegate, CM_EVENT_LOAD_LEVEL);
 
-        event::EventListener listener = fastdelegate::MakeDelegate(this, &BaseGameLogic::MoveActorDelegate);
-        event::IEventManager::Get()->VRemoveEventListener(listener, event::MoveActorEvent::TYPE);
+        REMOVE_EVENT_LISTENER(this, &BaseGameLogic::MoveActorDelegate, CM_EVENT_MOVE_ACTOR);
 
-        listener = fastdelegate::MakeDelegate(this, &BaseGameLogic::CreateActorDelegate);
-        event::IEventManager::Get()->VRemoveEventListener(listener, event::CreateActorEvent::TYPE);
+        REMOVE_EVENT_LISTENER(this, &BaseGameLogic::CreateActorDelegate, CM_EVENT_CREATE_ACTOR);
 
-        listener = fastdelegate::MakeDelegate(this, &BaseGameLogic::ActorCreatedDelegate);
-        event::IEventManager::Get()->VRemoveEventListener(listener, event::ActorCreatedEvent::TYPE);
+        REMOVE_EVENT_LISTENER(this, &BaseGameLogic::ActorCreatedDelegate, CM_EVENT_ACTOR_CREATED);
 
-        listener = fastdelegate::MakeDelegate(this, &BaseGameLogic::LevelLoadedDelegate);
-        event::IEventManager::Get()->VRemoveEventListener(listener, event::LevelLoadedEvent::TYPE);
+        REMOVE_EVENT_LISTENER(this, &BaseGameLogic::LevelLoadedDelegate, CM_EVENT_LEVEL_LOADED);
 
-        listener = fastdelegate::MakeDelegate(this, &BaseGameLogic::DeleteActorDelegate);
-        event::IEventManager::Get()->VRemoveEventListener(listener, event::DeleteActorEvent::TYPE);
+        REMOVE_EVENT_LISTENER(this, &BaseGameLogic::DeleteActorDelegate, CM_EVENT_DELETE_ACTOR);
+
+        REMOVE_EVENT_LISTENER(this, &BaseGameLogic::CreateProcessDelegate, CM_EVENT_CREATE_PROCESS);
     
         SAFE_DELETE(m_pLevel);
 
         SAFE_DELETE(m_pCmdInterpreter);
 
-        this->m_pProcessManager->AbortAll(TRUE);
+        m_pProcessManager->VAbortAll(TRUE);
 
-        SAFE_DELETE(this->m_pProcessManager);
+        SAFE_DELETE(m_pProcessManager);
 
         SAFE_DELETE(m_pPhysics);
 
-        m_gameViewList.clear();
-
-        for(auto it = this->m_actors.begin(); it != this->m_actors.end(); ++it)
+        TBD_FOR(m_gameViewList)
         {
-            it->second->Destroy();
+            it->reset();
         }
 
-        this->m_actors.clear();
+        TBD_FOR(m_actors)
+        {
+            it->second.reset();
+        }
+
+        m_gameViewList.clear();
+
+        m_actors.clear();
+
+        SAFE_DELETE(m_pHumanView);
+
+        SAFE_DELETE(m_pActorFactory);
     }
 }

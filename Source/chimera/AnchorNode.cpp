@@ -4,14 +4,14 @@
 #include "GameView.h"
 #include "D3DRenderer.h"
 #include "Components.h"
-namespace tbd
+namespace chimera
 {    
     UINT AnchorNode::VGetRenderPaths(VOID)
     {
-        return eDRAW_EDIT_MODE | eDRAW_PICKING | eDRAW_DEBUG_INFOS;
+        return eRenderPath_DrawEditMode | eRenderPath_DrawPicking | eRenderPath_DrawDebugInfo;
     }
 
-    VOID AnchorNode::_VRender(tbd::SceneGraph* graph, tbd::RenderPath& path)
+    VOID AnchorNode::_VRender(chimera::SceneGraph* graph, chimera::RenderPath& path)
     {
         switch(m_meshType)
         {
@@ -19,7 +19,7 @@ namespace tbd
             {
                 switch(path)
                 {
-                case eDRAW_PICKING :
+                case eRenderPath_DrawPicking :
                     {
                         util::AxisAlignedBB aabb;
                         aabb.AddPoint(util::Vec3(-1,-1,-1));
@@ -27,20 +27,20 @@ namespace tbd
                         aabb.Construct();
                         DrawPickingCube(m_actor, GetTransformation(), aabb);
                     } break;
-                case eDRAW_EDIT_MODE :
+                case eRenderPath_DrawEditMode :
                     {
-                        if(m_drawMode == eWire)
+                        if(m_drawMode == eFillMode_Wire)
                         {
-                            app::g_pApp->GetHumanView()->GetRenderer()->PushRasterizerState(d3d::g_pRasterizerStateWrireframe);
+                            chimera::g_pApp->GetHumanView()->GetRenderer()->PushRasterizerState(chimera::g_pRasterizerStateWrireframe);
                         }
                         util::AxisAlignedBB aabb;
                         aabb.AddPoint(util::Vec3(-1,-1,-1));
                         aabb.AddPoint(util::Vec3(1,1,1));
                         aabb.Construct();
                         DrawBox(GetTransformation(), aabb);
-                        if(m_drawMode == eWire)
+                        if(m_drawMode == eFillMode_Wire)
                         {
-                            app::g_pApp->GetHumanView()->GetRenderer()->PopRasterizerState();
+                            chimera::g_pApp->GetHumanView()->GetRenderer()->PopRasterizerState();
                         }
                     } break;
                 }
@@ -50,23 +50,23 @@ namespace tbd
             {
                 switch(path)
                 {
-                case eDRAW_PICKING :
+                case eRenderPath_DrawPicking :
                     {
                         DrawPickingSphere(m_actor, GetTransformation(), m_radius);
                     } break;
-                case eDRAW_EDIT_MODE :
+                case eRenderPath_DrawEditMode :
                     {
-                        if(m_drawMode == eWire)
+                        if(m_drawMode == eFillMode_Wire)
                         {
-                            app::g_pApp->GetHumanView()->GetRenderer()->PushRasterizerState(d3d::g_pRasterizerStateWrireframe);
+                            chimera::g_pApp->GetHumanView()->GetRenderer()->PushRasterizerState(chimera::g_pRasterizerStateWrireframe);
                         }
                         DrawAnchorSphere(m_actor, GetTransformation(), m_radius);
-                        if(m_drawMode == eWire)
+                        if(m_drawMode == eFillMode_Wire)
                         {
-                            app::g_pApp->GetHumanView()->GetRenderer()->PopRasterizerState();
+                            chimera::g_pApp->GetHumanView()->GetRenderer()->PopRasterizerState();
                         }
                     } break;
-                case eDRAW_DEBUG_INFOS :
+                case eRenderPath_DrawDebugInfo :
                     {
                         DrawInfoTextOnScreen(graph->GetCamera().get(), GetTransformation(), m_info);
                     } break;

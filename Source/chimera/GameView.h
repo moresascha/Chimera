@@ -1,108 +1,50 @@
 #pragma once
 #include "stdafx.h"
-#include "GraphicsSettings.h"
-#include "Input.h"
-#include "Event.h"
-#include "Timer.h"
-#include "SoundEngine.h"
 
-typedef UINT GameViewId;
-
-namespace d3d
+namespace chimera 
 {
-    class D3DRenderer;
-}
-namespace tbd 
-{
-    namespace gui
+    class HumanGameView : public IHumanView 
     {
-        class D3D_GUI;
-        class GuiConsole;
-    }
-    class IScreenElement;
-    class ISoundSystem;
-    class SceneGraph;
-    class VRamManager;
-    class IGraphicsSettings;
-    class IPicker;
-    class ParticleManager;
-    class Actor;
-    class CameraComponent;
-
-    enum GameViewType 
-    {
-        HUMAN,
-        CONTROLLER,
-        AI,
-        OTHER
-    };
-
-    class IGameView
-    {
-    protected:
-        GameViewId m_id;
-        //ActorId m_actorId;
-        std::shared_ptr<tbd::Actor> m_actor;
-        std::string m_name;
     public:
-        IGameView(VOID);
-
-        GameViewId GetId(VOID) { return m_id; }
-        std::shared_ptr<tbd::Actor> IGameView::GetTarget(VOID);
-        CONST std::string& GetName(VOID) CONST;
-        VOID SetName(CONST std::string& name);
-
-        virtual HRESULT VOnRestore(VOID) { return S_OK; };
-        virtual VOID VOnRender(DOUBLE time, FLOAT elapsedTime) {}
-        virtual VOID VPreRender(VOID) {}
-        virtual VOID VPostRender(VOID) {}
-        virtual VOID VOnUpdate(ULONG deltaMillis) = 0;
-        virtual VOID VOnLosteDevice(VOID) { };
-
-        virtual VOID VOnAttach(UINT viewId, std::shared_ptr<tbd::Actor> actor);
-
-        virtual VOID VSetTarget(std::shared_ptr<tbd::Actor> actor);
-
-        virtual GameViewType VGetType(VOID) CONST = 0;
-
-        virtual ~IGameView(VOID) {}
-    };
-
-    class HumanGameView : public IGameView 
-    {
-    private:
-        tbd::SceneGraph* m_pSceneGraph;
-        //tbd::IGraphicsSettings* m_pGraphisSettings[3];
+        ISceneGraph* m_pSceneGraph;
         BYTE m_loadingDots;
-        tbd::IPicker* m_picker;
-        tbd::ParticleManager* m_pParticleManager;
-        tbd::gui::D3D_GUI* m_pGui;
-        tbd::SoundEngine m_soundEngine;
-        tbd::ISoundSystem* m_pSoundSystem;
-        std::vector<tbd::IScreenElement*> m_screenElements;
-        std::vector<tbd::RenderScreen*> m_scenes;
-        tbd::RenderScreen* m_currentScene;
+        chimera::IPicker* m_picker;
+        //chimera::gui::D3D_GUI* m_pGui;
+        ISoundEngine* m_pSoundEngine;
+        ISoundSystem* m_pSoundSystem;
+        std::vector<std::unique_ptr<IScreenElement>> m_screenElements;
+        std::vector<std::unique_ptr<IRenderScreen>> m_scenes;
+        std::map<GameViewId, SceneNodeCreator> m_nodeCreators;
+        IRenderScreen* m_pCurrentScene;
+        std::unique_ptr<IRenderer> m_pRenderer;
+        IVRamManager* m_pVramManager;
+        IGraphicsFactory* m_pGraphicsFactory;
+		IEffectFactory* m_pEffectFactory;
 
     public:
         HumanGameView(VOID);
 
-        HRESULT VOnRestore(VOID);
+        BOOL VOnRestore(VOID);
 
-        VOID VOnRender(DOUBLE time, FLOAT elapsedTime);
+        VOID VOnRender(VOID);
     
         VOID VPostRender(VOID);
+        
+        BOOL VInitialise(FactoryPtr* facts);
 
-        d3d::D3DRenderer* GetRenderer(VOID);
+        IRenderer* VGetRenderer(VOID);
 
         VOID VOnUpdate(ULONG deltaMillis);
     
-        VOID VOnAttach(GameViewId viewId, std::shared_ptr<tbd::Actor> actor);
+        VOID VOnAttach(GameViewId viewId, IActor* actor);
 
-        VOID VOnLosteDevice(VOID) { /*TODO*/ }
+        VOID VSetTarget(IActor* actor);
 
-        VOID VSetTarget(std::shared_ptr<tbd::Actor> actor);
+        IPicker* VGetPicker(VOID) { return m_picker; }
 
-        tbd::IPicker* GetPicker(VOID) { return m_picker; }
+        VOID VAddSceneNodeCreator(SceneNodeCreator nc, ComponentId cmpid);
+
+        VOID VRemoveSceneNodeCreator(ComponentId cmpid);
 
         //VOID SetGraphicsSettings(GraphicsSettingType type) { m_graphicsSettingsType = type; }
 
@@ -110,57 +52,56 @@ namespace tbd
 
         //IGraphicsSettings* GetGraphicsSettings(VOID) { return m_pGraphisSettings[m_graphicsSettingsType]; }
 
-        tbd::SoundEngine* GetSoundEngine(VOID) { return &m_soundEngine; }
+        IGraphicsFactory* VGetGraphicsFactory(VOID) { return m_pGraphicsFactory; }
 
-        tbd::ISoundSystem* GetSoundSystem(VOID) { return m_pSoundSystem; }
+        IVRamManager* VGetVRamManager(VOID) { return m_pVramManager; }
 
-        GameViewType VGetType(VOID) CONST { return HUMAN; }
+		IEffectFactory* VGetEffectFactory(VOID) { return m_pEffectFactory; }
 
-        tbd::SceneGraph* GetSceneGraph(VOID) { return this->m_pSceneGraph; }
+        ISoundEngine* VGetSoundEngine(VOID) { return m_pSoundEngine; }
 
-        tbd::VRamManager* GetVRamManager(VOID) CONST;
+        ISoundSystem* VGetSoundSystem(VOID) { return m_pSoundSystem; }
 
-        tbd::ParticleManager* GetParticleManager(VOID) CONST { return m_pParticleManager; }
+        ViewType VGetType(VOID) CONST { return eViewType_Human; }
 
-        std::shared_ptr<tbd::Actor> GetTarget(VOID) CONST { return m_actor; }
+        ISceneGraph* VGetSceneGraph(VOID) { return this->m_pSceneGraph; }
 
-        VOID AddScreenElement(tbd::IScreenElement* element);
+        IActor* VGetTarget(VOID) CONST { return m_actor; }
 
-        VOID AddScene(tbd::RenderScreen* screen);
+        VOID VAddScreenElement(std::unique_ptr<IScreenElement> element);
 
-        VOID ActivateScene(LPCSTR name);
+        VOID VAddScene(std::unique_ptr<IRenderScreen> screen);
 
-        tbd::RenderScreen* GetSceneByName(LPCSTR name);
+        VOID VActivateScene(LPCSTR name);
 
-        tbd::IScreenElement* GetScreenElementByName(LPCSTR name); //this is slowly implemented
+        IRenderScreen* VGetSceneByName(LPCSTR name);
+
+        IScreenElement* VGetScreenElementByName(LPCSTR name); //this is slowly implemented
 
         VOID ToggleConsole(VOID);
 
-        tbd::gui::D3D_GUI* GetGUI(VOID) CONST { return m_pGui; }
+        /*chimera::gui::D3D_GUI* VGetGUI(VOID) CONST { return m_pGui; }
 
-        tbd::gui::GuiConsole* GetConsole(VOID);
+        chimera::gui::GuiConsole* GetConsole(VOID);*/
 
-        VOID ActorMovedDelegate(event::IEventPtr eventData);
+        VOID ActorMovedDelegate(IEventPtr eventData);
 
-        VOID NewComponentDelegate(event::IEventPtr pEventData);
+        VOID NewComponentDelegate(IEventPtr pEventData);
 
-        VOID DeleteActorDelegate(event::IEventPtr pEventData);
+        VOID DeleteActorDelegate(IEventPtr pEventData);
 
-        VOID LoadingLevelDelegate(event::IEventPtr pEventData);
+        VOID LoadingLevelDelegate(IEventPtr pEventData);
 
-        VOID LevelLoadedDelegate(event::IEventPtr pEventData);
+        VOID LevelLoadedDelegate(IEventPtr pEventData);
 
-        VOID SetParentDelegate(event::IEventPtr pEventData);
+        VOID SetParentDelegate(IEventPtr pEventData);
 
-        VOID Resize(UINT w, UINT h);
+        VOID VOnResize(UINT w, UINT h);
 
         virtual ~HumanGameView(VOID);
     };
 
-    //todo: move everything below to somewhere else
-    typedef fastdelegate::FastDelegate0<VOID> UpdateAction;
-        typedef fastdelegate::FastDelegate3<INT, INT, INT> MouseScrollAction;
-    class ActorController : public IGameView, public tbd::IKeyListener, public tbd::IMouseListener 
+    class ActorController : public IActorController 
     {
     protected:
         INT m_lastPosX;
@@ -188,18 +129,22 @@ namespace tbd
     public:
         ActorController(VOID);
 
-        VOID SetMinSpeed(FLOAT minSpeed) { m_minSpeed = minSpeed; }
-        VOID SetMaxSpeed(FLOAT maxSpeed) { m_maxSpeed = maxSpeed; }
+		virtual BOOL VInitialise(FactoryPtr* facts) { return TRUE; }
 
-        virtual HRESULT VOnRestore(VOID) { return S_OK; }
+        VOID VSetMinSpeed(FLOAT minSpeed) { m_minSpeed = minSpeed; }
+        VOID VSetMaxSpeed(FLOAT maxSpeed) { m_maxSpeed = maxSpeed; }
+
+		VOID VActivate(VOID);
+
+		VOID VDeactivate(VOID);
+
+        virtual BOOL VOnRestore(VOID) { return TRUE; }
 
         virtual VOID VOnRender(DOUBLE time, FLOAT elapsedTime) { }
 
         virtual VOID VOnUpdate(ULONG deltaMillis);
 
-        virtual VOID VOnLosteDevice(VOID) { }
-
-        virtual GameViewType VGetType(VOID) CONST { return CONTROLLER; }
+        virtual ViewType VGetType(VOID) CONST { return eProjectionType_Controller; }
 
         virtual BOOL VOnKeyDown(UINT CONST code);
         virtual BOOL VOnKeyPressed(UINT CONST code);
@@ -215,25 +160,24 @@ namespace tbd
         virtual BOOL VOnMouseDragged(INT x, INT y, INT dx, INT dy, INT button);
         virtual BOOL VOnMouseWheel(INT x, INT y, INT delta);
 
-        VOID RegisterKeyPressedCommand(UINT key, CONST std::string& command);
-        VOID RegisterKeyReleasedCommand(UINT key, CONST std::string& command);
-        VOID RegisterKeyDownCommand(UINT key, CONST std::string& command);
+        VOID VRegisterKeyPressedCommand(UINT key, CONST std::string& command);
+        VOID VRegisterKeyReleasedCommand(UINT key, CONST std::string& command);
+        VOID VRegisterKeyDownCommand(UINT key, CONST std::string& command);
 
-        VOID RegisterKeyCommand(UINT key, CONST std::string& command);
-        //todo: do for released
-        /*VOID RegisterKeyPressedAction(UINT key, KeyboardButtonPressedAction action);
-        VOID RegisterKeyDownAction(UINT key, KeyboardButtonPressedAction action);
-        VOID RegisterMousePressedAction(UINT mouseButton, MouseButtonPressedAction action); */
-        VOID SetMouseScrollAction(MouseScrollAction action);
-        VOID SetUpdateAction(UpdateAction action);
+        VOID VRegisterKeyCommand(UINT key, CONST std::string& command);
 
-        virtual ~ActorController(VOID) { }
+        VOID VSetMouseScrollAction(MouseScrollAction action);
+        VOID VSetUpdateAction(UpdateAction action);
+
+        virtual ~ActorController(VOID) { VDeactivate(); }
     };
+
+    class CameraComponent;
 
     class CharacterController : public ActorController
     {
     private:
-        std::shared_ptr<tbd::CameraComponent> m_cameraComp;
+        CameraComponent* m_cameraComp;
         /*
         BOOL m_editMode;
         BOOL m_bMovePicked;
@@ -247,8 +191,8 @@ namespace tbd
         BOOL VOnMouseMoved(INT x, INT y, INT dx, INT dy);
         VOID VOnUpdate(ULONG millis);
         BOOL VOnKeyDown(UINT CONST code);
-        VOID VOnAttach(GameViewId viewId, std::shared_ptr<tbd::Actor> actor);
-        VOID VSetTarget(std::shared_ptr<tbd::Actor> actor);
+        VOID VOnAttach(GameViewId viewId, IActor* actor);
+        VOID VSetTarget(IActor* actor);
     };
 };
 

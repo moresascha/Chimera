@@ -1,6 +1,6 @@
 #include "ProcessManager.h"
 
-namespace proc 
+namespace chimera 
 {
     ProcessManager::ProcessManager(VOID)
     {
@@ -9,53 +9,54 @@ namespace proc
         GetSystemInfo(&sysinfo);
         DWORD numCPU = sysinfo.dwNumberOfProcessors;
 
-        m_pScheduler = new tbd::Scheduler(numCPU, this);
+        m_pScheduler = new Scheduler(numCPU, this);
 
-        m_pScheduler->SetState(RUNNING);
+        m_pScheduler->SetState(eProcessState_Running);
         m_pScheduler->VOnInit();
     }
 
-    std::weak_ptr<Process> ProcessManager::Attach(std::shared_ptr<Process> process) 
+    IProcess* ProcessManager::VAttach(std::shared_ptr<IProcess> process) 
     {
-        this->m_processes.push_back(process);
-        return std::weak_ptr<Process>(process);
+        m_processes.push_back(process);
+        return m_processes.back().get();
     }
 
-    std::weak_ptr<Process> ProcessManager::AttachWithScheduler(std::shared_ptr<Process> process) 
+    IProcess* ProcessManager::VAttachWithScheduler(std::shared_ptr<IProcess> process) 
     {
-        if(process->VGetType() == REALTIME)
+        if(process->VGetType() == eProcessType_Realtime)
         {
-            m_pScheduler->AddProcess(std::static_pointer_cast<proc::RealtimeProcess>(process));
+
+            return m_pScheduler->VAddProcess(process);
         }
         else
         {
-            this->m_processes.push_back(process);
+            m_processes.push_back(std::move(process));
+            return m_processes.back().get();
         }
-        return std::weak_ptr<Process>(process);
     }
 
-    VOID ProcessManager::SchedulerAdd(std::shared_ptr<Process> process)
+    VOID ProcessManager::SchedulerAdd(std::shared_ptr<IProcess> process)
     {
         m_lock.Lock();
-        this->m_processes.push_back(process);
+        m_processes.push_back(process);
         m_lock.Unlock();
     }
 
-    UINT ProcessManager::Update(ULONG deltaMillis) {
-    
+    UINT ProcessManager::VUpdate(ULONG deltaMillis) 
+    {
         m_lock.Lock();
     
         for(auto it = m_processes.begin(); it != m_processes.end();)
         {
-            std::shared_ptr<Process> proc = (*it);
+            IProcess* proc = it->get();
 
-            if(proc->GetState() == UNINITIALIZED)
+            if(proc->GetState() == eProcessState_Uninitialized)
             {
-                proc->SetState(RUNNING);
+                proc->SetState(eProcessState_Running);
                 proc->VOnInit();
             }
 
-            if(proc->GetState() == RUNNING)
+            if(proc->GetState() == eProcessState_Running)
             {
                 proc->VOnUpdate(deltaMillis);
             }
@@ -64,19 +65,19 @@ namespace proc
             {
                 switch(proc->GetState())
                 {
-                case SUCCEEDED: 
+                case eProcessState_Succed: 
                     {
                         proc->VOnSuccess();
          
-                        std::shared_ptr<Process> child = proc->RemoveChild();
+                        std::shared_ptr<IProcess> child = std::move(proc->RemoveChild());
                         if(child) 
                         {
-                            Attach(child);
+                            VAttach(child);
                         }
                     }  break;
 
-                case ABORTED: proc->VOnAbort(); break;
-                case FAILED: proc->VOnFail(); break;  
+                case eProcessState_Aborted: proc->VOnAbort(); break;
+                case eProcessState_Failed: proc->VOnFail(); break;  
                 }
                 it = m_processes.erase(it);
             }
@@ -89,24 +90,29 @@ namespace proc
         return 0; // TODO
     }
 
-    VOID ProcessManager::AbortAll(BOOL immediate) {
+    VOID ProcessManager::VAbortAll(BOOL immediate) 
+    {
         for(auto it = m_processes.begin(); it != m_processes.end(); ++it)
         {
             if(immediate)
             {
-                (*it)->SetState(proc::ABORTED);
+                (*it)->SetState(chimera::eProcessState_Aborted);
                 (*it)->VOnAbort();
             }
             else
             {
-                (*it)->SetState(proc::ABORTED);
+                (*it)->SetState(chimera::eProcessState_Aborted);
             }
         }
     }
 
     ProcessManager::~ProcessManager(VOID)
     {
+        TBD_FOR(m_processes)
+        {
+            it->reset();
+        }
+        m_processes.clear();
         SAFE_DELETE(m_pScheduler);
-        this->m_processes.clear();
     }
 };

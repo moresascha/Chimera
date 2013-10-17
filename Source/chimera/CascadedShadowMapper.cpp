@@ -1,13 +1,9 @@
 #include "CascadedShadowMapper.h"
-#include "GameApp.h"
-#include "D3DRenderer.h"
-#include "SceneNode.h"
-#include "GameLogic.h"
-#include "SceneGraph.h"
+#include "Frustum.h"
 #include "Camera.h"
 #include "Components.h"
-#include "EventManager.h"
-namespace d3d
+
+namespace chimera
 {
 //#define SHADOW_START_SIZE 1024
 
@@ -15,65 +11,89 @@ namespace d3d
 
 #ifndef _DEBUG
 //#undef CSM_DEBUG
-#endif    
+#endif
+
+    struct _LightingBuffer
+    {
+        XMFLOAT4X4 m_view;
+        XMFLOAT4X4 m_iView;
+        XMFLOAT4X4 m_projection[3]; //TODO
+        XMFLOAT4 m_lightPos;
+        XMFLOAT4 m_distances;
+    };
 
     CascadedShadowMapper::CascadedShadowMapper(UCHAR cascades) 
         : m_cascades(cascades), m_ppTargets(NULL), /*m_camera(1024, 1024, 0.01, 1000),*/ m_pCascadesSettings(NULL), m_ppBlurChain(NULL)
     {
 
+        /*
 #ifdef CSM_DEBUG
         for(USHORT i = 0; i < m_cascades; ++i)
         {
-            m_cascadeCameraActor[i] = app::g_pApp->GetLogic()->VCreateActor("staticcamera.xml");
+            m_cascadeCameraActor[i] = chimera::g_pApp->GetLogic()->VCreateActor("staticcamera.xml");
             std::stringstream ss;
             ss << "cascadeCam";
             ss << i;
             m_cascadeCameraActor[i]->SetName(ss.str());
         }
 #endif
-        m_lightActorCamera = app::g_pApp->GetLogic()->VCreateActor("rendercamera.xml");
+        */
+
+        std::unique_ptr<ActorDescription> desc = CmGetApp()->VGetLogic()->VGetActorFactory()->VCreateActorDescription();
+        CameraComponent* cc = desc->AddComponent<CameraComponent>(CM_CMP_CAMERA);
+        cc->SetCamera(std::shared_ptr<ICamera>(new util::FPSCamera(1,1,1e-2f,1e3)));
+        TransformComponent* tc = desc->AddComponent<TransformComponent>(CM_CMP_TRANSFORM);
+
+        m_lightActorCamera = CmGetApp()->VGetLogic()->VCreateActor(std::move(desc));
+
         util::Vec3 lightPos(1.0f,0.3f,-0.2f);
         lightPos.Normalize();
-        m_lightActorCamera->GetComponent<tbd::TransformComponent>(tbd::TransformComponent::COMPONENT_ID).lock()->GetTransformation()->SetTranslate(lightPos.x, lightPos.y, lightPos.z);
-        m_lightActorCamera->GetComponent<tbd::CameraComponent>(tbd::CameraComponent::COMPONENT_ID).lock()->GetCamera()->MoveToPosition(
-            m_lightActorCamera->GetComponent<tbd::TransformComponent>(tbd::TransformComponent::COMPONENT_ID).lock()->GetTransformation()->GetTranslation());
+        tc->GetTransformation()->SetTranslate(lightPos.x, lightPos.y, lightPos.z);
+        cc->GetCamera()->MoveToPosition(tc->GetTransformation()->GetTranslation());
         m_lightActorCamera->SetName("cascadeLightCamera");
 
-        m_viewActor = app::g_pApp->GetLogic()->VCreateActor("rendercamera.xml");
+        /*
+        m_viewActor = chimera::g_pApp->GetLogic()->VCreateActor("rendercamera.xml");
         m_viewActor->SetName("cascadeViewCamera");
-        m_viewActor->GetComponent<tbd::TransformComponent>(tbd::TransformComponent::COMPONENT_ID).lock()->GetTransformation()->SetTranslate(0,5,-5);
-        m_viewActor->GetComponent<tbd::CameraComponent>(tbd::CameraComponent::COMPONENT_ID).lock()->GetCamera()->MoveToPosition(
-            m_viewActor->GetComponent<tbd::TransformComponent>(tbd::TransformComponent::COMPONENT_ID).lock()->GetTransformation()->GetTranslation());
+        m_viewActor->GetComponent<chimera::TransformComponent>(chimera::TransformComponent::COMPONENT_ID).lock()->GetTransformation()->SetTranslate(0,5,-5);
+        m_viewActor->GetComponent<chimera::CameraComponent>(chimera::CameraComponent::COMPONENT_ID).lock()->GetCamera()->MoveToPosition(
+            m_viewActor->GetComponent<chimera::TransformComponent>(chimera::TransformComponent::COMPONENT_ID).lock()->GetTransformation()->GetTranslation());
 
-
-        ADD_EVENT_LISTENER(this, &CascadedShadowMapper::SetSunPositionDelegate, event::SetSunPositionEvent::TYPE);
+        */
+        //ADD_EVENT_LISTENER(this, &CascadedShadowMapper::SetSunPositionDelegate, SetSunPositionEvent::TYPE);
     }
 
-    BOOL CascadedShadowMapper::OnRestore(VOID)
+    BOOL CascadedShadowMapper::VOnRestore(VOID)
     {
-        UINT startSize = app::g_pApp->GetConfig()->GetInteger("iCSMSize");
+        UINT startSize = CmGetApp()->VGetConfig()->VGetInteger("iCSMSize");
 
         if(!m_ppTargets)
         {
-            m_ppTargets = new d3d::RenderTarget*[m_cascades];
-            m_ppBlurredTargets = new d3d::RenderTarget*[m_cascades];
-            m_ppBlurChain = new d3d::EffectChain*[m_cascades];
+            m_ppTargets = new IRenderTarget*[m_cascades];
+            m_ppBlurredTargets = new IRenderTarget*[m_cascades];
+            m_ppBlurChain = new IEffectChain*[m_cascades];
 
             for(UCHAR i = 0; i < m_cascades; ++i)
             {
-                m_ppTargets[i] = new d3d::RenderTarget();
-                m_ppBlurredTargets[i] = new d3d::RenderTarget();
+                m_ppTargets[i] = CmGetApp()->VGetHumanView()->VGetGraphicsFactory()->VCreateRenderTarget().release();
+                m_ppBlurredTargets[i] = CmGetApp()->VGetHumanView()->VGetGraphicsFactory()->VCreateRenderTarget().release();
 
                 UINT dim = startSize / (1 << i);
 
-                m_ppBlurChain[i] = new d3d::EffectChain(m_ppTargets[i], dim, dim);
+                m_ppBlurChain[i] = CmGetApp()->VGetHumanView()->VGetEffectFactory()->VCreateEffectChain();// chimera::EffectChain(m_ppTargets[i], dim, dim);
 
-                d3d::Effect* e0 = m_ppBlurChain[i]->CreateEffect("VSMBlurH", 1, 1);
-                e0->SetSource(m_ppTargets[i]);
+                CMShaderDescription desc;
+                desc.file = L"Effects.hlsl";
+                desc.function = "VSMBlurH";
+                IEffect* e0 = m_ppBlurChain[i]->VCreateEffect(desc);
+                e0->VSetSource(m_ppTargets[i]);
 
-                d3d::Effect* e1 = m_ppBlurChain[i]->CreateEffect("VSMBlurV", 1, 1);
-                e1->AddRequirement(e0);
-                e1->SetTarget(m_ppBlurredTargets[i]);
+                desc.function = "VSMBlurV";
+                IEffect* e1 = m_ppBlurChain[i]->VCreateEffect(desc);
+                e1->VAddRequirement(e0);
+                e1->VSetTarget(m_ppBlurredTargets[i]);
+
+                m_ppBlurChain[i]->VOnRestore(dim, dim);
             }
         }
 
@@ -97,15 +117,15 @@ namespace d3d
         for(UCHAR i = 1; i <= m_cascades; ++i)
         {
             UINT dim = startSize / (1 << (i-1));
-            m_ppTargets[i - 1]->SetClearColor(1000, 1000, 1000, 1000);
+            m_ppTargets[i - 1]->VSetClearColor(1000, 1000, 1000, 1000);
             //m_ppTargets[i - 1]->SetMiscflags(D3D11_RESOURCE_MISC_GENERATE_MIPS);
-            m_ppTargets[i - 1]->OnRestore(dim, dim, DXGI_FORMAT_R32G32_FLOAT);
+            m_ppTargets[i - 1]->VOnRestore(dim, dim, eFormat_R32G32_FLOAT);
 
             m_pCascadesSettings[i - 1].start = -10;
             sum += pow(factor, (i-1)) * t;
             m_pCascadesSettings[i - 1].end = 14;
 
-            m_ppBlurChain[i - 1]->OnRestore(dim, dim);
+            m_ppBlurChain[i - 1]->VOnRestore(dim, dim);
         }
 
         FLOAT cuttOffset = 0;
@@ -121,16 +141,41 @@ namespace d3d
 
         /*m_cascadesSettings[3].start = 256;
         m_cascadesSettings[3].end = 1000; */
+        CMShaderProgramDescription desc;
 
-        m_pProgram = d3d::ShaderProgram::GetProgram("CSM").get();
+        desc.vs.file = L"CascadedShadowMap.hlsl";
+        desc.vs.function = "CSM_VS";
+        desc.vs.layoutCount = 3;
+        desc.vs.inputLayout[0].name = "POSITION";
+        desc.vs.inputLayout[0].format = eFormat_R32G32B32_FLOAT;
+        desc.vs.inputLayout[0].instanced = FALSE;
+        desc.vs.inputLayout[0].slot = 0;
+        desc.vs.inputLayout[0].position = 0;
 
-        m_pProgramInstanced = d3d::ShaderProgram::GetProgram("CSM_Instanced").get();
+        desc.vs.inputLayout[1].format = eFormat_R32G32B32_FLOAT;
+        desc.vs.inputLayout[1].name = "NORMAL";
+        desc.vs.inputLayout[1].instanced = FALSE;
+        desc.vs.inputLayout[1].slot = 0;
+        desc.vs.inputLayout[1].position = 1;
+
+        desc.vs.inputLayout[2].name = "TEXCOORD";
+        desc.vs.inputLayout[2].format = eFormat_R32G32_FLOAT;
+        desc.vs.inputLayout[2].instanced = FALSE;
+        desc.vs.inputLayout[2].slot = 0;
+        desc.vs.inputLayout[2].position = 2;
+
+        desc.fs.file = desc.vs.file;
+        desc.fs.function = "CSM_PS";
+
+        m_pProgram = CmGetApp()->VGetHumanView()->VGetRenderer()->VGetShaderCache()->VCreateShaderProgram("CSM", &desc); //chimera::ShaderProgram::GetProgram("CSM").get();
+
+        //m_pProgramInstanced = CmGetApp()->VGetHumanView()->VGetGraphicsFactory()->VCreateShaderFactory()->VCreateShaderProgram();//chimera::ShaderProgram::GetProgram("CSM_Instanced").get();
 
         util::Vec3 eyePos;
-        eyePos = m_lightActorCamera->GetComponent<tbd::TransformComponent>(tbd::TransformComponent::COMPONENT_ID).lock()->GetTransformation()->GetTranslation();
+        eyePos = GetActorCompnent<TransformComponent>(m_lightActorCamera, CM_CMP_TRANSFORM)->GetTransformation()->GetTranslation();
         //m_camera.LookAt(eyePos, util::Vec3(0,0,0));
 
-        std::shared_ptr<tbd::CameraComponent> cc = m_lightActorCamera->GetComponent<tbd::CameraComponent>(tbd::CameraComponent::COMPONENT_ID).lock();
+        CameraComponent* cc = GetActorCompnent<CameraComponent>(m_lightActorCamera, CM_CMP_CAMERA);
         cc->GetCamera()->LookAt(eyePos, util::Vec3(0,0,0));
 
         //m_camera.MoveToPosition(eyePos);
@@ -140,34 +185,33 @@ namespace d3d
         return TRUE;
     }
 
-    VOID CascadedShadowMapper::Render(tbd::SceneGraph* graph)
+    VOID CascadedShadowMapper::VRender(ISceneGraph* graph)
     {
 
-        D3DRenderer* renderer = app::g_pApp->GetHumanView()->GetRenderer();
-        ID3D11ShaderResourceView* vn[4];
+        IRenderer* renderer = CmGetApp()->VGetHumanView()->VGetRenderer();
+        IDeviceTexture* vn[4];
         for(UCHAR i = 0; i < m_cascades + 1; ++i)
         {
             vn[i] = NULL;
         }
-        d3d::GetContext()->PSSetShaderResources(d3d::eEffect0, m_cascades, vn + 1); //debugging samplers
+        renderer->VSetTextures(eEffect0, (vn+1), m_cascades);
 
-        util::ICamera* playerView = graph->GetCamera().get();
+        ICamera* playerView = graph->VGetCamera().get();
 
-        tbd::Frustum cascadeFrusta;
-        tbd::Frustum ortographicFrusta;
+        Frustum cascadeFrusta;
+        Frustum ortographicFrusta;
 
-        std::shared_ptr<tbd::CameraComponent> lcc = m_lightActorCamera->GetComponent<tbd::CameraComponent>(tbd::CameraComponent::COMPONENT_ID).lock();
+        CameraComponent* lcc = GetActorCompnent<CameraComponent>(m_lightActorCamera, CM_CMP_CAMERA);
 
-        std::shared_ptr<tbd::CameraComponent> vcc = m_viewActor->GetComponent<tbd::CameraComponent>(tbd::CameraComponent::COMPONENT_ID).lock();
+        //std::shared_ptr<chimera::CameraComponent> vcc = m_viewActor->GetComponent<chimera::CameraComponent>(chimera::CameraComponent::COMPONENT_ID).lock();
         
         renderer->VPushViewTransform(lcc->GetCamera()->GetView(), lcc->GetCamera()->GetIView(), lcc->GetCamera()->GetEyePos());
 
-        util::ICamera* lightCamera = lcc->GetCamera().get();
+        ICamera* lightCamera = lcc->GetCamera().get();
         //util::ICamera* viewCamera = vcc->GetCamera().get();
-        util::ICamera* viewCamera = playerView;
+        ICamera* viewCamera = playerView;
 
         //util::Mat4 viewToLight = util::Mat4::Mul(lightCamera->GetView(), viewCamera->GetIView());//vcc->GetCamera()->GetIView());
-        //renderer->PushRasterizerState(d3d::g_pRasterizerStateBackFaceSolid);
 
         FLOAT distances[3];
 
@@ -175,10 +219,8 @@ namespace d3d
         {
             CascadeSettings& settings = m_pCascadesSettings[ci];
             
-#ifdef CSM_DEBUG
-            util::StaticCamera* staticCam;
-            staticCam = (util::StaticCamera*)(m_cascadeCameraActor[ci]->GetComponent<tbd::CameraComponent>(tbd::CameraComponent::COMPONENT_ID).lock()->GetCamera().get());
-#endif
+            /*util::StaticCamera* staticCam;
+            staticCam = (util::StaticCamera*)(m_cascadeCameraActor[ci]->GetComponent<chimera::CameraComponent>(chimera::CameraComponent::COMPONENT_ID).lock()->GetCamera().get());*/
 
             FLOAT farr = settings.end;
             FLOAT nnear = settings.start;
@@ -237,41 +279,45 @@ namespace d3d
 
             XMStoreFloat4x4(&settings.m_projection.m_m, mat);
 
+            /*
+            util::StaticCamera staticCam(1,1,1,1);
 #ifdef CSM_DEBUG
-            staticCam->SetOrthographicProjectionOffCenter(vmin.x, vmax.x, vmin.y, vmax.y, n, ff);
-            staticCam->SetView(lightCamera->GetView(), lightCamera->GetIView());
-#endif
-            //ortographicFrusta.CreateOrthographicOffCenter(vmin.x, vmax.x, vmin.y, vmax.y, -120, ff);
-            ortographicFrusta = staticCam->GetFrustum();
+            staticCam.SetOrthographicProjectionOffCenter(vmin.x, vmax.x, vmin.y, vmax.y, n, ff);
+            staticCam.SetView(lightCamera->GetView(), lightCamera->GetIView());
+            ortographicFrusta = staticCam.GetFrustum();
+#endif*/
+            ortographicFrusta.CreateOrthographicOffCenter(vmin.x, vmax.x, vmin.y, vmax.y, n, ff);
+            ortographicFrusta.Transform(lightCamera->GetIView());
    
             renderer->VPushProjectionTransform(settings.m_projection, ff - n);
 
-            m_ppTargets[ci]->Clear();
-            m_ppTargets[ci]->Bind();
+            m_ppTargets[ci]->VClear();
+            m_ppTargets[ci]->VBind();
 
-            graph->PushFrustum(&ortographicFrusta);
-            m_pProgram->Bind();
-            graph->OnRender(tbd::eDRAW_TO_SHADOW_MAP);
-            m_pProgramInstanced->Bind();
-            graph->OnRender(tbd::eDRAW_TO_SHADOW_MAP_INSTANCED);
-            graph->PopFrustum();
+            graph->VPushFrustum(&ortographicFrusta);
+            m_pProgram->VBind();
+            graph->VOnRender(CM_RENDERPATH_SHADOWMAP);
+            /*m_pProgramInstanced->VBind();
+            graph->VOnRender(eRenderPath_DrawToShadowMapInstanced);*/
+            graph->VPopFrustum();
 
             renderer->VPopProjectionTransform();
 
-            m_ppBlurChain[ci]->Process();
+            m_ppBlurChain[ci]->VProcess();
 
          //   d3d::GetContext()->GenerateMips(m_ppBlurredTargets[ci]->GetShaderRessourceView());
         }
 
-       // renderer->PopRasterizerState();
         renderer->VPopViewTransform();
-        d3d::BindBackbuffer();
-        ID3D11ShaderResourceView* v[3];
+        CmGetApp()->VGetHumanView()->VGetRenderer()->VGetCurrentRenderTarget()->VBind();
+
+        IDeviceTexture* v[3];
         for(UCHAR i = 0; i < m_cascades; ++i)
         {
-            v[i] = m_ppBlurredTargets[i]->GetShaderRessourceView();
+            v[i] = m_ppBlurredTargets[i]->VGetTexture();
         }
-        d3d::GetContext()->PSSetShaderResources(d3d::eEffect0, m_cascades, v);
+        renderer->VSetTextures(eEffect0, v, m_cascades);
+
         //ID3D11ShaderResourceView* debugView = m_ppBlurredTargets[0]->GetShaderRessourceView();
         //d3d::GetContext()->PSSetShaderResources(d3d::eEffect3, 1, &debugView); //debugging samplers
         
@@ -281,21 +327,35 @@ namespace d3d
         {
             mats[i] = m_pCascadesSettings[i].m_projection;
         }
-        
-        renderer->SetCSMSettings(lightCamera->GetView(), lightCamera->GetIView(), mats, lcc->GetCamera()->GetEyePos(), distances);
+
+        IConstShaderBuffer* lb = renderer->VGetConstShaderBuffer(eEnvLightingBuffer);
+        _LightingBuffer* _lb = (_LightingBuffer*)lb->VMap();
+        _lb->m_view = lightCamera->GetView().m_m;
+        _lb->m_iView = lightCamera->GetIView().m_m;
+        _lb->m_projection[0] = mats[0].m_m;
+        _lb->m_projection[1] = mats[1].m_m;
+        _lb->m_projection[2] = mats[2].m_m;
+        _lb->m_lightPos.x = lcc->GetCamera()->GetEyePos().x;
+        _lb->m_lightPos.y = lcc->GetCamera()->GetEyePos().y;
+        _lb->m_lightPos.z = lcc->GetCamera()->GetEyePos().z;
+        _lb->m_distances.x = distances[0];
+        _lb->m_distances.y = distances[1];
+        _lb->m_distances.z = distances[2];
+        lb->VUnmap();
+       // renderer->SetCSMSettings(lightCamera->GetView(), lightCamera->GetIView(), mats, lcc->GetCamera()->GetEyePos(), distances);
     }
 
-    VOID CascadedShadowMapper::SetSunPositionDelegate(event::IEventPtr data)
+    VOID CascadedShadowMapper::SetSunPositionDelegate(chimera::IEventPtr data)
     {
-        std::shared_ptr<event::SetSunPositionEvent> e = std::static_pointer_cast<event::SetSunPositionEvent>(data);
-        std::shared_ptr<tbd::CameraComponent> cc = m_lightActorCamera->GetComponent<tbd::CameraComponent>(tbd::CameraComponent::COMPONENT_ID).lock();
+        /*std::shared_ptr<chimera::SetSunPositionEvent> e = std::static_pointer_cast<chimera::SetSunPositionEvent>(data);
+        std::shared_ptr<chimera::CameraComponent> cc = m_lightActorCamera->GetComponent<chimera::CameraComponent>(chimera::CameraComponent::COMPONENT_ID).lock();
         util::Vec3 newPos = e->m_position;
         newPos.Normalize();
         cc->GetCamera()->LookAt(newPos, util::Vec3(0,0,0));
         util::Vec3 f(0,0,0);
         util::Vec3 u(0,1,0);
         util::Mat4 m;
-        XMStoreFloat4x4(&m.m_m, XMMatrixLookAtLH(XMLoadFloat3(&newPos.m_v), XMLoadFloat3(&(f.m_v)), XMLoadFloat3(&u.m_v)));
+        XMStoreFloat4x4(&m.m_m, XMMatrixLookAtLH(XMLoadFloat3(&newPos.m_v), XMLoadFloat3(&(f.m_v)), XMLoadFloat3(&u.m_v)));*/
     }
 
     VOID CascadedShadowMapper::Destroy(VOID)
@@ -318,7 +378,7 @@ namespace d3d
 
     CascadedShadowMapper::~CascadedShadowMapper(VOID)
     {
-        REMOVE_EVENT_LISTENER(this, &CascadedShadowMapper::SetSunPositionDelegate, event::SetSunPositionEvent::TYPE);
+        //REMOVE_EVENT_LISTENER(this, &CascadedShadowMapper::SetSunPositionDelegate, chimera::SetSunPositionEvent::TYPE);
         Destroy();
     }
 };

@@ -3,95 +3,43 @@
 #include "Vec3.h"
 #include "Event.h"
 #include "Locker.h"
+#include "Components.h"
 
-namespace view 
-{
-    class Mesh;
-}
-
-namespace tbd
-{
-    class Actor;
-    class ISoundBuffer;
-    class TransformComponent;
-    class SoundComponent;
-    class LightComponent;
-    class ResHandle;
-}
-
-namespace cudah
-{
-    class cudah;
-}
-
-namespace util
-{
-    class ICamera;
-}
-
-namespace d3d
-{
-    class Shader;
-}
-
-namespace proc 
-{
-
-    enum Type
+namespace chimera 
+{    
+    class DelegateProcess : public IProcess
     {
-        NORMAL,
-        REALTIME,
-        ACTOR_REALTIME
-    };
-
-    enum State {
-        UNINITIALIZED,
-        REMOVED,
-        RUNNING,
-        PAUSED,
-        SUCCEEDED,
-        FAILED,
-        ABORTED
-    };
-
-    class Process
-    {
-        friend class ProcessManager;
     private:
-        State m_state;
-    protected:
-        std::shared_ptr<Process> m_child;
-    protected:
-        virtual VOID VOnInit(VOID) {};
-        virtual VOID VOnAbort(VOID) {};
-        virtual VOID VOnFail(VOID) {};
-        virtual VOID VOnSuccess(VOID) {};
-        virtual VOID VOnUpdate(ULONG deltaMillis) = 0;
-        virtual Type VGetType(VOID) { return NORMAL; }
-
-        VOID SetState(State state) { m_state = state; }
-
+        _FDelegate m_pF;
     public:
-        Process(VOID) : m_state(UNINITIALIZED) {}
+        DelegateProcess(_FDelegate fp) : m_pF(fp)
+        {
 
-        inline std::shared_ptr<Process> PeekChild(VOID) CONST { return m_child; }
-        std::shared_ptr<Process> RemoveChild(VOID);
-        virtual VOID VSetChild(std::shared_ptr<Process> child) { this->m_child = child; }
-
-        inline State GetState(VOID) CONST { return m_state; }
-
-        inline VOID Succeed(VOID) { m_state = SUCCEEDED; }
-        inline VOID Fail(VOID) { m_state = FAILED; }
-        inline VOID Pause(VOID) { m_state = PAUSED; }
-        inline VOID UnPause(VOID) { m_state = RUNNING; }
-
-        virtual BOOL IsAlive(VOID) CONST { return m_state == RUNNING || m_state == PAUSED; }
-        virtual BOOL IsDead(VOID) CONST { return m_state == SUCCEEDED || m_state == ABORTED || m_state == FAILED; }
-
-        virtual ~Process(VOID) {}
+        }
+        VOID VOnUpdate(ULONG deltaMillis)
+        {
+            m_pF(deltaMillis);
+        }
     };
 
-    class RealtimeProcess : public Process 
+    typedef fastdelegate::FastDelegate2<ULONG, IActor*> _AFDelegate;
+    class ActorDelegateProcess : public IProcess
+    {
+    private:
+        _AFDelegate m_pF;
+        IActor* m_actor;
+    public:
+        ActorDelegateProcess(_AFDelegate fp, IActor* actor) : m_pF(fp), m_actor(actor)
+        {
+
+        }
+        VOID VOnUpdate(ULONG deltaMillis)
+        {
+            m_pF(deltaMillis, m_actor);
+        }
+    };
+
+    class RealtimeProcess : public IProcess 
     {
         friend class ProcessManager;
     private:
@@ -111,7 +59,7 @@ namespace proc
         virtual VOID VOnSuccess(VOID);
         virtual VOID VOnFail(VOID);
 
-        virtual Type VGetType(VOID) { return REALTIME; }
+        virtual ProcessType VGetType(VOID) { return eProcessType_Realtime; }
         VOID SetPriority(int priority) { m_priority = priority; }
 
     public:
@@ -120,17 +68,17 @@ namespace proc
         static DWORD WINAPI ThreadProc(LPVOID lpParam);
     };
 
-    class ActorProcess : public Process
+    class ActorProcess : public IProcess
     {
     private:
-        VOID ActorCreatedDelegate(event::IEventPtr data);
-        VOID DeleteActorDelegate(event::IEventPtr data);
+        VOID ActorCreatedDelegate(IEventPtr data);
+        VOID DeleteActorDelegate(IEventPtr data);
         
     protected:
-        std::shared_ptr<tbd::Actor> m_actor;
+        IActor* m_actor;
         BOOL m_isCreated;
     public:
-        ActorProcess(std::shared_ptr<tbd::Actor> actor);
+        ActorProcess(IActor* actor);
         virtual VOID VOnInit(VOID);
         virtual VOID VOnActorCreate(VOID) { };
         virtual VOID VOnActorDelete(VOID) { };
@@ -140,44 +88,31 @@ namespace proc
     class ActorRealtimeProcess : public RealtimeProcess
     {
     protected:
-        std::shared_ptr<tbd::Actor> m_actor;
+        IActor* m_actor;
         HANDLE m_event;
         VOID VThreadProc(VOID);
-        Type VGetType(VOID) { return ACTOR_REALTIME; }
+        ProcessType VGetType(VOID) { return eProcessType_Actor_Realtime; }
     public:
-        ActorRealtimeProcess(std::shared_ptr<tbd::Actor> actor);
-        VOID ActorCreatedDelegate(event::IEventPtr data);
-        VOID DeleteActorDelegate(event::IEventPtr data);
+        ActorRealtimeProcess(IActor* actor);
+        VOID ActorCreatedDelegate(IEventPtr data);
+        VOID DeleteActorDelegate(IEventPtr data);
         virtual VOID _VThreadProc(VOID) = 0;
         virtual ~ActorRealtimeProcess(VOID);
     };
 
-    class RotationProcess : public ActorRealtimeProcess
+    /*class RotationProcess : public ActorRealtimeProcess
     {
     private:
         util::Vec3 m_rotations;
     public:
-        RotationProcess(std::shared_ptr<tbd::Actor> actor, CONST util::Vec3& rotations) : ActorRealtimeProcess(actor), m_rotations(rotations)
+        RotationProcess(std::shared_ptr<chimera::Actor> actor, CONST util::Vec3& rotations) : ActorRealtimeProcess(actor), m_rotations(rotations)
         {
 
         }
         VOID _VThreadProc(VOID);
-    };
+    }; */
 
-    class StrobeLightProcess : public RealtimeProcess
-    {
-    private:
-        std::shared_ptr<tbd::LightComponent> m_lightComponent;
-        FLOAT m_prob;
-        UINT m_freq;
-    protected:
-        //VOID VOnUpdate(ULONG deltaMillis);
-        VOID VThreadProc(VOID);
-    public:
-        StrobeLightProcess(std::shared_ptr<tbd::LightComponent> lightComponent, FLOAT prob, UINT freq /*millis*/);
-    };
-
-    class WatchDirModifacationProcess : public proc::RealtimeProcess
+    class WatchDirModifacationProcess : public RealtimeProcess
     {
     private:
         VOID Close();
@@ -216,29 +151,37 @@ namespace proc
         virtual VOID VOnFileModification(VOID) = 0;
     };
 
-    class WatchShaderFileModificationProcess : public WatchFileModificationProcess
+    class FileWatcherProcess : public WatchFileModificationProcess
     {
-    private:
-        d3d::Shader* m_shader;
     public:
-        WatchShaderFileModificationProcess(d3d::Shader* shader, LPCTSTR file, LPCTSTR dir);
+        FileWatcherProcess(LPCTSTR file, LPCTSTR dir);
+        FileWatcherProcess(LPCSTR file, LPCSTR dir);
         VOID VOnFileModification(VOID);
     };
 
-    class WatchCudaFileModificationProcess : public WatchFileModificationProcess
+    class WatchShaderFileModificationProcess : public WatchFileModificationProcess
+    {
+    private:
+        IShader* m_shader;
+    public:
+        WatchShaderFileModificationProcess(IShader* shader, LPCTSTR file, LPCTSTR dir);
+        VOID VOnFileModification(VOID);
+    };
+
+    /*class WatchCudaFileModificationProcess : public WatchFileModificationProcess
     {
     private:
         cudah::cudah* m_pCuda;
     public:
         WatchCudaFileModificationProcess(cudah::cudah* cuda, LPCTSTR file, LPCTSTR dir);
         VOID VOnFileModification(VOID);
-    };
+    };*/
 
     class SoundProcess : public ActorProcess
     {
     protected:
-        std::shared_ptr<tbd::ResHandle> m_pHandle;
-        tbd::ISoundBuffer* m_pSoundBuffer;
+        std::shared_ptr<IResHandle> m_pHandle;
+        ISoundBuffer* m_pSoundBuffer;
         INT m_soundType;
         INT m_volume;
         INT m_pan;
@@ -250,26 +193,26 @@ namespace proc
         virtual VOID VOnSuccess(VOID);
         virtual VOID VOnUpdate(ULONG deltaMillis);
 
-        VOID ComputeVolumeFromDistance(CONST util::Vec3& soundPosition, util::ICamera* camera, FLOAT radius);
+        VOID ComputeVolumeFromDistance(CONST util::Vec3& soundPosition, ICamera* camera, FLOAT radius);
     public:
-        SoundProcess(std::shared_ptr<tbd::ResHandle> handle, INT soundType = 0/*SOUND_FX*/, INT volume = 100, BOOL loop = FALSE);
-        tbd::ISoundBuffer* GetSoundBuffer(VOID) { return m_pSoundBuffer; }
+        SoundProcess(std::shared_ptr<IResHandle> handle, INT soundType = 0/*SOUND_FX*/, INT volume = 100, BOOL loop = FALSE);
+        ISoundBuffer* GetSoundBuffer(VOID) { return m_pSoundBuffer; }
         virtual ~SoundProcess(VOID) {}
     };
 
     class SoundEmitterProcess : public SoundProcess
     {
     private:
-        std::shared_ptr<tbd::TransformComponent> m_transform;
+        TransformComponent* m_transform;
         FLOAT m_radius;
     protected:
         VOID VOnUpdate(ULONG deltaMillis);
 
     public:
         SoundEmitterProcess(
-            std::shared_ptr<tbd::Actor> actor, 
-            std::shared_ptr<tbd::TransformComponent> transCmp, 
-            std::shared_ptr<tbd::ResHandle> handle,
+            IActor* actor, 
+            TransformComponent* transCmp, 
+            std::shared_ptr<IResHandle> handle,
             FLOAT radius,
             INT soundType = 0/*SOUND_FX*/, INT volume = 100, BOOL loop = FALSE);
 
@@ -284,7 +227,7 @@ namespace proc
     public:
         StaticSoundEmitterProcess(
             CONST util::Vec3& position,
-            std::shared_ptr<tbd::ResHandle> handle,
+            std::shared_ptr<IResHandle> handle,
             FLOAT radius,
             INT soundType = 0/*SOUND_FX*/, INT volume = 100, BOOL loop = FALSE);
         VOID VOnUpdate(ULONG deltaMillis);

@@ -6,7 +6,7 @@
 namespace packman
 {
     class Maze;
-    class PackmanLogic : public tbd::BaseGameLogic
+    class PackmanLogic : public chimera::BaseGameLogic
     {
     public:
 
@@ -17,7 +17,7 @@ namespace packman
 
         BOOL VInit(VOID);
 
-        VOID ComponentCreatedDelegate(event::IEventPtr data);
+        VOID ComponentCreatedDelegate(chimera::IEventPtr data);
 
         ~PackmanLogic(VOID);
     };

@@ -7,13 +7,14 @@
 #include "Camera.h"
 #include "GameLogic.h"
 #include "SceneGraph.h"
-namespace tbd
+#include "math.h"
+namespace chimera
 {
     SoundEngine::SoundEngine(VOID)
     {
     }
 
-    VOID SoundEngine::ResgisterSound(std::string material0, std::string material1, std::string soundFile)
+    VOID SoundEngine::RegisterSound(std::string material0, std::string material1, std::string soundFile)
     {
         MaterialPair pair;
         pair.m0 = material0;
@@ -26,16 +27,16 @@ namespace tbd
         std::shared_ptr<event::CollisionEvent> ce = std::static_pointer_cast<event::CollisionEvent>(event);
         ActorId id0 = ce->m_actor0;
         ActorId id1 = ce->m_actor1;
-        std::shared_ptr<tbd::Actor> actor0 = app::g_pApp->GetLogic()->VFindActor(id0);
-        std::shared_ptr<tbd::Actor> actor1 = app::g_pApp->GetLogic()->VFindActor(id1);
+        std::shared_ptr<chimera::Actor> actor0 = chimera::g_pApp->GetLogic()->VFindActor(id0);
+        std::shared_ptr<chimera::Actor> actor1 = chimera::g_pApp->GetLogic()->VFindActor(id1);
 
         if(!actor0 || !actor1)
         {
             return;
         }
 
-        std::shared_ptr<tbd::PhysicComponent> actor0pc = actor0->GetComponent<tbd::PhysicComponent>(tbd::PhysicComponent::COMPONENT_ID).lock();
-        std::shared_ptr<tbd::PhysicComponent> actor1pc = actor1->GetComponent<tbd::PhysicComponent>(tbd::PhysicComponent::COMPONENT_ID).lock();
+        std::shared_ptr<chimera::PhysicComponent> actor0pc = actor0->GetComponent<chimera::PhysicComponent>(chimera::PhysicComponent::COMPONENT_ID).lock();
+        std::shared_ptr<chimera::PhysicComponent> actor1pc = actor1->GetComponent<chimera::PhysicComponent>(chimera::PhysicComponent::COMPONENT_ID).lock();
 
         MaterialPair pair;
         pair.m0 = actor0pc->m_material;
@@ -45,26 +46,26 @@ namespace tbd
         if(it != m_soundLibrary.end())
         {
             std::string file = it->second;
-            tbd::Resource r(file);
-            std::shared_ptr<tbd::ResHandle> handle = app::g_pApp->GetCache()->GetHandle(r);
+            chimera::CMResource r(file);
+            std::shared_ptr<chimera::ResHandle> handle = chimera::g_pApp->GetCache()->GetHandle(r);
 
-            std::shared_ptr<tbd::TransformComponent> tc0 = actor0->GetComponent<tbd::TransformComponent>(tbd::TransformComponent::COMPONENT_ID).lock();
-            std::shared_ptr<tbd::TransformComponent> tc1 = actor1->GetComponent<tbd::TransformComponent>(tbd::TransformComponent::COMPONENT_ID).lock();
-            util::Vec3 position = tc0->GetTransformation()->GetTranslation() + (tc1->GetTransformation()->GetTranslation() - tc0->GetTransformation()->GetTranslation()) * 0.5;
+            util::Vec3 position = ce->m_position;
             
-            FLOAT radius = 40; //Todo: make depending on force of impact
-            util::ICamera* camera = app::g_pApp->GetHumanView()->GetSceneGraph()->GetCamera().get();
+            FLOAT radius = CLAMP(ce->m_impulse.Length(), 0, 100);
+            util::ICamera* camera = chimera::g_pApp->GetHumanView()->GetSceneGraph()->GetCamera().get();
             util::Vec3 pos = camera->GetEyePos() - position;
             INT vol = 0;
             FLOAT l = pos.Length();
 
-            if(radius > l)
+            //if(radius > l)
             {
                 vol = (INT)(100 * l / radius);
             }
 
+            vol = CLAMP(vol, 0, 100);
+
             std::shared_ptr<proc::StaticSoundEmitterProcess> proc = std::shared_ptr<proc::StaticSoundEmitterProcess>(new proc::StaticSoundEmitterProcess(position, handle, radius, 0, vol));
-            app::g_pApp->GetLogic()->AttachProcess(proc);
+            chimera::g_pApp->GetLogic()->AttachProcess(proc);
         }
         else
         {
@@ -75,19 +76,19 @@ namespace tbd
     VOID SoundEngine::NewComponentDelegate(event::IEventPtr event)
     {
         std::shared_ptr<event::NewComponentCreatedEvent> pCastEventData = std::static_pointer_cast<event::NewComponentCreatedEvent>(event);
-        std::shared_ptr<tbd::Actor> actor = app::g_pApp->GetLogic()->VFindActor(pCastEventData->m_actorId);
+        std::shared_ptr<chimera::Actor> actor = chimera::g_pApp->GetLogic()->VFindActor(pCastEventData->m_actorId);
 
-        if(pCastEventData->m_id == tbd::SoundComponent::COMPONENT_ID)
+        if(pCastEventData->m_id == chimera::SoundComponent::COMPONENT_ID)
         {
-            std::shared_ptr<tbd::SoundComponent> comp = actor->GetComponent<tbd::SoundComponent>(tbd::SoundComponent::COMPONENT_ID).lock();
-            if(!actor->HasComponent<tbd::TransformComponent>(tbd::TransformComponent::COMPONENT_ID))
+            std::shared_ptr<chimera::SoundComponent> comp = actor->GetComponent<chimera::SoundComponent>(chimera::SoundComponent::COMPONENT_ID).lock();
+            if(!actor->HasComponent<chimera::TransformComponent>(chimera::TransformComponent::COMPONENT_ID))
             {
                 LOG_CRITICAL_ERROR("actor needs a transformcomponent");
             }
-            std::shared_ptr<tbd::TransformComponent> transform = actor->GetComponent<tbd::TransformComponent>(tbd::TransformComponent::COMPONENT_ID).lock();
+            std::shared_ptr<chimera::TransformComponent> transform = actor->GetComponent<chimera::TransformComponent>(chimera::TransformComponent::COMPONENT_ID).lock();
 
-            tbd::Resource r(comp->m_soundFile);
-            std::shared_ptr<tbd::ResHandle> handle = app::g_pApp->GetCache()->GetHandle(r);
+            chimera::CMResource r(comp->m_soundFile);
+            std::shared_ptr<chimera::ResHandle> handle = chimera::g_pApp->GetCache()->GetHandle(r);
             std::shared_ptr<proc::SoundProcess> proc;
             if(comp->m_emitter)
             {
@@ -97,7 +98,7 @@ namespace tbd
             {
                 proc = std::shared_ptr<proc::SoundProcess>(new proc::SoundProcess(handle, 0, 100, comp->m_loop));
             }
-            app::g_pApp->GetLogic()->AttachProcess(proc);
+            chimera::g_pApp->GetLogic()->AttachProcess(proc);
             comp->VSetHandled();
         }
     }

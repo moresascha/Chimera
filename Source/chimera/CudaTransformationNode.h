@@ -5,9 +5,9 @@
 #include "Material.h"
 #include "Spline.h"
 
-namespace d3d
+namespace chimera
 {
-    class d3d::Geometry;
+    class chimera::Geometry;
 }
 
 namespace cudah
@@ -17,9 +17,9 @@ namespace cudah
 
 typedef VOID (*CudaFuncCallBack)(cudah::cuda_buffer buffer, cudah::cuda_buffer staticNormals, cudah::cuda_buffer staticPositions, cudah::cuda_buffer indices, UINT gws, UINT lws, ULONG time, cudah::cuda_stream stream);
 
-typedef d3d::Geometry* (*GeometryCreatorCallBack)(VOID);
+typedef chimera::Geometry* (*GeometryCreatorCallBack)(VOID);
 
-namespace tbd
+namespace chimera
 {
     class TransformCudaHandle;
     class CudaTransformationNode : public SceneNode
@@ -28,21 +28,21 @@ namespace tbd
         CudaFuncCallBack m_fpFunc;
         GeometryCreatorCallBack m_fpGeoCreator;
         cudah::cuda_stream m_pStream;
-        tbd::Material m_material;
+        chimera::Material m_material;
         std::shared_ptr<TransformCudaHandle> m_pHandle;
-        std::shared_ptr<d3d::Texture2D> m_pNormalTextureHandle;
-        std::shared_ptr<d3d::Texture2D> m_pDiffuseTextureHandle;
-        tbd::Resource m_diffTextureRes;
-        tbd::Resource m_normalTexRes;
+        std::shared_ptr<chimera::D3DTexture2D> m_pNormalTextureHandle;
+        std::shared_ptr<chimera::D3DTexture2D> m_pDiffuseTextureHandle;
+        chimera::CMResource m_diffTextureRes;
+        chimera::CMResource m_normalTexRes;
     public:
         CudaTransformationNode(CudaFuncCallBack func, GeometryCreatorCallBack geoCreator);
         virtual VOID VOnUpdate(ULONG millis, SceneGraph* graph);
-        virtual VOID VOnRestore(tbd::SceneGraph* graph);
+        virtual VOID VOnRestore(chimera::SceneGraph* graph);
         BOOL VIsVisible(SceneGraph* graph);
-        virtual VOID _VRender(tbd::SceneGraph* graph, tbd::RenderPath& path);
-        tbd::Material& GetMaterial(VOID);
-        VOID SetTexture(tbd::Resource res);
-        VOID SetNormaleTexture(tbd::Resource res);
+        virtual VOID _VRender(chimera::SceneGraph* graph, chimera::RenderPath& path);
+        chimera::Material& GetMaterial(VOID);
+        VOID SetTexture(chimera::CMResource res);
+        VOID SetNormaleTexture(chimera::CMResource res);
         cudah::cuda_buffer GetCudaBuffer(std::string& name);
         cudah::cudah* GetCuda(VOID);
         virtual UINT VGetRenderPaths(VOID);
@@ -59,9 +59,9 @@ namespace tbd
     public:
         UniformBSplineNode(GeometryCreatorCallBack geoCreator, CudaFuncCallBack func, UINT vertexStride, UINT controlPntsStride, BOOL useRawControlPointBuffer = FALSE);
         util::UniformBSpline& GetSpline(VOID);
-        VOID VOnRestore(tbd::SceneGraph* graph);
+        VOID VOnRestore(chimera::SceneGraph* graph);
         VOID VOnUpdate(ULONG millis, SceneGraph* graph);
-        VOID _VRender(tbd::SceneGraph* graph, tbd::RenderPath& path);
+        VOID _VRender(chimera::SceneGraph* graph, chimera::RenderPath& path);
         UINT VGetRenderPaths(VOID);
         virtual ~UniformBSplineNode(VOID) {}
 

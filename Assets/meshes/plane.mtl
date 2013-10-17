@@ -3,13 +3,18 @@
 newmtl Material.001
 Ns 96.078431
 Ka 0.100000 0.100000 0.100000
-Kd 0.640000 0.640000 0.640000
-Ks 1.000000 1.000000 1.000000
+Kd 0.20000 0.20000 0.2000
+Ks 0.00000 0.000000 0.000000
 Ni 1.000000
 d 1.000000
 illum 0
-scale 2560
-map_Kd floor0.jpg
-map_Kn normal/floor0N.jpg
+#scale 2560
+scale 1
+
+map_Kd liquidD.jpg
+map_Kn normal/liquidN.jpg
+
+#map_Kd floor0.jpg
+#map_Kn normal/floor0N.jpg
 
 

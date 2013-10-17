@@ -1,272 +1,242 @@
 #pragma once
 #include "stdafx.h"
-#include "Mat4.h"
-#include "Vec4.h"
-#include "ConstBuffer.h"
-#include "Renderer.h"
-#include "ShaderProgram.h"
-#include "Texture.h"
-#include "RenderTarget.h"
 #include "tbdStack.h"
+#include "D3DGraphics.h"
+#include "D3DRenderTarget.h"
 
-namespace d3d 
+namespace chimera 
 {
-    #define MAX_SAMPLER 16
-    enum SamplerTargetStage
+    namespace d3d
     {
-        VS_Stage = 1,
-        PS_Stage = 2,
-        GS_STAGE = 4,
-    };
-
-    enum ConstBufferSlot 
-    {
-        eViewBuffer,
-        eProjectionBuffer,
-        eModelBuffer,
-        eMaterialBuffer,
-        eCubeMapViewsBuffer,
-        ePointLightBuffer,
-        eFontBuffer,
-        eBoundingGeoBuffer,
-        eActorIdBuffer,
-        eSelectedActorIdBuffer,
-        eGuiColorBuffer,
-        eHasNormalMapBuffer,
-        eLightingBuffer,
-        BufferCnt
-    };
-
-    enum SamplerSlot
-    {
-        eDiffuseColorSampler,
-        eWorldPositionSampler,
-        eNormalsSampler,
-        eDiffuseMaterialSpecRSampler,
-        eAmbientMaterialSpecGSampler,
-        eDiffuseColorSpecBSampler,
-        ePointLightShadowCubeMapSampler,
-        eGuiSampler,
-        eNormalColorSampler,
-        eSceneSampler,
-        eEffect0,
-        eEffect1,
-        eEffect2,
-        eEffect3,
-        SamplerCnt
-    };
-
-    struct _ViewMatrixBuffer 
-    {
-       XMFLOAT4X4 m_view;
-       XMFLOAT4X4 m_invView;
-       XMFLOAT4 m_eyePos;
-    };
-
-    struct _MaterialBuffer 
-    {
-        XMFLOAT4 m_ambient;
-        XMFLOAT4 m_specular;
-        XMFLOAT4 m_diffuse;
-        FLOAT m_specularExpo;
-        FLOAT m_illum;
-        FLOAT m_textureSCale;
-        FLOAT unused;
-    };
-    
-    struct _ProjectionMatrixBuffer 
-    {
-        XMFLOAT4X4 m_projection;
-        XMFLOAT4 m_viewDistance;
-    };
-
-    struct _ModelMatrixBuffer
-    {
-        XMFLOAT4X4 m_model;
-    };
-
-    struct _CubeMapViewsBuffer
-    {
-        XMFLOAT4X4 m_views[6];
-    };
-
-    struct _LightSettingsBuffer
-    {
-        XMFLOAT4 m_colorNRadiusW;
-        XMFLOAT4 m_position;
-        XMFLOAT4 m_viewDirNAngel;
-    };
-
-    struct _LightingBuffer
-    {
-        XMFLOAT4X4 m_view;
-        XMFLOAT4X4 m_iView;
-        XMFLOAT4X4 m_projection[3]; //TODO
-        XMFLOAT4 m_lightPos;
-        XMFLOAT4 m_distances;
-    };
-
-    struct D3DState
-    {
-        //TODO Statestack
-    };
+#define MAX_SAMPLER 16
 
-
-    enum Diff_RenderTargets
-    {
-        Diff_WorldPositionTarget,
-        Diff_NormalsTarget,
-        Diff_DiffuseMaterialSpecRTarget,
-        Diff_AmbientMaterialSpecGTarget,
-        Diff_DiffuseColorSpecBTarget,
-        Diff_ReflectionStrTarget,
+        struct _ViewMatrixBuffer 
+        {
+            XMFLOAT4X4 m_view;
+            XMFLOAT4X4 m_invView;
+            XMFLOAT4 m_eyePos;
+        };
 
-        Diff_SamplersCnt
-    };
+        struct _MaterialBuffer 
+        {
+            XMFLOAT4 m_ambient;
+            XMFLOAT4 m_specular;
+            XMFLOAT4 m_diffuse;
+            FLOAT m_specularExpo;
+            FLOAT m_illum;
+            FLOAT m_textureSCale;
+            FLOAT unused;
+        };
 
-    class DeferredShader
-    {
+        struct _ProjectionMatrixBuffer 
+        {
+            XMFLOAT4X4 m_projection;
+            XMFLOAT4 m_viewDistance;
+        };
 
-    private:
-        d3d::RenderTarget* m_targets[Diff_SamplersCnt];
+        struct _ModelMatrixBuffer
+        {
+            XMFLOAT4X4 m_model;
+        };
 
-        ID3D11RenderTargetView* m_views[Diff_SamplersCnt];
+        struct _CubeMapViewsBuffer
+        {
+            XMFLOAT4X4 m_views[6];
+        };
 
-        UINT m_width, m_height;
+        struct _LightSettingsBuffer
+        {
+            XMFLOAT4 m_colorNRadiusW;
+            XMFLOAT4 m_position;
+            XMFLOAT4 m_viewDirNAngel;
+        };
 
-        D3D11_VIEWPORT m_viewPort;
+        struct _LightingBuffer
+        {
+            XMFLOAT4X4 m_view;
+            XMFLOAT4X4 m_iView;
+            XMFLOAT4X4 m_projection[3]; //TODO
+            XMFLOAT4 m_lightPos;
+            XMFLOAT4 m_distances;
+        };
 
-    public:
-        DeferredShader(UINT w, UINT h);
+        class AlbedoBuffer : public IAlbedoBuffer
+        {
 
-        VOID ClearAndBindRenderTargets(VOID);
+        private:
+            RenderTarget* m_targets[Diff_SamplersCnt];
 
-        VOID DisableRenderTargets(VOID);
+            ID3D11RenderTargetView* m_views[Diff_SamplersCnt];
 
-        VOID OnRestore(UINT w, UINT h);
+            UINT m_width, m_height;
 
-        d3d::RenderTarget* GetTarget(Diff_RenderTargets stage);
+            D3D11_VIEWPORT m_viewPort;
 
-        ID3D11DepthStencilView* GetDepthStencilView(VOID);
+        public:
+            AlbedoBuffer(UINT w, UINT h);
 
-        ~DeferredShader(VOID);
-    };
+            VOID VClearAndBindRenderTargets(VOID);
 
-    class D3DRenderer : public tbd::IRenderer
-    {
-    private:
-        ID3D11ShaderResourceView* m_currentSetSampler[MAX_SAMPLER];
+            VOID VUnbindRenderTargets(VOID);
 
-        d3d::RenderTarget* m_pDefaultRenderTarget;
+            VOID VOnRestore(UINT w, UINT h);
 
-        d3d::ConstBuffer* m_constBuffer[BufferCnt];
+            IRenderTarget* VGetRenderTarget(Diff_RenderTarget stage);
 
-        d3d::DeferredShader* m_pDefShader;
+            IRenderTarget* VGetDepthStencilTarget(VOID);
 
-        FLOAT m_backColor[4];
+            ~AlbedoBuffer(VOID);
+        };
 
-        VOID Delete(VOID);
+        class Renderer : public IRenderer
+        {
+        private:
+            ID3D11ShaderResourceView* m_currentSetSampler[MAX_SAMPLER];
 
-        tbd::Material m_defaultMaterial;
+            IRenderTarget* m_pDefaultRenderTarget;
 
-        std::shared_ptr<d3d::Texture2D> m_pDefaultTexture;
+            IConstShaderBuffer* m_constBuffer[BufferCnt];
 
-        util::tbdStack<_ModelMatrixBuffer> m_modelMatrixStack;
-        util::tbdStack<_ProjectionMatrixBuffer> m_projectionMatrixStack;
-        util::tbdStack<_ViewMatrixBuffer> m_viewMatrixStack;
-        util::tbdStack<ID3D11RasterizerState*> m_rasterStateStack;
-        util::tbdStack<ID3D11BlendState*> m_blendStateStack;
+            AlbedoBuffer* m_pDefShader;
 
-    public:
-        D3DRenderer(VOID);
+            std::unique_ptr<IShaderCache> m_pShaderCache;
 
-        VOID VSetBackground(CHAR r, CHAR g, CHAR b, CHAR a) {
-            m_backgroundColor.Set(r, g, b, a);
-        }
+            FLOAT m_backColor[4];
 
-        UINT VGetHeight(VOID) { return d3d::g_height; }
+            VOID Delete(VOID);
 
-        UINT VGetWidth(VOID) { return d3d::g_width; }
+            IMaterial* m_pDefaultMaterial;
 
-        HRESULT VOnRestore(VOID);
+            std::shared_ptr<IDeviceTexture> m_pDefaultTexture;
 
-        VOID VPreRender(VOID);
+            util::tbdStack<_ModelMatrixBuffer> m_modelMatrixStack;
+            util::tbdStack<_ProjectionMatrixBuffer> m_projectionMatrixStack;
+            util::tbdStack<_ViewMatrixBuffer> m_viewMatrixStack;
+            util::tbdStack<IRasterState*> m_rasterStateStack;
+            util::tbdStack<IBlendState*> m_blendStateStack;
+            util::tbdStack<IDepthStencilState*> m_depthStencilStateStack;
 
-        VOID VPresent(VOID) { d3d::g_pSwapChain->Present(0, 0); }
+            IRasterState* m_pDefaultRasterState;
+            IBlendState* m_pDefaultBlendState;
+            IDepthStencilState* m_pDefaultDepthStencilState;
 
-        VOID VPostRender(VOID);
+            IShaderProgram* m_screenQuadProgram;
 
-        VOID PushRasterizerState(ID3D11RasterizerState* state);
+            VOID SetSampler(TextureSlot startSlot, ID3D11ShaderResourceView** view, UINT count, UINT stage);
 
-        VOID PopRasterizerState(VOID);
+            VOID CreateDefaultShader(VOID);
 
-        VOID PushBlendState(ID3D11BlendState* state);
+        public:
+            Renderer(VOID);
 
-        VOID PopBlendState(VOID);
+            BOOL VCreate(CM_WINDOW_CALLBACK cb, CM_INSTANCE instance, LPCWSTR wndTitle, UINT width, UINT height);
 
-        VOID SetViewPort(UINT w, UINT h);
+            VOID VDestroy(VOID);
 
-        VOID SetDefaultRasterizerState(ID3D11RasterizerState* state);
+            VOID VSetBackground(FLOAT r, FLOAT g, FLOAT b, FLOAT a) 
+            {
+                m_backColor[0] = r;
+                m_backColor[1] = g;
+                m_backColor[2] = b;
+                m_backColor[3] = a;
+            }
 
-        d3d::DeferredShader* GetDeferredShader(VOID) CONST { return m_pDefShader; }
+            CM_HWND VGetWindowHandle(VOID);
 
-        VOID VSetViewTransform(CONST util::Mat4& mat, CONST util::Mat4& invMat, CONST util::Vec3& eyePos);
+            UINT VGetHeight(VOID);
 
-        VOID VSetProjectionTransform(CONST util::Mat4& mat, FLOAT distance);
+            UINT VGetWidth(VOID);
 
-        VOID VSetWorldTransform(CONST util::Mat4& mat);
+            VOID VResize(UINT w, UINT h);
 
-        VOID VPushWorldTransform(CONST util::Mat4& mat);
+            BOOL VOnRestore(VOID);
 
-        VOID VPopWorldTransform(VOID);
+            VOID VPreRender(VOID);
 
-        VOID VPushViewTransform(CONST util::Mat4& mat, CONST util::Mat4& invMat, CONST util::Vec3& eyePos);
+            VOID VPresent(VOID);
 
-        VOID VPopViewTransform(VOID);
+            IShaderCache* VGetShaderCache(VOID) { return m_pShaderCache.get(); }
 
-        VOID VPushProjectionTransform(CONST util::Mat4& mat, FLOAT distance);
+            VOID VPostRender(VOID);
 
-        VOID VPopProjectionTransform(VOID);
+            VOID VPushRasterState(IRasterState* state);
 
-        VOID VPushMaterial(tbd::IMaterial& mat);
+            VOID VPopRasterState(VOID);
 
-        VOID SetDefaultMaterial(VOID);
+            VOID VPushBlendState(IBlendState* state);
 
-        VOID ClearAndBindBackbuffer(VOID);
+            VOID VPopBlendState(VOID);
 
-        VOID ClearBackbuffer(VOID);
+            VOID VPushDepthStencilState(IDepthStencilState* rstate, UINT stencilRef = 0);
 
-        VOID SetDefaultTexture(VOID);
+            VOID VPopDepthStencilState(VOID);
 
-        VOID SetCurrentRendertarget(d3d::RenderTarget* rt);
+            VOID VSetViewPort(UINT w, UINT h);
 
-        VOID ActivateCurrentRendertarget(VOID);
+            IAlbedoBuffer* VGetAlbedoBuffer(VOID);
 
-        d3d::RenderTarget* GetCurrentrenderTarget(VOID);
+            VOID VSetViewTransform(CONST util::Mat4& mat, CONST util::Mat4& invMat, CONST util::Vec3& eyePos);
 
-        VOID VPushPrimitiveType(UINT type);
+            VOID VSetProjectionTransform(CONST util::Mat4& mat, FLOAT distance);
 
-        VOID SetActorId(UINT id);
+            VOID VSetWorldTransform(CONST util::Mat4& mat);
 
-        VOID SetNormalMapping(BOOL map);
+            VOID VPushWorldTransform(CONST util::Mat4& mat);
 
-        VOID SetDiffuseSampler(ID3D11ShaderResourceView* view, SamplerTargetStage stages = PS_Stage);
+            VOID VPopWorldTransform(VOID);
 
-        VOID SetPointLightShadowCubeMapSampler(ID3D11ShaderResourceView* view, SamplerTargetStage stages = PS_Stage);
+            VOID VPushViewTransform(CONST util::Mat4& mat, CONST util::Mat4& invMat, CONST util::Vec3& eyePos);
 
-        VOID SetSampler(SamplerSlot slot, ID3D11ShaderResourceView* view, UINT count = 1,SamplerTargetStage stages = PS_Stage);
+            VOID VPopViewTransform(VOID);
 
-        VOID SetCubeMapViews(CONST util::Mat4 mats[6]);
+            VOID VPushProjectionTransform(CONST util::Mat4& mat, FLOAT distance);
 
-        VOID SetLightSettings(CONST util::Vec4& color, CONST util::Vec3& position, FLOAT radius);
+            VOID VPopProjectionTransform(VOID);
 
-        VOID SetLightSettings(CONST util::Vec4& color, CONST util::Vec3& position, CONST util::Vec3& viewDir, FLOAT radius, FLOAT angel, FLOAT intensity);
+            VOID VPushMaterial(IMaterial& mat);
 
-        VOID SetCSMSettings(CONST util::Mat4& view, CONST util::Mat4& iView, CONST util::Mat4 projection[3], CONST util::Vec3& lightPos, CONST FLOAT distances[3]);
+            VOID VPopMaterial(VOID);
 
-        d3d::ConstBuffer* GetBuffer(ConstBufferSlot slot);
+            VOID VSetDefaultMaterial(VOID);
 
-        ~D3DRenderer(VOID);
-    };
+            VOID VClearAndBindBackBuffer(VOID);
+
+            VOID VBindBackBuffer(VOID);
+
+            VOID VPushCurrentRenderTarget(IRenderTarget* rt);
+
+            VOID VPopCurrentRenderTarget(VOID);
+
+            IRenderTarget* VGetCurrentRenderTarget(VOID);
+
+            VOID VSetDiffuseTexture(IDeviceTexture* texture);
+
+            VOID VSetTexture(TextureSlot slot, IDeviceTexture* texture);
+
+            VOID VSetTextures(TextureSlot startSlot, IDeviceTexture** texture, UINT count);
+
+            VOID SetPointLightShadowCubeMapSampler(ID3D11ShaderResourceView* view);
+
+            VOID VSetNormalMapping(BOOL map);
+
+            VOID SetCubeMapViews(CONST util::Mat4 mats[6]);
+
+            VOID SetLightSettings(CONST util::Vec4& color, CONST util::Vec3& position, FLOAT radius);
+
+            VOID SetLightSettings(CONST util::Vec4& color, CONST util::Vec3& position, CONST util::Vec3& viewDir, FLOAT radius, FLOAT angel, FLOAT intensity);
+
+            VOID SetCSMSettings(CONST util::Mat4& view, CONST util::Mat4& iView, CONST util::Mat4 projection[3], CONST util::Vec3& lightPos, CONST FLOAT distances[3]);
+
+            IConstShaderBuffer* VGetConstShaderBuffer(ConstShaderBufferSlot slot);
+
+            VOID VDrawScreenQuad(INT x, INT y, INT w, INT h);
+
+            VOID VDrawScreenQuad(VOID);
+
+            VOID VDrawLine(INT x, INT y, INT w, INT h);
+
+            ~Renderer(VOID);
+        };
+    }
 }
 

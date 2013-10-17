@@ -6,24 +6,26 @@
 #include "ShaderProgram.h"
 #include "ParticleSystem.h"
 
-namespace tbd
+namespace chimera
 {
     class ParticleNode : public SceneNode
     {
     private:
-        std::shared_ptr<tbd::ParticleSystem> m_pParticleSystem;
+        std::shared_ptr<chimera::ParticleSystem> m_pParticleSystem;
         UINT m_time;
         util::Vec3 m_transformedBBPoint;
         util::Timer m_timer;
 
+        VOID OnFileChanged(VOID);
+
     public:
         ParticleNode(ActorId id);
 
-        VOID _VRender(tbd::SceneGraph* graph, tbd::RenderPath& path);
+        VOID _VRender(chimera::SceneGraph* graph, chimera::RenderPath& path);
 
         BOOL VIsVisible(SceneGraph* graph);
 
-        VOID VOnRestore(tbd::SceneGraph* graph);
+        VOID VOnRestore(chimera::SceneGraph* graph);
 
         VOID VOnUpdate(ULONG millis, SceneGraph* graph);
 
