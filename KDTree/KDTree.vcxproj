@@ -95,16 +95,16 @@
     <Link>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <AdditionalLibraryDirectories>../Lib;../Bin/x64$(Configuration)</AdditionalLibraryDirectories>
-      <SubSystem>Console</SubSystem>
+      <SubSystem>Windows</SubSystem>
       <IgnoreSpecificDefaultLibraries>LIBCMTD;LIBCMT;libcpmt;%(IgnoreSpecificDefaultLibraries)</IgnoreSpecificDefaultLibraries>
       <AdditionalDependencies>%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
     <CudaCompile>
-      <CompileOut>./ptx/%(Filename).ptx</CompileOut>
+      <CompileOut>$(IntDir)%(Filename)%(Extension).obj</CompileOut>
       <Include>../Include;../../Nutty/Nutty/../Source/chimera/api;</Include>
       <UseHostInclude>false</UseHostInclude>
       <KeepDir>$(SolutionDir)..\Tmp\$(ProjectName)$(PlatformName)$(Configuration)\</KeepDir>
-      <NvccCompilation>ptx</NvccCompilation>
+      <NvccCompilation>compile</NvccCompilation>
       <CudaRuntime>Static</CudaRuntime>
       <TargetMachinePlatform>64</TargetMachinePlatform>
     </CudaCompile>
@@ -157,17 +157,17 @@
       <Include Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">../Include</Include>
       <UseHostInclude Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">false</UseHostInclude>
       <CodeGeneration Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">compute_20,sm_20</CodeGeneration>
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">false</ExcludedFromBuild>
     </CudaCompile>
-    <CudaCompile Include="ttest.cu">
-      <NvccCompilation Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">compile</NvccCompilation>
-      <CompileOut Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">$(IntDir)%(Filename)%(Extension).obj</CompileOut>
+    <CudaCompile Include="kdtree.cu">
       <CodeGeneration Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">compute_20,sm_20</CodeGeneration>
-      <CudaRuntime Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Static</CudaRuntime>
     </CudaCompile>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="main.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="kdtree.cuh" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

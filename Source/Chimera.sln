@@ -3,8 +3,6 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 2012
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Chimera", "Chimera.vcxproj", "{528B376B-7ED9-449B-8FCD-365684CC6C67}"
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "GroupedObjsSlicer", "..\..\GroupedObjsSlicer\GroupedObjsSlicer.vcxproj", "{33A8C187-DAAE-4C64-BC89-773AF2AA84C1}"
-EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "KDTree", "..\KDTree\KDTree.vcxproj", "{F0B22F49-8D61-4B7D-A34D-2A2EA8538C8B}"
 	ProjectSection(ProjectDependencies) = postProject
 		{528B376B-7ED9-449B-8FCD-365684CC6C67} = {528B376B-7ED9-449B-8FCD-365684CC6C67}
@@ -34,21 +32,12 @@ Global
 		{528B376B-7ED9-449B-8FCD-365684CC6C67}.Release|Win32.Build.0 = Release|Win32
 		{528B376B-7ED9-449B-8FCD-365684CC6C67}.Release|x64.ActiveCfg = Release|x64
 		{528B376B-7ED9-449B-8FCD-365684CC6C67}.Release|x64.Build.0 = Release|x64
-		{33A8C187-DAAE-4C64-BC89-773AF2AA84C1}.Debug|Mixed Platforms.ActiveCfg = Debug|Win32
-		{33A8C187-DAAE-4C64-BC89-773AF2AA84C1}.Debug|Mixed Platforms.Build.0 = Debug|Win32
-		{33A8C187-DAAE-4C64-BC89-773AF2AA84C1}.Debug|Win32.ActiveCfg = Debug|Win32
-		{33A8C187-DAAE-4C64-BC89-773AF2AA84C1}.Debug|Win32.Build.0 = Debug|Win32
-		{33A8C187-DAAE-4C64-BC89-773AF2AA84C1}.Debug|x64.ActiveCfg = Debug|Win32
-		{33A8C187-DAAE-4C64-BC89-773AF2AA84C1}.Release|Mixed Platforms.ActiveCfg = Release|Win32
-		{33A8C187-DAAE-4C64-BC89-773AF2AA84C1}.Release|Mixed Platforms.Build.0 = Release|Win32
-		{33A8C187-DAAE-4C64-BC89-773AF2AA84C1}.Release|Win32.ActiveCfg = Release|Win32
-		{33A8C187-DAAE-4C64-BC89-773AF2AA84C1}.Release|Win32.Build.0 = Release|Win32
-		{33A8C187-DAAE-4C64-BC89-773AF2AA84C1}.Release|x64.ActiveCfg = Release|x64
 		{F0B22F49-8D61-4B7D-A34D-2A2EA8538C8B}.Debug|Mixed Platforms.ActiveCfg = Debug|Win32
 		{F0B22F49-8D61-4B7D-A34D-2A2EA8538C8B}.Debug|Mixed Platforms.Build.0 = Debug|Win32
 		{F0B22F49-8D61-4B7D-A34D-2A2EA8538C8B}.Debug|Win32.ActiveCfg = Debug|Win32
 		{F0B22F49-8D61-4B7D-A34D-2A2EA8538C8B}.Debug|Win32.Build.0 = Debug|Win32
 		{F0B22F49-8D61-4B7D-A34D-2A2EA8538C8B}.Debug|x64.ActiveCfg = Debug|x64
+		{F0B22F49-8D61-4B7D-A34D-2A2EA8538C8B}.Debug|x64.Build.0 = Debug|x64
 		{F0B22F49-8D61-4B7D-A34D-2A2EA8538C8B}.Release|Mixed Platforms.ActiveCfg = Release|Win32
 		{F0B22F49-8D61-4B7D-A34D-2A2EA8538C8B}.Release|Mixed Platforms.Build.0 = Release|Win32
 		{F0B22F49-8D61-4B7D-A34D-2A2EA8538C8B}.Release|Win32.ActiveCfg = Release|Win32

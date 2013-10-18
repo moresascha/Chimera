@@ -18,7 +18,7 @@
     <CudaCompile Include="KD.cu">
       <Filter>Resource Files</Filter>
     </CudaCompile>
-    <CudaCompile Include="ttest.cu">
+    <CudaCompile Include="kdtree.cu">
       <Filter>Source Files</Filter>
     </CudaCompile>
   </ItemGroup>
@@ -26,5 +26,10 @@
     <ClCompile Include="main.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="kdtree.cuh">
+      <Filter>Source Files</Filter>
+    </None>
   </ItemGroup>
 </Project>

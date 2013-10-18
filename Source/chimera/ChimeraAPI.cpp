@@ -226,14 +226,14 @@ namespace chimera
         screen->VSetName("main");
         app->VGetHumanView()->VAddScene(std::move(std::unique_ptr<IRenderScreen>(screen)));
 
-		IScreenElement* normalScreen = new RenderTargetScreen(app->VGetHumanView()->VGetRenderer()->VGetAlbedoBuffer()->VGetRenderTarget(eDiff_NormalsTarget));
+        IScreenElement* normalScreen = new RenderTargetScreen(app->VGetHumanView()->VGetRenderer()->VGetAlbedoBuffer()->VGetRenderTarget(eDiff_NormalsTarget));
 		CMDimension dim;
-		dim.x = 0;
+        dim.x = 0;
 		dim.y = 0;
 		dim.w = 200;
 		dim.h = 150;
-		normalScreen->VSetDimension(dim);
-		normalScreen->VSetName("normals");
+        normalScreen->VSetDimension(dim);
+        normalScreen->VSetName("normals");
 		app->VGetHumanView()->VAddScreenElement(std::move(std::unique_ptr<IScreenElement>(normalScreen)));
 
 

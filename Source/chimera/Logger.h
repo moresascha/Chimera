@@ -1,5 +1,6 @@
 #pragma once
-#include "stdafx.h"
+//#include "stdafx.h"
+#include <windows.h>
 #ifdef _DEBUG
 #include <sstream>
 #endif
