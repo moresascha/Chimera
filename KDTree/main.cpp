@@ -8,13 +8,16 @@
 #include "../Source/chimera/AxisAlignedBB.h"
 #include <fstream>
 
+
+extern "C" void generate();
+extern "C" void init();
+extern "C" void release();
+
 #ifdef _DEBUG
 #pragma comment(lib, "Chimerax64Debug.lib")
 #else
 #pragma comment(lib, "Chimerax64Release.lib")
 #endif
-
-extern "C" void generate(void);
 
 VOID startChimera(HINSTANCE hInstance)
 {
@@ -26,7 +29,11 @@ VOID startChimera(HINSTANCE hInstance)
 	desc.cachePath = "../Assets/";
 	desc.logFile = "log.log";
 
-	chimera::IApplication* cm = chimera::CmCreateApplication(&desc);
+	chimera::CmCreateApplication(&desc);
+
+    chimera::CmGetApp()->VRun();
+
+    chimera::CmReleaseApplication();
 }
 
 int APIENTRY _tWinMain(HINSTANCE hInstance,
@@ -41,7 +48,13 @@ int APIENTRY _tWinMain(HINSTANCE hInstance,
     _CrtSetReportFile(_CRT_ERROR, _CRTDBG_FILE_STDERR);
 #endif
 
+    init();
+
     generate();
+
+    //startChimera(hInstance);
+
+    release();
 
     return 0;
 }

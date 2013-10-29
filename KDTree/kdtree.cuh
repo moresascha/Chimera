@@ -11,14 +11,8 @@ struct SplitData
 
 struct AABB
 {
-    float4 min;
-    float4 max;
-};
-
-struct SAHSplit
-{
-    float split;
-    float v;
+    float3 min;
+    float3 max;
 };
 
 __device__ __host__ float getAxis(float4* vec, uint axis)
@@ -37,6 +31,15 @@ __device__ __host__ float getAxis(float3* vec, uint axis)
 {
     float4 v = make_float4(vec->x, vec->y, vec->z, 0);
     return getAxis(&v, axis);
+}
+
+__device__ __host__ int getLongestAxis(float3 maxi, float3 mini) 
+{
+    float dx = maxi.x - mini.x;
+    float dy = maxi.y - mini.y;
+    float dz = maxi.z - mini.z;
+    float max = fmaxf(dx, fmaxf(dy, dz));
+    return max == dx ? 0 : max == dy ? 1 : 2;
 }
 
 template<typename T>
@@ -62,5 +65,3 @@ __device__ __host__ void getSplit(T mmax, T mmin, float* split, uint* axis)
         } break;
     }
 }
-
-extern "C" void generate();
