@@ -8,8 +8,8 @@ namespace chimera
         return o.m_name < o.m_name;
     }
 
-	DLL::DLL(LPCSTR path)
-	{
+    DLL::DLL(LPCSTR path)
+    {
         m_instance = NULL;
         m_path = path;
 
@@ -19,20 +19,20 @@ namespace chimera
         {
             LOG_CRITICAL_ERROR("Failed to load library");
         }
-	}
+    }
 
-	DLL::~DLL(VOID)
-	{
+    DLL::~DLL(VOID)
+    {
         if(m_instance)
         {
             FreeLibrary(m_instance); 
             m_instance = NULL;
         }
-	}
+    }
 
-	FileSystem::FileSystem(void)
-	{
-	}
+    FileSystem::FileSystem(void)
+    {
+    }
 
     VOID FileSystem::RegisterCallback(LPCSTR fileName, LPCSTR path, OnFileChangedCallback cb)
     {
@@ -72,8 +72,8 @@ namespace chimera
         }
     }
 
-	FileSystem::~FileSystem(void)
-	{
+    FileSystem::~FileSystem(void)
+    {
         REMOVE_EVENT_LISTENER(this, &chimera::FileSystem::OnFileChanged, chimera::FileChangedEvent::TYPE);
 
 
@@ -81,5 +81,5 @@ namespace chimera
         {
             SAFE_DELETE(it->second);
         }
-	}
+    }
 };

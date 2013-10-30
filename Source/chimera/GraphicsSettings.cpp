@@ -119,7 +119,7 @@ namespace chimera
 
     VOID GloablLightingSetting::VRender(VOID)
     {
-		/*CmGetApp()->VGetHumanView()->VGetRenderer()->VGetCurrentRenderTarget()->VClear();
+        /*CmGetApp()->VGetHumanView()->VGetRenderer()->VGetCurrentRenderTarget()->VClear();
         CmGetApp()->VGetHumanView()->VGetRenderer()->VGetCurrentRenderTarget()->VBind();*/
 
         /*CmGetApp()->VGetHumanView()->VGetRenderer()->VPreRender();*/
@@ -128,7 +128,7 @@ namespace chimera
 
         m_pProgram->VBind();
         //chimera::GetContext()->OMSetDepthStencilState(chimera::m_pNoDepthNoStencilState, 0);
-		CmGetApp()->VGetHumanView()->VGetRenderer()->VDrawScreenQuad();
+        CmGetApp()->VGetHumanView()->VGetRenderer()->VDrawScreenQuad();
     }
 
     BOOL CSMSetting::VOnRestore(UINT w, UINT h)
@@ -165,73 +165,73 @@ namespace chimera
     VOID PostFXSetting::VSetSource(IRenderTarget* src)
     {
         m_pSource = src;
-	}
+    }
 
     BOOL PostFXSetting::VOnRestore(UINT w, UINT h)
     {
         if(!m_pEffectChain)
         {
-			IEffectFactory* eff = CmGetApp()->VGetHumanView()->VGetEffectFactory();
-			m_pEffectChain = eff->VCreateEffectChain();
+            IEffectFactory* eff = CmGetApp()->VGetHumanView()->VGetEffectFactory();
+            m_pEffectChain = eff->VCreateEffectChain();
 
-			m_pEffectChain->VSetTarget(NULL);
+            m_pEffectChain->VSetTarget(NULL);
 
-			CMShaderDescription desc;
-			desc.file = L"Effects.hlsl";
-			desc.function = "Luminance";
+            CMShaderDescription desc;
+            desc.file = L"Effects.hlsl";
+            desc.function = "Luminance";
 
-	        IEffect* lumi = m_pEffectChain->VCreateEffect(desc);
+            IEffect* lumi = m_pEffectChain->VCreateEffect(desc);
             lumi->VSetSource(m_pSource);
 
             //lumi->SetParameters(std::shared_ptr<LuminanceParameter>(new LuminanceParameter(1.0f)));
             
             IEffect* e = NULL;
-			
+            
             for(INT i = w / 2; i > 1; i = i >> 1)
             {
                 FLOAT s = (FLOAT)i / (FLOAT)w;
                 if(e == NULL)
                 {
-					desc.function = "Sample";
+                    desc.function = "Sample";
                     IEffect* ds = m_pEffectChain->VCreateEffect(desc, s, s);
                     ds->VAddRequirement(lumi);
                     e = ds;
                 }
                 else
                 {
-					desc.function = "Sample";
+                    desc.function = "Sample";
                     IEffect* ds = m_pEffectChain->VCreateEffect(desc, s, s);
                     ds->VAddRequirement(e);
                     e = ds;
                 }
             }
           
-			desc.function = "Sample";
+            desc.function = "Sample";
             IEffect* ds = m_pEffectChain->VCreateEffect(desc, 1.0f / w, 1.0f / h);
             ds->VAddRequirement(e);
             e = ds;
 
             FLOAT brightPathSize = 0.25f;
 
-			desc.function = "Brightness";
+            desc.function = "Brightness";
 
             IEffect* bright = m_pEffectChain->VCreateEffect(desc, brightPathSize, brightPathSize);
             bright->VSetSource(m_pSource);
 
-			desc.function = "BlurH";
+            desc.function = "BlurH";
             IEffect* e0 = m_pEffectChain->VCreateEffect(desc, brightPathSize, brightPathSize);
             e0->VAddRequirement(bright);
 
-			desc.function = "BlurV";
+            desc.function = "BlurV";
             IEffect* e1 = m_pEffectChain->VCreateEffect(desc, brightPathSize, brightPathSize);
             e1->VAddRequirement(e0);
 
-			desc.function = "ToneMap";
+            desc.function = "ToneMap";
             IEffect* e2 = m_pEffectChain->VCreateEffect(desc);
             e2->VSetSource(m_pSource);
             e2->VAddRequirement(e1);
 
-			m_pEffectChain->VOnRestore(w, h);
+            m_pEffectChain->VOnRestore(w, h);
         }
         else
         {
@@ -357,9 +357,9 @@ namespace chimera
 
     GraphicsSettings::~GraphicsSettings(VOID)
     {
-		/*
+        /*
         m_pPostFX.reset();
-	
+    
         TBD_FOR(m_lightSettings)
         {
             it->reset();
@@ -392,8 +392,8 @@ namespace chimera
         
         if(m_pPostFX)
         {
-			m_pPostFX->VSetSource(m_pScene.get());
-			m_pPostFX->VOnRestore(w, h);
+            m_pPostFX->VSetSource(m_pScene.get());
+            m_pPostFX->VOnRestore(w, h);
         }
 
         TBD_FOR(m_albedoSettings)

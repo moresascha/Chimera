@@ -95,15 +95,15 @@ namespace chimera
         std::shared_ptr<ICamera> m_camera;
         std::string m_type;
     public:
-		CameraComponent(VOID)
-		{
+        CameraComponent(VOID)
+        {
 
-		}
+        }
         BOOL VInitialize(IStream* stream);
 
         std::shared_ptr<ICamera> GetCamera(VOID) { return m_camera; }
 
-		VOID SetCamera(std::shared_ptr<ICamera> cam) { m_camera = cam; }
+        VOID SetCamera(std::shared_ptr<ICamera> cam) { m_camera = cam; }
 
         CM_CREATE_CMP_HEADER(CM_CMP_CAMERA, CameraComponent);
     };

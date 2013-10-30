@@ -89,16 +89,16 @@ float3x3 GetTangentSpaceMatrix3(float3 N, float3 p, float2 uv)
 
 float3x3 GetTangentSpaceMatrix3_2(float3 normal, float3 position, float2 texCoord)
 {
-	float3 dp1 = ddx(position);
-	float3 dp2 = ddy(position);
-	float2 duv1 = ddx(texCoord);
-	float2 duv2 = ddy(texCoord);
+    float3 dp1 = ddx(position);
+    float3 dp2 = ddy(position);
+    float2 duv1 = ddx(texCoord);
+    float2 duv2 = ddy(texCoord);
 
-	float3x3 M = float3x3(dp1, dp2, cross(dp1, dp2));
-	float2x3 inverseM = float2x3(cross(M[1], M[2]), cross(M[2], M[0]));
-	float3 T = mul(float2(duv1.x, duv2.x), inverseM);
-	float3 B = mul(float2(duv1.y, duv2.y), inverseM);
-	return transpose(float3x3(normalize(T), normalize(B), normalize(normal)));
+    float3x3 M = float3x3(dp1, dp2, cross(dp1, dp2));
+    float2x3 inverseM = float2x3(cross(M[1], M[2]), cross(M[2], M[0]));
+    float3 T = mul(float2(duv1.x, duv2.x), inverseM);
+    float3 B = mul(float2(duv1.y, duv2.y), inverseM);
+    return transpose(float3x3(normalize(T), normalize(B), normalize(normal)));
 }
 
 PixelOutput DefShading_PS(PixelInput input)

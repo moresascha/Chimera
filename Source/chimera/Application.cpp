@@ -45,20 +45,20 @@ namespace chimera
         m_pLogic = logicf->VCreateLogic();
         m_pLogic->VInitialise(facts);
 
-		m_timer0 = new chimera::util::Timer();
-		m_pUpdateTimer = new chimera::util::Timer();
-		m_pRenderingTimer = new chimera::util::Timer();
+        m_timer0 = new chimera::util::Timer();
+        m_pUpdateTimer = new chimera::util::Timer();
+        m_pRenderingTimer = new chimera::util::Timer();
 
         return TRUE;
     }
 
     VOID Application::VClose(VOID)
     {
-		SAFE_DELETE(m_timer0);
-		SAFE_DELETE(m_pUpdateTimer);
-		SAFE_DELETE(m_pRenderingTimer);
+        SAFE_DELETE(m_timer0);
+        SAFE_DELETE(m_pUpdateTimer);
+        SAFE_DELETE(m_pRenderingTimer);
         SAFE_DELETE(m_pLogic);
-		chimera::util::DestroyGdiplus(); //TODO
+        chimera::util::DestroyGdiplus(); //TODO
         SAFE_DELETE(m_pInput);
         SAFE_DELETE(m_pCache);
         SAFE_DELETE(m_pEventMgr);
@@ -68,7 +68,7 @@ namespace chimera
     VOID Application::Render(VOID)
     {
         m_pLogic->VGetHumanView()->VOnRender();
-		m_pRenderingTimer->VTick(); 
+        m_pRenderingTimer->VTick(); 
     }
 
     VOID Application::Update(VOID) 
@@ -95,7 +95,7 @@ namespace chimera
         m_running = TRUE;
         s_initialized = TRUE;
         m_pUpdateTimer->VReset();
-		m_pRenderingTimer->VReset();
+        m_pRenderingTimer->VReset();
 
         HACCEL hAccelTable;
 
@@ -162,8 +162,8 @@ namespace chimera
         {
         case WM_SIZE:
             {
-				if(s_initialized)
-				{
+                if(s_initialized)
+                {
                     UINT w = LOWORD(lParam);
                     UINT h = HIWORD(lParam);
                     s_mimnimized = wParam == SIZE_MINIMIZED;
@@ -171,7 +171,7 @@ namespace chimera
                     {
                         CmGetApp()->VGetHumanView()->VOnResize(w, h);
                     }
-				}
+                }
             } break;
 
         case WM_MOUSEMOVE:

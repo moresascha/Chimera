@@ -28,11 +28,11 @@ namespace chimera
 
         virtual VOID VPushMouseListener(IMouseListener* listener) = 0;
 
-		virtual VOID VPopMouseListener(VOID) = 0;
+        virtual VOID VPopMouseListener(VOID) = 0;
 
-		virtual VOID VRemoveKeyListener(IKeyListener* listener) = 0;
+        virtual VOID VRemoveKeyListener(IKeyListener* listener) = 0;
 
-		virtual VOID VRemoveMouseListener(IMouseListener* listener) = 0;
+        virtual VOID VRemoveMouseListener(IMouseListener* listener) = 0;
 
         virtual ~IInputHandler(VOID) {}
     };

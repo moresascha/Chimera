@@ -21,7 +21,7 @@ struct PixelOutput
 VertexOutput SpotLightShadow_VS(VertexInput input) 
 {
     VertexOutput op;
-	float4 p = mul(g_model, float4(input.position, 1));
+    float4 p = mul(g_model, float4(input.position, 1));
     op.position = mul(g_projection, mul(g_view, p));
     op.pos2light = g_lightPos.xyz - p.xyz;
     return op;
@@ -47,7 +47,7 @@ struct VertexInput_Instanced
 VertexOutput SpotLightShadowInstanced_VS(VertexInput_Instanced input) 
 {
     VertexOutput op;
-	float4 p = mul(g_model, float4(input.position + input.instancedTranslation, 1));
+    float4 p = mul(g_model, float4(input.position + input.instancedTranslation, 1));
     op.position = mul(g_model, p);
     op.pos2light = g_lightPos.xyz - p.xyz;
     return op;

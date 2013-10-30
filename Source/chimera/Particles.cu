@@ -357,30 +357,30 @@ __device__ void _reduce(float4* data, float3* dst, T _operator)
 {
     extern __shared__ float3 s_d[];
 
-	UINT id = threadIdx.x;
-	UINT si = 2 * blockIdx.x * blockDim.x + threadIdx.x;
+    UINT id = threadIdx.x;
+    UINT si = 2 * blockIdx.x * blockDim.x + threadIdx.x;
 
-	float4 d0 = data[si];
+    float4 d0 = data[si];
     float4 d1 = data[si + blockDim.x];
 
-	s_d[id] = _operator(make_float3(d0.x, d0.y, d0.z), make_float3(d1.x, d1.y, d1.z));
-	
-	__syncthreads();
-	
-	for(UINT i = blockDim.x/2 ; i > 0; i >>= 1)
-	{
-		if(id < i)
-		{
-			s_d[id] = _operator(s_d[id + i], s_d[id]);
-		}
+    s_d[id] = _operator(make_float3(d0.x, d0.y, d0.z), make_float3(d1.x, d1.y, d1.z));
+    
+    __syncthreads();
+    
+    for(UINT i = blockDim.x/2 ; i > 0; i >>= 1)
+    {
+        if(id < i)
+        {
+            s_d[id] = _operator(s_d[id + i], s_d[id]);
+        }
 
         __syncthreads();
-	}
+    }
 
-	if(id == 0)
-	{
-		dst[blockIdx.x] = s_d[0];
-	} 
+    if(id == 0)
+    {
+        dst[blockIdx.x] = s_d[0];
+    } 
 }
 
 typedef float3 (*function)(float3, float3);

@@ -3,59 +3,59 @@
 
 namespace chimera
 {
-	class IResHandle
-	{
-	public:
-		virtual CHAR* VBuffer(VOID) = 0;
+    class IResHandle
+    {
+    public:
+        virtual CHAR* VBuffer(VOID) = 0;
 
-		virtual UINT VSize(VOID) = 0;
+        virtual UINT VSize(VOID) = 0;
 
-		virtual VOID VSetSize(UINT size) = 0;
+        virtual VOID VSetSize(UINT size) = 0;
 
-		virtual std::string VGetRelativeFilePath(VOID) CONST = 0;
+        virtual std::string VGetRelativeFilePath(VOID) CONST = 0;
 
-		virtual VOID VSetBuffer(CHAR* buffer) = 0; //dont use this
+        virtual VOID VSetBuffer(CHAR* buffer) = 0; //dont use this
 
-		virtual IResourceCache* VGetResourceCache(VOID) = 0;
+        virtual IResourceCache* VGetResourceCache(VOID) = 0;
 
-		virtual VOID VSetResourceCache(IResourceCache* cache) = 0;
+        virtual VOID VSetResourceCache(IResourceCache* cache) = 0;
 
-		virtual VOID VSetResource(CONST CMResource& res) = 0;
+        virtual VOID VSetResource(CONST CMResource& res) = 0;
 
-		virtual CONST CMResource& VGetResource(VOID) = 0;
+        virtual CONST CMResource& VGetResource(VOID) = 0;
 
-		virtual IExtraRessourceData* VGetExtraData(VOID) CONST = 0;
+        virtual IExtraRessourceData* VGetExtraData(VOID) CONST = 0;
 
-		virtual VOID VSetExtraData(std::unique_ptr<IExtraRessourceData> extraData) = 0;
+        virtual VOID VSetExtraData(std::unique_ptr<IExtraRessourceData> extraData) = 0;
 
-		virtual BOOL VIsReady(VOID) CONST = 0;
+        virtual BOOL VIsReady(VOID) CONST = 0;
 
-		virtual VOID VSetReady(BOOL ready) = 0;
+        virtual VOID VSetReady(BOOL ready) = 0;
 
-		virtual ~IResHandle(VOID) {}
-	};
+        virtual ~IResHandle(VOID) {}
+    };
 
-	class IMaterial 
-	{
-	public:
-		virtual CONST util::Vec4& VGetSpecular(VOID) CONST = 0;
+    class IMaterial 
+    {
+    public:
+        virtual CONST util::Vec4& VGetSpecular(VOID) CONST = 0;
 
-		virtual CONST util::Vec4& VGetDiffuse(VOID) CONST = 0;
+        virtual CONST util::Vec4& VGetDiffuse(VOID) CONST = 0;
 
-		virtual CONST util::Vec4& VGetAmbient(VOID) CONST = 0;
+        virtual CONST util::Vec4& VGetAmbient(VOID) CONST = 0;
 
-		virtual FLOAT VGetSpecularExpo(VOID) = 0;
+        virtual FLOAT VGetSpecularExpo(VOID) = 0;
 
-		virtual FLOAT VGetReflectance(VOID) = 0;
+        virtual FLOAT VGetReflectance(VOID) = 0;
 
-		virtual FLOAT VGetTextureScale(VOID) = 0;
+        virtual FLOAT VGetTextureScale(VOID) = 0;
 
-		virtual CONST CMResource& VGetTextureDiffuse(VOID) CONST = 0;
+        virtual CONST CMResource& VGetTextureDiffuse(VOID) CONST = 0;
 
-		virtual CONST CMResource& VGetTextureNormal(VOID) CONST = 0;
+        virtual CONST CMResource& VGetTextureNormal(VOID) CONST = 0;
 
         virtual ~IMaterial(VOID) {}
-	};
+    };
 
     class IResourceCache
     {
@@ -143,116 +143,116 @@ namespace chimera
         virtual IResourceCache* VCreateCache(VOID) = 0;
     };
 
-	class ResHandle : public IResHandle
-	{
-	protected:
-		CMResource m_resource;
-		CHAR* m_data;
-		std::unique_ptr<IExtraRessourceData> m_extraData;
-		IResourceCache* m_cache;
-		BOOL m_isReady;
-		UINT m_size;
+    class ResHandle : public IResHandle
+    {
+    protected:
+        CMResource m_resource;
+        CHAR* m_data;
+        std::unique_ptr<IExtraRessourceData> m_extraData;
+        IResourceCache* m_cache;
+        BOOL m_isReady;
+        UINT m_size;
 
-	public:
-		ResHandle(VOID) : m_cache(NULL), m_data(NULL), m_size(0), m_isReady(FALSE) {}
+    public:
+        ResHandle(VOID) : m_cache(NULL), m_data(NULL), m_size(0), m_isReady(FALSE) {}
 
-		CHAR* VBuffer(VOID) { return m_data; }
+        CHAR* VBuffer(VOID) { return m_data; }
 
-		UINT VSize(VOID) { return m_size; }
+        UINT VSize(VOID) { return m_size; }
 
-		VOID VSetSize(UINT size) { m_size = size; }
+        VOID VSetSize(UINT size) { m_size = size; }
 
-		VOID VSetReady(BOOL ready) { m_isReady = ready; }
+        VOID VSetReady(BOOL ready) { m_isReady = ready; }
 
-		std::string VGetRelativeFilePath(VOID) CONST { return m_cache->VGetFile().VGetName() + "/" + m_resource.m_name; }
+        std::string VGetRelativeFilePath(VOID) CONST { return m_cache->VGetFile().VGetName() + "/" + m_resource.m_name; }
 
-		//critical only for intern usage //TODO
-		VOID VSetBuffer(CHAR* buffer) { m_data = buffer; }
+        //critical only for intern usage //TODO
+        VOID VSetBuffer(CHAR* buffer) { m_data = buffer; }
 
-		IResourceCache* VGetResourceCache(VOID) { return m_cache; }
+        IResourceCache* VGetResourceCache(VOID) { return m_cache; }
 
-		CMResource& VGetResource(VOID) { return m_resource; }
+        CMResource& VGetResource(VOID) { return m_resource; }
 
-		VOID VSetResource(CONST CMResource& res) { return m_resource = res; }
+        VOID VSetResource(CONST CMResource& res) { return m_resource = res; }
 
-		VOID VSetResourceCache(IResourceCache* cache) { m_cache = cache; }
+        VOID VSetResourceCache(IResourceCache* cache) { m_cache = cache; }
 
-		IExtraRessourceData* VGetExtraData(VOID) CONST { return m_extraData.get(); }
+        IExtraRessourceData* VGetExtraData(VOID) CONST { return m_extraData.get(); }
 
-		VOID VSetExtraData(std::unique_ptr<IExtraRessourceData> extraData) { m_extraData = std::move(extraData); }
+        VOID VSetExtraData(std::unique_ptr<IExtraRessourceData> extraData) { m_extraData = std::move(extraData); }
 
-		BOOL VIsReady(VOID) CONST { return m_isReady; }
+        BOOL VIsReady(VOID) CONST { return m_isReady; }
 
-		virtual ~ResHandle(VOID);
-	};
+        virtual ~ResHandle(VOID);
+    };
 
-	struct Triple 
-	{
-		UINT position;
-		UINT texCoord;
-		UINT normal;
-		ULONG hash;
-		UINT index;
-		Triple() : position(0), texCoord(0), normal(0), hash(0), index(0) { }
+    struct Triple 
+    {
+        UINT position;
+        UINT texCoord;
+        UINT normal;
+        ULONG hash;
+        UINT index;
+        Triple() : position(0), texCoord(0), normal(0), hash(0), index(0) { }
 
-		BOOL Triple::operator==(const Triple& t0)
-		{
-			return t0.position == position && t0.texCoord == texCoord && t0.normal == normal;
-		}
+        BOOL Triple::operator==(const Triple& t0)
+        {
+            return t0.position == position && t0.texCoord == texCoord && t0.normal == normal;
+        }
 
-		friend bool operator==(const Triple& t0, const Triple& t1)
-		{
-			return t0.position == t1.position && t0.texCoord == t1.texCoord && t0.normal == t1.normal;
-		}
+        friend bool operator==(const Triple& t0, const Triple& t1)
+        {
+            return t0.position == t1.position && t0.texCoord == t1.texCoord && t0.normal == t1.normal;
+        }
 
-		friend bool operator<(const Triple& t0, const Triple& t1)
-		{
-			return t0.position < t1.position;
-		}
-	};
+        friend bool operator<(const Triple& t0, const Triple& t1)
+        {
+            return t0.position < t1.position;
+        }
+    };
 
-	struct Face 
-	{
-		std::vector<Triple> m_triples;
-	};
+    struct Face 
+    {
+        std::vector<Triple> m_triples;
+    };
 
-	struct IndexBufferInterval 
-	{
-		UINT start;
-		UINT count;
-		UINT material;
-		IndexBufferInterval(VOID) : start(0), count(0), material(0) {}
-	};
+    struct IndexBufferInterval 
+    {
+        UINT start;
+        UINT count;
+        UINT material;
+        IndexBufferInterval(VOID) : start(0), count(0), material(0) {}
+    };
 
-	class IMesh : public ResHandle
-	{
-	public:
-		virtual CMResource& VGetMaterials(VOID) = 0;
+    class IMesh : public ResHandle
+    {
+    public:
+        virtual CMResource& VGetMaterials(VOID) = 0;
 
-		virtual VOID VAddIndexBufferInterval(UINT start, UINT count, UINT material) = 0;
+        virtual VOID VAddIndexBufferInterval(UINT start, UINT count, UINT material) = 0;
 
-		virtual UINT VGetIndexCount(VOID) CONST = 0;
+        virtual UINT VGetIndexCount(VOID) CONST = 0;
 
-		virtual UINT VGetVertexCount(VOID) CONST = 0;
+        virtual UINT VGetVertexCount(VOID) CONST = 0;
 
-		virtual UINT VGetVertexStride(VOID) CONST = 0;
+        virtual UINT VGetVertexStride(VOID) CONST = 0;
 
-		virtual CONST FLOAT* VGetVertices(VOID) CONST = 0;
+        virtual CONST FLOAT* VGetVertices(VOID) CONST = 0;
 
-		virtual CONST std::list<Face>& VGetFaces(VOID) CONST = 0;
+        virtual CONST std::list<Face>& VGetFaces(VOID) CONST = 0;
 
-		virtual util::AxisAlignedBB& VGetAABB(VOID) = 0;
+        virtual util::AxisAlignedBB& VGetAABB(VOID) = 0;
 
-		virtual CONST UINT* VGetIndices(VOID) CONST = 0;
+        virtual CONST UINT* VGetIndices(VOID) CONST = 0;
 
-		virtual VOID VSetIndices(UINT* indices, UINT count) = 0;
+        virtual VOID VSetIndices(UINT* indices, UINT count) = 0;
 
-		virtual VOID VSetVertices(FLOAT* vertices, UINT count, UINT stride) = 0;
+        virtual VOID VSetVertices(FLOAT* vertices, UINT count, UINT stride) = 0;
 
-		virtual std::vector<IndexBufferInterval>& VGetIndexBufferIntervals(VOID) = 0;
-	};
+        virtual std::vector<IndexBufferInterval>& VGetIndexBufferIntervals(VOID) = 0;
+    };
 
-	//vram
+    //vram
 
     class IVRamHandle
     {

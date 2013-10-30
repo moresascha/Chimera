@@ -59,8 +59,8 @@ namespace chimera
 
         ~Mesh(VOID) 
         {
-			SAFE_ARRAY_DELETE(m_vertices);
-			SAFE_ARRAY_DELETE(m_indices);
+            SAFE_ARRAY_DELETE(m_vertices);
+            SAFE_ARRAY_DELETE(m_indices);
         }
     };
 }

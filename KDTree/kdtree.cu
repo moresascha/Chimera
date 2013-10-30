@@ -319,8 +319,12 @@ public:
                 m_scan->Call();
 
                 printBuffer(nodesContentCount);
-                printBuffer(nodesContent, 16);
-                break;
+                printBuffer(nodesContent, elementCount);
+
+                if(i == 2)//m_maxDepth-1)
+                {
+                    break;
+                }
             }
 
             for(int j = (1 << i); j < (1 << (i+1)); ++j)
@@ -353,8 +357,6 @@ public:
             m_computePossibleSplits->SetKernelArg(5, elementCount);
             m_computePossibleSplits->SetKernelArg(6, i);
             m_computePossibleSplits->Call();
-
-            printBuffer(posSplits);
 
             for(int j = (1 << i); j < (1 << (i+1)); ++j)
             {

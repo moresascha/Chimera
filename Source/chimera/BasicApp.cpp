@@ -158,7 +158,7 @@ namespace chimera
 
         gameinput::RegisterCommands(*controller.get(), *GetLogic()->GetCommandInterpreter());
 
-		chimera::g_pApp->GetHumanView()->GetSoundEngine()->RegisterSound("dynamic", "dynamic", "collision.wav");
+        chimera::g_pApp->GetHumanView()->GetSoundEngine()->RegisterSound("dynamic", "dynamic", "collision.wav");
         chimera::g_pApp->GetHumanView()->GetSoundEngine()->RegisterSound("dynamic", "static", "collision.wav");
         chimera::g_pApp->GetHumanView()->GetSoundEngine()->RegisterSound("dynamic", "bouncy", "collision.wav");
         chimera::g_pApp->GetHumanView()->GetSoundEngine()->RegisterSound("dynamic", "kinematic", "collision.wav");

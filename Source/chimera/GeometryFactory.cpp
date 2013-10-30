@@ -43,7 +43,7 @@ namespace chimera
             }
 
             m_sLine->VSetIndexBuffer(indices, count);
-			m_sLine->VSetTopology(eTopo_Lines);
+            m_sLine->VSetTopology(eTopo_Lines);
             m_sLine->VSetVertexBuffer(vertices, count, stride * sizeof(FLOAT));
             m_sLine->GetVertexBuffer()->SetCPUAccess(D3D11_CPU_ACCESS_WRITE);
             m_sLine->GetVertexBuffer()->SetUsage(D3D11_USAGE_DYNAMIC);
@@ -127,7 +127,7 @@ namespace chimera
             }
 
             m_sFrustumGeomety->VSetIndexBuffer(indices, vertexCount + 6);
-			m_sFrustumGeomety->VSetTopology(eTopo_TriangleStrip);
+            m_sFrustumGeomety->VSetTopology(eTopo_TriangleStrip);
             m_sFrustumGeomety->VSetVertexBuffer(vertices, vertexCount, 4 * vertexStride);
             m_sFrustumGeomety->GetVertexBuffer()->SetCPUAccess(D3D11_CPU_ACCESS_WRITE);
             m_sFrustumGeomety->GetVertexBuffer()->SetUsage(D3D11_USAGE_DYNAMIC);
@@ -152,7 +152,7 @@ namespace chimera
                 +1, +1, 0, 1, 0
             };
 
-			geo->VSetTopology(eTopo_TriangleStrip);
+            geo->VSetTopology(eTopo_TriangleStrip);
             geo->VSetVertexBuffer(localVertices, count, stride * sizeof(FLOAT));
             geo->GetVertexBuffer()->SetCPUAccess(flags);
             if(flags & D3D11_CPU_ACCESS_WRITE)
@@ -264,7 +264,7 @@ namespace chimera
             }
 
             m_sDefCube->VSetIndexBuffer(indices, vertexCount + 6);
-			m_sDefCube->VSetTopology(eTopo_TriangleStrip);
+            m_sDefCube->VSetTopology(eTopo_TriangleStrip);
             m_sDefCube->VSetVertexBuffer(vertices, vertexCount, 4 * vertexStride);
             m_sDefCube->VCreate();
             SAFE_ARRAY_DELETE(vertices);
@@ -345,7 +345,7 @@ namespace chimera
             }
 
             m_sCube->VSetIndexBuffer(indices, vertexCount + 6);
-			m_sCube->VSetTopology(eTopo_TriangleStrip);
+            m_sCube->VSetTopology(eTopo_TriangleStrip);
             m_sCube->VSetVertexBuffer(vertices, vertexCount, vertexStride);
             m_sCube->VCreate();
             SAFE_ARRAY_DELETE(vertices);
@@ -436,7 +436,7 @@ namespace chimera
 
             Geometry* geo = new Geometry(TRUE);
             geo->VSetIndexBuffer(indexBuffer, indexCount);
-			geo->VSetTopology(eTopo_TriangleStrip);
+            geo->VSetTopology(eTopo_TriangleStrip);
             geo->VSetVertexBuffer(vertexBuffer, vertexCount, 8 * sizeof(FLOAT));
             geo->VCreate();
 
@@ -507,7 +507,7 @@ namespace chimera
 
             m_sSkyDome = new Geometry();
             m_sSkyDome->VSetIndexBuffer(indexBuffer, indexCount);
-			m_sSkyDome->VSetTopology(eTopo_TriangleStrip);
+            m_sSkyDome->VSetTopology(eTopo_TriangleStrip);
             m_sSkyDome->VSetVertexBuffer(vertexBuffer, vertexCount, 5 * sizeof(FLOAT));
             m_sSkyDome->VCreate();
 
@@ -562,7 +562,7 @@ namespace chimera
             Geometry* geo = new Geometry();
             geo->VSetIndexBuffer(indexBuffer, indexCount);
             geo->VSetVertexBuffer(vertexBuffer, vertexCount, vertexStride * sizeof(FLOAT));
-			geo->VSetTopology(eTopo_TriangleStrip);
+            geo->VSetTopology(eTopo_TriangleStrip);
             geo->VCreate();
 
             if(deleteRawData)
@@ -647,7 +647,7 @@ namespace chimera
         
             Geometry* geo = new Geometry();
             geo->VSetIndexBuffer(indexBuffer, indexCount);
-			geo->VSetTopology(eTopo_TriangleStrip);
+            geo->VSetTopology(eTopo_TriangleStrip);
             geo->VSetVertexBuffer(vertexBuffer, vertexCount, vertexStride * sizeof(FLOAT));
             geo->VCreate();
 

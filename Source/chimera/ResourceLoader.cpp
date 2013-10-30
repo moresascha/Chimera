@@ -394,7 +394,7 @@ namespace chimera
         delete[] source;
         return indexCount * sizeof(UINT) + vertexCount * stride * sizeof(FLOAT);
     }
-	
+    
     INT MaterialLoader::VLoadRessource(CHAR* source, UINT size, std::shared_ptr<IResHandle> handle)
     {
         std::shared_ptr<chimera::MaterialSet> materials = std::static_pointer_cast<chimera::MaterialSet>(handle);

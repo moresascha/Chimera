@@ -1,6 +1,7 @@
 #pragma warning(disable: 4244)
 
 #include <ChimeraAPI.h>
+#include <../Source/chimera/Components.h>
 #include "../Source/chimera/util.h"
 #include "../Source/chimera/Timer.h"
 #include "../Source/chimera/Logger.h"
@@ -21,15 +22,23 @@ extern "C" void release();
 
 VOID startChimera(HINSTANCE hInstance)
 {
-	chimera::CM_APP_DESCRIPTION desc;
-	desc.facts = NULL;
-	desc.hInstance = hInstance;
-	desc.titel = L"KD-TREE";
-	desc.ival = 60;
-	desc.cachePath = "../Assets/";
-	desc.logFile = "log.log";
+    chimera::CM_APP_DESCRIPTION desc;
+    desc.facts = NULL;
+    desc.hInstance = hInstance;
+    desc.titel = L"KD-TREE";
+    desc.ival = 60;
+    desc.cachePath = "../Assets/";
+    desc.logFile = "log.log";
 
-	chimera::CmCreateApplication(&desc);
+    chimera::CmCreateApplication(&desc);
+
+    std::unique_ptr<chimera::ActorDescription> actorDesc = chimera::CmGetApp()->VGetLogic()->VGetActorFactory()->VCreateActorDescription();
+    chimera::TransformComponent* tcmp = actorDesc->AddComponent<chimera::TransformComponent>(CM_CMP_TRANSFORM);
+    tcmp->GetTransformation()->Translate(chimera::util::Vec3(0, 1, 10));
+    chimera::RenderComponent* rcmp = actorDesc->AddComponent<chimera::RenderComponent>(CM_CMP_RENDERING);
+    rcmp->m_resource = "box.obj";
+    rcmp->m_drawType = "wire";
+    chimera::CmGetApp()->VGetLogic()->VCreateActor(std::move(actorDesc));
 
     chimera::CmGetApp()->VRun();
 
@@ -52,7 +61,7 @@ int APIENTRY _tWinMain(HINSTANCE hInstance,
 
     generate();
 
-    //startChimera(hInstance);
+    startChimera(hInstance);
 
     release();
 

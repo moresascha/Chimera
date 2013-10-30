@@ -84,7 +84,7 @@ namespace chimera
 
         virtual VOID VOnResize(UINT w, UINT h) = 0;
 
-		virtual IEffectFactory* VGetEffectFactory(VOID) = 0;
+        virtual IEffectFactory* VGetEffectFactory(VOID) = 0;
 
         virtual IVRamManager* VGetVRamManager(VOID) = 0;
     };
@@ -278,9 +278,9 @@ namespace chimera
 
         virtual VOID VSetUpdateAction(UpdateAction action) = 0;
 
-		virtual VOID VActivate(VOID) = 0;
+        virtual VOID VActivate(VOID) = 0;
 
-		virtual VOID VDeactivate(VOID) = 0;
+        virtual VOID VDeactivate(VOID) = 0;
 
         virtual ~IActorController(VOID) {}
     };
@@ -299,127 +299,127 @@ namespace chimera
         virtual ISceneGraph* VCreateSceneGraph(VOID) = 0;
     };
 
-	typedef VOID (*EffectDrawMethod) (VOID);
-	class IEffectParmaters
-	{
-	public:
-		virtual VOID VApply(VOID) = 0;
-	};
+    typedef VOID (*EffectDrawMethod) (VOID);
+    class IEffectParmaters
+    {
+    public:
+        virtual VOID VApply(VOID) = 0;
+    };
 
-	class IEffect
-	{
-	public:
-		virtual VOID VSetParameters(IEffectParmaters* params) = 0;
+    class IEffect
+    {
+    public:
+        virtual VOID VSetParameters(IEffectParmaters* params) = 0;
 
         virtual VOID VCreate(CONST CMShaderDescription& shaderDesc, FLOAT w, FLOAT h) = 0;
 
-		virtual VOID VSetDrawMethod(EffectDrawMethod m) = 0;
+        virtual VOID VSetDrawMethod(EffectDrawMethod m) = 0;
 
-		virtual VOID VAddRequirement(IEffect* effect) = 0;
+        virtual VOID VAddRequirement(IEffect* effect) = 0;
 
-		virtual VOID VSetSource(IRenderTarget* src) = 0;
+        virtual VOID VSetSource(IRenderTarget* src) = 0;
 
         virtual VOID VProcess(VOID) = 0;
 
-		virtual VOID VReset(VOID) = 0;
+        virtual VOID VReset(VOID) = 0;
 
         virtual FLOAT2 VGetViewPort(VOID) = 0;
 
-		virtual VOID VSetTarget(IRenderTarget* target) = 0;
+        virtual VOID VSetTarget(IRenderTarget* target) = 0;
 
-		virtual VOID VSetTarget(std::unique_ptr<IRenderTarget> target) = 0;
+        virtual VOID VSetTarget(std::unique_ptr<IRenderTarget> target) = 0;
 
-		virtual IRenderTarget* VGetTarget(VOID) = 0;
+        virtual IRenderTarget* VGetTarget(VOID) = 0;
 
-		virtual BOOL VOnRestore(UINT w, UINT h, ErrorLog* log = NULL) = 0;
+        virtual BOOL VOnRestore(UINT w, UINT h, ErrorLog* log = NULL) = 0;
 
-		virtual ~IEffect(VOID) {}
-	};
+        virtual ~IEffect(VOID) {}
+    };
 
-	class IEffectChain
-	{
-	public:
-		virtual VOID VOnRestore(UINT w, UINT h) = 0;
+    class IEffectChain
+    {
+    public:
+        virtual VOID VOnRestore(UINT w, UINT h) = 0;
 
-		virtual VOID VSetSource(IRenderTarget* src) = 0;
+        virtual VOID VSetSource(IRenderTarget* src) = 0;
 
-		virtual VOID VSetTarget(IRenderTarget* target) = 0;
+        virtual VOID VSetTarget(IRenderTarget* target) = 0;
 
-		virtual IEffect* VCreateEffect(CONST CMShaderDescription& shaderDesc, FLOAT percentofw = 1.0f, FLOAT percentofh = 1.0f) = 0;
+        virtual IEffect* VCreateEffect(CONST CMShaderDescription& shaderDesc, FLOAT percentofw = 1.0f, FLOAT percentofh = 1.0f) = 0;
 
-		virtual IRenderTarget* VGetResult(VOID) = 0;
+        virtual IRenderTarget* VGetResult(VOID) = 0;
 
-		virtual VOID VProcess(VOID) = 0;
+        virtual VOID VProcess(VOID) = 0;
 
-		virtual ~IEffectChain(VOID) {}
-	};
+        virtual ~IEffectChain(VOID) {}
+    };
 
-	class IEffectFactory
-	{
-	public:
-		virtual IEffectChain* VCreateEffectChain(VOID) = 0;
+    class IEffectFactory
+    {
+    public:
+        virtual IEffectChain* VCreateEffectChain(VOID) = 0;
 
-		virtual IEffect* VCreateEffect(VOID) = 0;
+        virtual IEffect* VCreateEffect(VOID) = 0;
 
-		virtual ~IEffectFactory(VOID) {}
-	};
+        virtual ~IEffectFactory(VOID) {}
+    };
 
-	class IEffectFactoryFactory
-	{
-	public:
-		virtual IEffectFactory* VCreateEffectFactroy(VOID) = 0;
-	};
+    class IEffectFactoryFactory
+    {
+    public:
+        virtual IEffectFactory* VCreateEffectFactroy(VOID) = 0;
+    };
 
-	class IGraphicSetting
-	{
-	protected:
-		std::string m_name;
-	public:
-		IGraphicSetting(LPCSTR settingName) : m_name(settingName) {}
+    class IGraphicSetting
+    {
+    protected:
+        std::string m_name;
+    public:
+        IGraphicSetting(LPCSTR settingName) : m_name(settingName) {}
 
-		virtual VOID VRender(VOID) = 0;
+        virtual VOID VRender(VOID) = 0;
 
-		virtual BOOL VOnRestore(UINT w, UINT h) = 0;
+        virtual BOOL VOnRestore(UINT w, UINT h) = 0;
 
-		LPCSTR GetName(VOID) { return m_name.c_str(); }
+        LPCSTR GetName(VOID) { return m_name.c_str(); }
 
-		virtual CMShaderProgramDescription* VGetProgramDescription(VOID) = 0;
+        virtual CMShaderProgramDescription* VGetProgramDescription(VOID) = 0;
 
-		virtual ~IGraphicSetting(VOID) {}
-	};
+        virtual ~IGraphicSetting(VOID) {}
+    };
 
-	class IPostFXSetting : public IGraphicSetting
-	{
-	public:
-		IPostFXSetting(LPCSTR name) : IGraphicSetting(name)
-		{
+    class IPostFXSetting : public IGraphicSetting
+    {
+    public:
+        IPostFXSetting(LPCSTR name) : IGraphicSetting(name)
+        {
 
-		}
+        }
 
-		virtual VOID VSetSource(IRenderTarget* src) = 0;
+        virtual VOID VSetSource(IRenderTarget* src) = 0;
 
-		virtual VOID VSetTarget(IRenderTarget* target) = 0;
+        virtual VOID VSetTarget(IRenderTarget* target) = 0;
 
-		virtual ~IPostFXSetting(VOID) {}
-	};
+        virtual ~IPostFXSetting(VOID) {}
+    };
 
-	class IGraphicsSettings
-	{
-	public:
-		virtual VOID VAddSetting(std::unique_ptr<IGraphicSetting> setting, GraphicsSettingType type) = 0;
+    class IGraphicsSettings
+    {
+    public:
+        virtual VOID VAddSetting(std::unique_ptr<IGraphicSetting> setting, GraphicsSettingType type) = 0;
 
-		virtual VOID VSetPostFX(std::unique_ptr<IPostFXSetting> setting) = 0;
+        virtual VOID VSetPostFX(std::unique_ptr<IPostFXSetting> setting) = 0;
 
-		virtual VOID VRender(VOID) = 0;
+        virtual VOID VRender(VOID) = 0;
 
-		virtual BOOL VOnRestore(UINT w, UINT h) = 0;
+        virtual BOOL VOnRestore(UINT w, UINT h) = 0;
 
-		virtual VOID VOnActivate(VOID) = 0;
+        virtual VOID VOnActivate(VOID) = 0;
 
-		virtual IRenderTarget* VGetResult(VOID) = 0;
+        virtual IRenderTarget* VGetResult(VOID) = 0;
 
-		virtual ~IGraphicsSettings(VOID) {}
-	};
+        virtual ~IGraphicsSettings(VOID) {}
+    };
 
     class IEnvironmentLighting
     {

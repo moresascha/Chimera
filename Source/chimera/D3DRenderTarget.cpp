@@ -19,11 +19,11 @@ namespace chimera
                 return m_pView;
             }
 
-			BOOL VCreate(VOID) { return TRUE; }
+            BOOL VCreate(VOID) { return TRUE; }
 
-			VOID VDestroy() {}
-			
-			UINT VGetByteCount(VOID) CONST { return 0; }
+            VOID VDestroy() {}
+            
+            UINT VGetByteCount(VOID) CONST { return 0; }
         };
 
         RenderTarget::RenderTarget(BOOL depthOnly) : 

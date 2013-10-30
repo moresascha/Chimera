@@ -98,9 +98,9 @@ PixelOutput BlurH(PixelInput input)
         + g_effectSource0.Sample(g_samplerClamp, fs_in_tex + (1.0 + 0.454545)*texelSize));
 
     float4 c8 = 0.1399499340914190 * g_effectSource0.Sample(g_samplerClamp, fs_in_tex);
-  	
+      
     PixelOutput op;
-  	op.color = float4(c0 + c1 + c2 + c3 + c4 + c5 + c6 + c7 + c8);
+      op.color = float4(c0 + c1 + c2 + c3 + c4 + c5 + c6 + c7 + c8);
 
     return op;
 }
@@ -141,9 +141,9 @@ PixelOutput BlurV(PixelInput input)
         + g_effectSource0.Sample(g_samplerClamp, fs_in_tex + (1.0 + 0.454545)*texelSize));
     
     float4 c8 = 0.1399499340914190 * g_effectSource0.Sample(g_samplerClamp, fs_in_tex);
-  	
+      
     PixelOutput op;
-  	op.color = float4(c0 + c1 + c2 + c3 + c4 + c5 + c6 + c7 + c8);
+      op.color = float4(c0 + c1 + c2 + c3 + c4 + c5 + c6 + c7 + c8);
     return op;
 }
 #define FILTER_SIZE 7

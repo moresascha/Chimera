@@ -11,12 +11,12 @@ namespace chimera
       Actor(ActorId id);
 
       virtual ~Actor(VOID) 
-	  {
-		  TBD_FOR(m_components)
-		  {
-			  it->second.reset();
-		  }
-	  }
+      {
+          TBD_FOR(m_components)
+          {
+              it->second.reset();
+          }
+      }
 
       CONST std::map<ComponentId, std::unique_ptr<IActorComponent>>& VGetComponents(VOID) { return m_components; } 
 

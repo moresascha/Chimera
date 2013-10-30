@@ -48,19 +48,19 @@ namespace chimera
                     it2->second->VSave(xmlactor);
                 }
                 std::shared_ptr<ISceneNode> node = chimera::g_pApp->GetHumanView()->GetSceneGraph()->FindActorNode(actor->GetId());
-				if(node)
-				{
-					for(auto it3 = node->GetChilds().begin(); it3 != node->GetChilds().end(); ++it3)
-					{                    
-						tinyxml2::XMLDocument* doc = xmlactor->GetDocument();
-						tinyxml2::XMLElement* cmp = doc->NewElement("Actor");
-						std::shared_ptr<chimera::Actor> child = chimera::g_pApp->GetLogic()->VFindActor(it3->get()->VGetActorId());
-						for(auto it4 = child->GetComponents().begin(); it4!= child->GetComponents().end(); ++it4)
-						{
-							it4->second->VSave(cmp);
-						}
+                if(node)
+                {
+                    for(auto it3 = node->GetChilds().begin(); it3 != node->GetChilds().end(); ++it3)
+                    {                    
+                        tinyxml2::XMLDocument* doc = xmlactor->GetDocument();
+                        tinyxml2::XMLElement* cmp = doc->NewElement("Actor");
+                        std::shared_ptr<chimera::Actor> child = chimera::g_pApp->GetLogic()->VFindActor(it3->get()->VGetActorId());
+                        for(auto it4 = child->GetComponents().begin(); it4!= child->GetComponents().end(); ++it4)
+                        {
+                            it4->second->VSave(cmp);
+                        }
 
-						xmlactor->LinkEndChild(cmp);
+                        xmlactor->LinkEndChild(cmp);
                     }
                 }
 

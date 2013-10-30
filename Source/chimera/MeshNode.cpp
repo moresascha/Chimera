@@ -23,7 +23,7 @@ namespace chimera
         ss << "pos= (" << p.x << ", " << p.y << ", " << p.z << ")\n";
         app::g_pApp->GetFontManager()->RenderText(ss.str(), pos.x, pos.y); */
     }
-	/*
+    /*
     VOID DrawPicking(std::shared_ptr<chimera::Actor> actor, CONST util::Mat4* matrix, std::shared_ptr<chimera::Mesh> mesh, std::shared_ptr<chimera::Geometry> geo)
     {
         if(actor->HasComponent<chimera::PickableComponent>(chimera::PickableComponent::COMPONENT_ID))

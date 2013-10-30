@@ -205,22 +205,22 @@ namespace chimera
 
         VOID Geometry::VSetTopology(GeometryTopology primType)
         {
-			if(primType == eTopo_Lines)
-			{
-				m_primType = D3D11_PRIMITIVE_TOPOLOGY_LINELIST;
-			}
-			else if(primType == eTopo_LineStrip)
-			{
-				m_primType = D3D11_PRIMITIVE_TOPOLOGY_LINESTRIP;
-			}
-			else if(primType == eTopo_Triangles)
-			{
-				m_primType = D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST;
-			}
-			else if(primType == eTopo_TriangleStrip)
-			{
-				m_primType = D3D11_PRIMITIVE_TOPOLOGY_TRIANGLESTRIP;
-			}
+            if(primType == eTopo_Lines)
+            {
+                m_primType = D3D11_PRIMITIVE_TOPOLOGY_LINELIST;
+            }
+            else if(primType == eTopo_LineStrip)
+            {
+                m_primType = D3D11_PRIMITIVE_TOPOLOGY_LINESTRIP;
+            }
+            else if(primType == eTopo_Triangles)
+            {
+                m_primType = D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST;
+            }
+            else if(primType == eTopo_TriangleStrip)
+            {
+                m_primType = D3D11_PRIMITIVE_TOPOLOGY_TRIANGLESTRIP;
+            }
         }
 
         UINT Geometry::VGetByteCount(VOID) CONST

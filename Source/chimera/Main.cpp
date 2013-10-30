@@ -3,7 +3,7 @@ static struct LeaksLocator
 {
     LeaksLocator()
     {
-		//_CrtSetBreakAlloc(2082);
+        //_CrtSetBreakAlloc(2082);
     }
 } LeaksLocatorInst;
 

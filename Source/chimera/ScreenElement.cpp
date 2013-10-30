@@ -215,7 +215,7 @@ namespace chimera
     VOID RenderScreen::VDraw(VOID)
     {
         m_pSettings->VRender();
-		/*
+        /*
         IRenderer* renderer = CmGetApp()->VGetHumanView()->VGetRenderer();
 
         renderer->VClearAndBindBackBuffer();

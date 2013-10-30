@@ -19,7 +19,7 @@ namespace chimera
         std::unique_ptr<IRenderer> m_pRenderer;
         IVRamManager* m_pVramManager;
         IGraphicsFactory* m_pGraphicsFactory;
-		IEffectFactory* m_pEffectFactory;
+        IEffectFactory* m_pEffectFactory;
 
     public:
         HumanGameView(VOID);
@@ -56,7 +56,7 @@ namespace chimera
 
         IVRamManager* VGetVRamManager(VOID) { return m_pVramManager; }
 
-		IEffectFactory* VGetEffectFactory(VOID) { return m_pEffectFactory; }
+        IEffectFactory* VGetEffectFactory(VOID) { return m_pEffectFactory; }
 
         ISoundEngine* VGetSoundEngine(VOID) { return m_pSoundEngine; }
 
@@ -129,14 +129,14 @@ namespace chimera
     public:
         ActorController(VOID);
 
-		virtual BOOL VInitialise(FactoryPtr* facts) { return TRUE; }
+        virtual BOOL VInitialise(FactoryPtr* facts) { return TRUE; }
 
         VOID VSetMinSpeed(FLOAT minSpeed) { m_minSpeed = minSpeed; }
         VOID VSetMaxSpeed(FLOAT maxSpeed) { m_maxSpeed = maxSpeed; }
 
-		VOID VActivate(VOID);
+        VOID VActivate(VOID);
 
-		VOID VDeactivate(VOID);
+        VOID VDeactivate(VOID);
 
         virtual BOOL VOnRestore(VOID) { return TRUE; }
 

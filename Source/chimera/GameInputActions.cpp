@@ -698,7 +698,7 @@ namespace gameinput
         interpreter.RegisterCommand("force", ApplyForce, "force x y z [n]");
         interpreter.RegisterCommand("torque", ApplyTorque, "torque x y z [n]");
         interpreter.RegisterCommand("pforce", ApplyPlayerForce, "pforce n");
-		interpreter.RegisterCommand("flushVR", FlushVRam, "");
+        interpreter.RegisterCommand("flushVR", FlushVRam, "");
 
         controller.SetMouseScrollAction(MouseWheelActorPositionModify);
 

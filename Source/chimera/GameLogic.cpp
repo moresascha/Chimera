@@ -23,7 +23,7 @@ namespace chimera
     {
         IActorFactoryFactory* aff = FindFactory<IActorFactoryFactory>(facts, CM_FACTORY_ACTOR);
         RETURN_IF_FAILED(aff);
-		m_pActorFactory = aff->VCreateActorFactroy();
+        m_pActorFactory = aff->VCreateActorFactroy();
 
         IHumanViewFactory* hgwf = FindFactory<IHumanViewFactory>(facts, CM_FACTORY_VIEW);
         RETURN_IF_FAILED(hgwf);
@@ -57,9 +57,9 @@ namespace chimera
 
     VOID BaseGameLogic::VAttachView(std::unique_ptr<IView> view, ActorId actor) 
     {
-		IView* raw = view.get();
+        IView* raw = view.get();
         m_actorToViewMap[actor] = raw;
-		m_gameViewList.push_back(std::move(view));
+        m_gameViewList.push_back(std::move(view));
         raw->VOnAttach((UINT)m_gameViewList.size(), VFindActor(actor));
     }
 
@@ -223,14 +223,14 @@ namespace chimera
         if(appendToLevel)
         {
             actor = m_pLevel->VAddActor(std::move(desc));
-			return actor;
+            return actor;
         }
         else
         {
             std::unique_ptr<IActor> upa = m_pActorFactory->VCreateActor(std::move(desc));
-			actor = upa.get();
+            actor = upa.get();
             m_actors[actor->GetId()] = std::move(upa);
-			return actor;
+            return actor;
         }
     }
 

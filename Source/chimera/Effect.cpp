@@ -3,12 +3,12 @@
 namespace chimera
 {
 
-	VOID DefaultDraw(VOID)
-	{
-		CmGetApp()->VGetHumanView()->VGetRenderer()->VDrawScreenQuad();
-	}
+    VOID DefaultDraw(VOID)
+    {
+        CmGetApp()->VGetHumanView()->VGetRenderer()->VDrawScreenQuad();
+    }
 
-	Effect::Effect(VOID) 
+    Effect::Effect(VOID) 
         : m_pPixelShader(NULL), m_target(NULL), m_source(NULL), m_w(0), m_h(0),
         m_params(NULL), m_isProcessed(FALSE)
     {
@@ -79,11 +79,11 @@ namespace chimera
         m_target = target;
     }
 
-	VOID Effect::VSetTarget(std::unique_ptr<IRenderTarget> target)
-	{
-		m_ownedTarget = std::move(target);
-		m_target = m_ownedTarget.get();
-	}
+    VOID Effect::VSetTarget(std::unique_ptr<IRenderTarget> target)
+    {
+        m_ownedTarget = std::move(target);
+        m_target = m_ownedTarget.get();
+    }
 
     VOID Effect::VProcess(VOID)
     {
@@ -141,10 +141,10 @@ namespace chimera
         m_isProcessed = TRUE;
     }
 
-	VOID Effect::VReset(VOID)
-	{
-		m_isProcessed = FALSE;
-	}
+    VOID Effect::VReset(VOID)
+    {
+        m_isProcessed = FALSE;
+    }
 
     Effect::~Effect(VOID)
     {
@@ -183,19 +183,19 @@ namespace chimera
         if(!m_pVertexShader)
         {
             CMVertexShaderDescription desc;
-			desc.layoutCount = 2;
-			
-			desc.inputLayout[0].format = eFormat_R32G32B32_FLOAT;
-			desc.inputLayout[0].instanced = FALSE;
-			desc.inputLayout[0].name = "POSITION";
-			desc.inputLayout[0].position = 0;
-			desc.inputLayout[0].slot = 0;
+            desc.layoutCount = 2;
+            
+            desc.inputLayout[0].format = eFormat_R32G32B32_FLOAT;
+            desc.inputLayout[0].instanced = FALSE;
+            desc.inputLayout[0].name = "POSITION";
+            desc.inputLayout[0].position = 0;
+            desc.inputLayout[0].slot = 0;
 
-			desc.inputLayout[1].format = eFormat_R32G32_FLOAT;
-			desc.inputLayout[1].instanced = FALSE;
-			desc.inputLayout[1].name = "TEXCOORD";
-			desc.inputLayout[1].position = 1;
-			desc.inputLayout[1].slot = 0;
+            desc.inputLayout[1].format = eFormat_R32G32_FLOAT;
+            desc.inputLayout[1].instanced = FALSE;
+            desc.inputLayout[1].name = "TEXCOORD";
+            desc.inputLayout[1].position = 1;
+            desc.inputLayout[1].slot = 0;
 
             desc.file = L"Effects.hlsl";
             desc.function = "Effect_VS";

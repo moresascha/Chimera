@@ -1,7 +1,7 @@
-﻿Build started 14.10.2013 12:12:54.
-     1>Project "C:\Users\SKOLODZE\Dropbox\VisualStudio\Chimera\Source\Chimera.vcxproj" on node 2 (Build target(s)).
+﻿Build started 30.10.2013 08:18:24.
+     1>Project "E:\Dropbox\VisualStudio\Chimera\Source\Chimera.vcxproj" on node 2 (Build target(s)).
      1>InitializeBuildStatus:
-         Creating "C:\Users\SKOLODZE\Dropbox\VisualStudio\Chimera\Source\..\Tmp\Chimerax64Debug\Chimera.unsuccessfulbuild" because "AlwaysCreate" was specified.
+         Touching "E:\Dropbox\VisualStudio\Chimera\Source\..\Tmp\Chimerax64Debug\Chimera.unsuccessfulbuild".
        AddCudaCompileDeps:
        Skipping target "AddCudaCompileDeps" because all output files are up-to-date with respect to the input files.
        AddCudaCompilePropsDeps:
@@ -9,39 +9,9 @@
        CudaBuild:
        Skipping target "CudaBuild" because all output files are up-to-date with respect to the input files.
        ClCompile:
-         C:\Program Files (x86)\Microsoft Visual Studio 11.0\VC\bin\x86_amd64\CL.exe /c /I../Cudah/Source /I../Include /I./Source/Chimera /I../Include/physx/foundation /I../Include/physx/Source/foundation/include /I../Include/physx/physxprofilesdk /I../Include/physx/physxvisualdebuggersdk /I../Include/physx/common /I../Include/physx/geometry /I../Include/physx/pvd /I../Include/physx/particles /I../Include/physx/cooking /I../Include/physx/extensions /I../Include/physx/characterdynamic /I../Include/physx/vehicle /I../Include/physx/RepX /I../Include/physx/RepXUpgrader /I../Include/physx/Source/GeomUtils/headers /I"C:\Program Files\NVIDIA GPU Computing Toolkit\CUDA\v5.5\include" /Zi /nologo /W3 /WX- /MP /Od /D __COMPILING_DLL /D _WINDLL /D _UNICODE /D UNICODE /Gm- /EHsc /RTC1 /MDd /GS /fp:precise /Zc:wchar_t /Zc:forScope /Fo"C:\Users\SKOLODZE\Dropbox\VisualStudio\Chimera\Source\..\Tmp\Chimerax64Debug\\" /Fd"C:\Users\SKOLODZE\Dropbox\VisualStudio\Chimera\Source\..\Tmp\Chimerax64Debug\vc110.pdb" /Gd /TP /errorReport:prompt chimera\Actor.cpp chimera\ActorFactory.cpp chimera\AxisAlignedBB.cpp chimera\Camera.cpp chimera\CascadedShadowMapper.cpp chimera\ChimeraAPI.cpp chimera\Commands.cpp chimera\Components.cpp chimera\Config.cpp chimera\Controller.cpp chimera\Effect.cpp chimera\Event.cpp chimera\EventManager.cpp chimera\Frustum.cpp chimera\GameLogic.cpp chimera\GameView.cpp chimera\GeometryFactory.cpp chimera\GraphicsSettings.cpp chimera\Input.cpp chimera\Logger.cpp chimera\MeshNode.cpp chimera\PhysicsSystem.cpp chimera\Process.cpp chimera\ProcessManager.cpp chimera\SceneGraph.cpp chimera\SceneNode.cpp chimera\Scheduler.cpp chimera\SkyDomeNode.cpp chimera\Timer.cpp chimera\VRamManager.cpp chimera\util.cpp
-         Actor.cpp
-         ActorFactory.cpp
-         AxisAlignedBB.cpp
-         Camera.cpp
-         CascadedShadowMapper.cpp
-         ChimeraAPI.cpp
-         Commands.cpp
-         Components.cpp
-         Config.cpp
-         Controller.cpp
-         Effect.cpp
-         Event.cpp
-         EventManager.cpp
-         Frustum.cpp
-         GameLogic.cpp
-         GameView.cpp
-         GeometryFactory.cpp
-         GraphicsSettings.cpp
-         Input.cpp
+         C:\Program Files (x86)\Microsoft Visual Studio 11.0\VC\bin\x86_amd64\CL.exe /c /I../Cudah/Source /I../Include /I./Source/Chimera /I../Include/physx/foundation /I../Include/physx/Source/foundation/include /I../Include/physx/physxprofilesdk /I../Include/physx/physxvisualdebuggersdk /I../Include/physx/common /I../Include/physx/geometry /I../Include/physx/pvd /I../Include/physx/particles /I../Include/physx/cooking /I../Include/physx/extensions /I../Include/physx/characterdynamic /I../Include/physx/vehicle /I../Include/physx/RepX /I../Include/physx/RepXUpgrader /I../Include/physx/Source/GeomUtils/headers /I"C:\Program Files\NVIDIA GPU Computing Toolkit\CUDA\v5.5\include" /Zi /nologo /W3 /WX- /MP /Od /D __COMPILING_DLL /D _WINDLL /D _UNICODE /D UNICODE /Gm- /EHsc /RTC1 /MDd /GS /fp:precise /Zc:wchar_t /Zc:forScope /Fo"E:\Dropbox\VisualStudio\Chimera\Source\..\Tmp\Chimerax64Debug\\" /Fd"E:\Dropbox\VisualStudio\Chimera\Source\..\Tmp\Chimerax64Debug\vc110.pdb" /Gd /TP /errorReport:prompt chimera\Logger.cpp
          Logger.cpp
-         MeshNode.cpp
-         PhysicsSystem.cpp
-         Process.cpp
-         ProcessManager.cpp
-         SceneGraph.cpp
-         SceneNode.cpp
-         Scheduler.cpp
-         SkyDomeNode.cpp
-         Timer.cpp
-         VRamManager.cpp
-         util.cpp
-         C:\Program Files (x86)\Microsoft Visual Studio 11.0\VC\bin\x86_amd64\CL.exe /c /I../Cudah/Source /I../Include /I./Source/Chimera /I../Include/physx/foundation /I../Include/physx/Source/foundation/include /I../Include/physx/physxprofilesdk /I../Include/physx/physxvisualdebuggersdk /I../Include/physx/common /I../Include/physx/geometry /I../Include/physx/pvd /I../Include/physx/particles /I../Include/physx/cooking /I../Include/physx/extensions /I../Include/physx/characterdynamic /I../Include/physx/vehicle /I../Include/physx/RepX /I../Include/physx/RepXUpgrader /I../Include/physx/Source/GeomUtils/headers /I"C:\Program Files\NVIDIA GPU Computing Toolkit\CUDA\v5.5\include" /Zi /nologo /W3 /WX- /MP /Od /D __COMPILING_DLL /D _WINDLL /D _UNICODE /D UNICODE /Gm- /EHsc /RTC1 /MDd /GS /fp:precise /Zc:wchar_t /Zc:forScope /Fo"C:\Users\SKOLODZE\Dropbox\VisualStudio\Chimera\Source\..\Tmp\Chimerax64Debug\\" /Fd"C:\Users\SKOLODZE\Dropbox\VisualStudio\Chimera\Source\..\Tmp\Chimerax64Debug\vc110.pdb" /Gd /TP /errorReport:prompt chimera\APIError.cpp chimera\Application.cpp chimera\Cache.cpp chimera\D3DConstBuffer.cpp chimera\D3DGeometry.cpp chimera\D3DGraphics.cpp chimera\D3DGraphicsFactory.cpp chimera\D3DRenderTarget.cpp chimera\D3DRenderer.cpp chimera\D3DShaderProgram.cpp chimera\D3DTexture.cpp chimera\Main.cpp chimera\ResourceLoader.cpp chimera\ScreenElement.cpp
+         C:\Program Files (x86)\Microsoft Visual Studio 11.0\VC\bin\x86_amd64\CL.exe /c /I../Cudah/Source /I../Include /I./Source/Chimera /I../Include/physx/foundation /I../Include/physx/Source/foundation/include /I../Include/physx/physxprofilesdk /I../Include/physx/physxvisualdebuggersdk /I../Include/physx/common /I../Include/physx/geometry /I../Include/physx/pvd /I../Include/physx/particles /I../Include/physx/cooking /I../Include/physx/extensions /I../Include/physx/characterdynamic /I../Include/physx/vehicle /I../Include/physx/RepX /I../Include/physx/RepXUpgrader /I../Include/physx/Source/GeomUtils/headers /I"C:\Program Files\NVIDIA GPU Computing Toolkit\CUDA\v5.5\include" /Zi /nologo /W3 /WX- /MP /Od /D __COMPILING_DLL /D _WINDLL /D _UNICODE /D UNICODE /Gm- /EHsc /RTC1 /MDd /GS /fp:precise /Zc:wchar_t /Zc:forScope /Fo"E:\Dropbox\VisualStudio\Chimera\Source\..\Tmp\Chimerax64Debug\\" /Fd"E:\Dropbox\VisualStudio\Chimera\Source\..\Tmp\Chimerax64Debug\vc110.pdb" /Gd /TP /errorReport:prompt chimera\APIError.cpp chimera\Application.cpp chimera\Cache.cpp chimera\D3DConstBuffer.cpp chimera\D3DGeometry.cpp chimera\D3DGraphics.cpp chimera\D3DGraphicsFactory.cpp chimera\D3DRenderer.cpp chimera\D3DRenderTarget.cpp chimera\D3DShaderProgram.cpp chimera\D3DTexture.cpp chimera\Main.cpp chimera\ResourceLoader.cpp chimera\ScreenElement.cpp chimera\tinyxml2.cpp
          APIError.cpp
          Application.cpp
          Cache.cpp
@@ -49,69 +19,79 @@
          D3DGeometry.cpp
          D3DGraphics.cpp
          D3DGraphicsFactory.cpp
-         D3DRenderTarget.cpp
          D3DRenderer.cpp
+         D3DRenderTarget.cpp
          D3DShaderProgram.cpp
          D3DTexture.cpp
          Main.cpp
          ResourceLoader.cpp
          ScreenElement.cpp
+         tinyxml2.cpp
        ResourceCompile:
-         All outputs are up-to-date.
+         C:\Program Files (x86)\Windows Kits\8.0\bin\x86\rc.exe /D _UNICODE /D UNICODE /l"0x0409" /I"C:\Program Files (x86)\Microsoft Visual Studio 11.0\VC\atlmfc\include" /I"C:\Program Files (x86)\Microsoft Visual Studio 11.0\VC\PlatformSDK\Include" /nologo /fo"E:\Dropbox\VisualStudio\Chimera\Source\..\Tmp\Chimerax64Debug\Chimera.res" Chimera.rc 
        Link:
-         C:\Program Files (x86)\Microsoft Visual Studio 11.0\VC\bin\x86_amd64\link.exe /ERRORREPORT:PROMPT /OUT:"C:\Users\SKOLODZE\Dropbox\VisualStudio\Chimera\Source\..\Bin\x64Debug\Chimerax64Debug.dll" /INCREMENTAL /NOLOGO /LIBPATH:../Lib /LIBPATH:"C:\Program Files (x86)\Windows Kits\8.0\Lib/win8/um/($Platform)" nvcuvid.lib nvcuvenc.lib kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib /NODEFAULTLIB:LIBCMTD /NODEFAULTLIB:LIBCMT /NODEFAULTLIB:libcpmt /MANIFEST /MANIFESTUAC:"level='asInvoker' uiAccess='false'" /manifest:embed /DEBUG /PDB:"C:\Users\SKOLODZE\Dropbox\VisualStudio\Chimera\Source\..\Bin\x64Debug\Chimerax64Debug.pdb" /SUBSYSTEM:WINDOWS /TLBID:1 /DYNAMICBASE /NXCOMPAT /IMPLIB:"C:\Users\SKOLODZE\Dropbox\VisualStudio\Chimera\Source\..\Bin\x64Debug\Chimerax64Debug.lib" /MACHINE:X64 /DLL C:\Users\SKOLODZE\Dropbox\VisualStudio\Chimera\Source\..\Tmp\Chimerax64Debug\Chimera.res
-         C:\Users\SKOLODZE\Dropbox\VisualStudio\Chimera\Source\..\Tmp\Chimerax64Debug\Actor.obj
-         C:\Users\SKOLODZE\Dropbox\VisualStudio\Chimera\Source\..\Tmp\Chimerax64Debug\ActorFactory.obj
-         C:\Users\SKOLODZE\Dropbox\VisualStudio\Chimera\Source\..\Tmp\Chimerax64Debug\AxisAlignedBB.obj
-         C:\Users\SKOLODZE\Dropbox\VisualStudio\Chimera\Source\..\Tmp\Chimerax64Debug\Camera.obj
-         C:\Users\SKOLODZE\Dropbox\VisualStudio\Chimera\Source\..\Tmp\Chimerax64Debug\CascadedShadowMapper.obj
-         C:\Users\SKOLODZE\Dropbox\VisualStudio\Chimera\Source\..\Tmp\Chimerax64Debug\ChimeraAPI.obj
-         C:\Users\SKOLODZE\Dropbox\VisualStudio\Chimera\Source\..\Tmp\Chimerax64Debug\Commands.obj
-         C:\Users\SKOLODZE\Dropbox\VisualStudio\Chimera\Source\..\Tmp\Chimerax64Debug\Components.obj
-         C:\Users\SKOLODZE\Dropbox\VisualStudio\Chimera\Source\..\Tmp\Chimerax64Debug\Config.obj
-         C:\Users\SKOLODZE\Dropbox\VisualStudio\Chimera\Source\..\Tmp\Chimerax64Debug\Controller.obj
-         C:\Users\SKOLODZE\Dropbox\VisualStudio\Chimera\Source\..\Tmp\Chimerax64Debug\Effect.obj
-         C:\Users\SKOLODZE\Dropbox\VisualStudio\Chimera\Source\..\Tmp\Chimerax64Debug\Event.obj
-         C:\Users\SKOLODZE\Dropbox\VisualStudio\Chimera\Source\..\Tmp\Chimerax64Debug\EventManager.obj
-         C:\Users\SKOLODZE\Dropbox\VisualStudio\Chimera\Source\..\Tmp\Chimerax64Debug\Frustum.obj
-         C:\Users\SKOLODZE\Dropbox\VisualStudio\Chimera\Source\..\Tmp\Chimerax64Debug\GameLogic.obj
-         C:\Users\SKOLODZE\Dropbox\VisualStudio\Chimera\Source\..\Tmp\Chimerax64Debug\GameView.obj
-         C:\Users\SKOLODZE\Dropbox\VisualStudio\Chimera\Source\..\Tmp\Chimerax64Debug\GeometryFactory.obj
-         C:\Users\SKOLODZE\Dropbox\VisualStudio\Chimera\Source\..\Tmp\Chimerax64Debug\GraphicsSettings.obj
-         C:\Users\SKOLODZE\Dropbox\VisualStudio\Chimera\Source\..\Tmp\Chimerax64Debug\Input.obj
-         C:\Users\SKOLODZE\Dropbox\VisualStudio\Chimera\Source\..\Tmp\Chimerax64Debug\Logger.obj
-         C:\Users\SKOLODZE\Dropbox\VisualStudio\Chimera\Source\..\Tmp\Chimerax64Debug\MeshNode.obj
-         C:\Users\SKOLODZE\Dropbox\VisualStudio\Chimera\Source\..\Tmp\Chimerax64Debug\PhysicsSystem.obj
-         C:\Users\SKOLODZE\Dropbox\VisualStudio\Chimera\Source\..\Tmp\Chimerax64Debug\Process.obj
-         C:\Users\SKOLODZE\Dropbox\VisualStudio\Chimera\Source\..\Tmp\Chimerax64Debug\ProcessManager.obj
-         C:\Users\SKOLODZE\Dropbox\VisualStudio\Chimera\Source\..\Tmp\Chimerax64Debug\SceneGraph.obj
-         C:\Users\SKOLODZE\Dropbox\VisualStudio\Chimera\Source\..\Tmp\Chimerax64Debug\SceneNode.obj
-         C:\Users\SKOLODZE\Dropbox\VisualStudio\Chimera\Source\..\Tmp\Chimerax64Debug\Scheduler.obj
-         C:\Users\SKOLODZE\Dropbox\VisualStudio\Chimera\Source\..\Tmp\Chimerax64Debug\SkyDomeNode.obj
-         C:\Users\SKOLODZE\Dropbox\VisualStudio\Chimera\Source\..\Tmp\Chimerax64Debug\Timer.obj
-         C:\Users\SKOLODZE\Dropbox\VisualStudio\Chimera\Source\..\Tmp\Chimerax64Debug\util.obj
-         C:\Users\SKOLODZE\Dropbox\VisualStudio\Chimera\Source\..\Tmp\Chimerax64Debug\VRamManager.obj
-         C:\Users\SKOLODZE\Dropbox\VisualStudio\Chimera\Source\..\Tmp\Chimerax64Debug\APIError.obj
-         C:\Users\SKOLODZE\Dropbox\VisualStudio\Chimera\Source\..\Tmp\Chimerax64Debug\Application.obj
-         C:\Users\SKOLODZE\Dropbox\VisualStudio\Chimera\Source\..\Tmp\Chimerax64Debug\Cache.obj
-         C:\Users\SKOLODZE\Dropbox\VisualStudio\Chimera\Source\..\Tmp\Chimerax64Debug\D3DConstBuffer.obj
-         C:\Users\SKOLODZE\Dropbox\VisualStudio\Chimera\Source\..\Tmp\Chimerax64Debug\D3DGeometry.obj
-         C:\Users\SKOLODZE\Dropbox\VisualStudio\Chimera\Source\..\Tmp\Chimerax64Debug\D3DGraphics.obj
-         C:\Users\SKOLODZE\Dropbox\VisualStudio\Chimera\Source\..\Tmp\Chimerax64Debug\D3DGraphicsFactory.obj
-         C:\Users\SKOLODZE\Dropbox\VisualStudio\Chimera\Source\..\Tmp\Chimerax64Debug\D3DRenderer.obj
-         C:\Users\SKOLODZE\Dropbox\VisualStudio\Chimera\Source\..\Tmp\Chimerax64Debug\D3DRenderTarget.obj
-         C:\Users\SKOLODZE\Dropbox\VisualStudio\Chimera\Source\..\Tmp\Chimerax64Debug\D3DShaderProgram.obj
-         C:\Users\SKOLODZE\Dropbox\VisualStudio\Chimera\Source\..\Tmp\Chimerax64Debug\D3DTexture.obj
-         C:\Users\SKOLODZE\Dropbox\VisualStudio\Chimera\Source\..\Tmp\Chimerax64Debug\Main.obj
-         C:\Users\SKOLODZE\Dropbox\VisualStudio\Chimera\Source\..\Tmp\Chimerax64Debug\ResourceLoader.obj
-         C:\Users\SKOLODZE\Dropbox\VisualStudio\Chimera\Source\..\Tmp\Chimerax64Debug\ScreenElement.obj
-         C:\Users\SKOLODZE\Dropbox\VisualStudio\Chimera\Source\..\Tmp\Chimerax64Debug\tinyxml2.obj
-         Chimera.vcxproj -> C:\Users\SKOLODZE\Dropbox\VisualStudio\Chimera\Source\..\Bin\x64Debug\Chimerax64Debug.dll
+         C:\Program Files (x86)\Microsoft Visual Studio 11.0\VC\bin\x86_amd64\link.exe /ERRORREPORT:PROMPT /OUT:"E:\Dropbox\VisualStudio\Chimera\Source\..\Bin\x64Debug\Chimerax64Debug.dll" /INCREMENTAL /NOLOGO /LIBPATH:../Lib /LIBPATH:"C:\Program Files (x86)\Windows Kits\8.0\Lib/win8/um/($Platform)" nvcuvid.lib nvcuvenc.lib kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib /NODEFAULTLIB:LIBCMTD /NODEFAULTLIB:LIBCMT /NODEFAULTLIB:libcpmt /MANIFEST /MANIFESTUAC:"level='asInvoker' uiAccess='false'" /manifest:embed /DEBUG /PDB:"E:\Dropbox\VisualStudio\Chimera\Source\..\Bin\x64Debug\Chimerax64Debug.pdb" /SUBSYSTEM:WINDOWS /TLBID:1 /DYNAMICBASE /NXCOMPAT /IMPLIB:"E:\Dropbox\VisualStudio\Chimera\Source\..\Bin\x64Debug\Chimerax64Debug.lib" /MACHINE:X64 /DLL E:\Dropbox\VisualStudio\Chimera\Source\..\Tmp\Chimerax64Debug\Chimera.res
+         E:\Dropbox\VisualStudio\Chimera\Source\..\Tmp\Chimerax64Debug\Actor.obj
+         E:\Dropbox\VisualStudio\Chimera\Source\..\Tmp\Chimerax64Debug\ActorFactory.obj
+         E:\Dropbox\VisualStudio\Chimera\Source\..\Tmp\Chimerax64Debug\AxisAlignedBB.obj
+         E:\Dropbox\VisualStudio\Chimera\Source\..\Tmp\Chimerax64Debug\Camera.obj
+         E:\Dropbox\VisualStudio\Chimera\Source\..\Tmp\Chimerax64Debug\CascadedShadowMapper.obj
+         E:\Dropbox\VisualStudio\Chimera\Source\..\Tmp\Chimerax64Debug\ChimeraAPI.obj
+         E:\Dropbox\VisualStudio\Chimera\Source\..\Tmp\Chimerax64Debug\Commands.obj
+         E:\Dropbox\VisualStudio\Chimera\Source\..\Tmp\Chimerax64Debug\Components.obj
+         E:\Dropbox\VisualStudio\Chimera\Source\..\Tmp\Chimerax64Debug\Config.obj
+         E:\Dropbox\VisualStudio\Chimera\Source\..\Tmp\Chimerax64Debug\Controller.obj
+         E:\Dropbox\VisualStudio\Chimera\Source\..\Tmp\Chimerax64Debug\Effect.obj
+         E:\Dropbox\VisualStudio\Chimera\Source\..\Tmp\Chimerax64Debug\Event.obj
+         E:\Dropbox\VisualStudio\Chimera\Source\..\Tmp\Chimerax64Debug\EventManager.obj
+         E:\Dropbox\VisualStudio\Chimera\Source\..\Tmp\Chimerax64Debug\Frustum.obj
+         E:\Dropbox\VisualStudio\Chimera\Source\..\Tmp\Chimerax64Debug\GameLogic.obj
+         E:\Dropbox\VisualStudio\Chimera\Source\..\Tmp\Chimerax64Debug\GameView.obj
+         E:\Dropbox\VisualStudio\Chimera\Source\..\Tmp\Chimerax64Debug\GeometryFactory.obj
+         E:\Dropbox\VisualStudio\Chimera\Source\..\Tmp\Chimerax64Debug\GraphicsSettings.obj
+         E:\Dropbox\VisualStudio\Chimera\Source\..\Tmp\Chimerax64Debug\Input.obj
+         E:\Dropbox\VisualStudio\Chimera\Source\..\Tmp\Chimerax64Debug\Logger.obj
+         E:\Dropbox\VisualStudio\Chimera\Source\..\Tmp\Chimerax64Debug\MeshNode.obj
+         E:\Dropbox\VisualStudio\Chimera\Source\..\Tmp\Chimerax64Debug\PhysicsSystem.obj
+         E:\Dropbox\VisualStudio\Chimera\Source\..\Tmp\Chimerax64Debug\Process.obj
+         E:\Dropbox\VisualStudio\Chimera\Source\..\Tmp\Chimerax64Debug\ProcessManager.obj
+         E:\Dropbox\VisualStudio\Chimera\Source\..\Tmp\Chimerax64Debug\SceneGraph.obj
+         E:\Dropbox\VisualStudio\Chimera\Source\..\Tmp\Chimerax64Debug\SceneNode.obj
+         E:\Dropbox\VisualStudio\Chimera\Source\..\Tmp\Chimerax64Debug\Scheduler.obj
+         E:\Dropbox\VisualStudio\Chimera\Source\..\Tmp\Chimerax64Debug\SkyDomeNode.obj
+         E:\Dropbox\VisualStudio\Chimera\Source\..\Tmp\Chimerax64Debug\Timer.obj
+         E:\Dropbox\VisualStudio\Chimera\Source\..\Tmp\Chimerax64Debug\util.obj
+         E:\Dropbox\VisualStudio\Chimera\Source\..\Tmp\Chimerax64Debug\VRamManager.obj
+         E:\Dropbox\VisualStudio\Chimera\Source\..\Tmp\Chimerax64Debug\APIError.obj
+         E:\Dropbox\VisualStudio\Chimera\Source\..\Tmp\Chimerax64Debug\Application.obj
+         E:\Dropbox\VisualStudio\Chimera\Source\..\Tmp\Chimerax64Debug\Cache.obj
+         E:\Dropbox\VisualStudio\Chimera\Source\..\Tmp\Chimerax64Debug\D3DConstBuffer.obj
+         E:\Dropbox\VisualStudio\Chimera\Source\..\Tmp\Chimerax64Debug\D3DGeometry.obj
+         E:\Dropbox\VisualStudio\Chimera\Source\..\Tmp\Chimerax64Debug\D3DGraphics.obj
+         E:\Dropbox\VisualStudio\Chimera\Source\..\Tmp\Chimerax64Debug\D3DGraphicsFactory.obj
+         E:\Dropbox\VisualStudio\Chimera\Source\..\Tmp\Chimerax64Debug\D3DRenderer.obj
+         E:\Dropbox\VisualStudio\Chimera\Source\..\Tmp\Chimerax64Debug\D3DRenderTarget.obj
+         E:\Dropbox\VisualStudio\Chimera\Source\..\Tmp\Chimerax64Debug\D3DShaderProgram.obj
+         E:\Dropbox\VisualStudio\Chimera\Source\..\Tmp\Chimerax64Debug\D3DTexture.obj
+         E:\Dropbox\VisualStudio\Chimera\Source\..\Tmp\Chimerax64Debug\Main.obj
+         E:\Dropbox\VisualStudio\Chimera\Source\..\Tmp\Chimerax64Debug\ResourceLoader.obj
+         E:\Dropbox\VisualStudio\Chimera\Source\..\Tmp\Chimerax64Debug\ScreenElement.obj
+         E:\Dropbox\VisualStudio\Chimera\Source\..\Tmp\Chimerax64Debug\tinyxml2.obj
+         LINK : E:\Dropbox\VisualStudio\Chimera\Source\..\Bin\x64Debug\Chimerax64Debug.dll not found or not built by the last incremental link; performing full link
+            Creating library E:\Dropbox\VisualStudio\Chimera\Source\..\Bin\x64Debug\Chimerax64Debug.lib and object E:\Dropbox\VisualStudio\Chimera\Source\..\Bin\x64Debug\Chimerax64Debug.exp
+     1>PhysXProfileSDKCHECKED.lib(PxProfileEventImpl.obj) : warning LNK4099: PDB 'physxprofilesdkchecked.pdb' was not found with 'PhysXProfileSDKCHECKED.lib(PxProfileEventImpl.obj)' or at 'E:\Dropbox\VisualStudio\Chimera\Bin\x64Debug\physxprofilesdkchecked.pdb'; linking object as if no debug info
+     1>PhysX3ExtensionsCHECKED.lib(ExtCpuWorkerThread.obj) : warning LNK4099: PDB 'physx3extensionschecked.pdb' was not found with 'PhysX3ExtensionsCHECKED.lib(ExtCpuWorkerThread.obj)' or at 'E:\Dropbox\VisualStudio\Chimera\Bin\x64Debug\physx3extensionschecked.pdb'; linking object as if no debug info
+     1>PhysX3ExtensionsCHECKED.lib(ExtDefaultCpuDispatcher.obj) : warning LNK4099: PDB 'physx3extensionschecked.pdb' was not found with 'PhysX3ExtensionsCHECKED.lib(ExtDefaultCpuDispatcher.obj)' or at 'E:\Dropbox\VisualStudio\Chimera\Bin\x64Debug\physx3extensionschecked.pdb'; linking object as if no debug info
+     1>PhysX3ExtensionsCHECKED.lib(ExtPvdClientImpl.obj) : warning LNK4099: PDB 'physx3extensionschecked.pdb' was not found with 'PhysX3ExtensionsCHECKED.lib(ExtPvdClientImpl.obj)' or at 'E:\Dropbox\VisualStudio\Chimera\Bin\x64Debug\physx3extensionschecked.pdb'; linking object as if no debug info
+     1>PhysX3ExtensionsCHECKED.lib(ExtRigidBodyExt.obj) : warning LNK4099: PDB 'physx3extensionschecked.pdb' was not found with 'PhysX3ExtensionsCHECKED.lib(ExtRigidBodyExt.obj)' or at 'E:\Dropbox\VisualStudio\Chimera\Bin\x64Debug\physx3extensionschecked.pdb'; linking object as if no debug info
+     1>PhysX3ExtensionsCHECKED.lib(ExtSimpleFactory.obj) : warning LNK4099: PDB 'physx3extensionschecked.pdb' was not found with 'PhysX3ExtensionsCHECKED.lib(ExtSimpleFactory.obj)' or at 'E:\Dropbox\VisualStudio\Chimera\Bin\x64Debug\physx3extensionschecked.pdb'; linking object as if no debug info
+     1>PhysXVisualDebuggerSDKCHECKED.lib(PvdNetworkStreams.obj) : warning LNK4099: PDB 'physxvisualdebuggersdkchecked.pdb' was not found with 'PhysXVisualDebuggerSDKCHECKED.lib(PvdNetworkStreams.obj)' or at 'E:\Dropbox\VisualStudio\Chimera\Bin\x64Debug\physxvisualdebuggersdkchecked.pdb'; linking object as if no debug info
+         Chimera.vcxproj -> E:\Dropbox\VisualStudio\Chimera\Source\..\Bin\x64Debug\Chimerax64Debug.dll
        FinalizeBuildStatus:
-         Deleting file "C:\Users\SKOLODZE\Dropbox\VisualStudio\Chimera\Source\..\Tmp\Chimerax64Debug\Chimera.unsuccessfulbuild".
-         Touching "C:\Users\SKOLODZE\Dropbox\VisualStudio\Chimera\Source\..\Tmp\Chimerax64Debug\Chimera.lastbuildstate".
-     1>Done Building Project "C:\Users\SKOLODZE\Dropbox\VisualStudio\Chimera\Source\Chimera.vcxproj" (Build target(s)).
+         Deleting file "E:\Dropbox\VisualStudio\Chimera\Source\..\Tmp\Chimerax64Debug\Chimera.unsuccessfulbuild".
+         Touching "E:\Dropbox\VisualStudio\Chimera\Source\..\Tmp\Chimerax64Debug\Chimera.lastbuildstate".
+     1>Done Building Project "E:\Dropbox\VisualStudio\Chimera\Source\Chimera.vcxproj" (Build target(s)).
 
 Build succeeded.
 
-Time Elapsed 00:00:38.06
+Time Elapsed 00:00:31.21

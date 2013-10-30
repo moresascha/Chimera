@@ -69,26 +69,26 @@ extern "C"
             VOID
             );
 
-		CM_DLL_API 
-		VOID 
-		CM_API 
-		CmLog(
-			CONST std::string& tag, 
-			CONST std::string& message, 
-			CONST CHAR* funcName, 
-			CONST CHAR* file, 
-			CONST UINT line
-			);
+        CM_DLL_API 
+        VOID 
+        CM_API 
+        CmLog(
+            CONST std::string& tag, 
+            CONST std::string& message, 
+            CONST CHAR* funcName, 
+            CONST CHAR* file, 
+            CONST UINT line
+            );
 
-		CM_DLL_API
-		VOID 
-		CM_API 
-		CmCriticalError(
-			CONST std::string& tag, 
-			CONST std::string& message, 
-			CONST CHAR* funcName,
-			CONST CHAR* file, 
-			CONST UINT line
-			);
+        CM_DLL_API
+        VOID 
+        CM_API 
+        CmCriticalError(
+            CONST std::string& tag, 
+            CONST std::string& message, 
+            CONST CHAR* funcName,
+            CONST CHAR* file, 
+            CONST UINT line
+            );
     }
 };

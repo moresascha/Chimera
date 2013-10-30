@@ -74,14 +74,14 @@ namespace chimera
         }
     };
 
-	class DefaultEffectFactoryFactory : public IEffectFactoryFactory
-	{
-	public:
-		IEffectFactory* VCreateEffectFactroy(VOID)
-		{
-			return new EffectFactroy();
-		}
-	};
+    class DefaultEffectFactoryFactory : public IEffectFactoryFactory
+    {
+    public:
+        IEffectFactory* VCreateEffectFactroy(VOID)
+        {
+            return new EffectFactroy();
+        }
+    };
 
     class DefaultResourceCacheFactory : public IResourceFactory
     {
@@ -118,14 +118,14 @@ namespace chimera
         }
     };
 
-	class DefaultActorFactory : public IActorFactoryFactory
-	{
-	public:
-		IActorFactory* VCreateActorFactroy(VOID)
-		{
-			return new ActorFactory();
-		}
-	};
+    class DefaultActorFactory : public IActorFactoryFactory
+    {
+    public:
+        IActorFactory* VCreateActorFactroy(VOID)
+        {
+            return new ActorFactory();
+        }
+    };
 
     IApplication* CmGetApp(VOID)
     {
@@ -162,7 +162,7 @@ namespace chimera
         DefaultEventFactroy efactroys;
         DefaultVRamManagerFactory vramFactory;
         DefaultActorFactory af;
-		DefaultEffectFactoryFactory eff;
+        DefaultEffectFactoryFactory eff;
 
         FactoryPtr defaultFacts[] = 
         {
@@ -174,7 +174,7 @@ namespace chimera
             CM_FACTROY_CACHE, (FactoryPtr)&resFactroy, sizeof(DefaultResourceCacheFactory),
             CM_FACTORY_VRAM,  (FactoryPtr)&vramFactory, sizeof(DefaultVRamManagerFactory),
             CM_FACTORY_ACTOR, (FactoryPtr)&af, sizeof(DefaultActorFactory),
-			CM_FACTORY_EFFECT, (FactoryPtr)&eff, sizeof(DefaultEffectFactoryFactory),
+            CM_FACTORY_EFFECT, (FactoryPtr)&eff, sizeof(DefaultEffectFactoryFactory),
             CM_FACTORY_END
         };
 
@@ -227,50 +227,49 @@ namespace chimera
         app->VGetHumanView()->VAddScene(std::move(std::unique_ptr<IRenderScreen>(screen)));
 
         IScreenElement* normalScreen = new RenderTargetScreen(app->VGetHumanView()->VGetRenderer()->VGetAlbedoBuffer()->VGetRenderTarget(eDiff_NormalsTarget));
-		CMDimension dim;
+        CMDimension dim;
         dim.x = 0;
-		dim.y = 0;
-		dim.w = 200;
-		dim.h = 150;
+        dim.y = 0;
+        dim.w = 200;
+        dim.h = 150;
         normalScreen->VSetDimension(dim);
         normalScreen->VSetName("normals");
-		app->VGetHumanView()->VAddScreenElement(std::move(std::unique_ptr<IScreenElement>(normalScreen)));
-
+        app->VGetHumanView()->VAddScreenElement(std::move(std::unique_ptr<IScreenElement>(normalScreen)));
 
         std::unique_ptr<ActorDescription> _d = app->VGetLogic()->VGetActorFactory()->VCreateActorDescription();
         CameraComponent* cmp = _d->AddComponent<CameraComponent>(CM_CMP_CAMERA);
 
-		std::shared_ptr<ICamera> cam(new chimera::util::CharacterCamera(CmGetApp()->VGetWindowWidth(), CmGetApp()->VGetWindowHeight(), 1e-2f, 1e3));
-		cmp->SetCamera(cam);
+        std::shared_ptr<ICamera> cam(new chimera::util::CharacterCamera(CmGetApp()->VGetWindowWidth(), CmGetApp()->VGetWindowHeight(), 1e-2f, 1e3));
+        cmp->SetCamera(cam);
 
-		TransformComponent* tcmp = _d->AddComponent<TransformComponent>(CM_CMP_TRANSFORM);
-		tcmp->GetTransformation()->SetTranslate(util::Vec3(0,1,-2));
+        TransformComponent* tcmp = _d->AddComponent<TransformComponent>(CM_CMP_TRANSFORM);
+        tcmp->GetTransformation()->SetTranslate(util::Vec3(0,1,-2));
        
         IActor* actor = app->VGetLogic()->VCreateActor(std::move(_d));
 
-		CmGetApp()->VGetHumanView()->VSetTarget(actor);
+        CmGetApp()->VGetHumanView()->VSetTarget(actor);
 
-		CharacterController* cc = new CharacterController();
-		std::unique_ptr<ActorController> ac(cc);
+        CharacterController* cc = new CharacterController();
+        std::unique_ptr<ActorController> ac(cc);
 
-		cc->VActivate();
+        cc->VActivate();
 
-		CmGetApp()->VGetLogic()->VAttachView(std::move(ac), actor->GetId());
+        CmGetApp()->VGetLogic()->VAttachView(std::move(ac), actor->GetId());
 
-		//mesh actor
+        //mesh actor
 
-		_d = app->VGetLogic()->VGetActorFactory()->VCreateActorDescription();
-		_d->AddComponent<TransformComponent>(CM_CMP_TRANSFORM);
-		RenderComponent* rcmp = _d->AddComponent<RenderComponent>(CM_CMP_RENDERING);
-		rcmp->m_resource = "plane.obj";
-		PhysicComponent* phxc = _d->AddComponent<PhysicComponent>(CM_CMP_PHX);
-		phxc->m_shapeStyle = "plane";
-		phxc->m_material = "static";
+        _d = app->VGetLogic()->VGetActorFactory()->VCreateActorDescription();
+        _d->AddComponent<TransformComponent>(CM_CMP_TRANSFORM);
+        RenderComponent* rcmp = _d->AddComponent<RenderComponent>(CM_CMP_RENDERING);
+        rcmp->m_resource = "plane.obj";
+        PhysicComponent* phxc = _d->AddComponent<PhysicComponent>(CM_CMP_PHX);
+        phxc->m_shapeStyle = "plane";
+        phxc->m_material = "static";
 
-		app->VGetLogic()->VCreateActor(std::move(_d));
+        app->VGetLogic()->VCreateActor(std::move(_d));
 
 
-        TBD_FOR_INT(16)
+        /*TBD_FOR_INT(16)
         {
             _d = app->VGetLogic()->VGetActorFactory()->VCreateActorDescription();
             tcmp = _d->AddComponent<TransformComponent>(CM_CMP_TRANSFORM);
@@ -278,7 +277,7 @@ namespace chimera
             rcmp = _d->AddComponent<RenderComponent>(CM_CMP_RENDERING);
             rcmp->m_resource = "box.obj";
             app->VGetLogic()->VCreateActor(std::move(_d));
-        }
+        }*/
         
         _d = app->VGetLogic()->VGetActorFactory()->VCreateActorDescription();
         _d->AddComponent<TransformComponent>(CM_CMP_TRANSFORM);
@@ -298,15 +297,15 @@ namespace chimera
         return app;
     }
 
-	VOID CmLog(CONST std::string& tag, CONST std::string& message, CONST CHAR* funcName, CONST CHAR* file, CONST UINT line) 
-	{
-		Logger::s_pLogMgr->Log(tag, message, funcName, file, line);
-	}
+    VOID CmLog(CONST std::string& tag, CONST std::string& message, CONST CHAR* funcName, CONST CHAR* file, CONST UINT line) 
+    {
+        Logger::s_pLogMgr->Log(tag, message, funcName, file, line);
+    }
 
-	VOID CmCriticalError(CONST std::string& tag, CONST std::string& message, CONST CHAR* funcName, CONST CHAR* file, CONST UINT line) 
-	{
-		Logger::s_pLogMgr->CriticalError(tag, message, funcName, file, line);
-	}
+    VOID CmCriticalError(CONST std::string& tag, CONST std::string& message, CONST CHAR* funcName, CONST CHAR* file, CONST UINT line) 
+    {
+        Logger::s_pLogMgr->CriticalError(tag, message, funcName, file, line);
+    }
 
     VOID CmReleaseApplication(VOID)
     {

@@ -143,8 +143,8 @@ namespace chimera
             SAFE_DELETE(m_pDefaultMaterial);
             GeometryFactory::Destroy();
             chimera::d3d::Geometry::Destroy();
-			Delete();
-			SAFE_DELETE(m_pDefShader);
+            Delete();
+            SAFE_DELETE(m_pDefShader);
             chimera::d3d::Release();
         }
 
@@ -316,7 +316,7 @@ namespace chimera
 
         VOID Renderer::VBindBackBuffer(VOID)
         {
-			chimera::d3d::SetDefaultViewPort();
+            chimera::d3d::SetDefaultViewPort();
             chimera::d3d::BindBackbuffer();
         }
 
@@ -701,7 +701,7 @@ namespace chimera
 
         Renderer::~Renderer(VOID) 
         {
-			VDestroy();
+            VDestroy();
         }
 
         //Defshader

@@ -89,9 +89,9 @@ namespace chimera
 
         VOID VPopMouseListener(VOID);
 
-		VOID VRemoveKeyListener(IKeyListener* listener);
+        VOID VRemoveKeyListener(IKeyListener* listener);
 
-		VOID VRemoveMouseListener(IMouseListener* listener);
+        VOID VRemoveMouseListener(IMouseListener* listener);
         
         BOOL VIsKeyDown(UINT code)
         {

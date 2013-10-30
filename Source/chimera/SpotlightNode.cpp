@@ -86,7 +86,7 @@ namespace chimera
                 renderer->VPushViewTransform(m_pCamera->GetView(), m_pCamera->GetIView(), m_pCamera->GetEyePos());
                 renderer->VPushProjectionTransform(m_pCamera->GetProjection(), GetTransformation()->GetScale().x);
 
-				renderer->SetLightSettings(m_lightComponent->m_color, GetTransformation()->GetTranslation(), 
+                renderer->SetLightSettings(m_lightComponent->m_color, GetTransformation()->GetTranslation(), 
                     m_pCamera->GetViewDir(),
                     GetTransformation()->GetScale().x, DEGREE_TO_RAD(m_lightComponent->m_angle), m_lightComponent->m_intensity);
 

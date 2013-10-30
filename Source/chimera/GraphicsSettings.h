@@ -63,17 +63,17 @@ namespace chimera
         IRenderTarget* m_pTarget;
     public:
         PostFXSetting(VOID) : IPostFXSetting("PostFX"),
-			m_pEffectChain(NULL), m_pTarget(NULL), m_pSource(NULL) {}
-		
-		VOID VRender(VOID);
+            m_pEffectChain(NULL), m_pTarget(NULL), m_pSource(NULL) {}
         
-		VOID VSetTarget(IRenderTarget* target);
+        VOID VRender(VOID);
         
-		VOID VSetSource(IRenderTarget* src);
+        VOID VSetTarget(IRenderTarget* target);
+        
+        VOID VSetSource(IRenderTarget* src);
 
         BOOL VOnRestore(UINT w, UINT h);
 
-		CMShaderProgramDescription* VGetProgramDescription(VOID) { return NULL; }
+        CMShaderProgramDescription* VGetProgramDescription(VOID) { return NULL; }
 
         ~PostFXSetting(VOID);
     };
@@ -116,7 +116,7 @@ namespace chimera
     protected:
         std::vector<std::unique_ptr<IGraphicSetting>> m_albedoSettings;
         std::vector<std::unique_ptr<IGraphicSetting>> m_lightSettings;
-		std::unique_ptr<IPostFXSetting> m_pPostFX;
+        std::unique_ptr<IPostFXSetting> m_pPostFX;
         std::unique_ptr<IRenderTarget> m_pScene;
         //std::unique_ptr<IRenderTarget> m_pPreResult;
         std::unique_ptr<IDepthStencilState> m_pDepthWriteStencilState;

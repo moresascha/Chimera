@@ -14,13 +14,13 @@ namespace chimera
     private:
         IRenderTarget* m_source;
         IRenderTarget* m_target;
-		std::unique_ptr<IRenderTarget> m_ownedTarget;
+        std::unique_ptr<IRenderTarget> m_ownedTarget;
         BOOL m_created, m_isProcessed;
         IShader* m_pPixelShader;
         FLOAT m_w, m_h;
         IEffectParmaters* m_params; //TODO
         std::vector<IEffect*> m_requirements;
-		CMShaderDescription m_shaderDesc;
+        CMShaderDescription m_shaderDesc;
         EffectDrawMethod m_pfDraw;
 
     public:
@@ -34,7 +34,7 @@ namespace chimera
 
         VOID VAddRequirement(IEffect* e);
 
-		VOID VReset(VOID);
+        VOID VReset(VOID);
 
         VOID VSetSource(IRenderTarget* src);
 
@@ -44,7 +44,7 @@ namespace chimera
 
         VOID VSetTarget(IRenderTarget* target);
 
-		VOID VSetTarget(std::unique_ptr<IRenderTarget> target);
+        VOID VSetTarget(std::unique_ptr<IRenderTarget> target);
 
         IRenderTarget* VGetTarget(VOID);
 
@@ -83,17 +83,17 @@ namespace chimera
         ~EffectChain(VOID);
     };
 
-	class EffectFactroy : public IEffectFactory
-	{
-	public:
-		IEffect* VCreateEffect(VOID)
-		{
-			return new Effect();
-		}
+    class EffectFactroy : public IEffectFactory
+    {
+    public:
+        IEffect* VCreateEffect(VOID)
+        {
+            return new Effect();
+        }
 
-		IEffectChain* VCreateEffectChain(VOID)
-		{
-			return new EffectChain(CmGetApp()->VGetHumanView()->VGetEffectFactory());
-		}
-	};
+        IEffectChain* VCreateEffectChain(VOID)
+        {
+            return new EffectChain(CmGetApp()->VGetHumanView()->VGetEffectFactory());
+        }
+    };
 }

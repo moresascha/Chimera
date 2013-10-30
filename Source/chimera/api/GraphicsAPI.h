@@ -13,10 +13,10 @@ namespace chimera
         virtual ~IDeviceTexture(VOID) {}
     };
 
-	class IVertexBuffer
-	{
+    class IVertexBuffer
+    {
 
-	};
+    };
 
     class IGeometry : public VRamHandle
     {
@@ -194,7 +194,7 @@ namespace chimera
 
         virtual VOID VSetDiffuseTexture(IDeviceTexture* texture) = 0;
 
-		virtual VOID VSetNormalMapping(BOOL enable) = 0;
+        virtual VOID VSetNormalMapping(BOOL enable) = 0;
 
         virtual IConstShaderBuffer* VGetConstShaderBuffer(ConstShaderBufferSlot slot) = 0;
 
@@ -257,23 +257,23 @@ namespace chimera
         virtual ~IShaderCache(VOID) {}
     };
 
-	class IPicker
-	{
-	public:
-		virtual BOOL VCreate(VOID) = 0;
+    class IPicker
+    {
+    public:
+        virtual BOOL VCreate(VOID) = 0;
 
-		virtual VOID VPostRender(VOID) = 0;
+        virtual VOID VPostRender(VOID) = 0;
 
-		virtual VOID VRender(VOID) = 0;
+        virtual VOID VRender(VOID) = 0;
 
-		virtual BOOL VHasPicked(VOID) CONST  = 0;
+        virtual BOOL VHasPicked(VOID) CONST  = 0;
 
-		virtual ActorId VPick(VOID) CONST = 0;
+        virtual ActorId VPick(VOID) CONST = 0;
 
-		virtual ~IPicker(VOID) {}
-	};
+        virtual ~IPicker(VOID) {}
+    };
 
-	//factory
+    //factory
 
     class IShaderFactory
     {

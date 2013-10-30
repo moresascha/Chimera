@@ -33,7 +33,7 @@ namespace chimera
         
         virtual VOID VPostInit(VOID) = 0;
 
-		virtual ~IActorComponent(VOID) {}
+        virtual ~IActorComponent(VOID) {}
     };
 
     class IActor
@@ -66,7 +66,7 @@ namespace chimera
 
         virtual ~IActor(VOID) {}
     };
-	
+    
     class IActorFactory
     {
     public:
@@ -123,14 +123,14 @@ namespace chimera
         }
 
         virtual ~ActorDescription(VOID) 
-		{
+        {
 
-		}
+        }
     };
 
-	class IActorFactoryFactory
-	{
-	public:
-		virtual IActorFactory* VCreateActorFactroy(VOID) = 0;
-	};
+    class IActorFactoryFactory
+    {
+    public:
+        virtual IActorFactory* VCreateActorFactroy(VOID) = 0;
+    };
 }

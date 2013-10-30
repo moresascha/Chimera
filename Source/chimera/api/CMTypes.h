@@ -58,11 +58,11 @@ namespace chimera
     class IShaderCache;
     class IActorComponent;
     class IActorFactory;
-	class MaterialSet;
-	class IEffect;
-	class IEffectChain;
-	class IEffectFactory;
-	class IEffectFactoryFactory;
+    class MaterialSet;
+    class IEffect;
+    class IEffectChain;
+    class IEffectFactory;
+    class IEffectFactoryFactory;
     class IEnvironmentLighting;
 
     namespace util
@@ -367,11 +367,11 @@ namespace chimera
 
     enum ColorWriteMask
     {
-        eColorWriteRed	= 1,
-        eColorWriteGreen	= 2,
-        eColorWriteBlue	= 4,
-        eColorWriteAlpha	= 8,
-        eColorWriteAll	= eColorWriteRed | eColorWriteGreen | eColorWriteBlue | eColorWriteAlpha 
+        eColorWriteRed    = 1,
+        eColorWriteGreen    = 2,
+        eColorWriteBlue    = 4,
+        eColorWriteAlpha    = 8,
+        eColorWriteAll    = eColorWriteRed | eColorWriteGreen | eColorWriteBlue | eColorWriteAlpha 
     };
 
     enum ComparisonFunc

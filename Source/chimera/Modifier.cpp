@@ -614,7 +614,7 @@ namespace chimera
     {
         FLOAT scale = 0.1f;
 
-		m_array = NULL;
+        m_array = NULL;
 
         m_positionNscale.x = m_positionNscale.y = m_positionNscale.z = 0, m_positionNscale.w = scale;
 
@@ -628,18 +628,18 @@ namespace chimera
         UINT d = 64;
         UINT size = 4;
 
-		chimera::DLL dll("../../ParticleData/ParticleData/x64/Debug/ParticleData.dll");
-		FLOAT* data = dll.GetFunction<PROC>("CreateData")(w,h,d,1);
+        chimera::DLL dll("../../ParticleData/ParticleData/x64/Debug/ParticleData.dll");
+        FLOAT* data = dll.GetFunction<PROC>("CreateData")(w,h,d,1);
         //FLOAT* data = gradientpremades::RandomStuff2(w, h, d, 0.1f); //2, 16);//
-		//FLOAT* data = gradientpremades::GenerateNoiseValues(w, h, d, 2, 16);
+        //FLOAT* data = gradientpremades::GenerateNoiseValues(w, h, d, 2, 16);
 
         std::stringstream ss;
         ss << "gradientTexture_";
         ss << m_actorId;
-		if(m_array)
-		{
-			sys->GetCuda()->DeleteArray(m_array);
-		}
+        if(m_array)
+        {
+            sys->GetCuda()->DeleteArray(m_array);
+        }
 
         m_array = sys->GetCuda()->CreateArray(ss.str(), w, h, d, cudah::eRGBA, data);
 
@@ -802,17 +802,17 @@ namespace chimera
         SAFE_ARRAY_DELETE(m_pData[1]);
     }
 
-	VOID BoundingBox::VOnRestore(ParticleSystem* sys)
-	{
+    VOID BoundingBox::VOnRestore(ParticleSystem* sys)
+    {
         SAFE_ARRAY_DELETE(m_pData[0]);
         SAFE_ARRAY_DELETE(m_pData[1]);
         m_pData[0] = new FLOAT[3 * 1024];
         m_pData[1] = new FLOAT[3 * 1024];
-		m_kernel = sys->GetCuda()->GetKernel("_reduce_max4");
+        m_kernel = sys->GetCuda()->GetKernel("_reduce_max4");
         m_second = sys->GetCuda()->GetKernel("_reduce_min4");
-		m_min = sys->GetCuda()->CreateBuffer(std::string("__min"), 1024 * 3 * sizeof(FLOAT), 3 * sizeof(FLOAT));
+        m_min = sys->GetCuda()->CreateBuffer(std::string("__min"), 1024 * 3 * sizeof(FLOAT), 3 * sizeof(FLOAT));
         m_max = sys->GetCuda()->CreateBuffer(std::string("__max"), 1024 * 3 * sizeof(FLOAT), 3 * sizeof(FLOAT));
-	}
+    }
 
     VOID _GetAABB(float3* data[2], UINT l, util::AxisAlignedBB& aabb)
     {
@@ -827,20 +827,20 @@ namespace chimera
         aabb.Construct();
     }
 
-	VOID BoundingBox::VUpdate(ParticleSystem* sys, FLOAT time, FLOAT dt)
-	{
-		INT threads = cudahu::GetThreadCount(sys->GetParticlesCount(), sys->GetLocalWorkSize());
-		m_kernel->m_blockDim.x = 512;//sys->GetLocalWorkSize();
-		m_kernel->m_gridDim.x = (threads/2) / m_kernel->m_blockDim.x;
-		m_kernel->m_shrdMemBytes = 3 * (m_kernel->m_blockDim.x) * sizeof(FLOAT);
-		VOID *args[] = 
-		{ 
-			&sys->GetParticles()->ptr, &m_max->ptr
-		};
+    VOID BoundingBox::VUpdate(ParticleSystem* sys, FLOAT time, FLOAT dt)
+    {
+        INT threads = cudahu::GetThreadCount(sys->GetParticlesCount(), sys->GetLocalWorkSize());
+        m_kernel->m_blockDim.x = 512;//sys->GetLocalWorkSize();
+        m_kernel->m_gridDim.x = (threads/2) / m_kernel->m_blockDim.x;
+        m_kernel->m_shrdMemBytes = 3 * (m_kernel->m_blockDim.x) * sizeof(FLOAT);
+        VOID *args[] = 
+        { 
+            &sys->GetParticles()->ptr, &m_max->ptr
+        };
 
-		m_kernel->m_ppArgs = args;
+        m_kernel->m_ppArgs = args;
 
-		sys->GetCuda()->CallKernel(m_kernel);
+        sys->GetCuda()->CallKernel(m_kernel);
 
         m_second->m_blockDim.x = m_kernel->m_blockDim.x;
         m_second->m_gridDim.x = m_kernel->m_gridDim.x;
@@ -854,7 +854,7 @@ namespace chimera
         m_second->m_ppArgs = args2;
 
         sys->GetCuda()->CallKernel(m_second);
-		
+        
         sys->GetCuda()->ReadBuffer(m_max, m_pData[0]);
 
         sys->GetCuda()->ReadBuffer(m_min, m_pData[1]);
@@ -862,7 +862,7 @@ namespace chimera
         _GetAABB((float3**)m_pData, 1024, m_aabb);
 
         sys->SetAxisAlignedBB(m_aabb);
-	}
+    }
 
     UINT BoundingBox::VGetByteCount(VOID)
     {

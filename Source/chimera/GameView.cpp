@@ -54,7 +54,7 @@ namespace chimera
         m_pSoundSystem = NULL;
         m_pSoundEngine = NULL;
         m_pRenderer = NULL;
-		m_pEffectFactory = NULL;
+        m_pEffectFactory = NULL;
     }
 
     BOOL HumanGameView::VInitialise(FactoryPtr* facts)
@@ -78,9 +78,9 @@ namespace chimera
 
         m_pSceneGraph = new SceneGraph();
 
-		ADD_EVENT_LISTENER(this, &HumanGameView::ActorMovedDelegate, CM_EVENT_ACTOR_MOVED);
+        ADD_EVENT_LISTENER(this, &HumanGameView::ActorMovedDelegate, CM_EVENT_ACTOR_MOVED);
 
-		ADD_EVENT_LISTENER(this, &HumanGameView::NewComponentDelegate, CM_EVENT_COMPONENT_CREATED);
+        ADD_EVENT_LISTENER(this, &HumanGameView::NewComponentDelegate, CM_EVENT_COMPONENT_CREATED);
 
         VAddSceneNodeCreator(CreateRenderNode, CM_CMP_RENDERING);
 
@@ -110,7 +110,7 @@ namespace chimera
 
         if(m_pSceneGraph->VGetCamera())
         {
-			m_pSceneGraph->VGetCamera()->SetAspect(VGetRenderer()->VGetWidth(), VGetRenderer()->VGetHeight());
+            m_pSceneGraph->VGetCamera()->SetAspect(VGetRenderer()->VGetWidth(), VGetRenderer()->VGetHeight());
             VGetRenderer()->VSetProjectionTransform(m_pSceneGraph->VGetCamera()->GetProjection(), m_pSceneGraph->VGetCamera()->GetFar());
             VGetRenderer()->VSetViewTransform(m_pSceneGraph->VGetCamera()->GetView(), m_pSceneGraph->VGetCamera()->GetIView(), m_pSceneGraph->VGetCamera()->GetEyePos());
         }
@@ -136,8 +136,8 @@ namespace chimera
 
         VOnRestore();
 
-		std::shared_ptr<ActorMovedEvent> movedEvent(new ActorMovedEvent(m_actor));
-		ActorMovedDelegate(movedEvent);
+        std::shared_ptr<ActorMovedEvent> movedEvent(new ActorMovedEvent(m_actor));
+        ActorMovedDelegate(movedEvent);
     }
 
     VOID HumanGameView::ActorMovedDelegate(IEventPtr eventData)  
@@ -184,7 +184,7 @@ namespace chimera
         //if(pCastEventData->m_id == CM_CMP_RENDERING)
         {
             //
-			/*
+            /*
             if(comp->m_sceneNode)
             {
                 node = comp->m_sceneNode;
@@ -209,11 +209,11 @@ namespace chimera
                 
             }*/
 
-			//
+            //
             
         }
 
-		/*
+        /*
         else if(pCastEventData->m_id == chimera::LightComponent::COMPONENT_ID)
         {
             std::shared_ptr<chimera::LightComponent> comp = actor->GetComponent<chimera::LightComponent>(chimera::LightComponent::COMPONENT_ID).lock();
@@ -287,8 +287,8 @@ namespace chimera
 
     VOID HumanGameView::VAddScreenElement(std::unique_ptr<IScreenElement> element)
     {
-		element->VOnRestore();
-		m_screenElements.push_back(std::move(element));
+        element->VOnRestore();
+        m_screenElements.push_back(std::move(element));
     }
 
     IScreenElement* HumanGameView::VGetScreenElementByName(LPCSTR name)
@@ -489,10 +489,10 @@ namespace chimera
     VOID HumanGameView::VOnRender(VOID) 
     {        
         m_pCurrentScene->VDraw();
-		TBD_FOR(m_screenElements)
-		{
-			(*it)->VDraw();
-		}
+        TBD_FOR(m_screenElements)
+        {
+            (*it)->VDraw();
+        }
         /*
         switch(chimera::CmGetApp()->VGetLogic()->VGetGameState())
         {
@@ -564,9 +564,9 @@ namespace chimera
 
     HumanGameView::~HumanGameView(VOID) 
     {
-		REMOVE_EVENT_LISTENER(this, &HumanGameView::ActorMovedDelegate, CM_EVENT_ACTOR_MOVED);
+        REMOVE_EVENT_LISTENER(this, &HumanGameView::ActorMovedDelegate, CM_EVENT_ACTOR_MOVED);
 
-		REMOVE_EVENT_LISTENER(this, &HumanGameView::NewComponentDelegate, CM_EVENT_COMPONENT_CREATED);
+        REMOVE_EVENT_LISTENER(this, &HumanGameView::NewComponentDelegate, CM_EVENT_COMPONENT_CREATED);
         /*
         if(chimera::IEventManager::Get())
         {
@@ -596,12 +596,12 @@ namespace chimera
 
         TBD_FOR(m_screenElements)
         {
-			it->reset();
+            it->reset();
         }
 
         TBD_FOR(m_scenes)
         {
-			it->reset();
+            it->reset();
         }
 
         SAFE_DELETE(m_pSoundSystem);
@@ -612,7 +612,7 @@ namespace chimera
 
         SAFE_DELETE(m_pSceneGraph);
 
-		SAFE_DELETE(m_pEffectFactory);
+        SAFE_DELETE(m_pEffectFactory);
 
         SAFE_DELETE(m_pVramManager);
 

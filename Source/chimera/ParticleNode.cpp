@@ -177,11 +177,11 @@ namespace chimera
             gf = new GradientField();
             m_pParticleSystem->AddModifier(gf);
 
-			/*
+            /*
             util::Plane p;
             p.Init(util::Vec3(0,1,0), 0);
             m_pParticleSystem->AddModifier(new tbd::Plane(p)); */
-			m_pParticleSystem->AddModifier(new chimera::BoundingBox());
+            m_pParticleSystem->AddModifier(new chimera::BoundingBox());
 
             m_pParticleSystem->SetAxisAlignedBB(aabb);
 

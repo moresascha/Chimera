@@ -2,12 +2,12 @@
 
 struct PixelInput 
 {
-	float4 position : SV_POSITION;
+    float4 position : SV_POSITION;
 };
 
 struct PixelOutput 
 {
-	uint actorId : SV_Target0;
+    uint actorId : SV_Target0;
     //float4 color : SV_TARGET0;
 };
 

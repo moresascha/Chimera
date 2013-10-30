@@ -148,7 +148,7 @@ namespace chimera
         ~SkyDomeNode(VOID);
     };
 
-	/*
+    /*
     class InstancedMeshNode : public MeshNode
     {
     private:

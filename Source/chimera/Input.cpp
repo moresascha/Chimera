@@ -47,15 +47,15 @@ namespace chimera
         m_mouseStack.Pop();
     }
 
-	VOID DefaultWinInputHandler::VRemoveKeyListener(IKeyListener* listener)
-	{
-		m_keyStack.Remove(listener);
-	}
+    VOID DefaultWinInputHandler::VRemoveKeyListener(IKeyListener* listener)
+    {
+        m_keyStack.Remove(listener);
+    }
 
-	VOID DefaultWinInputHandler::VRemoveMouseListener(IMouseListener* listener)
-	{
-		m_mouseStack.Remove(listener);
-	}
+    VOID DefaultWinInputHandler::VRemoveMouseListener(IMouseListener* listener)
+    {
+        m_mouseStack.Remove(listener);
+    }
 
     BOOL DefaultWinInputHandler::UpdateListener(InputMessage msg) {
         BOOL result = 0;

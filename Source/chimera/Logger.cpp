@@ -1,4 +1,5 @@
 #include "Logger.h"
+#include "stdafx.h"
 #include <time.h>
 namespace Logger 
 {

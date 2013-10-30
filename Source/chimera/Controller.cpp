@@ -18,17 +18,17 @@ namespace chimera
         }
     }
 
-	VOID ActorController::VActivate(VOID)
-	{
-		CmGetApp()->VGetInputHandler()->VPushKeyListener(this);
-		CmGetApp()->VGetInputHandler()->VPushMouseListener(this);
-	}
+    VOID ActorController::VActivate(VOID)
+    {
+        CmGetApp()->VGetInputHandler()->VPushKeyListener(this);
+        CmGetApp()->VGetInputHandler()->VPushMouseListener(this);
+    }
 
-	VOID ActorController::VDeactivate(VOID)
-	{
-		CmGetApp()->VGetInputHandler()->VRemoveKeyListener(this);
-		CmGetApp()->VGetInputHandler()->VRemoveMouseListener(this);
-	}
+    VOID ActorController::VDeactivate(VOID)
+    {
+        CmGetApp()->VGetInputHandler()->VRemoveKeyListener(this);
+        CmGetApp()->VGetInputHandler()->VRemoveMouseListener(this);
+    }
 
     BOOL ActorController::VOnKeyDown(UINT CONST code) 
     {
