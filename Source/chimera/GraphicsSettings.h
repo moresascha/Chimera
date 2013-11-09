@@ -25,6 +25,16 @@ namespace chimera
         BOOL VOnRestore(UINT w, UINT h);
     };
 
+	class WireFrameSettings : public ShaderPathSetting
+	{
+	private:
+		std::unique_ptr<IRasterState> m_pWireFrameState;
+	public:
+		WireFrameSettings(VOID);
+		VOID VRender(VOID);
+		BOOL VOnRestore(UINT w, UINT h);
+	};
+
     class GloablLightingSetting : public ShaderPathSetting
     {
     public:
@@ -213,5 +223,4 @@ namespace chimera
         AlbedoSettings(VOID);
         VOID VRender(VOID);
     };
-
 }

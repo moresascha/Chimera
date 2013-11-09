@@ -20,7 +20,8 @@ namespace chimera
 #define PS_Stage 2
 #define GS_Stage 4
 
-        Renderer::Renderer(VOID) : m_pDefaultRenderTarget(NULL), m_pDefShader(NULL), m_pDefaultRasterState(NULL), m_pDefaultDepthStencilState(NULL), m_pDefaultBlendState(NULL)
+        Renderer::Renderer(VOID) 
+            : m_pDefaultRenderTarget(NULL), m_pDefShader(NULL), m_pDefaultRasterState(NULL), m_pDefaultDepthStencilState(NULL), m_pDefaultBlendState(NULL), m_pAlphaBlendState(NULL)
         {
             for(UCHAR i = 0; i < BufferCnt; ++i)
             {
@@ -130,6 +131,24 @@ namespace chimera
             m_pDefaultRasterState = stateFactory->VCreateRasterState(&rasterDesc);
             VPushRasterState(m_pDefaultRasterState);
 
+            ZeroMemory(&blendDesc, sizeof(BlendStateDesc));
+            for(int i = 0; i < 8; ++i)
+            {
+                blendDesc.RenderTarget[i].BlendEnable = TRUE;
+                blendDesc.RenderTarget[i].RenderTargetWriteMask = eColorWriteAll;
+
+                blendDesc.RenderTarget[i].BlendOp = eBlendOP_Add;
+                blendDesc.RenderTarget[i].BlendOpAlpha = eBlendOP_Add;
+
+                blendDesc.RenderTarget[i].DestBlend = eBlend_InvSrcAlpha;
+                blendDesc.RenderTarget[i].DestBlendAlpha = eBlend_InvSrcAlpha;
+
+                blendDesc.RenderTarget[i].SrcBlend = eBlend_SrcAlpha;
+                blendDesc.RenderTarget[i].SrcBlendAlpha = eBlend_SrcAlpha;  
+            }
+
+            m_pAlphaBlendState = CmGetApp()->VGetHumanView()->VGetGraphicsFactory()->VCreateStateFactory()->VCreateBlendState(&blendDesc);       
+
             CreateDefaultShader();
 
             return VOnRestore();
@@ -141,7 +160,8 @@ namespace chimera
             SAFE_DELETE(m_pDefaultBlendState);
             SAFE_DELETE(m_pDefaultDepthStencilState);
             SAFE_DELETE(m_pDefaultMaterial);
-            GeometryFactory::Destroy();
+            SAFE_DELETE(m_pAlphaBlendState);
+            geometryfactroy::Destroy();
             chimera::d3d::Geometry::Destroy();
             Delete();
             SAFE_DELETE(m_pDefShader);
@@ -212,7 +232,7 @@ namespace chimera
             chimera::d3d::GetContext()->VSSetConstantBuffers(0, BufferCnt, buffer);
             chimera::d3d::GetContext()->PSSetConstantBuffers(0, BufferCnt, buffer);
             chimera::d3d::GetContext()->GSSetConstantBuffers(0, BufferCnt, buffer);
-
+     
             return TRUE;
         }
 
@@ -593,6 +613,7 @@ namespace chimera
             if(m_currentSetSampler[slot] != v)
             {
                 chimera::d3d::GetContext()->PSSetShaderResources(slot, 1, &v);
+                m_currentSetSampler[slot] = v;
             }
         }
 
@@ -657,10 +678,8 @@ namespace chimera
                 _w, _h, 0, 1, 0,
             };
 
-            Geometry* quad = GeometryFactory::GetGlobalScreenQuadCPU();
-            D3D11_MAPPED_SUBRESOURCE* ress = quad->GetVertexBuffer()->Map();
-            memcpy(ress->pData, localVertices, 20 * sizeof(FLOAT));
-            quad->GetVertexBuffer()->Unmap();
+            IGeometry* quad = geometryfactroy::GetGlobalScreenQuadCPU();
+            quad->VGetVertexBuffer()->VSetData(localVertices, sizeof(FLOAT) * 20);
             quad->VBind();
             quad->VDraw();
         }
@@ -677,18 +696,16 @@ namespace chimera
                 _w, _h, 0, 1, 1,
             };
 
-            Geometry* line = GeometryFactory::GetGlobalLineCPU();
-            D3D11_MAPPED_SUBRESOURCE* ress = line->GetVertexBuffer()->Map();
-            memcpy(ress->pData, localVertices, 10 * sizeof(FLOAT));
-            line->GetVertexBuffer()->Unmap();
+            IGeometry* line = geometryfactroy::GetGlobalLineCPU();
+            line->VGetVertexBuffer()->VSetData(localVertices, sizeof(FLOAT) * 10);
             line->VBind();
             line->VDraw();
         }
 
         VOID Renderer::VDrawScreenQuad(VOID)
         {
-            GeometryFactory::GetGlobalScreenQuad()->VBind();
-            GeometryFactory::GetGlobalScreenQuad()->VDraw();
+            geometryfactroy::GetGlobalScreenQuad()->VBind();
+            geometryfactroy::GetGlobalScreenQuad()->VDraw();
         }
 
         VOID Renderer::Delete(VOID)
@@ -697,6 +714,11 @@ namespace chimera
             {
                 SAFE_DELETE(m_constBuffer[i]);
             }
+        }
+
+        VOID Renderer::VPushAlphaBlendState(VOID)
+        {
+            VPushBlendState(m_pAlphaBlendState);
         }
 
         Renderer::~Renderer(VOID) 

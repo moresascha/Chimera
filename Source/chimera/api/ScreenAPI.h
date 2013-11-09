@@ -27,9 +27,7 @@ namespace chimera
 
         virtual BOOL VOnRestore(VOID) = 0;
 
-        virtual BOOL VIsEnable(VOID) CONST = 0;
-
-        virtual VOID VSetEnable(BOOL enable) = 0;
+        virtual BOOL VIsIn(UINT x, UINT y) = 0;
 
         virtual BOOL VIsActive(VOID) CONST = 0;
 
@@ -48,7 +46,15 @@ namespace chimera
         virtual ~IScreenElement(VOID) {}
     };
 
-    class IRenderScreen
+    class IScreenElementContainer : virtual public IScreenElement
+    {
+    public:
+        virtual VOID VAddComponent(IScreenElement* cmp) = 0;
+
+        virtual IScreenElement* VGetComponent(LPCSTR name) = 0;
+    };
+
+    class IRenderScreen : virtual public IScreenElement
     {
     public:
         virtual BOOL VOnRestore(VOID) = 0;
@@ -57,24 +63,14 @@ namespace chimera
 
         virtual VOID VDraw(VOID) = 0;
 
-        virtual VOID VSetName(LPCSTR name) = 0;
-
-        virtual CONST CMDimension& VGetDimension(VOID) = 0;
-
-        virtual VOID VSetDimension(CONST CMDimension& dim) = 0;
-
-        virtual LPCSTR VGetName(VOID) CONST = 0;
-
         virtual ~IRenderScreen(VOID) {}
     };
 
-    /*class IRendertargetScreen
+    /*class IScreenElementFactroy
     {
     public:
-        IRendertargetScreen(std::unique_ptr<IRenderTarget> target);
+        virtual IRenderScreen* VCreateRenderScreen(VOID) = 0;
 
-        VOID VDraw(VOID);
-
-        ~IRendertargetScreen(VOID) {}
+        virtual IScreenElementContainer* VCreateScreenElementContainer(VOID) = 0;
     };*/
 }

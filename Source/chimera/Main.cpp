@@ -41,8 +41,24 @@ int APIENTRY _tWinMain(HINSTANCE hInstance,
     desc.ival = 60;
     desc.cachePath = "../Assets/";
     desc.logFile = "log.log";
+    desc.args = "-console";
 
     chimera::IApplication* cm = chimera::CmCreateApplication(&desc);
+
+/*
+    chimera::IGui* gui = cm->VGetHumanView()->VGetGuiFactory()->VCreateGui();
+    gui->VSetName(VIEW_CONSOLE_NAME);
+    chimera::IGuiTextInputComponent* input = cm->VGetHumanView()->VGetGuiFactory()->VCreateTextInputComponent();
+    chimera::CMDimension dim;
+    dim.x = 100;
+    dim.y = 100;
+    dim.w = 100;
+    dim.h = 16;
+    input->VSetDimension(dim);
+
+    gui->VAddComponent(input);
+
+    cm->VGetHumanView()->VAddScreenElement(std::unique_ptr<chimera::IGui>(gui));*/
 
     chimera::CmGetApp()->VRun();
 

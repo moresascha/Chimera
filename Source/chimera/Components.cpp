@@ -247,7 +247,7 @@ namespace chimera
         CMResource c;
         if(m_resource != c)
         {
-            CmGetApp()->VGetHumanView()->VGetVRamManager()->VGetHandle(CMResource(m_resource));
+            CmGetApp()->VGetCache()->VGetHandle(CMResource(m_resource));
         }
 /*
         if(CMResource(m_info) != c)

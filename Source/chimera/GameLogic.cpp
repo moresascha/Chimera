@@ -171,7 +171,7 @@ namespace chimera
         return NULL;
     }
 
-    IView* BaseGameLogic::VFindView(GameViewId id)
+    IView* BaseGameLogic::VFindView(ViewId id)
     {
         //this implementation is really slow and should only be used for debugging atm
         TBD_FOR(m_gameViewList)

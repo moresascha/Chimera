@@ -6,18 +6,7 @@
 #include "CMTypes.h"
 
 #include "../Logger.h"
-#include "EventAPI.h"
-#include "FontAPI.h"
-#include "GraphicsAPI.h"
-#include "ViewAPI.h"
-#include "SoundAPI.h"
-#include "ScriptAPI.h"
 #include "ApplicationAPI.h"
-#include "LogicAPI.h"
-#include "ResourceAPI.h"
-#include "InputAPI.h"
-#include "ActorAPI.h"
-#include "ScreenAPI.h"
 
 extern "C"
 {
@@ -31,6 +20,7 @@ extern "C"
             std::wstring titel;
             std::string logFile;
             std::string cachePath;
+            std::string args;
             HINSTANCE hInstance;
             FactoryPtr* facts;
         };
@@ -44,7 +34,8 @@ extern "C"
 
         CM_DLL_API 
         ErrorCode 
-        CM_API CmGetError(
+        CM_API 
+        CmGetError(
             VOID
             );
 
@@ -92,3 +83,19 @@ extern "C"
             );
     }
 };
+
+
+#include "EventAPI.h"
+#include "FontAPI.h"
+#include "GraphicsAPI.h"
+#include "ViewAPI.h"
+#include "SoundAPI.h"
+#include "ScriptAPI.h"
+
+#include "LogicAPI.h"
+#include "ResourceAPI.h"
+#include "InputAPI.h"
+#include "ActorAPI.h"
+#include "ScreenAPI.h"
+#include "GuiAPI.h"
+

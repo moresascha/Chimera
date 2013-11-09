@@ -5,7 +5,7 @@ namespace chimera
 {
     namespace d3d
     {
-        class Buffer : public D3DResource
+        class Buffer : public D3DResource, public IDeviceBuffer
         {
         protected:
             BOOL m_created;
@@ -41,6 +41,8 @@ namespace chimera
             VOID DeleteRawData(VOID);
 
             VOID Unmap(VOID);
+
+            VOID VSetData(VOID* v, UINT bytes);
 
             virtual ~Buffer(VOID);
         };
@@ -137,9 +139,11 @@ namespace chimera
 
             VOID VSetTopology(GeometryTopology top);
 
-            VOID VSetVertexBuffer(CONST FLOAT* vertices, UINT count, UINT stride);
+            VOID VSetVertexBuffer(CONST FLOAT* vertices, UINT count, UINT stride, BOOL cpuWrite = FALSE);
 
             VOID VSetIndexBuffer(CONST UINT* indices, UINT size);
+
+            IDeviceBuffer* VGetVertexBuffer(VOID);
 
             VertexBuffer* GetVertexBuffer(VOID);
 

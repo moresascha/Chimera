@@ -6,9 +6,6 @@
 
 namespace chimera 
 {
-    UINT GetVKFromchar(CHAR c);
-    CHAR GetCharFromVK(UINT c);
-
     struct InputMessage
     {
         UCHAR message;
@@ -160,87 +157,4 @@ namespace chimera
 
         ~DirectInput(VOID);
     }; */
-    typedef fastdelegate::FastDelegate1<UINT> KeyboardButtonPressedListener;
-    typedef fastdelegate::FastDelegate1<UINT> KeyboardButtonReleasedListener;
-    typedef fastdelegate::FastDelegate1<UINT> KeyboardButtonDownListener;
-    typedef fastdelegate::FastDelegate1<UINT> KeyboardButtonRepeatListener;
-
-    typedef fastdelegate::FastDelegate3<INT, INT, INT> MouseButtonPressedListener;
-    typedef fastdelegate::FastDelegate3<INT, INT, INT> MouseButtonReleasedListener;
-    typedef fastdelegate::FastDelegate3<INT, INT, INT> MouseButtonDownListener;
-    typedef fastdelegate::FastDelegate3<INT, INT, INT> MouseWheelListener;
-    typedef fastdelegate::FastDelegate4<INT, INT, INT, INT> MouseMovedListener;
-    typedef fastdelegate::FastDelegate5<INT, INT, INT, INT, INT> MouseDraggedListener;
-
-    class InputAdapter : public IKeyListener, public IMouseListener
-    {
-    protected:
-        std::list<KeyboardButtonPressedListener> m_keyBoardButtonPressedListener;
-        std::list<KeyboardButtonDownListener> m_keyBoardButtonDownListener;
-        std::list<KeyboardButtonReleasedListener> m_keyBoardButtonReleasedListener;
-        std::list<KeyboardButtonRepeatListener> m_keyBoardButtonRepeatListener;
-
-        std::list<MouseButtonPressedListener> m_mouseButtonPressedListener;
-        std::list<MouseButtonReleasedListener> m_mouseButtonReleasedListener;
-        std::list<MouseButtonDownListener> m_mouseButtonDownListener;
-
-        std::list<MouseDraggedListener> m_mouseDraggedListener;
-
-        std::list<MouseWheelListener> m_mouseWheelListener;
-        std::list<MouseMovedListener> m_mouseMovedListener;
-
-        BOOL m_active;
-
-    public:
-
-        InputAdapter(VOID);
-
-        virtual VOID Activate(VOID);
-
-        virtual VOID Deactivate(VOID);
-
-        BOOL IsActive(VOID);
-
-        VOID AddKeyPressedListener(KeyboardButtonPressedListener listener);
-
-        VOID AddKeyReleasedListener(KeyboardButtonReleasedListener listener);
-
-        VOID AddKeyDownListener(KeyboardButtonDownListener listener);
-
-        VOID AddKeyRepeatListener(KeyboardButtonRepeatListener listener);
-
-        VOID AddMousePressedListener(MouseButtonPressedListener listener);
-
-        VOID AddMouseReleasedListener(MouseButtonReleasedListener listener);
-
-        VOID AddMouseDownListener(MouseButtonDownListener listener);
-
-        VOID AddMouseMovedListener(MouseMovedListener listener);
-        
-        VOID AddMouseDraggedListener(MouseDraggedListener listener);
-
-        VOID AddMouseScrollListener(MouseWheelListener listener);
-
-        BOOL VOnMouseButtonPressed(INT x, INT y, INT button);
-
-        BOOL VOnMouseButtonDown(INT x, INT y, INT button);
-
-        BOOL VOnMouseButtonReleased(INT x, INT y, INT button);
-
-        BOOL VOnMouseMoved(INT x, INT y, INT dx, INT dy);
-
-        BOOL VOnMouseDragged(INT x, INT y, INT dx, INT dy, INT button);
-
-        BOOL VOnMouseWheel(INT x, INT y, INT delta);
-
-        BOOL VOnKeyDown(UINT CONST code);
-
-        BOOL VOnKeyPressed(UINT CONST code);
-
-        BOOL VOnKeyReleased(UINT CONST code);
-
-        BOOL VOnKeyRepeat(UINT CONST code);
-
-        virtual ~InputAdapter(VOID) { }
-    };
 }

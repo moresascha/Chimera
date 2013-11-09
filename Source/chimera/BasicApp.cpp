@@ -165,7 +165,7 @@ namespace chimera
         chimera::g_pApp->GetHumanView()->GetSoundEngine()->RegisterSound("static", "kinematic", "collision.wav");
 
         chimera::PostInitMessage("Loading GUI ...");
-        chimera::gui::D3D_GUI* c = m_pHumanView->GetGUI();
+        chimera::gui::GUI* c = m_pHumanView->GetGUI();
 
         chimera::gui::InformationWindow* wnd = new chimera::gui::InformationWindow();
         wnd->VSetBackgroundColor(0,0,0);

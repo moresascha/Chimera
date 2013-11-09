@@ -110,11 +110,6 @@ namespace chimera
                     TranslateMessage(&msg);
                     DispatchMessage(&msg);
                 }
-                if(msg.message == WM_QUIT || msg.wParam == VK_ESCAPE) 
-                {
-                    g_pApp->End();
-                    continue;
-                }
             } 
             else 
             {

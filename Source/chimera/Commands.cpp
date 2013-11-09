@@ -2,7 +2,6 @@
 #include "util.h"
 #include <fstream>
 #include "Event.h"
-#include "Input.h"
 namespace chimera
 {
 
@@ -20,6 +19,7 @@ namespace chimera
 
     Command::Command(std::list<std::string>& elems) : m_values(elems), m_error(FALSE)
     {
+        
     }
 
     BOOL Command::InitArgumentTypes(INT args, ...)
@@ -125,6 +125,7 @@ namespace chimera
 
     CommandInterpreter::CommandInterpreter(VOID)
     {
+        commands::AddCommandsToInterpreter(*this);
     }
 
     VOID CommandInterpreter::RegisterCommand(LPCSTR name, CommandHandler command, LPCSTR usage)
@@ -140,9 +141,9 @@ namespace chimera
         }
     }
 
-    std::list<std::string> CommandInterpreter::GetCommands(VOID)
+    std::vector<std::string> CommandInterpreter::VGetCommands(VOID)
     {
-        std::list<std::string> list;
+        std::vector<std::string> list;
         TBD_FOR(m_nameToCommandHandler)
         {
             list.push_back(it->first);
@@ -191,16 +192,15 @@ namespace chimera
             VCallCommand(printStr.c_str());
         }
 
-
         return TRUE;
     }
 
-    /*static*/ BOOL CommandInterpreter::LoadCommands(LPCSTR file, CommandInterpreter& interpreter)
-    {
+    VOID CommandInterpreter::VLoadCommands(LPCSTR file)
+    {        
         std::ifstream stream(file);
         if(stream.fail())
         {
-            return FALSE;
+            return;
         }
 
         std::string command;
@@ -211,11 +211,9 @@ namespace chimera
             {
                 continue;
             }
-            interpreter.VCallCommand(command.c_str());
+            VCallCommand(command.c_str());
         }
         stream.close();
-
-        return TRUE;
     }
 
     CommandInterpreter::~CommandInterpreter(VOID)
@@ -300,7 +298,7 @@ namespace chimera
             util::split(command, ' ', split);
             INT vk = GetVKFromchar(key);
             
-            IActorController* controller = (IActorController*)(CmGetApp()->VGetLogic()->VFindView("GameController"));
+            IActorController* controller = (IActorController*)(CmGetApp()->VGetLogic()->VFindView(VIEW_CONTROLLER_NAME));
 
             if(split.size() > 0 )
             {
@@ -344,13 +342,21 @@ namespace chimera
 
         BOOL ToogleConsole(Command& cmd)
         {
-           // CmGetApp()->VGetHumanView()->ToggleConsole();
+            IScreenElement* cons = CmGetApp()->VGetHumanView()->VGetScreenElementByName(VIEW_CONSOLE_NAME);
+            if(cons)
+            {
+                cons->VSetActive(!cons->VIsActive());
+            }
+            else
+            {
+                throw "No Console installed";
+            }
             return TRUE;
         }
 
         BOOL Print(Command& cmd)
         {
-            //CmGetApp()->VGetHumanView()->GetConsole()->AppendText(cmd.GetRemainingString());
+            CmGetApp()->VGetHumanView()->VGetScreenElementByName(VIEW_CONSOLE_NAME);
             return TRUE;
         }
 
@@ -363,6 +369,12 @@ namespace chimera
                 CmGetApp()->VGetLogic()->VFindView("GameController")->VSetTarget(a);
             }
             return a != NULL;
+        }
+
+        BOOL End(Command& cmd)
+        {
+            CmGetApp()->VStopRunning();
+            return TRUE;
         }
 
         BOOL SetTarget(Command& cmd)
@@ -380,6 +392,10 @@ namespace chimera
         {
             std::string scriptFile = cmd.GetNextCharStr();
             CHECK_COMMAND(cmd);
+            if(!CmGetApp()->VGetScript())
+            {
+                throw "No Scripting available!";
+            }
             CmGetApp()->VGetScript()->VRunFile((CmGetApp()->VGetConfig()->VGetString("sScriptPath") + scriptFile).c_str());
             return TRUE;
         }
@@ -391,7 +407,7 @@ namespace chimera
             FLOAT z = cmd.GetNextFloat();
             CHECK_COMMAND(cmd);
             //event::IEventPtr event = std::shared_ptr<event::SetSunPositionEvent>();
-            QUEUE_EVENT(new chimera::SetSunPositionEvent(x, y, z));
+            QUEUE_EVENT(new SetSunPositionEvent(x, y, z));
             return TRUE;
         }
 
@@ -479,10 +495,11 @@ namespace chimera
             interpreter.RegisterCommand("print", commands::Print, "print [some string]");
             interpreter.RegisterCommand("target", commands::SetTarget, "target [some actorname]");
             interpreter.RegisterCommand("reload", commands::ReloadLevel);
-            interpreter.RegisterCommand("runscript", commands::RunScript);
+            interpreter.RegisterCommand("runscript", commands::RunScript, "runscript [input file]");
             interpreter.RegisterCommand("sunpos", commands::SetSunPosition, "sunpos x y z");
             interpreter.RegisterCommand("savelevel", commands::SaveLevel, "savelevel [levelname]");
             interpreter.RegisterCommand("loadlevel", commands::LoadLevel, "LoadLevel [levelname]");
+            interpreter.RegisterCommand("exit", commands::End);
         }
     }
 }

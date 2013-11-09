@@ -19,13 +19,22 @@ namespace chimera
         {            
             return new SkyDomeNode(actor->GetId(), comp->m_resource);
         }
-        else
+        else 
         {
             if(comp->m_resource == CMResource())
             {
                 LOG_CRITICAL_ERROR("no meshfile specified!");
             }
-            return new MeshNode(actor->GetId(), comp->m_resource);
+			MeshNode* mn = new MeshNode(actor->GetId(), comp->m_resource);
+			if(comp->m_drawType == "wire")
+			{
+				RenderPath rp = mn->VGetRenderPaths();
+				rp ^= CM_RENDERPATH_ALBEDO;
+                rp ^= CM_RENDERPATH_SHADOWMAP;
+				rp = rp | CM_RENDERPATH_ALBEDO_WIRE;
+				mn->VSetRenderPaths(rp);
+			}
+            return mn;
         }
         LOG_CRITICAL_ERROR("wait what?!");
         return NULL;
@@ -55,6 +64,8 @@ namespace chimera
         m_pSoundEngine = NULL;
         m_pRenderer = NULL;
         m_pEffectFactory = NULL;
+        m_pFontManager = NULL;
+        m_pGuiFactroy = NULL;
     }
 
     BOOL HumanGameView::VInitialise(FactoryPtr* facts)
@@ -64,6 +75,7 @@ namespace chimera
         {
             return FALSE;
         }
+
         m_pRenderer = m_pGraphicsFactory->VCreateRenderer();
 
         IVRamManagerFactory* vramF = FindFactory<IVRamManagerFactory>(facts, CM_FACTORY_VRAM);
@@ -76,11 +88,23 @@ namespace chimera
 
         m_pEffectFactory = eff->VCreateEffectFactroy();
 
+        IFontFactory* ff = FindFactory<IFontFactory>(facts, CM_FACTORY_FONT);
+        RETURN_IF_FAILED(ff);
+
+        m_pGuiFactroy = FindAndCopyFactory<IGuiFactory>(facts, CM_FACTORY_GUI);
+        RETURN_IF_FAILED(m_pGuiFactroy);
+
+        m_pFontManager = ff->VCreateFontManager();
+        m_pFontManager->VAddFont(std::string("default"), ff->VCreateFont());
+        m_pFontManager->VSetFontRenderer(ff->VCreateFontRenderer());
+
         m_pSceneGraph = new SceneGraph();
 
         ADD_EVENT_LISTENER(this, &HumanGameView::ActorMovedDelegate, CM_EVENT_ACTOR_MOVED);
 
         ADD_EVENT_LISTENER(this, &HumanGameView::NewComponentDelegate, CM_EVENT_COMPONENT_CREATED);
+
+        ADD_EVENT_LISTENER((VRamManager*)m_pVramManager, &VRamManager::OnResourceChanged, CM_EVENT_RESOURCE_CHANGED);
 
         VAddSceneNodeCreator(CreateRenderNode, CM_CMP_RENDERING);
 
@@ -90,6 +114,11 @@ namespace chimera
     BOOL HumanGameView::VOnRestore()
     {
         VGetRenderer()->VOnRestore();
+
+        std::string fontFile = CmGetApp()->VGetConfig()->VGetString("sFontPath") + std::string("font_16.fnt");
+        VGetFontManager()->VGetCurrentFont()->VCreate(fontFile);
+
+        VGetFontManager()->VOnRestore();
 
         TBD_FOR(m_scenes)
         {
@@ -361,7 +390,12 @@ namespace chimera
             {
                 m_pSceneGraph->VOnUpdate(deltaMillis);
                 m_pVramManager->VUpdate(deltaMillis);
-                //m_pGui->VUpdate(deltaMillis);
+
+                TBD_FOR(m_screenElements)
+                {
+                    (*it)->VUpdate(deltaMillis);
+                }
+
             } break;
         case CM_STATE_LOADING :
             {
@@ -412,72 +446,6 @@ namespace chimera
 
     VOID HumanGameView::VOnAttach(UINT viewId, IActor* actor) 
     {
-        /*
-        m_pSceneGraph = new chimera::SceneGraph();
-
-        chimera::EventListener listener = fastdelegate::MakeDelegate(this, &HumanGameView::ActorMovedDelegate);
-        chimera::IEventManager::Get()->VAddEventListener(listener, chimera::ActorMovedEvent::TYPE);
-
-        listener = fastdelegate::MakeDelegate(this, &HumanGameView::NewComponentDelegate);
-        chimera::IEventManager::Get()->VAddEventListener(listener, chimera::NewComponentCreatedEvent::TYPE);
-
-        listener = fastdelegate::MakeDelegate(this, &HumanGameView::LoadingLevelDelegate);
-        chimera::IEventManager::Get()->VAddEventListener(listener, chimera::LoadingLevelEvent::TYPE);
-
-        listener = fastdelegate::MakeDelegate(this, &HumanGameView::LevelLoadedDelegate);
-        chimera::IEventManager::Get()->VAddEventListener(listener, chimera::LevelLoadedEvent::TYPE);
-
-        listener = fastdelegate::MakeDelegate(this, &HumanGameView::DeleteActorDelegate);
-        chimera::IEventManager::Get()->VAddEventListener(listener, chimera::DeleteActorEvent::TYPE);
-
-        ADD_EVENT_LISTENER(this, &HumanGameView::SetParentDelegate, chimera::SetParentActorEvent::TYPE);
-
-        m_pSceneGraph->VSetCamera(std::shared_ptr<chimera::ICamera>(new util::FPSCamera(VGetRenderer()->VGetWidth(), VGetRenderer()->VGetHeight(), 1e-2f, 1e3f)));
-
-        VGetRenderer()->VSetProjectionTransform(m_pSceneGraph->GetCamera()->GetProjection(), m_pSceneGraph->GetCamera()->GetFar());
-        VGetRenderer()->VSetViewTransform(m_pSceneGraph->GetCamera()->GetView(), m_pSceneGraph->GetCamera()->GetIView(), m_pSceneGraph->GetCamera()->GetEyePos());
-
-        m_picker = new ActorPicker();
-
-        m_picker->VCreate();
-
-        GetVRamManager()->RegisterHandleCreator("ParticleQuadGeometry", new chimera::ParticleQuadGeometryHandleCreator()); //TODO not needed anymore
-
-        m_pParticleManager = new chimera::ParticleManager();
-
-        chimera::gui::GuiConsole* console = new chimera::gui::GuiConsole();
-
-        chimera::CMDimension dim;
-        dim.x = 0;
-        dim.y = 0;
-        dim.w = chimera::g_width;
-        dim.h = (INT)(chimera::g_height * 0.4f);
-        console->VSetAlpha(0.5f);
-        console->VSetBackgroundColor(0.25f,0.25f,0.25f);
-        console->VSetDimension(dim);
-
-        m_pGui = new chimera::gui::D3D_GUI();
-
-        m_pGui->VOnRestore();
-
-        m_pGui->AddComponent("console", console);
-
-        console->VSetActive(FALSE);
-
-        chimera::PostInitMessage("Loading Sound ...");
-        m_pSoundSystem = new chimera::DirectSoundSystem();
-
-        if(!m_pSoundSystem->VInit())
-        {
-            LOG_WARNING("Failed to create SoundSystem");
-        }
-
-        listener = fastdelegate::MakeDelegate(&m_soundEngine, &chimera::SoundEngine::CollisionEventDelegate);
-        chimera::IEventManager::Get()->VAddEventListener(listener, chimera::CollisionEvent::TYPE);
-
-        listener = fastdelegate::MakeDelegate(&m_soundEngine, &chimera::SoundEngine::NewComponentDelegate);
-        chimera::IEventManager::Get()->VAddEventListener(listener, chimera::NewComponentCreatedEvent::TYPE);
-        */
         IView::VOnAttach(viewId, actor);
     }
 
@@ -553,7 +521,10 @@ namespace chimera
                 VGetRenderer()->VSetViewTransform(cam->GetView(), cam->GetIView(), cam->GetEyePos());
                 VGetRenderer()->VSetProjectionTransform(cam->GetProjection(), cam->GetFar() - cam->GetNear());
 
-                m_pSceneGraph->VSetCamera(cam);                
+                m_pSceneGraph->VSetCamera(cam);
+
+                std::shared_ptr<ActorMovedEvent> movedEvent(new ActorMovedEvent(m_actor));
+                ActorMovedDelegate(movedEvent);
             }
             else
             {
@@ -567,6 +538,8 @@ namespace chimera
         REMOVE_EVENT_LISTENER(this, &HumanGameView::ActorMovedDelegate, CM_EVENT_ACTOR_MOVED);
 
         REMOVE_EVENT_LISTENER(this, &HumanGameView::NewComponentDelegate, CM_EVENT_COMPONENT_CREATED);
+
+        REMOVE_EVENT_LISTENER((VRamManager*)m_pVramManager, &VRamManager::OnResourceChanged, CM_EVENT_RESOURCE_CHANGED);
         /*
         if(chimera::IEventManager::Get())
         {
@@ -608,11 +581,15 @@ namespace chimera
         
         //SAFE_DELETE(m_pGui);
 
+        SAFE_DELETE(m_pGuiFactroy);
+
         SAFE_DELETE(m_picker);
 
         SAFE_DELETE(m_pSceneGraph);
 
         SAFE_DELETE(m_pEffectFactory);
+
+        SAFE_DELETE(m_pFontManager);
 
         SAFE_DELETE(m_pVramManager);
 
@@ -620,6 +597,5 @@ namespace chimera
 
         //always last
         SAFE_RESET(m_pRenderer);
-        //m_pRenderer.reset();
     }
 }

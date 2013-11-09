@@ -72,6 +72,13 @@ namespace chimera
             return &m_mappedData;
         }
 
+        VOID Buffer::VSetData(VOID* v, UINT bytes)
+        {
+            D3D11_MAPPED_SUBRESOURCE* sub = Map();
+            memcpy(sub->pData, v, bytes);
+            Unmap();
+        }
+
         VOID Buffer::Unmap(VOID)
         {
             chimera::d3d::GetContext()->Unmap(m_pBuffer, 0);
@@ -120,6 +127,10 @@ namespace chimera
             m_stride = stride; 
             m_elementCount = vertexCount;
             SetCPUAccess(cpuAccessFlags);
+            if(cpuAccessFlags == D3D11_CPU_ACCESS_WRITE)
+            {
+                SetUsage(D3D11_USAGE_DYNAMIC);
+            }
             SetBindflags(D3D11_BIND_VERTEX_BUFFER);
 
             m_desc.ByteWidth = vertexCount * stride;
@@ -198,9 +209,9 @@ namespace chimera
             m_pIndexBuffer = new chimera::d3d::IndexBuffer(indices, size);
         }
 
-        VOID Geometry::VSetVertexBuffer(CONST FLOAT* vertices, UINT count, UINT stride) 
+        VOID Geometry::VSetVertexBuffer(CONST FLOAT* vertices, UINT count, UINT stride, BOOL cpuWrite) 
         {
-            m_pVertexBuffer = new chimera::d3d::VertexBuffer(vertices, count, stride);
+            m_pVertexBuffer = new chimera::d3d::VertexBuffer(vertices, count, stride, cpuWrite ? D3D11_CPU_ACCESS_WRITE : (D3D11_CPU_ACCESS_FLAG)0);
         }
 
         VOID Geometry::VSetTopology(GeometryTopology primType)
@@ -239,6 +250,11 @@ namespace chimera
         }
 
         VertexBuffer* Geometry::GetVertexBuffer(VOID)
+        {
+            return m_pVertexBuffer;
+        }
+
+        IDeviceBuffer* Geometry::VGetVertexBuffer(VOID)
         {
             return m_pVertexBuffer;
         }

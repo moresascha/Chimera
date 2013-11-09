@@ -80,7 +80,7 @@ namespace packman
         m_pLogic->AttachGameView(controller, camera);
 
         chimera::PostInitMessage("Loading GUI ...");
-        chimera::gui::D3D_GUI* c = m_pHumanView->GetGUI();
+        chimera::gui::GUI* c = m_pHumanView->GetGUI();
 
         chimera::CMDimension dim;
         chimera::gui::GuiSpriteComponent* crossHair = new chimera::gui::GuiSpriteComponent(0, 0, 8, 8);

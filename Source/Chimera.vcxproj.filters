@@ -273,9 +273,6 @@
     <ClInclude Include="chimera\ScreenElement.h">
       <Filter>Header Files\screen</Filter>
     </ClInclude>
-    <ClInclude Include="chimera\GeometryFactory.h">
-      <Filter>Header Files\d3d</Filter>
-    </ClInclude>
     <ClInclude Include="chimera\GraphicsSettings.h">
       <Filter>Header Files\screen</Filter>
     </ClInclude>
@@ -302,6 +299,12 @@
     </ClInclude>
     <ClInclude Include="chimera\cm_math.h">
       <Filter>Header Files\util</Filter>
+    </ClInclude>
+    <ClInclude Include="chimera\tbdFont.h">
+      <Filter>Header Files\font</Filter>
+    </ClInclude>
+    <ClInclude Include="chimera\GeometryFactory.h">
+      <Filter>Header Files\resource</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -330,9 +333,6 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="chimera\GeometryNode.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="chimera\GuiComponent.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="chimera\InstancedMeshNode.cpp">
@@ -387,9 +387,6 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="chimera\Spline.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="chimera\tbdFont.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="chimera\tbdStack.cpp">
@@ -506,9 +503,6 @@
     <ClCompile Include="chimera\ScreenElement.cpp">
       <Filter>Source Files\screen</Filter>
     </ClCompile>
-    <ClCompile Include="chimera\GeometryFactory.cpp">
-      <Filter>Source Files\d3d</Filter>
-    </ClCompile>
     <ClCompile Include="chimera\GraphicsSettings.cpp">
       <Filter>Source Files\screen</Filter>
     </ClCompile>
@@ -547,6 +541,15 @@
     </ClCompile>
     <ClCompile Include="chimera\SkyDomeNode.cpp">
       <Filter>Source Files\view</Filter>
+    </ClCompile>
+    <ClCompile Include="chimera\tbdFont.cpp">
+      <Filter>Source Files\font</Filter>
+    </ClCompile>
+    <ClCompile Include="chimera\GuiComponent.cpp">
+      <Filter>Source Files\screen</Filter>
+    </ClCompile>
+    <ClCompile Include="chimera\GeometryFactory.cpp">
+      <Filter>Source Files\resource</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

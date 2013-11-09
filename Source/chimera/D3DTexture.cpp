@@ -21,7 +21,7 @@ namespace chimera
 
         Texture2D::Texture2D(VOID* data, UINT width, UINT height, DXGI_FORMAT format) 
         {
-            this->m_rawData = data;
+            m_rawData = data;
             ZeroMemory(&m_texDesc, sizeof(D3D11_TEXTURE2D_DESC));
             SetBindflags(D3D11_BIND_SHADER_RESOURCE);
             m_texDesc.Format = format;

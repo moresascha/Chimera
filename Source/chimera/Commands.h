@@ -46,9 +46,9 @@ namespace chimera
 
         BOOL VCallCommand(LPCSTR command);
 
-        std::list<std::string> GetCommands(VOID);
+        std::vector<std::string> VGetCommands(VOID);
 
-        static BOOL LoadCommands(LPCSTR file, CommandInterpreter& interpreter);
+        VOID VLoadCommands(LPCSTR file);
 
         ~CommandInterpreter(VOID);
     };
@@ -83,6 +83,8 @@ namespace chimera
         BOOL SetTarget(LPCSTR actor);
 
         BOOL Print(Command& cmd);
+
+        BOOL End(Command& cmd);
 
         VOID AddCommandsToInterpreter(CommandInterpreter& interpreter);
     }

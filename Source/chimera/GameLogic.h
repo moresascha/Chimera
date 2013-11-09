@@ -42,7 +42,7 @@ namespace chimera
 
         IActor* VFindActor(LPCSTR name);
 
-        IView* VFindView(GameViewId id);
+        IView* VFindView(ViewId id);
 
         IView* VFindView(LPCSTR name);
 

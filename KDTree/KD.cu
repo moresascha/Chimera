@@ -91,11 +91,11 @@ __device__ SplitData* getParentSplit(SplitData* splitData, uint* nodesContent, u
     return 0;
 }
 
-extern "C" __global__ void spreadContent(uint* nodesContent, uint* nodesContentCount, SplitData* splitData, float3* data, uint count, uint offset, uint depth)
+extern "C" __global__ void spreadContent(uint* nodesContent, uint* nodesContentCount, SplitData* splitData, float3* data, uint count, uint depth)
 {
     uint id = GlobalId;
-    uint address = count * depth;
     uint contentCountStartAdd = (1 << depth) - 1;
+    uint address = count * contentCountStartAdd;
 
     uint sa = 0;
     uint last = 1;
@@ -225,17 +225,21 @@ extern "C" __global__ void computeSplits(AABB* aabb, uint* nodesContent, uint* n
 
     if(add == -1) //TODO
     {
+        float2 split;
+        split.x = 3.402823466e+38F;
+        split.y = 0;
+        splits[id] = split;
         return;
     }
 
     float3 d = data[add];
     
-    int axis = getLongestAxis(aa.max, aa.min);
+    int axis = getLongestAxis(aa.min, aa.max);
 
     float s = getAxis(&d, axis);
 
     float2 split;
-    split.x = getSAH(&aa, axis, s, pos, last - pos - 1);
+    split.x = getSAH(&aa, axis, s, last - pos, pos+1);
     split.y = s;
 
     splits[id] = split;

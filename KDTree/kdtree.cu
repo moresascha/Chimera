@@ -14,7 +14,17 @@
 
 #include <sstream>
 
-struct SAHmin
+bool debug_out = false;
+ 
+void print(const char* str)
+{
+    if(debug_out)
+    {
+        OutputDebugStringA(str);
+    }
+}
+
+struct SAH
 {
     __device__ float2 operator()(float2 t0, float2 t1)
     {
@@ -51,7 +61,7 @@ void printi(int i)
     std::stringstream ss;
     ss << i;
     ss << " ";
-    OutputDebugStringA(ss.str().c_str());
+    print(ss.str().c_str());
 }
 
 template < typename T>
@@ -70,7 +80,7 @@ struct BufferPrinter
         m_c++;
         if(m_c % m_r == 0)
         {
-            OutputDebugStringA("\n");
+            print("\n");
         }
     }
 };
@@ -84,7 +94,7 @@ void printsplit(SplitData i)
     ss << "split=";
     ss << i.split;
     ss << ") ";
-    OutputDebugStringA(ss.str().c_str());
+    print(ss.str().c_str());
 }
 
 void printf3(float3 i)
@@ -97,7 +107,7 @@ void printf3(float3 i)
     ss << ", z=";
     ss << i.z;
     ss << ") ";
-    OutputDebugStringA(ss.str().c_str());
+    print(ss.str().c_str());
 }
 
 void printFloat(float i)
@@ -105,7 +115,7 @@ void printFloat(float i)
     std::stringstream ss;
     ss << i;
     ss << " ";
-    OutputDebugStringA(ss.str().c_str());
+    print(ss.str().c_str());
 }
 
 void printFloat2(float2 i)
@@ -115,74 +125,43 @@ void printFloat2(float2 i)
     ss << " ";
     ss << "split=" << i.y;
     ss << ", ";
-    OutputDebugStringA(ss.str().c_str());
+    print(ss.str().c_str());
 }
 
 void printBuffer(nutty::DeviceBuffer<uint>& b, uint r = (uint)-1)
 {
+    if(!debug_out) return;
     nutty::ForEach(b.Begin(), b.End(), BufferPrinter<uint>(r));
-    OutputDebugStringA("\n");
+    print("\n");
 }
 
 void printBuffer(nutty::DeviceBuffer<SplitData>& b)
 {
+    if(!debug_out) return;
     nutty::ForEach(b.Begin(), b.End(), printsplit);
-    OutputDebugStringA("\n");
+    print("\n");
 }
 
 void printBuffer(nutty::DeviceBuffer<float3>& b)
 {
+    if(!debug_out) return;
     nutty::ForEach(b.Begin(), b.End(), printf3);
-    OutputDebugStringA("\n");
+    print("\n");
 }
 
 void printBuffer(nutty::DeviceBuffer<float>& b)
 {
+    if(!debug_out) return;
     nutty::ForEach(b.Begin(), b.End(), printFloat);
-    OutputDebugStringA("\n");
+    print("\n");
 }
 
 void printBuffer(nutty::DeviceBuffer<float2>& b)
 {
+    if(!debug_out) return;
     nutty::ForEach(b.Begin(), b.End(), printFloat2);
-    OutputDebugStringA("\n");
+    print("\n");
 }
-
-struct createElems
-{
-    float3 operator()(void)
-    {
-        float3 f;
-        f.x = -1.0f + 2.0f * rand() / (float)RAND_MAX;
-        f.y = -1.0f + 2.0f * rand() / (float)RAND_MAX;
-        f.z = -1.0f + 2.0f * rand() / (float)RAND_MAX;
-        return f;
-    }
-};
-
-struct Float3XAxisSort
-{
-    __device__ __host__ char operator()(float3 f0, float3 f1)
-    {
-        return f0.x > f1.x;
-    }
-};
-
-struct Float3YAxisSort
-{
-    __device__ __host__ char operator()(float3 f0, float3 f1)
-    {
-        return f0.y > f1.y;
-    }
-};
-
-struct Float3ZAxisSort
-{
-    __device__ __host__ char operator()(float3 f0, float3 f1)
-    {
-        return f0.z > f1.z;
-    }
-};
 
 struct AxisSort
 {
@@ -269,8 +248,9 @@ public:
         m_cudaModule = new nutty::cuModule("./ptx/KD.ptx");
 
         m_computePossibleSplits = new nutty::cuKernel(m_cudaModule->GetFunction("computeSplits"));
-        
-        m_computePossibleSplits->SetDimension(1, (uint)d->Size());
+        uint block = 256;
+        uint grid = (uint)d->Size() / block;
+        m_computePossibleSplits->SetDimension(grid, 256);
         m_computePossibleSplits->SetKernelArg(0, GetBuffer<float3>(eAxisAlignedBB));
         m_computePossibleSplits->SetKernelArg(1, GetBuffer<uint>(eNodesContent));
         m_computePossibleSplits->SetKernelArg(2, GetBuffer<uint>(eNodesContentCount));
@@ -280,14 +260,14 @@ public:
         m_scan = new nutty::cuKernel(m_cudaModule->GetFunction("scanKD"));
         m_scan->SetKernelArg(0, GetBuffer<uint>(eNodesContent));
         m_scan->SetKernelArg(1, GetBuffer<uint>(eNodesContentCount));
-        m_scan->SetSharedMemory((uint)d->Size() / 2 * 2 * sizeof(uint));
+        m_scan->SetSharedMemory((uint)d->Size() * 2 * sizeof(uint));
 
         m_spread = new nutty::cuKernel(m_cudaModule->GetFunction("spreadContent"));
         m_spread->SetKernelArg(0, GetBuffer<uint>(eNodesContent));
         m_spread->SetKernelArg(1, GetBuffer<uint>(eNodesContentCount));
         m_spread->SetKernelArg(2, GetBuffer<uint>(eSplitData));
         m_spread->SetKernelArg(3, *d);
-        m_spread->SetDimension(1, (uint)d->Size());
+        m_spread->SetDimension(grid, block);
     }
 
     void Generate(void)
@@ -305,79 +285,106 @@ public:
         static float3 min3f = -max3f;
         
         uint stride = (uint)elementCount;
-        uint offset = stride;
-
-        for(int i = 0; i < (m_maxDepth-1); ++i)
+        uint offset = elementCount;
+        for(int i = 0; i <= m_maxDepth-1; ++i)
         {
             if(i > 0)
             {
+                printBuffer(nodesContentCount);
                 uint invalidAddress = (uint)-1;
-                m_scan->SetDimension(1 << (1+i), (uint)elementCount / 2);
+                m_scan->SetDimension(1 << (i), (uint)elementCount / 2);
                 m_scan->SetKernelArg(2, invalidAddress);
                 m_scan->SetKernelArg(3, offset);
                 m_scan->SetKernelArg(4, i);
                 m_scan->Call();
-
                 printBuffer(nodesContentCount);
                 printBuffer(nodesContent, elementCount);
 
-                if(i == 2)//m_maxDepth-1)
+                if(i == m_maxDepth-1)
                 {
                     break;
                 }
+                offset += elementCount * (1 << (i));
             }
-
+            
             for(int j = (1 << i); j < (1 << (i+1)); ++j)
             {
                 auto start0 = aabbs.Begin() + (size_t)((2*(j-1)));
                 auto start1 = aabbs.Begin() + (size_t)(2*j-1);
                 
-                nutty::base::ReduceIndexed(start0, dataBuffer.Begin(), dataBuffer.End(), nodesContent.Begin() + ((j-1) * elementCount), min3f, float3max());
-                nutty::base::ReduceIndexed(start1, dataBuffer.Begin(), dataBuffer.End(), nodesContent.Begin() + ((j-1) * elementCount), max3f, float3min());
+                nutty::base::ReduceIndexed(start0, dataBuffer.Begin(), dataBuffer.End(), nodesContent.Begin() + ((j-1) * elementCount), max3f, float3min());
+                nutty::base::ReduceIndexed(start1, dataBuffer.Begin(), dataBuffer.End(), nodesContent.Begin() + ((j-1) * elementCount), min3f, float3max());
             }
-
+            
+            uint contentSum = 0;
             printBuffer(aabbs);
-
             for(int j = (1 << i); j < (1 << (i+1)); ++j)
             {
                 auto start0 = aabbs.Begin() + (size_t)((2*(j-1)));
                 auto start1 = aabbs.Begin() + (size_t)(2*j-1);
-                float3 max = aabbs[start0];
-                float3 min = aabbs[start1];
-                int axis = getLongestAxis(max, min);
+                float3 min = aabbs[start0];
+                float3 max = aabbs[start1];
+                int axis = getLongestAxis(min, max);
                 SplitData sp;
                 sp.axis = axis;
                 splitData.Insert(j-1, sp);
                 auto begin = nodesContent.Begin() + ((j-1) * elementCount);
-                nutty::Sort(begin, begin + elementCount, dataBuffer.Begin(), AxisSort(axis));
+                
+                uint c = nodesContentCount[j-1];
+                if(c)
+                {
+                    nutty::Sort(begin, begin + c, dataBuffer.Begin(), AxisSort(axis));
+                }
+                contentSum += c;
+                //nutty::Sort(dataBuffer, AxisSort(axis));
+
+/*
+                for(int k = 0; k < m_nodesCount * elementCount; ++k)
+                {
+                    uint id = nodesContent[k];
+                    if(id != -1)
+                    {
+                        float3 d = dataBuffer[id];
+                        //float3 dd = dataBuffer[k];
+                        DEBUG_OUT_A("%f %f %f\n", d.x, d.y, d.z);
+                    }
+                    else
+                    {
+                        DEBUG_OUT_A("%f %f %f\n", -1.0f, -1.0f, -1.0f);
+                    }
+                }*/
             }
-
-            printBuffer(nodesContent);
-
+            
             m_computePossibleSplits->SetKernelArg(5, elementCount);
             m_computePossibleSplits->SetKernelArg(6, i);
             m_computePossibleSplits->Call();
-
+            printBuffer(posSplits);
+            contentSum = 0;
             for(int j = (1 << i); j < (1 << (i+1)); ++j)
             {
                 uint c = nodesContentCount[j-1];
-                SplitData sp = splitData[j-1];
-                nutty::base::Reduce(posSplits.Begin(), posSplits.Begin() + c, SAHmin());
-                printBuffer(posSplits);
+                if(c)
+                {
+                    SplitData sp = splitData[j-1];
+                    auto begin = posSplits.Begin() + contentSum;
+                    if(c > 1)
+                    {
+                        nutty::base::Reduce(begin, begin + c, SAH());
+                    }
+                    //printBuffer(posSplits);
                 
-                float2 s = posSplits[j-1];
-                sp.split = s.y;
-                splitData.Insert(j-1, sp);
+                    float2 s = posSplits[begin];
+                    sp.split = s.y;
+                    splitData.Insert(j-1, sp);
+                }
+                contentSum += c;
             }
 
             printBuffer(splitData);
 
             m_spread->SetKernelArg(4, stride);
-            m_spread->SetKernelArg(5, offset);
-            m_spread->SetKernelArg(6, i);
+            m_spread->SetKernelArg(5, i);
             m_spread->Call();
-
-            printBuffer(nodesContent);
         }
     }
 
@@ -402,14 +409,14 @@ private:
 
         float2 split;
         split.x = -1;
-        split.y = 0;
+        split.y = -1;
         nutty::DeviceBuffer<float2>* possibleSplits = new nutty::DeviceBuffer<float2>(elementCount, split);
         m_pBuffer[ePosSplits] = possibleSplits;
 
         SplitData sinit;
-        sinit.axis = (uint)-1;
+        sinit.axis = -1;
         sinit.split = -0;
-        nutty::DeviceBuffer<SplitData>* splitData = new nutty::DeviceBuffer<SplitData>(m_nodesCount, sinit);
+        nutty::DeviceBuffer<SplitData>* splitData = new nutty::DeviceBuffer<SplitData>(m_nodesCount/2, sinit);
         m_pBuffer[eSplitData] = splitData;
     }
 
@@ -431,17 +438,64 @@ extern "C" void release(void)
     nutty::Release();
 }
 
-extern "C" void generate(void)
+float3 getBHE(AABB* aabb)
 {
-    uint elements = 16;
-    float3 zero = float3();
-    nutty::HostBuffer<float3> data(elements, zero);
-    nutty::Fill(data.Begin(), data.End(), createElems());
+    return make_float3(aabb->max.x - aabb->min.x, aabb->max.y - aabb->min.y, aabb->max.z - aabb->min.z);
+}
 
-    kdTree<float3> kd(4);
+float getArea(AABB* aabb)
+{
+    float3 bhe = getBHE(aabb);
+    return 2 * bhe.x * bhe.y + 2 * bhe.x * bhe.z + 2 * bhe.y * bhe.z;
+}
+
+float tgetSAH(AABB* node, int axis, float split, int primAbove, int primBelow, float traversalCost = 0, float isectCost = 1)
+{
+    float3 bhe = getBHE(node);
+    float invTotalSA = 1.0f / getArea(node);
+    int otherAxis0 = (axis+1) % 3;
+    int otherAxis1 = (axis+2) % 3;
+    float belowSA = 
+            2 * 
+            (getAxis(&bhe, otherAxis0) * getAxis(&bhe, otherAxis1) + 
+            (split - getAxis(&node->min, axis)) * 
+            (getAxis(&bhe, otherAxis0) + getAxis(&bhe, otherAxis1)));
+    
+    float aboveSA = 
+            2 * 
+            (getAxis(&bhe, otherAxis0) * getAxis(&bhe, otherAxis1) + 
+            (getAxis(&node->max, axis) - split) * 
+            (getAxis(&bhe, otherAxis0) + getAxis(&bhe, otherAxis1)));    
+        
+    float pbelow = belowSA * invTotalSA;
+    float pabove = aboveSA * invTotalSA;
+    float bonus = 0;//(primAbove == 0 || primBelow == 0) ? 1 : 0;
+    float cost = traversalCost + isectCost * (1.0f - bonus) * (pbelow * primBelow + pabove * primAbove);
+    return cost;
+}
+
+extern "C" void generate(nutty::HostBuffer<float3>& data, uint d, nutty::HostBuffer<float3>& aabbs, nutty::HostBuffer<SplitData>& splitData)
+{
+
+/*
+    AABB aabb;
+    aabb.min.x = -1;
+    aabb.min.y = -1;
+    aabb.min.z = -1;
+
+    aabb.max.x = 1;
+    aabb.max.y = 1;
+    aabb.max.z = 1;
+    
+    DEBUG_OUT_A("%f\n", tgetSAH(&aabb, 1, 0.5f, 1, 2));*/
+
+    kdTree<float3> kd(d);
 
     kd.Init(data);
     kd.Generate();
+
+    nutty::Copy(aabbs.Begin(), kd.GetBuffer<float3>(eAxisAlignedBB).Begin(), aabbs.Size());
+    nutty::Copy(splitData.Begin(), kd.GetBuffer<SplitData>(eSplitData).Begin(), splitData.Size());
 
     /*
     int axis = getLongestAxis(max, min);

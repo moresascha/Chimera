@@ -16,6 +16,8 @@ namespace chimera
 
         virtual BOOL VIsRunning(VOID) = 0;
 
+        virtual VOID VStopRunning(VOID) = 0;
+
         virtual IResourceCache* VGetCache(VOID) = 0;
 
         virtual IScript* VGetScript(VOID) = 0;
@@ -33,8 +35,6 @@ namespace chimera
         virtual ITimer* VGetRenderingTimer(VOID) = 0;
 
         virtual IInputHandler* VGetInputHandler(VOID) = 0;
-
-        virtual IFontManager* VGetFontManager(VOID) = 0;
 
         virtual IConfig* VGetConfig(VOID) = 0;
 

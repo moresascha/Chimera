@@ -24,7 +24,7 @@ namespace chimera
 
         virtual IActor* VFindActor(LPCSTR name) = 0;
 
-        virtual IView* VFindView(GameViewId id) = 0;
+        virtual IView* VFindView(ViewId id) = 0;
 
         virtual IView* VFindView(LPCSTR name) = 0;
 
@@ -98,7 +98,12 @@ namespace chimera
     {
     public:
         virtual BOOL VCallCommand(LPCSTR cmd) = 0;
-        virtual ~ICommandInterpreter(VOID) {}
+
+        virtual std::vector<std::string> VGetCommands(VOID) = 0;
+
+        virtual VOID VLoadCommands(LPCSTR file) = 0;
+
+        virtual ~ICommandInterpreter(VOID) {} 
     };
 
     class IScheduler

@@ -1,6 +1,7 @@
 #pragma once
 
 #pragma warning(disable: 4345) 
+#pragma warning(disable: 4250) //inherits via dominance
 
 #ifndef _DEBUG
 #define NDEBUG

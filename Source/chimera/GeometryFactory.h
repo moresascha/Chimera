@@ -3,40 +3,45 @@
 
 namespace chimera
 {
-    namespace d3d
+    namespace geometryfactroy
     {
-        class Geometry;
-        FLOAT* GetSerpent(UINT xtiles, UINT ztiles, FLOAT scale = 1);
+        CM_DLL_API IGeometry* CreateScreenQuad(BOOL cpuWrite = FALSE);
 
-        class GeometryFactory
-        {
-        private:
-            static Geometry* m_sScreenQuad;
-            static Geometry* m_sScreenQuadCPU;
-            static Geometry* m_sSphere;
-            static Geometry* m_sCube;
-            static Geometry* m_sDefCube;
-            static Geometry* m_sSkyDome;
-            static Geometry* m_sFrustumGeomety;
-            static Geometry* m_sLine;
-        public:
-            GeometryFactory(VOID);
-            static Geometry* GetGlobalScreenQuad(VOID);
-            static Geometry* GetGlobalLineCPU(VOID);
-            static Geometry* GetGlobalScreenQuadCPU(VOID);
-            static Geometry* CreateScreenQuad(VOID);
-            static Geometry* GetGlobalBoundingBoxCube(VOID);
-            static Geometry* GetGlobalDefShadingCube(VOID);
-            static Geometry* CreateScreenQuadCPUAcc(VOID);
-            static Geometry* GetSphere(VOID);
-            static Geometry* CreateNormedGrid(UINT xtiles, UINT ztiles, FLOAT scale = 1, BOOL deleteRawData = TRUE);
-            static Geometry* CreateAlternatingNormedGrid(UINT xtiles, UINT ztiles, FLOAT scale = 1, BOOL deleteRawData = TRUE);
-            static Geometry* CreateSphere(UINT segmentsX, UINT segmentsY, BOOL deleteRawData = TRUE);
-            static Geometry* GetSkyDome(VOID);
-            static Geometry* GetFrustumGeometry(VOID);
-            static FLOAT* GetSphereVertexBuffer(UINT segmentsX, UINT segmentsY);
-            static VOID Destroy(VOID);
-            ~GeometryFactory(VOID);
-        };
+        CM_DLL_API IGeometry* GetGlobalScreenQuad(VOID);
+
+        CM_DLL_API IGeometry* GetGlobalScreenQuadCPU(VOID);
+
+        CM_DLL_API IGeometry* GetGlobalLineCPU(VOID);
+
+        CM_DLL_API VOID Destroy(VOID);
+/*
+
+        CM_DLL_API FLOAT* GetSerpent(UINT xtiles, UINT ztiles, FLOAT scale = 1);
+
+        CM_DLL_API IGeometry* GetGlobalScreenQuad(VOID);
+
+        CM_DLL_API IGeometry* GetGlobalLineCPU(VOID);
+
+        CM_DLL_API IGeometry* GetGlobalScreenQuadCPU(VOID);
+
+        CM_DLL_API IGeometry* GetGlobalBoundingBoxCube(VOID);
+
+        CM_DLL_API IGeometry* GetGlobalDefShadingCube(VOID);
+
+        CM_DLL_API IGeometry* CreateScreenQuadCPUAcc(VOID);
+
+        CM_DLL_API IGeometry* GetSphere(VOID);
+
+        CM_DLL_API IGeometry* CreateNormedGrid(UINT xtiles, UINT ztiles, FLOAT scale = 1, BOOL deleteRawData = TRUE);
+
+        CM_DLL_API IGeometry* CreateAlternatingNormedGrid(UINT xtiles, UINT ztiles, FLOAT scale = 1, BOOL deleteRawData = TRUE);
+
+        CM_DLL_API IGeometry* CreateSphere(UINT segmentsX, UINT segmentsY, BOOL deleteRawData = TRUE);
+
+        CM_DLL_API IGeometry* GetSkyDome(VOID);
+
+        CM_DLL_API IGeometry* GetFrustumGeometry(VOID);
+
+        CM_DLL_API FLOAT* GetSphereVertexBuffer(UINT segmentsX, UINT segmentsY);*/
     }
 }

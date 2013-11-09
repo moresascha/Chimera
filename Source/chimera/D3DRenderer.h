@@ -120,6 +120,8 @@ namespace chimera
             IBlendState* m_pDefaultBlendState;
             IDepthStencilState* m_pDefaultDepthStencilState;
 
+            IBlendState* m_pAlphaBlendState;
+
             IShaderProgram* m_screenQuadProgram;
 
             VOID SetSampler(TextureSlot startSlot, ID3D11ShaderResourceView** view, UINT count, UINT stage);
@@ -154,6 +156,8 @@ namespace chimera
             VOID VPreRender(VOID);
 
             VOID VPresent(VOID);
+
+            VOID VPushAlphaBlendState(VOID);
 
             IShaderCache* VGetShaderCache(VOID) { return m_pShaderCache.get(); }
 

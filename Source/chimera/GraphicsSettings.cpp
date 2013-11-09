@@ -151,6 +151,38 @@ namespace chimera
         SAFE_DELETE(m_pCSM);
     }
 
+	WireFrameSettings::WireFrameSettings(VOID) : ShaderPathSetting(CM_RENDERPATH_ALBEDO_WIRE, DEFERRED_SHADER_NAME, DEFERRED_SHADER_NAME)
+	{
+		m_pWireFrameState = NULL;
+	}
+
+	VOID WireFrameSettings::VRender(VOID) 
+	{
+		CmGetApp()->VGetHumanView()->VGetRenderer()->VPushRasterState(m_pWireFrameState.get());
+		ShaderPathSetting::VRender();
+		CmGetApp()->VGetHumanView()->VGetRenderer()->VPopRasterState();
+	}
+
+	BOOL WireFrameSettings::VOnRestore(UINT w, UINT h)
+	{
+		std::unique_ptr<IGraphicsStateFactroy> factory = CmGetApp()->VGetHumanView()->VGetGraphicsFactory()->VCreateStateFactory();
+
+		RasterStateDesc rasterDesc;
+		ZeroMemory(&rasterDesc, sizeof(RasterStateDesc));
+		rasterDesc.CullMode = eCullMode_None;
+		rasterDesc.FillMode = eFillMode_Wire;
+		rasterDesc.DepthClipEnable = TRUE;
+		rasterDesc.FrontCounterClockwise = TRUE;
+		rasterDesc.MultisampleEnable = FALSE;
+		rasterDesc.AntialiasedLineEnable = FALSE;
+
+		m_pWireFrameState.reset();
+
+		m_pWireFrameState = std::unique_ptr<IRasterState>(factory->VCreateRasterState(&rasterDesc));
+
+		return ShaderPathSetting::VOnRestore(w, h);
+	}
+
     VOID LightingSetting::VRender(VOID)
     {
         //d3d::GetContext()->OMSetDepthStencilState(d3d::m_pDepthNoStencilState, 0);
@@ -543,6 +575,7 @@ namespace chimera
     DefaultGraphicsSettings::DefaultGraphicsSettings(VOID)
     {
         VAddSetting(std::unique_ptr<IGraphicSetting>(new AlbedoSetting()), eGraphicsSetting_Albedo);
+		VAddSetting(std::unique_ptr<IGraphicSetting>(new WireFrameSettings()), eGraphicsSetting_Albedo);
         /*VAddSetting(std::unique_ptr<IGraphicSetting>(new ShaderPathSetting(eRenderPath_DrawToAlbedoInstanced, "DefShaderInstanced", "albedoInstanced")), eGraphicsSetting_Albedo);
         VAddSetting(std::unique_ptr<IGraphicSetting>(new ShaderPathSetting(eRenderPath_DrawParticles, "Particles", "particles")), eGraphicsSetting_Albedo);*/
 

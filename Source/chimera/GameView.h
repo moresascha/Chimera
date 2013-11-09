@@ -8,18 +8,20 @@ namespace chimera
     public:
         ISceneGraph* m_pSceneGraph;
         BYTE m_loadingDots;
-        chimera::IPicker* m_picker;
+        IPicker* m_picker;
         //chimera::gui::D3D_GUI* m_pGui;
         ISoundEngine* m_pSoundEngine;
         ISoundSystem* m_pSoundSystem;
+        IFontManager* m_pFontManager;
         std::vector<std::unique_ptr<IScreenElement>> m_screenElements;
         std::vector<std::unique_ptr<IRenderScreen>> m_scenes;
-        std::map<GameViewId, SceneNodeCreator> m_nodeCreators;
+        std::map<ViewId, SceneNodeCreator> m_nodeCreators;
         IRenderScreen* m_pCurrentScene;
         std::unique_ptr<IRenderer> m_pRenderer;
         IVRamManager* m_pVramManager;
         IGraphicsFactory* m_pGraphicsFactory;
         IEffectFactory* m_pEffectFactory;
+        IGuiFactory* m_pGuiFactroy;
 
     public:
         HumanGameView(VOID);
@@ -36,7 +38,7 @@ namespace chimera
 
         VOID VOnUpdate(ULONG deltaMillis);
     
-        VOID VOnAttach(GameViewId viewId, IActor* actor);
+        VOID VOnAttach(ViewId viewId, IActor* actor);
 
         VOID VSetTarget(IActor* actor);
 
@@ -54,7 +56,11 @@ namespace chimera
 
         IGraphicsFactory* VGetGraphicsFactory(VOID) { return m_pGraphicsFactory; }
 
+        IGuiFactory* VGetGuiFactory(VOID) { return m_pGuiFactroy; }
+
         IVRamManager* VGetVRamManager(VOID) { return m_pVramManager; }
+
+        IFontManager* VGetFontManager(VOID) { return m_pFontManager; }
 
         IEffectFactory* VGetEffectFactory(VOID) { return m_pEffectFactory; }
 
@@ -191,7 +197,7 @@ namespace chimera
         BOOL VOnMouseMoved(INT x, INT y, INT dx, INT dy);
         VOID VOnUpdate(ULONG millis);
         BOOL VOnKeyDown(UINT CONST code);
-        VOID VOnAttach(GameViewId viewId, IActor* actor);
+        VOID VOnAttach(ViewId viewId, IActor* actor);
         VOID VSetTarget(IActor* actor);
     };
 };

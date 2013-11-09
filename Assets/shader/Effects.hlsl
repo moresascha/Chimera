@@ -39,7 +39,7 @@ PixelOutput Luminance(PixelInput input)
 PixelOutput SampleDiffuseTexture(PixelInput input)
 {
     PixelOutput op;
-    float4 color = g_normals.Sample(g_samplerClamp, input.texCoord);
+    float4 color = g_diffuseColor.Sample(g_samplerClamp, input.texCoord);
     op.color = color;
     return op;
 }

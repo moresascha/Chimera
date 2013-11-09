@@ -324,7 +324,7 @@ namespace chimera
         return TRUE;
     }
 
-    VOID CharacterController::VOnAttach(GameViewId viewId, IActor* actor)
+    VOID CharacterController::VOnAttach(ViewId viewId, IActor* actor)
     {
         IView::VOnAttach(viewId, actor);
 

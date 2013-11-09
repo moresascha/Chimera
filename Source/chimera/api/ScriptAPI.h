@@ -8,9 +8,9 @@ namespace chimera
     public:
         virtual BOOL VInit(VOID) = 0;
 
-        virtual VOID VRunFile(LPCSTR file) = 0;
+        virtual BOOL VRunFile(LPCSTR file) = 0;
 
-        virtual VOID VRunString(LPCSTR str) = 0;
+        virtual BOOL VRunString(LPCSTR str) = 0;
 
         virtual ~IScript(VOID) {}
     };

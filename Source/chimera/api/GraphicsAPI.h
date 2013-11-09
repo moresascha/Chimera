@@ -13,9 +13,12 @@ namespace chimera
         virtual ~IDeviceTexture(VOID) {}
     };
 
-    class IVertexBuffer
+    class IDeviceBuffer
     {
+    public:
+        virtual VOID VSetData(VOID* v, UINT bytes) = 0;
 
+        virtual ~IDeviceBuffer(VOID) {}
     };
 
     class IGeometry : public VRamHandle
@@ -29,11 +32,13 @@ namespace chimera
 
         virtual VOID VSetTopology(GeometryTopology topo) = 0;
 
-        virtual VOID VSetVertexBuffer(CONST FLOAT* vertices, UINT count, UINT byteStride) = 0;
+        virtual VOID VSetVertexBuffer(CONST FLOAT* vertices, UINT count, UINT byteStride, BOOL cpuWrite = FALSE) = 0;
 
         virtual VOID VSetIndexBuffer(CONST UINT* indices, UINT size) = 0;
 
         virtual VOID VAddInstanceBuffer(FLOAT* vertices, UINT count, UINT byteStride) = 0;
+
+        virtual IDeviceBuffer* VGetVertexBuffer(VOID) = 0;
 
         virtual ~IGeometry(VOID) {}
     };
@@ -175,6 +180,8 @@ namespace chimera
         virtual VOID VSetDefaultMaterial(VOID) = 0;
 
         virtual IAlbedoBuffer* VGetAlbedoBuffer(VOID) = 0;
+
+        virtual VOID VPushAlphaBlendState(VOID) = 0;
 
         virtual VOID VClearAndBindBackBuffer(VOID) = 0;
         virtual VOID VBindBackBuffer(VOID) = 0;

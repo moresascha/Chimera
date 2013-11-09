@@ -1,16 +1,8 @@
 #include "tbdFont.h"
-#include "GameApp.h"
+#include <fstream>
 #include "util.h"
 #include "GeometryFactory.h"
-#include "ShaderProgram.h"
-#include "D3DRenderer.h"
-#include <fstream>
-#include <DWrite.h>
-#include "d3d.h"
-#include "Geometry.h"
-#include "Texture.h"
-#include "D3DRenderer.h"
-#include "GameView.h"
+
 namespace chimera
 {
     /*VOID IFont::Print(VOID) CONST
@@ -21,7 +13,7 @@ namespace chimera
         DEBUG_OUT(ss.str().c_str());
     } */
 
-    BMFont::BMFont(VOID) : m_initialized(FALSE), m_fontTexture(NULL)
+    BMFont::BMFont(VOID) : m_initialized(FALSE), m_pFontTexture(NULL)
     {
 
     }
@@ -104,12 +96,20 @@ namespace chimera
         }
         CHAR* data = util::GetTextureData(map);
 
-        m_fontTexture = new chimera::D3DTexture2D(data, map->GetWidth(), map->GetHeight(), DXGI_FORMAT_R8G8B8A8_UNORM);
-        m_fontTexture->SetBindflags(D3D11_BIND_SHADER_RESOURCE);
-        m_fontTexture->VCreate();
+        CMTextureDescription desc;
+        ZeroMemory(&desc, sizeof(CMTextureDescription));
 
-        delete map;
-        delete data;
+        desc.data = data;
+        desc.format = eFormat_R8G8B8A8_UNORM;
+        desc.width = map->GetWidth();
+        desc.height = map->GetHeight();
+
+        m_pFontTexture = CmGetApp()->VGetHumanView()->VGetGraphicsFactory()->VCreateTexture(&desc).release();
+
+        m_pFontTexture->VCreate();
+
+        SAFE_DELETE(map);
+        SAFE_DELETE(data);
         return TRUE;
     }
 
@@ -179,15 +179,16 @@ namespace chimera
 
     VOID BMFont::VActivate(VOID)
     {
-       chimera::g_pApp->GetHumanView()->GetRenderer()->SetSampler(chimera::eGuiSampler, m_fontTexture->GetShaderResourceView());
+       CmGetApp()->VGetHumanView()->VGetRenderer()->VSetTexture(chimera::eGuiSampler, m_pFontTexture);
     }
 
     BMFont::~BMFont(VOID)
     {
-        SAFE_DELETE(m_fontTexture);
+        m_pFontTexture->VDestroy();
+        SAFE_DELETE(m_pFontTexture);
     }
 
-    VOID FontManager::AddFont(CONST std::string& name, IFont* font)
+    VOID FontManager::VAddFont(CONST std::string& name, IFont* font)
     {
 
 #ifdef _DEBUG
@@ -213,7 +214,7 @@ namespace chimera
 
     }
 
-    IFont* FontManager::GetFont(CONST std::string& name) CONST
+    IFont* FontManager::VGetFont(CONST std::string& name) CONST
     {
         auto it = m_fonts.find(name);
 #ifdef _DEBUG
@@ -225,32 +226,37 @@ namespace chimera
         return it->second;
     }
 
-    VOID FontManager::RemoveFont(CONST std::string& name)
+    VOID FontManager::VRemoveFont(CONST std::string& name)
     {
         m_fonts.erase(name);
     }
 
-    VOID FontManager::RenderText(std::string& text, FLOAT x, FLOAT y, util::Color* color)
+    VOID FontManager::VRenderText(std::string& text, FLOAT x, FLOAT y, chimera::Color* color)
     {
-        RenderText(text.c_str(), x, y, color);
+        VRenderText(text.c_str(), x, y, color);
     }
 
-    VOID FontManager::RenderText(LPCSTR text, FLOAT x, FLOAT y, util::Color* color)
+    VOID FontManager::VRenderText(LPCSTR text, FLOAT x, FLOAT y, chimera::Color* color)
     {
         m_pCurrentRenderer->VRenderText(text, m_pCurrentFont, x, y, color);
     }
 
-    VOID FontManager::ActivateFont(CONST std::string& name)
+    VOID FontManager::VActivateFont(CONST std::string& name)
     {
-        GetFont(name)->VActivate();
+        VGetFont(name)->VActivate();
     }
 
-    VOID FontManager::SetFontRenderer(IFontRenderer* renderer)
+    BOOL FontManager::VOnRestore(VOID)
+    {
+        return m_pCurrentRenderer->VOnRestore();
+    }
+
+    VOID FontManager::VSetFontRenderer(IFontRenderer* renderer)
     {
         m_pCurrentRenderer = renderer;
     }
 
-    IFont* FontManager::GetCurrentFont(VOID)
+    IFont* FontManager::VGetCurrentFont(VOID)
     {
         return m_pCurrentFont;
     }
@@ -261,26 +267,71 @@ namespace chimera
         {
             delete it->second;
         }
+        SAFE_DELETE(m_pCurrentRenderer);
     }
 
-    D3DFontRenderer::D3DFontRenderer(VOID) : m_quad(NULL)
+    FontRenderer::FontRenderer(VOID) : m_quad(NULL), m_program(NULL)
     {
-        m_program = chimera::ShaderProgram::CreateProgram("Font", L"Gui.hlsl", "Font_VS", "Font_PS", NULL);
-        m_program->SetInputAttr("POSITION", 0, 0, DXGI_FORMAT_R32G32B32_FLOAT);
-        m_program->SetInputAttr("TEXCOORD", 1, 0, DXGI_FORMAT_R32G32_FLOAT);
-        m_program->GenerateLayout();
-        m_program->Bind();
-        m_program = chimera::ShaderProgram::GetProgram("Font");
-        m_quad = GeometryFactory::GetGlobalScreenQuadCPU();
+ 
     }
 
-    D3DFontRenderer::~D3DFontRenderer(VOID)
+    BOOL FontRenderer::VOnRestore(VOID)
     {
+        Destroy();
 
+        CMShaderProgramDescription shaderDesc;
+        shaderDesc.vs.file = L"Gui.hlsl";
+        shaderDesc.vs.function = "Font_VS";
+
+        shaderDesc.vs.layoutCount = 2;
+
+        shaderDesc.vs.inputLayout[0].instanced = FALSE;
+        shaderDesc.vs.inputLayout[0].name = "POSITION";
+        shaderDesc.vs.inputLayout[0].position = 0;
+        shaderDesc.vs.inputLayout[0].slot = 0;
+        shaderDesc.vs.inputLayout[0].format = eFormat_R32G32B32_FLOAT;
+
+        shaderDesc.vs.inputLayout[1].instanced = FALSE;
+        shaderDesc.vs.inputLayout[1].name = "TEXCOORD";
+        shaderDesc.vs.inputLayout[1].position = 1;
+        shaderDesc.vs.inputLayout[1].slot = 0;
+        shaderDesc.vs.inputLayout[1].format = eFormat_R32G32_FLOAT;
+
+        shaderDesc.fs.file = L"Gui.hlsl";
+        shaderDesc.fs.function = "Font_PS";
+
+        m_program = CmGetApp()->VGetHumanView()->VGetRenderer()->VGetShaderCache()->VCreateShaderProgram("Font", &shaderDesc);
+
+        m_quad = geometryfactroy::CreateScreenQuad(TRUE);//CmGetApp()->VGetHumanView()->VGetGraphicsFactory()->VCreateGeoemtry().release();
+
+/*
+        FLOAT vertices[20] = {0,0,0,0,0, 0,0,0,0,0, 0,0,0,0,0, 0,0,0,0,0};
+        UINT indices[4] = {0,1,2,3};
+
+        m_quad->VSetIndexBuffer(indices, 4);
+        m_quad->VSetTopology(eTopo_TriangleStrip);
+        m_quad->VSetVertexBuffer(vertices, 20, 5 * sizeof(FLOAT), TRUE);
+        m_quad->VCreate();*/
+
+        return TRUE;
+    }
+
+    VOID FontRenderer::Destroy(VOID)
+    {
+        if(m_quad)
+        {
+            m_quad->VDestroy();
+        }
+        SAFE_DELETE(m_quad);
+    }
+
+    FontRenderer::~FontRenderer(VOID)    
+    {
+        Destroy();
     }
 
     //TODO: refactoring in terms of performance
-    VOID D3DFontRenderer::VRenderText(CONST std::string& text, IFont* font, FLOAT x, FLOAT y, util::Color* color)
+    VOID FontRenderer::VRenderText(CONST std::string& text, IFont* font, FLOAT x, FLOAT y, chimera::Color* color)
     {
         if(x < 0 || x > 1 || y < 0 || y > 1)
         {
@@ -289,25 +340,26 @@ namespace chimera
 
         font->VActivate();
 
-        chimera::ConstBuffer* buffer = chimera::g_pApp->GetHumanView()->GetRenderer()->GetBuffer(chimera::eGuiColorBuffer);
+        IConstShaderBuffer* buffer = CmGetApp()->VGetRenderer()->VGetConstShaderBuffer(chimera::eGuiColorBuffer);
 
-        XMFLOAT4* c = (XMFLOAT4*)buffer->Map();
+        XMFLOAT4* c = (XMFLOAT4*)buffer->VMap();
         c->x = color ? color->r : 1;
         c->y = color ? color->g : 1;
         c->z = color ? color->b : 1;
         c->w = 0;
-        buffer->Unmap();
+        buffer->VUnmap();
 
         CONST CHAR* str = text.c_str();
-        m_program->Bind();
+        m_program->VBind();
 
         UINT curserX = 0;
         UINT curserY = 0;
         
-        chimera::GetContext()->OMSetBlendState(chimera::g_pBlendStateBlendAlpha, NULL, 0xffffff);
+        //chimera::GetContext()->OMSetBlendState(chimera::g_pBlendStateBlendAlpha, NULL, 0xffffff);
+        CmGetApp()->VGetRenderer()->VPushAlphaBlendState();
 
-        FLOAT w = (FLOAT) chimera::g_width;
-        FLOAT h = (FLOAT) chimera::g_height;
+        FLOAT w = (FLOAT) CmGetApp()->VGetWindowWidth();
+        FLOAT h = (FLOAT) CmGetApp()->VGetWindowHeight();
 
         for(UINT i = 0; i < text.size(); ++i)
         {
@@ -363,11 +415,9 @@ namespace chimera
 
                 curserX += metric->xadvance;
 
-                D3D11_MAPPED_SUBRESOURCE* ress = m_quad->GetVertexBuffer()->Map();
-                memcpy(ress->pData, localVertices, 20 * sizeof(FLOAT));
-                m_quad->GetVertexBuffer()->Unmap();
-                m_quad->Bind();
-                m_quad->Draw();
+                m_quad->VGetVertexBuffer()->VSetData(localVertices, 20 * sizeof(FLOAT));
+                m_quad->VBind();
+                m_quad->VDraw();
             }
             else
             {
@@ -375,6 +425,7 @@ namespace chimera
             }
         }
 
-        chimera::GetContext()->OMSetBlendState(chimera::g_pBlendStateNoBlending, NULL, 0xffffff);
+        CmGetApp()->VGetRenderer()->VPopBlendState();
+        //chimera::GetContext()->OMSetBlendState(chimera::g_pBlendStateNoBlending, NULL, 0xffffff);
     }
 }

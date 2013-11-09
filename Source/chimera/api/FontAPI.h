@@ -40,6 +40,8 @@ namespace chimera
     public:
         virtual VOID VRenderText(CONST std::string& text, IFont* font, FLOAT x, FLOAT y, chimera::Color* color = NULL) = 0;
 
+        virtual BOOL VOnRestore(VOID) = 0;
+
         virtual ~IFontRenderer(VOID) { }
     };
 
@@ -54,6 +56,8 @@ namespace chimera
 
         virtual VOID VAddFont(CONST std::string& name, IFont* font) = 0;
 
+        virtual BOOL VOnRestore(VOID) = 0;
+
         virtual VOID VActivateFont(CONST std::string& name) = 0;
 
         virtual VOID VRemoveFont(CONST std::string& name) = 0;
@@ -63,5 +67,15 @@ namespace chimera
         virtual IFont* VGetFont(CONST std::string& name) CONST = 0;
 
         virtual ~IFontManager(VOID) {}
+    };
+
+    class IFontFactory
+    {
+    public:
+        virtual IFont* VCreateFont(VOID) = 0;
+
+        virtual IFontRenderer* VCreateFontRenderer(VOID) = 0;
+
+        virtual IFontManager* VCreateFontManager(VOID) = 0;
     };
 }

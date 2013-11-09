@@ -18,6 +18,8 @@
 #include "Components.h"
 #include "Effect.h"
 #include "Camera.h"
+#include "tbdFont.h"
+#include "GuiComponent.h"
 
 BOOL APIENTRY DllMain (HINSTANCE hInst, DWORD reason, LPVOID lpReserved)
 {
@@ -26,23 +28,6 @@ BOOL APIENTRY DllMain (HINSTANCE hInst, DWORD reason, LPVOID lpReserved)
 
 namespace chimera
 {
-    CM_APP_DESCRIPTION* pDescription = NULL;
-    CONST CM_APP_DESCRIPTION* CmGetDescription(VOID)
-    {
-        return pDescription;
-    }
-
-    VOID CopyDescription(CM_APP_DESCRIPTION* desc)
-    {
-        pDescription = new CM_APP_DESCRIPTION();
-        pDescription->cachePath = desc->cachePath;
-        pDescription->logFile = desc->logFile;
-        pDescription->facts = desc->facts;
-        pDescription->ival = desc->ival;
-        pDescription->hInstance = desc->hInstance;
-        pDescription->titel = desc->titel;
-    }
-
     class DefaultHumanViewFactory : public IHumanViewFactory
     {
     public:
@@ -127,6 +112,59 @@ namespace chimera
         }
     };
 
+    class DefaultFontFactroy : public IFontFactory
+    {
+    public:
+        IFont* VCreateFont(VOID)
+        {
+            return new BMFont();
+        }
+        IFontRenderer* VCreateFontRenderer(VOID)
+        {
+            return new FontRenderer();
+        }
+
+        IFontManager* VCreateFontManager(VOID)
+        {
+            return new FontManager();
+        }
+    };
+
+    class DefaultGuiFactory : public IGuiFactory
+    {
+    public:
+        IGuiRectangle* VCreateRectangle(VOID) { return new GuiRectangle(); }
+
+        IGuiTextureComponent* VCreateTextureComponent(VOID) { return new GuiTextComponent(); }
+
+        IGuiTextComponent* VCreateTextComponent(VOID) { return new GuiTextComponent(); }
+
+        IGuiTextInputComponent* VCreateTextInputComponent(VOID) { return new GuiTextInputComponent(); }
+
+        IGuiLookAndFeel* VCreateLookAndFeel(VOID) { return new GuiLookAndFeel(); }
+
+        IGui* VCreateGui(VOID) { return new Gui(); }
+    };
+
+    //factories end
+
+    CM_APP_DESCRIPTION* pDescription = NULL;
+    CONST CM_APP_DESCRIPTION* CM_API CmGetDescription(VOID)
+    {
+        return pDescription;
+    }
+
+    VOID CopyDescription(CM_APP_DESCRIPTION* desc)
+    {
+        pDescription = new CM_APP_DESCRIPTION();
+        pDescription->cachePath = desc->cachePath;
+        pDescription->logFile = desc->logFile;
+        pDescription->facts = desc->facts;
+        pDescription->ival = desc->ival;
+        pDescription->hInstance = desc->hInstance;
+        pDescription->titel = desc->titel;
+    }
+
     IApplication* CmGetApp(VOID)
     {
         return g_pApp;
@@ -163,6 +201,8 @@ namespace chimera
         DefaultVRamManagerFactory vramFactory;
         DefaultActorFactory af;
         DefaultEffectFactoryFactory eff;
+        DefaultFontFactroy fontFact;
+        DefaultGuiFactory guifacto;
 
         FactoryPtr defaultFacts[] = 
         {
@@ -175,6 +215,8 @@ namespace chimera
             CM_FACTORY_VRAM,  (FactoryPtr)&vramFactory, sizeof(DefaultVRamManagerFactory),
             CM_FACTORY_ACTOR, (FactoryPtr)&af, sizeof(DefaultActorFactory),
             CM_FACTORY_EFFECT, (FactoryPtr)&eff, sizeof(DefaultEffectFactoryFactory),
+            CM_FACTORY_FONT, (FactoryPtr)&fontFact, sizeof(DefaultFontFactroy),
+            CM_FACTORY_GUI, (FactoryPtr)&guifacto, sizeof(DefaultGuiFactory),
             CM_FACTORY_END
         };
 
@@ -226,15 +268,26 @@ namespace chimera
         screen->VSetName("main");
         app->VGetHumanView()->VAddScene(std::move(std::unique_ptr<IRenderScreen>(screen)));
 
-        IScreenElement* normalScreen = new RenderTargetScreen(app->VGetHumanView()->VGetRenderer()->VGetAlbedoBuffer()->VGetRenderTarget(eDiff_NormalsTarget));
+        IScreenElement* normalScreen = new RenderTargetScreen(app->VGetHumanView()->VGetRenderer()->VGetAlbedoBuffer()->VGetRenderTarget(eDiff_DiffuseColorSpecBTarget));
         CMDimension dim;
         dim.x = 0;
         dim.y = 0;
         dim.w = 200;
         dim.h = 150;
         normalScreen->VSetDimension(dim);
-        normalScreen->VSetName("normals");
+        normalScreen->VSetName("diffuse_color");
         app->VGetHumanView()->VAddScreenElement(std::move(std::unique_ptr<IScreenElement>(normalScreen)));
+
+        //console
+        if(desc->args.find("-console") != std::string::npos)
+        {
+            IScreenElement* rect = new GuiConsole();
+            rect->VSetName(VIEW_CONSOLE_NAME);
+            dim.x = 0; dim.x = 0; dim.w = CmGetApp()->VGetWindowWidth(); dim.h = (UINT)(CmGetApp()->VGetWindowHeight() * 0.45f);
+            rect->VSetDimension(dim);
+            rect->VSetActive(FALSE);
+            app->VGetHumanView()->VAddScreenElement(std::unique_ptr<IScreenElement>(rect));
+        }
 
         std::unique_ptr<ActorDescription> _d = app->VGetLogic()->VGetActorFactory()->VCreateActorDescription();
         CameraComponent* cmp = _d->AddComponent<CameraComponent>(CM_CMP_CAMERA);
@@ -243,18 +296,23 @@ namespace chimera
         cmp->SetCamera(cam);
 
         TransformComponent* tcmp = _d->AddComponent<TransformComponent>(CM_CMP_TRANSFORM);
-        tcmp->GetTransformation()->SetTranslate(util::Vec3(0,1,-2));
+        tcmp->GetTransformation()->SetTranslate(util::Vec3(0,2,-5));
        
         IActor* actor = app->VGetLogic()->VCreateActor(std::move(_d));
 
         CmGetApp()->VGetHumanView()->VSetTarget(actor);
 
         CharacterController* cc = new CharacterController();
+        cc->SetName("Controller");
+        cc->VSetMinSpeed(12);
+        cc->VSetMaxSpeed(28);
         std::unique_ptr<ActorController> ac(cc);
 
         cc->VActivate();
 
         CmGetApp()->VGetLogic()->VAttachView(std::move(ac), actor->GetId());
+
+        CmGetApp()->VGetLogic()->VGetCommandInterpreter()->VLoadCommands("controls.ini");
 
         //mesh actor
 
@@ -282,7 +340,7 @@ namespace chimera
         _d = app->VGetLogic()->VGetActorFactory()->VCreateActorDescription();
         _d->AddComponent<TransformComponent>(CM_CMP_TRANSFORM);
         rcmp = _d->AddComponent<RenderComponent>(CM_CMP_RENDERING);
-        rcmp->m_resource = "skydome.png";
+        rcmp->m_resource = "skydome3.jpg";
         rcmp->m_type = "skydome";
         app->VGetLogic()->VCreateActor(std::move(_d));
         
@@ -302,7 +360,7 @@ namespace chimera
         Logger::s_pLogMgr->Log(tag, message, funcName, file, line);
     }
 
-    VOID CmCriticalError(CONST std::string& tag, CONST std::string& message, CONST CHAR* funcName, CONST CHAR* file, CONST UINT line) 
+    VOID CmCriticalError(CONST std::string& tag, CONST std::string& message, CONST CHAR* funcName, CONST CHAR* file, CONST UINT line)
     {
         Logger::s_pLogMgr->CriticalError(tag, message, funcName, file, line);
     }

@@ -5,16 +5,6 @@ namespace chimera
     KeyAdapterListener g_keyAdapter;
     MouseAdapterListener g_mouseAdapter;
 
-    CHAR GetCharFromVK(UINT key)
-    {
-        return MapVirtualKey(key, MAPVK_VK_TO_CHAR);
-    }
-
-    UINT GetVKFromchar(CHAR key)
-    {
-        return VkKeyScan(key);
-    }
-
     DefaultWinInputHandler::DefaultWinInputHandler(VOID) : m_hwnd(NULL)
     {
         for(UINT i = 0; i < 0xFE; ++i)
@@ -121,7 +111,6 @@ namespace chimera
         }
     }
 
-
     BOOL DefaultWinInputHandler::VInit(CM_INSTANCE hinstance, CM_HWND hwnd, UINT width, UINT height)
     {
         m_hwnd = (HWND)hwnd;
@@ -191,7 +180,7 @@ namespace chimera
         case WM_LBUTTONDOWN:
             {
                 INT posx = GET_X_LPARAM(msg.lParam);
-                INT posy = GET_X_LPARAM(msg.lParam);
+                INT posy = GET_Y_LPARAM(msg.lParam);
                 InputMessage imsg;
                 imsg.mouseX = posx;
                 imsg.mouseY = posy;
@@ -202,7 +191,7 @@ namespace chimera
         case WM_RBUTTONDOWN:
             {
                 INT posx = GET_X_LPARAM(msg.lParam);
-                INT posy = GET_X_LPARAM(msg.lParam);
+                INT posy = GET_Y_LPARAM(msg.lParam);
                 InputMessage imsg;
                 imsg.mouseX = posx;
                 imsg.mouseY = posy;
@@ -213,7 +202,7 @@ namespace chimera
         case WM_LBUTTONUP:
             {
                 INT posx = GET_X_LPARAM(msg.lParam);
-                INT posy = GET_X_LPARAM(msg.lParam);
+                INT posy = GET_Y_LPARAM(msg.lParam);
                 InputMessage imsg;
                 imsg.mouseX = posx;
                 imsg.mouseY = posy;
@@ -224,7 +213,7 @@ namespace chimera
         case WM_RBUTTONUP:
             {
                 INT posx = GET_X_LPARAM(msg.lParam);
-                INT posy = GET_X_LPARAM(msg.lParam);
+                INT posy = GET_Y_LPARAM(msg.lParam);
                 InputMessage imsg;
                 imsg.mouseX = posx;
                 imsg.mouseY = posy;
@@ -252,7 +241,7 @@ namespace chimera
         case WM_MOUSEWHEEL:
             {
                 INT posx = GET_X_LPARAM(msg.lParam);
-                INT posy = GET_X_LPARAM(msg.lParam);
+                INT posy = GET_Y_LPARAM(msg.lParam);
                 InputMessage imsg;
                 imsg.mouseX = posx;
                 imsg.mouseY = posy;
@@ -296,154 +285,4 @@ namespace chimera
     }
 
     //adapter
-
-    InputAdapter::InputAdapter(VOID) : m_active(FALSE)
-    {
-
-    }
-
-    BOOL InputAdapter::IsActive(VOID)
-    {
-        return m_active;
-    }
-
-    VOID InputAdapter::Activate(VOID)
-    {
-        if(!m_active)
-        {
-            chimera::CmGetApp()->VGetInputHandler()->VPushKeyListener(this);
-            chimera::CmGetApp()->VGetInputHandler()->VPushMouseListener(this);
-            m_active = TRUE;
-        }
-    }
-
-    VOID InputAdapter::Deactivate(VOID)
-    {
-        if(m_active)
-        {
-            chimera::CmGetApp()->VGetInputHandler()->VPopKeyListener();
-            chimera::CmGetApp()->VGetInputHandler()->VPopMouseListener();
-            m_active = FALSE;
-        }
-    }
-
-    VOID InputAdapter::AddKeyPressedListener(KeyboardButtonPressedListener listener)
-    {
-        m_keyBoardButtonPressedListener.push_back(listener);
-    }
-
-    VOID InputAdapter::AddKeyReleasedListener(KeyboardButtonReleasedListener listener)
-    {
-        m_keyBoardButtonReleasedListener.push_back(listener);
-    }
-
-    VOID InputAdapter::AddKeyDownListener(KeyboardButtonDownListener listener)
-    {
-        m_keyBoardButtonDownListener.push_back(listener);;
-    }
-
-    VOID InputAdapter::AddKeyRepeatListener(KeyboardButtonRepeatListener listener)
-    {
-        m_keyBoardButtonRepeatListener.push_back(listener);
-    }
-
-    VOID InputAdapter::AddMousePressedListener(MouseButtonPressedListener listener)
-    {
-        m_mouseButtonPressedListener.push_back(listener);
-    }
-
-    VOID InputAdapter::AddMouseScrollListener(MouseWheelListener listener)
-    {
-        m_mouseWheelListener.push_back(listener);
-    }
-
-    BOOL InputAdapter::VOnMouseButtonPressed(INT x, INT y, INT button)
-    {
-        TBD_FOR(m_mouseButtonPressedListener)
-        {
-            (*it)(x, y, button);
-        }
-        return TRUE;
-    }
-
-    BOOL InputAdapter::VOnMouseButtonDown(INT x, INT y, INT button)
-    {
-        TBD_FOR(m_mouseButtonDownListener)
-        {
-            (*it)(x, y, button);
-        }
-        return TRUE;
-    }
-
-    BOOL InputAdapter::VOnMouseButtonReleased(INT x, INT y, INT button)
-    {
-        TBD_FOR(m_mouseButtonPressedListener)
-        {
-            (*it)(x, y, button);
-        }
-        return TRUE;
-    }
-
-    BOOL InputAdapter::VOnMouseMoved(INT x, INT y, INT dx, INT dy)
-    {
-        TBD_FOR(m_mouseMovedListener)
-        {
-            (*it)(x, y, dx, dy);
-        }
-        return TRUE;
-    }
-
-    BOOL InputAdapter::VOnMouseDragged(INT x, INT y, INT dx, INT dy, INT button)
-    {
-        TBD_FOR(m_mouseDraggedListener)
-        {
-            (*it)(x, y, dx, dy, button);
-        }
-        return TRUE;
-    }
-
-    BOOL InputAdapter::VOnMouseWheel(INT x, INT y, INT delta)
-    {
-        TBD_FOR(m_mouseWheelListener)
-        {
-            (*it)(x, y, delta);
-        }
-        return TRUE;
-    }
-
-    BOOL InputAdapter::VOnKeyDown(UINT CONST code)
-    {
-        TBD_FOR(m_keyBoardButtonDownListener)
-        {
-            (*it)(code);
-        }
-        return TRUE;
-    }
-
-    BOOL InputAdapter::VOnKeyPressed(UINT CONST code)
-    {
-        TBD_FOR(m_keyBoardButtonPressedListener)
-        {
-            (*it)(code);
-        }
-        return TRUE;
-    }
-
-    BOOL InputAdapter::VOnKeyReleased(UINT CONST code)
-    {
-        TBD_FOR(m_keyBoardButtonReleasedListener)
-        {
-            (*it)(code);
-        }
-        return TRUE;
-    }
-
-    BOOL InputAdapter::VOnKeyRepeat(UINT CONST code)
-    {
-        TBD_FOR(m_keyBoardButtonRepeatListener)
-        {
-            (*it)(code);
-        }
-        return TRUE;
-    }
 }

@@ -5,7 +5,7 @@
 
 struct SplitData
 {
-    uint axis;
+    int axis;
     float split;
 };
 
@@ -15,7 +15,7 @@ struct AABB
     float3 max;
 };
 
-__device__ __host__ float getAxis(float4* vec, uint axis)
+__forceinline __device__ __host__ float getAxis(float4* vec, uint axis)
 {
     switch(axis)
     {
@@ -27,13 +27,23 @@ __device__ __host__ float getAxis(float4* vec, uint axis)
     return 0;
 }
 
-__device__ __host__ float getAxis(float3* vec, uint axis)
+__forceinline __device__ __host__ void setAxis(float3* vec, uint axis, float v)
+{
+    switch(axis)
+    {
+    case 0 : vec->x = v; break;
+    case 1 : vec->y = v; break;
+    case 2 : vec->z = v; break;
+    }
+}
+
+__forceinline __device__ __host__ float getAxis(float3* vec, uint axis)
 {
     float4 v = make_float4(vec->x, vec->y, vec->z, 0);
     return getAxis(&v, axis);
 }
 
-__device__ __host__ int getLongestAxis(float3 maxi, float3 mini) 
+__forceinline __device__ __host__ int getLongestAxis(float3 mini, float3 maxi) 
 {
     float dx = maxi.x - mini.x;
     float dy = maxi.y - mini.y;

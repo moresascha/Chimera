@@ -219,6 +219,8 @@ namespace chimera
 
             texture->SetMicsFlags(D3D11_RESOURCE_MISC_GENERATE_MIPS);
 
+            texture->SetData(desc->data);
+
             return std::unique_ptr<IDeviceTexture>(texture);
         }
 

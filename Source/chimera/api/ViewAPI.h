@@ -6,7 +6,7 @@ namespace chimera
     class IView
     {
     protected:
-        GameViewId m_id;
+        ViewId m_id;
         IActor* m_actor;
         std::string m_name;
     public:
@@ -34,7 +34,7 @@ namespace chimera
             }
         }
 
-        GameViewId GetId(VOID) CONST { return m_id; }
+        ViewId GetId(VOID) CONST { return m_id; }
 
         CONST std::string& GetName(VOID) CONST { return m_name; }
 
@@ -58,11 +58,15 @@ namespace chimera
 
         virtual IPicker* VGetPicker(VOID) = 0;
 
+        virtual IFontManager* VGetFontManager(VOID) = 0;
+
         virtual ISoundEngine* VGetSoundEngine(VOID) = 0;
 
         virtual ISoundSystem* VGetSoundSystem(VOID) = 0;
 
         virtual VOID VAddScreenElement(std::unique_ptr<IScreenElement> element) = 0;
+
+        virtual IGuiFactory* VGetGuiFactory(VOID) = 0;
 
         virtual ISceneGraph* VGetSceneGraph(VOID) = 0;
 

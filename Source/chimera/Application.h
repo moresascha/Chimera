@@ -17,8 +17,6 @@ namespace chimera
         IEventManager* m_pEventMgr;
         IScript* m_pScript;
         IScriptEventManager* m_pScriptEventManager;
-        IFontManager* m_pFontManager;
-        IFontRenderer* m_pFontRenderer;
         IConfig* m_pConfig;
         BOOL m_running;
         ULONG m_updateInterval; //freq per second
@@ -41,7 +39,7 @@ namespace chimera
 
         BOOL VIsRunning(VOID) { return m_running; }
 
-        VOID End(VOID) { m_running = FALSE; }
+        VOID VStopRunning(VOID) { m_running = FALSE; }
 
         IHumanView* VGetHumanView(VOID);
 
@@ -64,8 +62,6 @@ namespace chimera
         ITimer* VGetRenderingTimer(VOID) { return m_pRenderingTimer; }
 
         IInputHandler* VGetInputHandler(VOID) { return m_pInput; }
-
-        IFontManager* VGetFontManager(VOID) { return m_pFontManager; } //we keep it here to show loading modules, todo: move to gameview
 
         IConfig* VGetConfig(VOID) { return m_pConfig; }
 

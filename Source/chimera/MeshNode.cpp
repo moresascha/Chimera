@@ -88,6 +88,7 @@ namespace chimera
 
     BOOL MeshNode::VIsVisible(ISceneGraph* graph)
     {
+        return TRUE;
         if(m_geo->VIsReady())
         {
             m_geo->VUpdate();
@@ -105,9 +106,9 @@ namespace chimera
         }
         else
         {
-            m_geo = std::static_pointer_cast<IGeometry>( CmGetApp()->VGetHumanView()->VGetVRamManager()->VGetHandle(m_ressource));
+            m_geo = std::static_pointer_cast<IGeometry>(CmGetApp()->VGetHumanView()->VGetVRamManager()->VGetHandle(m_ressource));
         }
-        return FALSE;
+        return TRUE;
     }
 
     VOID MeshNode::_VRender(ISceneGraph* graph, RenderPath& path) 
@@ -131,6 +132,7 @@ namespace chimera
                             m_geo->Draw(it->start, it->count);
                         } */
                     } break;
+                case CM_RENDERPATH_ALBEDO_WIRE :
                 case CM_RENDERPATH_ALBEDO :
                     {
                         DrawToAlbedo();

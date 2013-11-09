@@ -17,6 +17,7 @@ namespace chimera
     class ILogic;
     class IEventManager;
     class IResourceCache;
+    class IGuiFactory;
     class IVRamManager;
     class ITimer;
     class IScreenElement;
@@ -95,7 +96,7 @@ namespace chimera
     typedef WNDPROC CM_WINDOW_CALLBACK;
     typedef HINSTANCE CM_INSTANCE;
     typedef HWND CM_HWND;
-    typedef UINT GameViewId;
+    typedef UINT ViewId;
     typedef util::Vec4 Color;
     typedef ULONG ActorId;
     typedef UINT ComponentId;
@@ -328,7 +329,8 @@ namespace chimera
         eBlend_One = 2,
         eBlend_SrcColor = 3,
         eBlend_InvSrcColor = 4,
-        eBlend_SrcAlpha = 5
+        eBlend_SrcAlpha = 5,
+        eBlend_InvSrcAlpha	= 6
     };
 
     enum BlendOP
@@ -371,7 +373,7 @@ namespace chimera
         eColorWriteGreen    = 2,
         eColorWriteBlue    = 4,
         eColorWriteAlpha    = 8,
-        eColorWriteAll    = eColorWriteRed | eColorWriteGreen | eColorWriteBlue | eColorWriteAlpha 
+        eColorWriteAll    = (eColorWriteRed | eColorWriteGreen | eColorWriteBlue | eColorWriteAlpha)
     };
 
     enum ComparisonFunc
@@ -671,6 +673,30 @@ namespace chimera
         T* fact = FindFactory<T>(facts, type, &size);
         return CopyFactory<T>(fact, size);
     }
+
+    enum Alignment
+    {
+        eGuiAlignRight,
+        eGuiAlignLeft,
+        eGuiAlignCenter
+    };
+
+    enum AppendDirection
+    {
+        eGuiTextAppendUp,
+        eGuiTextAppendDown
+    };
+
+    struct TextLine
+    {
+        UINT width;
+        UINT height;
+        std::string text;
+        TextLine(VOID) : width(0), height(0)
+        {
+
+        }
+    };
 };
 
 namespace tinyxml2
@@ -678,3 +704,4 @@ namespace tinyxml2
     class XMLElement;
     class XMLDocument;
 };
+

@@ -17,7 +17,7 @@ namespace chimera
         }
     };
 
-    class ScreenElement : public IScreenElement
+    class ScreenElement : virtual public IScreenElement
     {
     protected:
         _Percentages m_dimensionPercent;
@@ -36,11 +36,9 @@ namespace chimera
 
         virtual VOID VSetDimension(CONST CMDimension& dim);
 
+        virtual BOOL VIsIn(UINT x, UINT y);
+
         CONST CMDimension& VGetDimension(VOID);
-
-        BOOL VIsEnable(VOID) CONST;
-
-        virtual VOID VSetEnable(BOOL enable);
 
         BOOL VIsActive(VOID) CONST;
 
@@ -71,17 +69,17 @@ namespace chimera
         virtual ~ScreenElement(VOID) { }
     };
 
-    class ScreenElementContainer : public ScreenElement
+    class ScreenElementContainer : public virtual IScreenElementContainer, public ScreenElement
     {
     protected:
         std::map<std::string, IScreenElement*> m_components;
 
     public:
-        VOID AddComponent(LPCSTR name, IScreenElement* cmp);
+        VOID VAddComponent(IScreenElement* cmp);
 
-        IScreenElement* GetComponent(LPCSTR name);
+        IScreenElement* VGetComponent(LPCSTR name);
 
-        virtual VOID VSetEnable(BOOL enable);
+        virtual VOID VSetActive(BOOL active);
 
         virtual VOID VDraw(VOID);
 
@@ -113,27 +111,13 @@ namespace chimera
 
         virtual VOID VDraw(VOID);
 
-        VOID VSetName(LPCSTR name)
-        {
-            ScreenElement::VSetName(name);
-        }
-
-        CONST CMDimension& VGetDimension(VOID)
-        {
-            return ScreenElement::VGetDimension();
-        }
-
         VOID VSetDimension(CONST CMDimension& dim);
-
-        LPCSTR VGetName(VOID) CONST
-        {
-            return ScreenElement::VGetName();
-        }
 
         ~RenderScreen(VOID);
     };
 
-    class RenderTargetScreen : public ScreenElement// : public IRendertargetScreen
+   
+    class RenderTargetScreen : public ScreenElement
     {
     private:
         IRenderTarget* m_pTarget;
@@ -144,7 +128,7 @@ namespace chimera
 
         ~RenderTargetScreen(VOID);
     };
-
+     /*
     class TextureSlotScreen : public RenderScreen
     {
     private:
@@ -173,5 +157,5 @@ namespace chimera
         BOOL VOnRestore(VOID);
 
         ~DefShaderRenderScreenContainer(VOID);
-    };
+    };*/
 }

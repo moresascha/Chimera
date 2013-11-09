@@ -4,7 +4,7 @@
 
 namespace chimera
 {
-    ScreenElement::ScreenElement(VOID) : m_color(Color(1,1,1,1)), m_isActive(TRUE), m_isEnable(TRUE), m_name("unknown")
+    ScreenElement::ScreenElement(VOID) : m_color(Color(0,0,0,1)), m_isActive(FALSE), m_isEnable(TRUE), m_name("unknown")
     {
 
     }
@@ -19,19 +19,14 @@ namespace chimera
         return m_name.c_str();
     }
 
+    BOOL ScreenElement::VIsIn(UINT x, UINT y)
+    {
+        return !(x < VGetPosX() || x > VGetPosX() + VGetWidth() || y < VGetPosY() || y > VGetPosY() + VGetHeight());
+    }
+
     VOID ScreenElement::VSetName(LPCSTR name)
     {
         m_name = name;
-    }
-
-    BOOL ScreenElement::VIsEnable(VOID) CONST
-    {
-        return m_isEnable;
-    }
-
-    VOID ScreenElement::VSetEnable(BOOL enable)
-    {
-        m_isEnable = enable;
     }
 
     BOOL ScreenElement::VIsActive(VOID) CONST
@@ -109,26 +104,18 @@ namespace chimera
         return TRUE;
     }
 
-    VOID ScreenElementContainer::VSetEnable(BOOL enable)
+    VOID ScreenElementContainer::VAddComponent(IScreenElement* cmp)
     {
-        TBD_FOR(m_components)
-        {
-            it->second->VSetEnable(enable);
-        }
-    }
-
-    VOID ScreenElementContainer::AddComponent(LPCSTR name, IScreenElement* cmp)
-    {
-        if(m_components.find(name) != m_components.end())
+        if(m_components.find(cmp->VGetName()) != m_components.end())
         {
             LOG_CRITICAL_ERROR("component with this name already exists!");
             return;
         }
-        m_components[name] = cmp;
+        m_components[cmp->VGetName()] = cmp;
         cmp->VOnRestore();
     }
 
-    IScreenElement* ScreenElementContainer::GetComponent(LPCSTR name)
+    IScreenElement* ScreenElementContainer::VGetComponent(LPCSTR name)
     {
         auto it = m_components.find(name);
         if(it == m_components.end())
@@ -140,6 +127,7 @@ namespace chimera
 
     VOID ScreenElementContainer::VSetBackgroundColor(FLOAT r, FLOAT g, FLOAT b)
     {
+        ScreenElement::VSetBackgroundColor(r, g, b);
         TBD_FOR(m_components)
         {
             it->second->VSetBackgroundColor(r, g, b);
@@ -160,6 +148,7 @@ namespace chimera
     {
         if(VIsActive())
         {
+            ScreenElement::VUpdate(millis);
             TBD_FOR(m_components)
             {
                 if(it->second->VIsActive())
@@ -167,6 +156,15 @@ namespace chimera
                     it->second->VUpdate(millis);
                 }
             }
+        }
+    }
+
+    VOID ScreenElementContainer::VSetActive(BOOL active)
+    {
+        ScreenElement::VSetActive(active);
+        TBD_FOR(m_components)
+        {
+            it->second->VSetActive(active);
         }
     }
 
@@ -180,7 +178,7 @@ namespace chimera
                 {
                     (it->second)->VDraw();
                 }               
-            }            
+            }
         }        
     }
 
@@ -215,23 +213,6 @@ namespace chimera
     VOID RenderScreen::VDraw(VOID)
     {
         m_pSettings->VRender();
-        /*
-        IRenderer* renderer = CmGetApp()->VGetHumanView()->VGetRenderer();
-
-        renderer->VClearAndBindBackBuffer();
-
-        renderer->VSetTexture(chimera::eEffect0, m_pSettings->VGetResult()->VGetTexture());
-
-        assert(((m_dimension.w > 0) && (m_dimension.h > 0)));
-
-        //renderer->VPushRasterState()
-
-        m_pFDrawMethod();
-        //renderer->VDrawScreenQuad(m_dimension.x, m_dimension.y, m_dimension.w, m_dimension.h);
-
-        //renderer->PopRasterizerState();
-
-         renderer->VSetTexture(chimera::eEffect0, NULL);*/
     }
 
     BOOL RenderScreen::VOnRestore(VOID)
@@ -278,7 +259,7 @@ namespace chimera
     {
 
     }
-
+     /*
     //---
     TextureSlotScreen::TextureSlotScreen(UINT target) : RenderScreen(NULL), m_target(target)
     {
@@ -287,7 +268,7 @@ namespace chimera
 
     VOID TextureSlotScreen::VDraw(VOID)
     {
-        /*
+
         m_pSettings->VRender();
 
         chimera::BindBackbuffer();
@@ -299,7 +280,7 @@ namespace chimera
 
         chimera::DrawScreenQuad(m_dimension.x, m_dimension.y, m_dimension.w, m_dimension.h);
 
-        chimera::g_pApp->GetHumanView()->GetRenderer()->SetSampler(chimera::eDiffuseColorSampler, NULL); */
+        chimera::g_pApp->GetHumanView()->GetRenderer()->SetSampler(chimera::eDiffuseColorSampler, NULL);
     }
 
     TextureSlotScreen::~TextureSlotScreen(VOID)
@@ -340,5 +321,5 @@ namespace chimera
     DefShaderRenderScreenContainer::~DefShaderRenderScreenContainer(VOID)
     {
 
-    }
+    }*/
 }

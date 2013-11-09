@@ -181,7 +181,7 @@ PixelOutput GlobalLighting_PS(PixelInput input)
 
     float3 sunposition = normalize(g_CSMlightPos.xyz);
 
-    float3 sunIntensity = 1.5*float3(1.65f,1.65f,1.65f); //todo
+    float3 sunIntensity = float3(1,1,1); //todo
 
     float4 worldDepth = g_worldPosDepth.Sample(g_samplerClamp, input.texCoord);
     float d = worldDepth.w;
@@ -240,7 +240,7 @@ PixelOutput GlobalLighting_PS(PixelInput input)
         float powa = pow(saturate(dot(ray.xyz, sunposition)), 32);
         
         float l = clamp(worldDepth.y * 0.1, 0, 1);
-        op.color = 0.75*diffuse;//lerp(sky, tex, l);
+        op.color = 1.1*diffuse;//lerp(sky, tex, l);
         //op.color += sun * powa;
     }
 
