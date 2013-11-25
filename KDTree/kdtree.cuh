@@ -4,6 +4,7 @@
 #include <cutil_inline.h>
 #include <cutil_math.h>
 
+
 __forceinline __device__ __host__ uint elemsBeforeLevel(byte l)
 {
     return (1 << l) - 1;
@@ -107,11 +108,14 @@ __device__ __host__ void getSplit(T mmax, T mmin, float* split, uint* axis)
     }
 }
 
-class IKDtree
+class IKDTree
 {
 public:
     virtual void Generate(void) = 0;
-    virtual void Init(void* mappedPtr, uint depth) = 0;
-    virtual void SetDepth(uint d);
+    virtual void Init(void* mappedPtr, uint elements) = 0;
+    virtual void SetDepth(uint d) = 0;
+    virtual void Update(void) = 0;
+    virtual uint GetCurrentDepth(void) = 0;
     virtual void GetContentCountStr(std::string& str) = 0;
+    virtual void* GetBuffer(DeviceBufferType id) = 0;
 };

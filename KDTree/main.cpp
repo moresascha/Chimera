@@ -24,11 +24,9 @@
 #include <fstream>
 
 
-extern "C" void generate(nutty::MappedPtr<float>* data, uint n, uint depth, uint maxDepth);
-extern "C" void update();
-extern "C" void setdepth(uint d);
-extern "C" void get_nodes_content_str(std::string& str);
-extern "C" void* getBuffer(uint id);
+IKDTree* g_tree;
+
+extern "C" IKDTree* generate(nutty::MappedPtr<float>* data, uint n, uint depth, uint maxDepth);
 extern "C" void init();
 extern "C" void release();
 
@@ -46,9 +44,9 @@ extern "C" void release();
 
 struct ID3D11Buffer;
 
-UINT elems = 512;
+UINT elems = 64;
 float g_scale = 10;//30;
-uint g_depth = 5;
+uint g_depth = 10;
 uint g_maxDepth = g_depth;
 uint g_parts = 1;
 float g_timeScale = 1e-5f;
@@ -121,13 +119,14 @@ public:
        // AnimateGeo(deltaMillis);
 // 
         m_timer.Start();
-        update();
+        g_tree->Update();
         m_timer.Stop();
 
-        get_nodes_content_str(cc);
+        g_tree->GetContentCountStr(cc);
+
         _ss.str("");
         _ss << "Rendering: " << chimera::CmGetApp()->VGetRenderingTimer()->VGetFPS() << "\n";
-        _ss << "Construction: " << 1000.0f/m_timer.GetMillis() << "\n";
+        _ss << "Construction (" << g_tree->GetCurrentDepth() << "): " << 1000.0f/m_timer.GetMillis() << "\n";
         _ss << cc;
 
         g_textInfo->VClearText();
@@ -170,11 +169,12 @@ public:
     VOID VOnUpdate(ULONG deltaMillis)
     {
         nutty::DevicePtr<float> ptr = mappedPtr->Bind();
-        nutty::DeviceBuffer<float3>* aabbs = (nutty::DeviceBuffer<float3>*)getBuffer(eAxisAlignedBB);
+        nutty::DeviceBuffer<float3>* aabbs = (nutty::DeviceBuffer<float3>*)g_tree->GetBuffer(eAxisAlignedBB);
         k->SetKernelArg(0, *aabbs);
-        k->SetKernelArg(1, ptr);
-        k->SetKernelArg(2, c);
-        k->SetKernelArg(3, g_depth);
+        k->SetKernelArg(1, *((nutty::DeviceBuffer<uint>*)g_tree->GetBuffer(eNodesContentCount)));
+        k->SetKernelArg(2, ptr);
+        k->SetKernelArg(3, c);
+        k->SetKernelArg(4, g_depth);
         k->Call();
         mappedPtr->Unbind();
     }
@@ -213,8 +213,8 @@ BOOL commandIncDecDepth(chimera::ICommand& cmd)
 {
     INT d = cmd.VGetNextInt();
     g_depth += d;
-    g_depth = CLAMP(g_depth, 1, g_maxDepth);
-    setdepth(g_depth);
+    g_tree->SetDepth(g_depth);
+    g_depth = g_tree->GetCurrentDepth();
     return true;
 }
 
@@ -263,16 +263,16 @@ void createWorld(void)
 {
     std::unique_ptr<chimera::ActorDescription> actorDesc = chimera::CmGetApp()->VGetLogic()->VGetActorFactory()->VCreateActorDescription();
     chimera::TransformComponent* tcmp = actorDesc->AddComponent<chimera::TransformComponent>(CM_CMP_TRANSFORM);
-    float meshScale = 0.2f;
+    float meshScale = 0.1f;
     tcmp->GetTransformation()->SetScale(meshScale, meshScale, meshScale);
     chimera::RenderComponent* rcmp = actorDesc->AddComponent<chimera::RenderComponent>(CM_CMP_RENDERING);
     rcmp->m_resource = "box.obj";
     std::shared_ptr<chimera::IVertexBuffer> geo = std::shared_ptr<chimera::IVertexBuffer>(chimera::CmGetApp()->VGetHumanView()->VGetGraphicsFactory()->VCreateVertexBuffer());
 
-    std::shared_ptr<chimera::IMesh> monkey = std::static_pointer_cast<chimera::IMesh>(chimera::CmGetApp()->VGetCache()->VGetHandle(chimera::CMResource("monkey.obj")));
+    std::shared_ptr<chimera::IMesh> monkey = std::static_pointer_cast<chimera::IMesh>(chimera::CmGetApp()->VGetCache()->VGetHandle(chimera::CMResource("bunny.obj")));
     float scale = 10;
     CONST FLOAT* monkeyVertes = monkey->VGetVertices();
-    elems = 32;//monkey->VGetVertexCount();
+    elems = monkey->VGetVertexCount();
     FLOAT* v = new FLOAT[elems * 3];
     for(UINT i = 0; i < elems; ++i)
     {
@@ -314,7 +314,7 @@ void createWorld(void)
     uint leafBBoxCount = (1 << (uint)(g_maxDepth-1));
     nutty::HostBuffer<float3> data(elems);
 
-    generate(mappedPtr, elems, g_depth, g_maxDepth);
+    g_tree = generate(mappedPtr, elems, g_depth, g_maxDepth);
 
     createBBoxGeo(leafBBoxCount);
 

@@ -126,7 +126,7 @@ __device__ uint getNextScanValue(uint* scannedContentCount, uint count, int isri
 
     uint scanVal = scannedContentCount[id];
 
-    scanVal += scanVal * (scanVal > 0);
+    scanVal = 2 * scanVal;//(scanVal > 0) + !(scanVal & 1);
 
     return scanVal + isright;
 }
@@ -137,10 +137,10 @@ extern "C" __global__ void spreadContent(uint* nodesContent, uint* nodesContentC
 {
     uint id = GlobalId;
 
-//     if(id >= count)
-//     {
-//         return;
-//     }
+    if(id >= count)
+    {
+        return;
+    }
 
     DstDesc dd = getDstNode(splitData, scannedContentCount, prefixScan, count, depth);
 
@@ -240,10 +240,7 @@ extern "C" __global__ void splitNodes(AABB* aabb, Split* splits, uint depth)
     
     Split s = splits[me];
 
-    if(s.split < FLT_MAX_DIV2)
-    {
-        splitAABB(&node, s.split, s.axis, &l, &r); 
-    }
+    splitAABB(&node, s.split, s.axis, &l, &r);
 
     aabb[pos + 0] = l;
     aabb[pos + 1] = r;
@@ -256,10 +253,10 @@ extern "C" __global__ void computeSplits(AABB* aabb, uint* nodesContent, uint* n
 {
     uint id = GlobalId;
     
-//     if(id >= count)
-//     {
-//         return;
-//     }
+    if(id >= count)
+    {
+        return;
+    }
 
     uint levelOffset = elemsBeforeLevel(depth); //(1 << depth) - 1;
 
@@ -325,6 +322,7 @@ extern "C" __global__ void animateGeometry1(float* data, float time, float scale
 {
     const uint stride = 3;
     uint id = threadIdx.x + blockDim.x * blockIdx.x;
+
     if(id >= N)
     {
         return;
@@ -371,7 +369,7 @@ __device__ void addLine(vertex* lines, float3 start, float3 end, int index)
     lines[lpt * id + 2*index+1] = v1;
 }
 
-extern "C" __global__ void createBBox(AABB* bbox, vertex* lines, uint N, uint d)
+extern "C" __global__ void createBBox(AABB* bbox, uint* contentCount, vertex* lines, uint N, uint d)
 {
     uint stride = 8;
     uint id = threadIdx.x + blockDim.x * blockIdx.x;
@@ -382,12 +380,13 @@ extern "C" __global__ void createBBox(AABB* bbox, vertex* lines, uint N, uint d)
     }
 
     uint os = (1 << (d-1)) - 1;
+    int cc = (int)contentCount[os + id];
     AABB bb = bbox[os + id];
     float3 m_min = bb.min;
     float3 m_max = bb.max;
 
-    if(!(abs(m_min.x) < FLT_MAX_DIV2 && abs(m_min.y) < FLT_MAX_DIV2 && abs(m_min.z) < FLT_MAX_DIV2 &&
-        abs(m_max.x) < FLT_MAX_DIV2 && abs(m_max.y) < FLT_MAX_DIV2 && abs(m_max.z) < FLT_MAX_DIV2))
+    if(cc <= 0 || (!(abs(m_min.x) < FLT_MAX_DIV2 && abs(m_min.y) < FLT_MAX_DIV2 && abs(m_min.z) < FLT_MAX_DIV2 &&
+        abs(m_max.x) < FLT_MAX_DIV2 && abs(m_max.y) < FLT_MAX_DIV2 && abs(m_max.z) < FLT_MAX_DIV2)))
     {
         m_max = make_float3(0,0,0);
         m_min = make_float3(0,0,0);
