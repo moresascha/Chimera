@@ -176,6 +176,8 @@ namespace chimera
 
         virtual CONST util::AxisAlignedBB& VGetAABB(VOID) CONST = 0;
 
+        virtual VOID VQueryGeometry(IGeometry** geo) = 0;
+
         virtual ~ISceneNode(VOID) {}
     };
 

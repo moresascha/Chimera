@@ -150,6 +150,8 @@ namespace chimera
         std::locale loc;
         CONST std::collate<CHAR>& coll = std::use_facet<std::collate<CHAR>>(loc);
 
+        GeometryTopology currentTopo;
+
         while(pos < size)//sss.good()) 
         {
             //std::getline(sss, line);
@@ -176,7 +178,7 @@ namespace chimera
                     continue;
                 }
                 std::shared_ptr<MaterialSet> materials = std::static_pointer_cast<MaterialSet>(CmGetApp()->VGetCache()->VGetHandle(mesh->VGetMaterials()));
-                mesh->VAddIndexBufferInterval(lastIndexStart, subMeshData.m_trianglesCount * 3, materials->GetMaterialIndex(matName));
+                mesh->VAddIndexBufferInterval(lastIndexStart, subMeshData.m_trianglesCount * 3, materials->GetMaterialIndex(matName), currentTopo);
                 lastIndexStart = subMeshData.m_trianglesCount * 3;
                 matName.clear();
                 ShrdCharPtr mat;
@@ -210,8 +212,9 @@ namespace chimera
                 normal.Set(x.GetFloat(), y.GetFloat(), z.GetFloat());
                 rawData.m_normals.push_back(normal);
             }
-            else if(ShrdPtrStrCmp(flag, "f"))
+            else if(ShrdPtrStrCmp(flag, "f") || ShrdPtrStrCmp(flag, "l"))
             {
+                currentTopo = ShrdPtrStrCmp(flag, "f") ? eTopo_Triangles : eTopo_Lines;
                 UINT triplesCount = 0;
                 CHAR* s = source + ss.m_start;
                 CHAR* e = source + ss.m_end;
@@ -238,7 +241,7 @@ namespace chimera
         //subMeshData.m_faces.resize(fc);
 
         std::shared_ptr<chimera::MaterialSet> materials = std::static_pointer_cast<chimera::MaterialSet>(CmGetApp()->VGetCache()->VGetHandle(mesh->VGetMaterials()));
-        mesh->VAddIndexBufferInterval(lastIndexStart, subMeshData.m_trianglesCount * 3, materials->GetMaterialIndex(matName));
+        mesh->VAddIndexBufferInterval(lastIndexStart, subMeshData.m_trianglesCount * 3, materials->GetMaterialIndex(matName), currentTopo);
 
         std::vector<UINT> lIndices;
         lIndices.reserve(mesh->VGetFaces().size() * 4);
@@ -344,29 +347,41 @@ namespace chimera
             }
 
             /*2,0,1,2,0,3*/
+
             auto i0 = hashToTriple.find(it->m_triples[0].hash);
             auto i1 = hashToTriple.find(it->m_triples[1].hash);
-            auto i2 = hashToTriple.find(it->m_triples[2].hash);
 
             __int64 index0 = i0->second.index;
             __int64 index1 = i1->second.index;
-            __int64 index2 = i2->second.index;
 
-            lIndices.push_back((UINT)index2);
-
-            lIndices.push_back((UINT)index1);
-
-            lIndices.push_back((UINT)index0);
-
-            if(it->m_triples.size() == 4)
+            if(it->m_triples.size() == 2)
             {
-                auto i3 = hashToTriple.find(it->m_triples[3].hash);;
-                __int64 index3 = i3->second.index;
+                lIndices.push_back((UINT)index1);
+
+                lIndices.push_back((UINT)index0);
+            }
+            else
+            {
+                auto i2 = hashToTriple.find(it->m_triples[2].hash);
+
+                __int64 index2 = i2->second.index;
+
                 lIndices.push_back((UINT)index2);
+
+                lIndices.push_back((UINT)index1);
 
                 lIndices.push_back((UINT)index0);
 
-                lIndices.push_back((UINT)index3);
+                if(it->m_triples.size() == 4)
+                {
+                    auto i3 = hashToTriple.find(it->m_triples[3].hash);;
+                    __int64 index3 = i3->second.index;
+                    lIndices.push_back((UINT)index2);
+
+                    lIndices.push_back((UINT)index0);
+
+                    lIndices.push_back((UINT)index3);
+                }
             }
         }
         UINT vertexSize = 8;

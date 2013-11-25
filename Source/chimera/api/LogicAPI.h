@@ -94,6 +94,31 @@ namespace chimera
         virtual ~IProcessManager(VOID) {}
     };
 
+    class ICommand
+    {
+    public:
+        
+        virtual BOOL VInitArgumentTypes(INT args, ...) = 0;
+
+        virtual FLOAT VGetNextFloat(VOID) = 0;
+        
+        virtual INT VGetNextInt(VOID) = 0;
+        
+        virtual CHAR VGetNextChar(VOID) = 0;
+        
+        virtual BOOL VGetNextBool(VOID) = 0;
+        
+        virtual std::string VGetNextCharStr(VOID) = 0;
+        
+        virtual std::string VGetRemainingString(VOID) = 0;
+
+        virtual BOOL VIsError(VOID) = 0;
+        
+        virtual BOOL VIsValid(VOID) = 0;
+
+        virtual ~ICommand(VOID) { }
+    };
+
     class ICommandInterpreter
     {
     public:
@@ -102,6 +127,8 @@ namespace chimera
         virtual std::vector<std::string> VGetCommands(VOID) = 0;
 
         virtual VOID VLoadCommands(LPCSTR file) = 0;
+
+        virtual VOID VRegisterCommand(LPCSTR name, CommandHandler command, LPCSTR usage = NULL) = 0;
 
         virtual ~ICommandInterpreter(VOID) {} 
     };

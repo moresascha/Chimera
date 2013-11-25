@@ -99,7 +99,7 @@ namespace chimera
         }
     }
 
-    VOID SceneGraph::VPushFrustum(chimera::Frustum* f)
+    VOID SceneGraph::VPushFrustum(Frustum* f)
     {
         m_frustumStack.Push(f);
     }

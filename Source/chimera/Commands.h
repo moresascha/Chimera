@@ -5,11 +5,11 @@
 #include "Config.h"
 #include <vector>
 
-#define CHECK_COMMAND(__cmd) if(__cmd.IsError()) { return FALSE; }
+#define CHECK_COMMAND(__cmd) if(__cmd.VIsError()) { return FALSE; }
 
 namespace chimera
 {
-    class Command
+    class Command : public ICommand
     {
     private:
         std::list<INT> m_argList;
@@ -18,16 +18,16 @@ namespace chimera
     public:
         Command(std::list<std::string>& elems);
         
-        BOOL InitArgumentTypes(INT args, ...);
+        BOOL VInitArgumentTypes(INT args, ...);
         
-        CM_DLL_API FLOAT GetNextFloat(VOID);
-        CM_DLL_API INT GetNextInt(VOID);
-        CM_DLL_API CHAR GetNextChar(VOID);
-        CM_DLL_API BOOL GetNextBool(VOID);
-        CM_DLL_API std::string GetNextCharStr(VOID);
-        CM_DLL_API std::string GetRemainingString(VOID);
-        CM_DLL_API BOOL IsError(VOID);
-        CM_DLL_API BOOL IsValid(VOID);
+        FLOAT VGetNextFloat(VOID);
+        INT VGetNextInt(VOID);
+        CHAR VGetNextChar(VOID);
+        BOOL VGetNextBool(VOID);
+        std::string VGetNextCharStr(VOID);
+        std::string VGetRemainingString(VOID);
+        BOOL VIsError(VOID);
+        BOOL VIsValid(VOID);
 
         ~Command(VOID);
     };
@@ -42,7 +42,7 @@ namespace chimera
     public:
         CommandInterpreter(VOID);
 
-        VOID RegisterCommand(LPCSTR name, CommandHandler command, LPCSTR usage = NULL);
+        VOID VRegisterCommand(LPCSTR name, CommandHandler command, LPCSTR usage = NULL);
 
         BOOL VCallCommand(LPCSTR command);
 
@@ -70,21 +70,21 @@ namespace chimera
     //some usefull commands
     namespace commands
     {
-        BOOL Bind(Command& cmd);
+        BOOL Bind(ICommand& cmd);
 
-        BOOL PlaySound(Command& cmd);
+        BOOL PlaySound(ICommand& cmd);
 
-        BOOL ToogleConsole(Command& cmd);
+        BOOL ToogleConsole(ICommand& cmd);
         
-        BOOL SpawnMeshActor(Command& cmd);
+        BOOL SpawnMeshActor(ICommand& cmd);
 
-        BOOL SetTarget(Command& cmd);
+        BOOL SetTarget(ICommand& cmd);
 
         BOOL SetTarget(LPCSTR actor);
 
-        BOOL Print(Command& cmd);
+        BOOL Print(ICommand& cmd);
 
-        BOOL End(Command& cmd);
+        BOOL End(ICommand& cmd);
 
         VOID AddCommandsToInterpreter(CommandInterpreter& interpreter);
     }

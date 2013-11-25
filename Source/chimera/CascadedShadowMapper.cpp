@@ -167,9 +167,38 @@ namespace chimera
         desc.fs.file = desc.vs.file;
         desc.fs.function = "CSM_PS";
 
-        m_pProgram = CmGetApp()->VGetHumanView()->VGetRenderer()->VGetShaderCache()->VCreateShaderProgram("CSM", &desc); //chimera::ShaderProgram::GetProgram("CSM").get();
+        m_pProgram = CmGetApp()->VGetHumanView()->VGetRenderer()->VGetShaderCache()->VCreateShaderProgram("CSM", &desc);
 
-        //m_pProgramInstanced = CmGetApp()->VGetHumanView()->VGetGraphicsFactory()->VCreateShaderFactory()->VCreateShaderProgram();//chimera::ShaderProgram::GetProgram("CSM_Instanced").get();
+        desc.vs.file = L"CascadedShadowMap.hlsl";
+        desc.vs.function = "CSM_Instanced_VS";
+
+        desc.vs.layoutCount = 4;
+
+        desc.vs.inputLayout[0].instanced = FALSE;
+        desc.vs.inputLayout[0].name = "POSITION";
+        desc.vs.inputLayout[0].position = 0;
+        desc.vs.inputLayout[0].slot = 0;
+        desc.vs.inputLayout[0].format = eFormat_R32G32B32_FLOAT;
+
+        desc.vs.inputLayout[1].instanced = FALSE;
+        desc.vs.inputLayout[1].name = "NORMAL";
+        desc.vs.inputLayout[1].position = 1;
+        desc.vs.inputLayout[1].slot = 0;
+        desc.vs.inputLayout[1].format = eFormat_R32G32B32_FLOAT;
+
+        desc.vs.inputLayout[2].instanced = FALSE;
+        desc.vs.inputLayout[2].name = "TEXCOORD";
+        desc.vs.inputLayout[2].position = 2;
+        desc.vs.inputLayout[2].slot = 0;
+        desc.vs.inputLayout[2].format = eFormat_R32G32_FLOAT;
+
+        desc.vs.inputLayout[3].instanced = TRUE;
+        desc.vs.inputLayout[3].name = "TANGENT";
+        desc.vs.inputLayout[3].position = 3;
+        desc.vs.inputLayout[3].slot = 1;
+        desc.vs.inputLayout[3].format = eFormat_R32G32B32_FLOAT;
+
+        m_pProgramInstanced = CmGetApp()->VGetHumanView()->VGetRenderer()->VGetShaderCache()->VCreateShaderProgram("CSM_Instanced", &desc);
 
         util::Vec3 eyePos;
         eyePos = GetActorCompnent<TransformComponent>(m_lightActorCamera, CM_CMP_TRANSFORM)->GetTransformation()->GetTranslation();
@@ -297,6 +326,10 @@ namespace chimera
             graph->VPushFrustum(&ortographicFrusta);
             m_pProgram->VBind();
             graph->VOnRender(CM_RENDERPATH_SHADOWMAP);
+
+            m_pProgramInstanced->VBind();
+            graph->VOnRender(CM_RENDERPATH_SHADOWMAP_INSTANCED);
+
             /*m_pProgramInstanced->VBind();
             graph->VOnRender(eRenderPath_DrawToShadowMapInstanced);*/
             graph->VPopFrustum();

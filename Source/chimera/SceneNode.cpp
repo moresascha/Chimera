@@ -215,6 +215,11 @@ namespace chimera
 
     }
 
+    VOID SceneNode::VQueryGeometry(IGeometry** geo)
+    {
+        *geo = m_pGeometry.get();
+    }
+
     VOID SceneNode::VSetActor(ActorId id)
     {
         if(id != CM_INVALID_ACTOR_ID)

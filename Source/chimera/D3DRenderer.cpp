@@ -36,7 +36,7 @@ namespace chimera
             mat->m_diffuse.Set(1, 1, 1, 1);
             mat->m_specular.Set(0, 0, 0, 0);
             mat->m_texScale = 1;
-            mat->m_textureDiffuse = chimera::CMResource("default.png");
+            mat->m_textureDiffuse = chimera::CMResource("default64x64.png");
             m_pDefaultMaterial = mat;
 
             /*VPushRasterizerState(chimera::g_pRasterizerStateFrontFaceSolid);
@@ -232,8 +232,15 @@ namespace chimera
             chimera::d3d::GetContext()->VSSetConstantBuffers(0, BufferCnt, buffer);
             chimera::d3d::GetContext()->PSSetConstantBuffers(0, BufferCnt, buffer);
             chimera::d3d::GetContext()->GSSetConstantBuffers(0, BufferCnt, buffer);
+
+            m_pDefaultTexture = std::static_pointer_cast<IDeviceTexture>(CmGetApp()->VGetHumanView()->VGetVRamManager()->VGetHandle(m_pDefaultMaterial->VGetTextureDiffuse()));
      
             return TRUE;
+        }
+
+        VOID* Renderer::VGetDevice(VOID)
+        {
+            return (VOID*)chimera::d3d::GetDevice();
         }
 
         VOID Renderer::VResize(UINT w, UINT h)
@@ -241,19 +248,19 @@ namespace chimera
             chimera::d3d::Resize(w, h);
         }
 
-        /*VOID D3DRenderer::SetDefaultTexture(VOID)
+        VOID Renderer::VSetDefaultTexture(VOID)
         {
             if(m_pDefaultTexture->VIsReady())
             {
-                m_pDefaultTexture->Update();
+                m_pDefaultTexture->VUpdate();
             }
             else
             {
-                m_pDefaultTexture = std::static_pointer_cast<chimera::D3DTexture2D>(chimera::g_pApp->GetHumanView()->GetVRamManager()->GetHandle(m_defaultMaterial.m_textureDiffuse));
+                m_pDefaultTexture = std::static_pointer_cast<IDeviceTexture>(CmGetApp()->VGetHumanView()->VGetVRamManager()->VGetHandle(m_pDefaultMaterial->VGetTextureDiffuse()));
             }
-            SetDiffuseSampler(m_pDefaultTexture->GetShaderResourceView());
-            SetNormalMapping(FALSE);
-        } */
+            VSetTexture(eDiffuseColorSampler, m_pDefaultTexture.get());
+            VSetNormalMapping(FALSE);
+        }
 
         /*VOID D3DRenderer::SetDefaultRasterizerState(ID3D11RasterizerState* state)
         {

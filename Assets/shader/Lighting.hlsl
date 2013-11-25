@@ -214,7 +214,7 @@ PixelOutput GlobalLighting_PS(PixelInput input)
         PixelLight pl = GetLightConComponents(normalize(g_eyePos.xyz - worldDepth.xyz), -sunposition, normalize(normal), 8);
 
         op.color = float4(sunIntensity * (diffuseMat.xyz * diffuse.xyz * pl.diffuse + specularMat * pl.specular), 1);
-
+        //op.color += float4(ambientMat.xyz * diffuse.xyz, 0);
         //CSM
         /*if(selfShade) //hack to avoid peter panning, todo
         {

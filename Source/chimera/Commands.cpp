@@ -22,7 +22,7 @@ namespace chimera
         
     }
 
-    BOOL Command::InitArgumentTypes(INT args, ...)
+    BOOL Command::VInitArgumentTypes(INT args, ...)
     {
         va_list pointer;
 
@@ -39,7 +39,7 @@ namespace chimera
         return TRUE;
     }
 
-    std::string Command::GetRemainingString(VOID)
+    std::string Command::VGetRemainingString(VOID)
     {
         std::string s;
         while(!m_values.empty())
@@ -54,7 +54,7 @@ namespace chimera
         return s;
     }
 
-    FLOAT Command::GetNextFloat(VOID)
+    FLOAT Command::VGetNextFloat(VOID)
     {
         CHECK_FOR_ERROR((FLOAT)0.0f);
 
@@ -69,13 +69,13 @@ namespace chimera
         return v;
     }
 
-    BOOL Command::GetNextBool(VOID)
+    BOOL Command::VGetNextBool(VOID)
     {
         m_error = CheckForError(m_values);
-        return GetNextInt() != 0;
+        return VGetNextInt() != 0;
     }
 
-    INT Command::GetNextInt(VOID)
+    INT Command::VGetNextInt(VOID)
     {
         CHECK_FOR_ERROR((INT)0);
 
@@ -90,7 +90,7 @@ namespace chimera
         return v;
     }
 
-    CHAR Command::GetNextChar(VOID)
+    CHAR Command::VGetNextChar(VOID)
     {
         CHECK_FOR_ERROR((CHAR)0);
 
@@ -99,7 +99,7 @@ namespace chimera
         return (CHAR)s.c_str()[0];
     }
 
-    std::string Command::GetNextCharStr(VOID)
+    std::string Command::VGetNextCharStr(VOID)
     {
         CHECK_FOR_ERROR(std::string());
 
@@ -108,14 +108,14 @@ namespace chimera
         return s;
     }
 
-    BOOL Command::IsError(VOID)
+    BOOL Command::VIsError(VOID)
     {
         return m_error;
     }
 
-    BOOL Command::IsValid(VOID)
+    BOOL Command::VIsValid(VOID)
     {
-        return !IsError();
+        return !VIsError();
     }
 
     Command::~Command(VOID)
@@ -128,7 +128,7 @@ namespace chimera
         commands::AddCommandsToInterpreter(*this);
     }
 
-    VOID CommandInterpreter::RegisterCommand(LPCSTR name, CommandHandler command, LPCSTR usage)
+    VOID CommandInterpreter::VRegisterCommand(LPCSTR name, CommandHandler command, LPCSTR usage)
     {
         m_nameToCommandHandler[name] = command;
         if(usage)
@@ -270,9 +270,9 @@ namespace chimera
             return cmd;
         }
 
-        BOOL Bind(Command& cmd)
+        BOOL Bind(ICommand& cmd)
         {
-            std::string keyStr = cmd.GetNextCharStr();
+            std::string keyStr = cmd.VGetNextCharStr();
             CHECK_COMMAND(cmd);
             CHAR key;
             if(keyStr.size() <= 1)
@@ -291,7 +291,7 @@ namespace chimera
                 }
             }
             
-            std::string command = cmd.GetRemainingString();
+            std::string command = cmd.VGetRemainingString();
             CHECK_COMMAND(cmd);
 
             std::vector<std::string> split;
@@ -327,7 +327,7 @@ namespace chimera
             return TRUE;
         }
 
-        BOOL PlaySound(Command& cmd)
+        BOOL PlaySound(ICommand& cmd)
         {
             /*chimera::CMResource r(cmd.GetNextCharStr());
             if(!chimera::g_pApp->GetCache()->HasResource(r))
@@ -340,7 +340,7 @@ namespace chimera
             return TRUE;
         }
 
-        BOOL ToogleConsole(Command& cmd)
+        BOOL ToogleConsole(ICommand& cmd)
         {
             IScreenElement* cons = CmGetApp()->VGetHumanView()->VGetScreenElementByName(VIEW_CONSOLE_NAME);
             if(cons)
@@ -354,7 +354,7 @@ namespace chimera
             return TRUE;
         }
 
-        BOOL Print(Command& cmd)
+        BOOL Print(ICommand& cmd)
         {
             CmGetApp()->VGetHumanView()->VGetScreenElementByName(VIEW_CONSOLE_NAME);
             return TRUE;
@@ -371,26 +371,26 @@ namespace chimera
             return a != NULL;
         }
 
-        BOOL End(Command& cmd)
+        BOOL End(ICommand& cmd)
         {
             CmGetApp()->VStopRunning();
             return TRUE;
         }
 
-        BOOL SetTarget(Command& cmd)
+        BOOL SetTarget(ICommand& cmd)
         {
-            std::string actor = cmd.GetNextCharStr();
+            std::string actor = cmd.VGetNextCharStr();
             return SetTarget(actor.c_str());
         }
 
-        BOOL ReloadLevel(Command& cmd)
+        BOOL ReloadLevel(ICommand& cmd)
         {
             return CmGetApp()->VGetLogic()->VLoadLevel(CmGetApp()->VGetLogic()->VGetlevel());
         }
 
-        BOOL RunScript(Command& cmd)
+        BOOL RunScript(ICommand& cmd)
         {
-            std::string scriptFile = cmd.GetNextCharStr();
+            std::string scriptFile = cmd.VGetNextCharStr();
             CHECK_COMMAND(cmd);
             if(!CmGetApp()->VGetScript())
             {
@@ -400,28 +400,28 @@ namespace chimera
             return TRUE;
         }
 
-        BOOL SetSunPosition(Command& cmd)
+        BOOL SetSunPosition(ICommand& cmd)
         {
-            FLOAT x = cmd.GetNextFloat();
-            FLOAT y = cmd.GetNextFloat();
-            FLOAT z = cmd.GetNextFloat();
+            FLOAT x = cmd.VGetNextFloat();
+            FLOAT y = cmd.VGetNextFloat();
+            FLOAT z = cmd.VGetNextFloat();
             CHECK_COMMAND(cmd);
             //event::IEventPtr event = std::shared_ptr<event::SetSunPositionEvent>();
             QUEUE_EVENT(new SetSunPositionEvent(x, y, z));
             return TRUE;
         }
 
-        BOOL SaveLevel(Command& cmd)
+        BOOL SaveLevel(ICommand& cmd)
         {
-            std::string name = cmd.GetNextCharStr();
+            std::string name = cmd.VGetNextCharStr();
             CHECK_COMMAND(cmd);
             CmGetApp()->VGetLogic()->VGetlevel()->VSave(name.c_str());
             return TRUE;
         }
 
-        BOOL LoadLevel(chimera::Command& cmd)
+        BOOL LoadLevel(ICommand& cmd)
         {
-            std::string name = cmd.GetNextCharStr();
+            std::string name = cmd.VGetNextCharStr();
             CHECK_COMMAND(cmd);
 
             std::string s;
@@ -442,9 +442,9 @@ namespace chimera
             return TRUE;
         }
 
-        BOOL RunProc(chimera::Command& cmd)
+        BOOL RunProc(chimera::ICommand& cmd)
         {
-            std::string cmdStr = cmd.GetRemainingString();
+            std::string cmdStr = cmd.VGetRemainingString();
 
             CHECK_COMMAND(cmd);
 
@@ -488,18 +488,18 @@ namespace chimera
 
         VOID AddCommandsToInterpreter(CommandInterpreter& interpreter)
         {
-            interpreter.RegisterCommand("runproc", RunProc);
-            interpreter.RegisterCommand("bind", commands::Bind, "bind [key] [command]");
-            interpreter.RegisterCommand("playsound", commands::PlaySound, "playsound [valid wavefile]");
-            interpreter.RegisterCommand("console", commands::ToogleConsole);
-            interpreter.RegisterCommand("print", commands::Print, "print [some string]");
-            interpreter.RegisterCommand("target", commands::SetTarget, "target [some actorname]");
-            interpreter.RegisterCommand("reload", commands::ReloadLevel);
-            interpreter.RegisterCommand("runscript", commands::RunScript, "runscript [input file]");
-            interpreter.RegisterCommand("sunpos", commands::SetSunPosition, "sunpos x y z");
-            interpreter.RegisterCommand("savelevel", commands::SaveLevel, "savelevel [levelname]");
-            interpreter.RegisterCommand("loadlevel", commands::LoadLevel, "LoadLevel [levelname]");
-            interpreter.RegisterCommand("exit", commands::End);
+            interpreter.VRegisterCommand("runproc", RunProc);
+            interpreter.VRegisterCommand("bind", commands::Bind, "bind [key] [command]");
+            interpreter.VRegisterCommand("playsound", commands::PlaySound, "playsound [valid wavefile]");
+            interpreter.VRegisterCommand("console", commands::ToogleConsole);
+            interpreter.VRegisterCommand("print", commands::Print, "print [some string]");
+            interpreter.VRegisterCommand("target", commands::SetTarget, "target [some actorname]");
+            interpreter.VRegisterCommand("reload", commands::ReloadLevel);
+            interpreter.VRegisterCommand("runscript", commands::RunScript, "runscript [input file]");
+            interpreter.VRegisterCommand("sunpos", commands::SetSunPosition, "sunpos x y z");
+            interpreter.VRegisterCommand("savelevel", commands::SaveLevel, "savelevel [levelname]");
+            interpreter.VRegisterCommand("loadlevel", commands::LoadLevel, "LoadLevel [levelname]");
+            interpreter.VRegisterCommand("exit", commands::End);
         }
     }
 }

@@ -14,7 +14,7 @@ namespace chimera
         public:
             VOID VDraw(Geometry* geo, CONST UINT& count, CONST UINT& start, CONST UINT& vertexbase)
             {
-                chimera::d3d::GetContext()->DrawIndexedInstanced(count, geo->GetInstanceBuffer()->GetElementCount(), start, vertexbase, 0);
+                chimera::d3d::GetContext()->DrawIndexedInstanced(count, geo->VGetInstanceBuffer()->VGetElementCount(), start, vertexbase, 0);
             }
         };
 
@@ -50,13 +50,13 @@ namespace chimera
             SAFE_DELETE(Geometry::ARRAY_DRAWER);
         }
 
-        Buffer::Buffer(VOID) : m_pBuffer(0), m_created(FALSE), m_elementCount(0), m_stride(1), m_offset(0)
+        Buffer::Buffer(VOID) : m_pBuffer(0), m_created(FALSE), m_elementCount(0)
         {
             ZeroMemory(&m_desc, sizeof(D3D11_BUFFER_DESC));
             ZeroMemory(&m_data, sizeof(D3D11_SUBRESOURCE_DATA));
         }
 
-        VOID Buffer::Create(VOID) 
+        VOID Buffer::VCreate(VOID) 
         {
             if(m_created) return;
             m_created = TRUE;
@@ -72,7 +72,7 @@ namespace chimera
             return &m_mappedData;
         }
 
-        VOID Buffer::VSetData(VOID* v, UINT bytes)
+        VOID Buffer::VSetData(CONST VOID* v, UINT bytes)
         {
             D3D11_MAPPED_SUBRESOURCE* sub = Map();
             memcpy(sub->pData, v, bytes);
@@ -94,6 +94,8 @@ namespace chimera
             SAFE_RELEASE(m_pBuffer);
         }
 
+        IndexBuffer::IndexBuffer(VOID) { }
+
         IndexBuffer::IndexBuffer(CONST UINT* data, UINT size) 
         {
             SetBindflags(D3D11_BIND_INDEX_BUFFER);
@@ -107,96 +109,46 @@ namespace chimera
             m_elementCount = size;
         }
 
-        VOID IndexBuffer::Bind(VOID) 
+        VOID IndexBuffer::VBind(VOID) 
         {
             chimera::d3d::GetContext()->IASetIndexBuffer(m_pBuffer, DXGI_FORMAT_R32_UINT, 0);
         }
 
         IndexBuffer::~IndexBuffer() {}
 
-        VertexBuffer::VertexBuffer(VOID) {}
+        VertexBuffer::VertexBuffer(VOID) : m_stride(1), m_offset(0) { }
 
-        VertexBuffer::VertexBuffer(CONST VOID* data, UINT vertexCount, UINT stride, D3D11_CPU_ACCESS_FLAG cpuAccessFlags)
+        VertexBuffer::VertexBuffer(UINT vertexCount, UINT stride, CONST VOID* data, BOOL cpuAccessFlags)
         {
-            SetData(data, vertexCount, stride, cpuAccessFlags);
+            VInitParamater(vertexCount, stride, data, cpuAccessFlags);
         }
 
-        VOID VertexBuffer::SetData(CONST VOID* data, UINT vertexCount, UINT stride, D3D11_CPU_ACCESS_FLAG cpuAccessFlags /* = */ )
+        VOID VertexBuffer::VInitParamater(UINT vertexCount, UINT stride, CONST VOID* data /* = NULL */, BOOL cpuAccessFlags /* = FALSE */)
         {
             m_offset = 0;
             m_stride = stride; 
             m_elementCount = vertexCount;
-            SetCPUAccess(cpuAccessFlags);
-            if(cpuAccessFlags == D3D11_CPU_ACCESS_WRITE)
+            if(cpuAccessFlags)
             {
+                SetCPUAccess(D3D11_CPU_ACCESS_WRITE);
                 SetUsage(D3D11_USAGE_DYNAMIC);
             }
+
             SetBindflags(D3D11_BIND_VERTEX_BUFFER);
 
             m_desc.ByteWidth = vertexCount * stride;
 
             m_data.pSysMem = data;
             m_data.SysMemPitch = 0;
-            m_data.SysMemSlicePitch = 0;
+            m_data.SysMemSlicePitch = 0;            
         }
 
-        /*
-        VertexBuffer::VertexBuffer(CONST VOID* data, UINT vertexCount, UINT stride) 
-        {
-            SetBindflags(D3D11_BIND_VERTEX_BUFFER);
-
-            m_offset = 0;
-            m_stride = stride;
-
-            m_elementCount = vertexCount;
-
-            this->m_desc.ByteWidth = vertexCount * stride;
-
-            this->m_data.pSysMem = data;
-            this->m_data.SysMemPitch = 0;
-            this->m_data.SysMemSlicePitch = 0;
-        } */
-
-        VOID VertexBuffer::Bind(VOID)
+        VOID VertexBuffer::VBind(VOID)
         {
             chimera::d3d::GetContext()->IASetVertexBuffers(0, 1, &m_pBuffer, &m_stride, &m_offset);
         }
 
         VertexBuffer::~VertexBuffer() {}
-
-        VertexBufferHandle::VertexBufferHandle(VOID) : m_pVertexBuffer(NULL)
-        {
-        }
-
-        UINT VertexBufferHandle::VGetByteCount(VOID) CONST
-        {
-            return m_pVertexBuffer->GetElementCount() * m_pVertexBuffer->GetStride() * sizeof(FLOAT);
-        }
-
-        VOID VertexBufferHandle::SetVertexData(CONST VOID* data, UINT vertexCount, UINT stride, D3D11_CPU_ACCESS_FLAG cpuAccessFlags /* = */ )
-        {
-            if(!m_pVertexBuffer)
-            {
-                m_pVertexBuffer = new chimera::d3d::VertexBuffer();
-            }
-            m_pVertexBuffer->SetData(data, vertexCount, stride, cpuAccessFlags);
-        }
-
-        BOOL VertexBufferHandle::VCreate(VOID)
-        {
-            m_pVertexBuffer->Create();
-            return TRUE;
-        }
-
-        VOID VertexBufferHandle::VDestroy(VOID)
-        {
-            SAFE_DELETE(m_pVertexBuffer);
-        }
-
-        chimera::d3d::VertexBuffer* VertexBufferHandle::GetBuffer(VOID) CONST
-        {
-            return m_pVertexBuffer;
-        }
 
         Geometry::Geometry(BOOL ownsInstanceBuffer /* = false */) 
             : m_pVertexBuffer(NULL), m_pIndexBuffer(NULL), m_ownsInstanceBuffer(ownsInstanceBuffer), m_pInstanceBuffer(NULL), m_elementCount(0), m_initialized(FALSE)
@@ -211,7 +163,7 @@ namespace chimera
 
         VOID Geometry::VSetVertexBuffer(CONST FLOAT* vertices, UINT count, UINT stride, BOOL cpuWrite) 
         {
-            m_pVertexBuffer = new chimera::d3d::VertexBuffer(vertices, count, stride, cpuWrite ? D3D11_CPU_ACCESS_WRITE : (D3D11_CPU_ACCESS_FLAG)0);
+            m_pVertexBuffer = new chimera::d3d::VertexBuffer(count, stride, vertices, cpuWrite);
         }
 
         VOID Geometry::VSetTopology(GeometryTopology primType)
@@ -240,21 +192,16 @@ namespace chimera
             UINT instancedBytes = 0;
             if(m_pIndexBuffer)
             {
-                indexBytes = sizeof(UINT) * m_pIndexBuffer->GetElementCount();
+                indexBytes = sizeof(UINT) * m_pIndexBuffer->VGetElementCount();
             }
             if(m_pInstanceBuffer)
             {
-                instancedBytes = m_pInstanceBuffer->GetElementCount() * m_pInstanceBuffer->GetStride() * sizeof(FLOAT);
+                instancedBytes = m_pInstanceBuffer->VGetElementCount() * m_pInstanceBuffer->VGetStride() * sizeof(FLOAT);
             }
-            return m_pVertexBuffer->GetElementCount() * m_pVertexBuffer->GetStride() * sizeof(FLOAT) + instancedBytes + indexBytes;
+            return m_pVertexBuffer->VGetElementCount() * m_pVertexBuffer->VGetStride() * sizeof(FLOAT) + instancedBytes + indexBytes;
         }
 
-        VertexBuffer* Geometry::GetVertexBuffer(VOID)
-        {
-            return m_pVertexBuffer;
-        }
-
-        IDeviceBuffer* Geometry::VGetVertexBuffer(VOID)
+        IVertexBuffer* Geometry::VGetVertexBuffer(VOID)
         {
             return m_pVertexBuffer;
         }
@@ -263,15 +210,15 @@ namespace chimera
         {
            // if(VIsReady()) return TRUE; //TODO needed?
 
-            m_pVertexBuffer->Create();
+            m_pVertexBuffer->VCreate();
         
-            m_elementCount = m_pVertexBuffer->GetElementCount();
+            m_elementCount = m_pVertexBuffer->VGetElementCount();
 
             if(m_pIndexBuffer)
             {
                 m_pDrawer = DEFAULT_DRAWER;
-                m_pIndexBuffer->Create();
-                m_elementCount = m_pIndexBuffer->GetElementCount();
+                m_pIndexBuffer->VCreate();
+                m_elementCount = m_pIndexBuffer->VGetElementCount();
             }
             else
             {
@@ -280,7 +227,7 @@ namespace chimera
 
             if(m_pInstanceBuffer)
             {
-                m_pInstanceBuffer->Create();
+                m_pInstanceBuffer->VCreate();
                 m_pDrawer = INSTANCED_DRAWER;
             }
 
@@ -290,28 +237,11 @@ namespace chimera
         VOID Geometry::VDraw(VOID)
         {
             m_pDrawer->VDraw(this, m_elementCount, 0, 0);
-            /*if(m_pInstanceBuffer)
-            {
-                d3d::GetContext()->DrawIndexedInstanced(this->m_pIndexBuffer->GetElementCount(), this->m_pInstanceBuffer->GetElementCount(), 0, 0, 0);
-            }
-            else
-            {
-                d3d::GetContext()->DrawIndexed(this->m_pIndexBuffer->GetElementCount(), 0, 0);
-            } */
         }
 
         VOID Geometry::VDraw(UINT start, UINT count)
         {
             m_pDrawer->VDraw(this, count, start, 0);
-            /*if(m_pInstanceBuffer)
-            {
-
-                d3d::GetContext()->DrawIndexedInstanced(count, this->m_pInstanceBuffer->GetElementCount(), start, 0, 0);
-            }
-            else
-            {
-                d3d::GetContext()->DrawIndexed(count, start, 0);
-            } */
         }
 
         VOID Geometry::VBind(VOID)
@@ -320,52 +250,52 @@ namespace chimera
             {
                 if(m_pIndexBuffer)
                 {
-                    this->m_pIndexBuffer->Bind();
+                    m_pIndexBuffer->VBind();
                 }
 
                 if(m_pInstanceBuffer)
                 {
                     ID3D11Buffer* buffer[2];
-                    buffer[0] = m_pVertexBuffer->GetBuffer();
-                    buffer[1] = m_pInstanceBuffer->GetBuffer();
+                    buffer[0] = (ID3D11Buffer*)m_pVertexBuffer->VGetDevicePtr();
+                    buffer[1] = (ID3D11Buffer*)m_pInstanceBuffer->VGetDevicePtr();
 
                     UINT strides[2];
-                    strides[0] = m_pVertexBuffer->GetStride();
-                    strides[1] = m_pInstanceBuffer->GetStride();
+                    strides[0] = m_pVertexBuffer->VGetStride();
+                    strides[1] = m_pInstanceBuffer->VGetStride();
 
                     UINT offsets[2];
-                    offsets[0] = m_pVertexBuffer->GetOffset();
-                    offsets[1] = m_pInstanceBuffer->GetOffset();
+                    offsets[0] = m_pVertexBuffer->VGetOffset();
+                    offsets[1] = m_pInstanceBuffer->VGetOffset();
 
                     chimera::d3d::GetContext()->IASetVertexBuffers(0, 2, buffer, strides, offsets);
                 }
                 else
                 {
-                    this->m_pVertexBuffer->Bind();
+                    m_pVertexBuffer->VBind();
                 }
 
                 m_psCurrentBound = this;
-
+                
                 chimera::d3d::GetContext()->IASetPrimitiveTopology(m_primType);
             }
         }
 
         VOID Geometry::VDestroy(VOID)
         {
-            SAFE_DELETE(this->m_pIndexBuffer);
-            SAFE_DELETE(this->m_pVertexBuffer);
+            SAFE_DELETE(m_pIndexBuffer);
+            SAFE_DELETE(m_pVertexBuffer);
             if(m_ownsInstanceBuffer)
             {
-                SAFE_DELETE(this->m_pInstanceBuffer);
+                SAFE_DELETE(m_pInstanceBuffer);
             }
         }
 
-        VertexBuffer* Geometry::GetInstanceBuffer(VOID)
+        IVertexBuffer* Geometry::VGetInstanceBuffer(VOID)
         {
             return m_pInstanceBuffer;
         }
 
-        IndexBuffer* Geometry::GetIndexBuffer(VOID)
+        IDeviceBuffer* Geometry::VGetIndexBuffer(VOID)
         {
             return m_pIndexBuffer;
         }
@@ -375,19 +305,19 @@ namespace chimera
             m_ownsInstanceBuffer = owns;
         }
 
-        VOID Geometry::VAddInstanceBuffer(FLOAT* data, UINT count, UINT stride)
-        {
-            if(!m_ownsInstanceBuffer)
-            {
-                LOG_CRITICAL_ERROR("Geometry can't own an instance buffer!");
-            }
-            m_pInstanceBuffer = new chimera::d3d::VertexBuffer(data, count, stride);
-            m_pDrawer = INSTANCED_DRAWER;
-        }
+//         VOID Geometry::VAddInstanceBuffer(FLOAT* data, UINT count, UINT stride)
+//         {
+//             if(!m_ownsInstanceBuffer)
+//             {
+//                 LOG_CRITICAL_ERROR("Geometry can't own an instance buffer!");
+//             }
+//             m_pInstanceBuffer = new chimera::d3d::VertexBuffer(data, count, stride);
+//             m_pDrawer = INSTANCED_DRAWER;
+//         }
 
-        VOID Geometry::SetInstanceBuffer(chimera::d3d::VertexBuffer* buffer)
+        VOID Geometry::VSetInstanceBuffer(IVertexBuffer* buffer)
         {
-            this->m_pInstanceBuffer = buffer;
+            m_pInstanceBuffer = buffer;
             if(m_psCurrentBound == this)
             {
                 m_psCurrentBound = NULL;

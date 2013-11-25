@@ -17,7 +17,6 @@ namespace chimera
 {
     namespace d3d
     {
-
         LPCSTR GetErrorAsString(HRESULT error)
         {
             switch(error)
@@ -381,7 +380,7 @@ namespace chimera
             };
 
 #ifdef _DEBUG
-           //flags |= D3D11_CREATE_DEVICE_DEBUG;
+          // flags |= D3D11_CREATE_DEVICE_DEBUG;
 #endif
 
             D3D_SAVE_CALL(D3D11CreateDeviceAndSwapChain(NULL,

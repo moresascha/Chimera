@@ -14,30 +14,39 @@ namespace chimera
     ISceneNode* CreateRenderNode(IHumanView* gw, IActor* actor)
     {
         RenderComponent* comp = GetActorCompnent<RenderComponent>(actor, CM_CMP_RENDERING);
-
+        ISceneNode* mn;
         if(comp->m_type == std::string("skydome"))
         {            
             return new SkyDomeNode(actor->GetId(), comp->m_resource);
         }
-        else 
+        else if(comp->m_geo)
+        {
+            mn = new GeometryNode(actor->GetId(), std::move(comp->m_geo));
+        }
+        else if(comp->m_vmemInstances)
+        {
+            mn = new InstancedMeshNode(actor->GetId(), comp->m_vmemInstances, comp->m_resource);
+        }
+        else
         {
             if(comp->m_resource == CMResource())
             {
                 LOG_CRITICAL_ERROR("no meshfile specified!");
             }
-			MeshNode* mn = new MeshNode(actor->GetId(), comp->m_resource);
-			if(comp->m_drawType == "wire")
-			{
-				RenderPath rp = mn->VGetRenderPaths();
-				rp ^= CM_RENDERPATH_ALBEDO;
-                rp ^= CM_RENDERPATH_SHADOWMAP;
-				rp = rp | CM_RENDERPATH_ALBEDO_WIRE;
-				mn->VSetRenderPaths(rp);
-			}
-            return mn;
+			mn = new MeshNode(actor->GetId(), comp->m_resource);
         }
-        LOG_CRITICAL_ERROR("wait what?!");
-        return NULL;
+
+        if(comp->m_drawType == "wire")
+        {
+            RenderPath rp = mn->VGetRenderPaths();
+            rp ^= CM_RENDERPATH_ALBEDO;
+            rp ^= CM_RENDERPATH_SHADOWMAP;
+            rp |= CM_RENDERPATH_ALBEDO_WIRE;
+            mn->VSetRenderPaths(rp);
+        }
+
+        return mn;
+
     }
 
     ISceneNode* CreateInstancedMeshNode(IHumanView* gw, IActor* actor)

@@ -6,7 +6,7 @@ Ks 0.100000 0.100000 0.100000
 Ni 1.000000
 d 1.000000
 illum 0
-map_Kd default.png
+map_Kd default64x64.png
 
 
 

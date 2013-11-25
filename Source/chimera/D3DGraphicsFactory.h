@@ -20,6 +20,10 @@ namespace chimera
             std::unique_ptr<IShaderFactory> VCreateShaderFactory(VOID);
 
             std::unique_ptr<IConstShaderBuffer> VCreateConstShaderBuffer(VOID);
+            
+            std::unique_ptr<IVertexBuffer> VCreateVertexBuffer(VOID);
+
+            std::unique_ptr<IDeviceBuffer> VCreateIndexBuffer(VOID);
 
             std::unique_ptr<IDeviceTexture> VCreateTexture(CONST CMTextureDescription* desc);
         };

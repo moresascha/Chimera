@@ -94,7 +94,7 @@
     </ClCompile>
     <Link>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalLibraryDirectories>../Lib;../Bin/x64$(Configuration)</AdditionalLibraryDirectories>
+      <AdditionalLibraryDirectories>../Lib;../Bin/x64$(Configuration);../../Nutty/lib</AdditionalLibraryDirectories>
       <SubSystem>Windows</SubSystem>
       <IgnoreSpecificDefaultLibraries>LIBCMTD;LIBCMT;libcpmt;%(IgnoreSpecificDefaultLibraries)</IgnoreSpecificDefaultLibraries>
       <AdditionalDependencies>%(AdditionalDependencies)</AdditionalDependencies>
@@ -168,6 +168,9 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="kdtree.cuh" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="WaitForActorCreated.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

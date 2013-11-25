@@ -44,18 +44,19 @@ namespace chimera
         geo->VBind();
         for(auto it = mesh->VGetIndexBufferIntervals().begin(); it != mesh->VGetIndexBufferIntervals().end(); ++it)
         {
+            geo->VSetTopology(it->topo);
             geo->VDraw(it->start, it->count);
         } 
     }
 
-    MeshNode::MeshNode(ActorId actorid, CMResource ressource) : SceneNode(actorid), m_ressource(ressource)
+    MeshNode::MeshNode(ActorId actorid, CMResource ressource) : SceneNode(actorid), m_ressource(ressource), m_longestScale(1)
     {
         VSetRenderPaths(CM_RENDERPATH_ALBEDO | CM_RENDERPATH_SHADOWMAP);
     }
 
     VOID MeshNode::VOnRestore(ISceneGraph* graph)
     {
-        m_geo = std::static_pointer_cast<IGeometry>(CmGetApp()->VGetHumanView()->VGetVRamManager()->VGetHandle(m_ressource));
+        m_pGeometry = std::static_pointer_cast<IGeometry>(CmGetApp()->VGetHumanView()->VGetVRamManager()->VGetHandle(m_ressource));
         m_mesh = std::static_pointer_cast<IMesh>(CmGetApp()->VGetCache()->VGetHandle(m_ressource));
         m_materials = std::static_pointer_cast<MaterialSet>(CmGetApp()->VGetCache()->VGetHandle(m_mesh->VGetMaterials()));
         m_diffuseTexturesCount = 0;
@@ -80,23 +81,19 @@ namespace chimera
 
     VOID MeshNode::VOnActorMoved(VOID)
     {
-        //if(this->m_transformation)
-        {
-            m_transformedBBPoint = util::Mat4::Transform(*VGetTransformation(), m_mesh->VGetAABB().GetMiddle());
-        }
+        m_transformedBBPoint = util::Mat4::Transform(*VGetTransformation(), m_mesh->VGetAABB().GetMiddle());
+        m_longestScale = abs(max(max(VGetTransformation()->GetScale().x, VGetTransformation()->GetScale().y), VGetTransformation()->GetScale().z));
     }
 
     BOOL MeshNode::VIsVisible(ISceneGraph* graph)
     {
-        return TRUE;
-        if(m_geo->VIsReady())
+        if(m_pGeometry->VIsReady())
         {
-            m_geo->VUpdate();
+            m_pGeometry->VUpdate();
             if(m_mesh->VIsReady())
             {
                 util::AxisAlignedBB& aabb = m_mesh->VGetAABB();
-                FLOAT scale = VGetTransformation()->GetScale().x;
-                BOOL in = graph->VGetFrustum()->IsInside(m_transformedBBPoint, scale * aabb.GetRadius());
+                BOOL in = graph->VGetFrustum()->IsInside(m_transformedBBPoint, m_longestScale * aabb.GetRadius());
                 return in;
             }
             else
@@ -106,7 +103,7 @@ namespace chimera
         }
         else
         {
-            m_geo = std::static_pointer_cast<IGeometry>(CmGetApp()->VGetHumanView()->VGetVRamManager()->VGetHandle(m_ressource));
+            m_pGeometry = std::static_pointer_cast<IGeometry>(CmGetApp()->VGetHumanView()->VGetVRamManager()->VGetHandle(m_ressource));
         }
         return TRUE;
     }
@@ -115,21 +112,21 @@ namespace chimera
     {
         //DEBUG_OUT("waiting in scene node for" + m_ressource.m_name);
         //DEBUG_OUT("done");
-        if(m_geo->VIsReady())
+        if(m_pGeometry->VIsReady())
         {
-            m_geo->VUpdate();
+            m_pGeometry->VUpdate();
             if(m_mesh->VIsReady() && m_materials->VIsReady())
             {
                 switch(path)
                 {
-                case CM_RENDERPATH_SHADOWMAP: 
+                case CM_RENDERPATH_SHADOWMAP : 
                     {
-                        DrawToShadowMap(m_geo, m_mesh, VGetTransformation());
+                        DrawToShadowMap(m_pGeometry, m_mesh, VGetTransformation());
                         /*app::g_pApp->GetHumanView()->GetRenderer()->VPushWorldTransform(*m_transformation->GetTransformation());
-                        m_geo->Bind();
+                        m_pGeometry->Bind();
                         for(auto it = m_mesh->GetIndexBufferIntervals().begin(); it != m_mesh->GetIndexBufferIntervals().end(); ++it)
                         {
-                            m_geo->Draw(it->start, it->count);
+                            m_pGeometry->Draw(it->start, it->count);
                         } */
                     } break;
                 case CM_RENDERPATH_ALBEDO_WIRE :
@@ -144,7 +141,7 @@ namespace chimera
 
                 case eRenderPath_DrawPicking :
                     {
-                        DrawPicking(m_actor, GetTransformation(), m_mesh, m_geo);
+                        DrawPicking(m_actor, GetTransformation(), m_mesh, m_pGeometry);
                     } break;
 
                 case eRenderPath_DrawDebugInfo : 
@@ -160,14 +157,14 @@ namespace chimera
         }
         else
         {
-            m_geo = std::static_pointer_cast<IGeometry>(CmGetApp()->VGetHumanView()->VGetVRamManager()->VGetHandle(m_ressource));
+            m_pGeometry = std::static_pointer_cast<IGeometry>(CmGetApp()->VGetHumanView()->VGetVRamManager()->VGetHandle(m_ressource));
         }
     }
 
     VOID MeshNode::DrawToAlbedo(VOID)
     {
         CmGetApp()->VGetHumanView()->VGetRenderer()->VPushWorldTransform(*VGetTransformation());
-        m_geo->VBind();
+        m_pGeometry->VBind();
         //CmGetApp()->VGetHumanView()->VGetRenderer()->VSetActorId(this->m_actor->GetId());
 
         UINT texPos = 0;
@@ -207,7 +204,8 @@ namespace chimera
                     CmGetApp()->VGetHumanView()->VGetRenderer()->VSetDefaultMaterial();
                 }
                 CmGetApp()->VGetHumanView()->VGetRenderer()->VPushMaterial(*mat);
-                m_geo->VDraw(it->start, it->count);
+                m_pGeometry->VSetTopology(it->topo);
+                m_pGeometry->VDraw(it->start, it->count);
             }
             else
             {

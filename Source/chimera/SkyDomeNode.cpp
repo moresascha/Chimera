@@ -58,7 +58,7 @@ namespace chimera
         return m_sSkyDome;
     }
 
-    SkyDomeNode::SkyDomeNode(ActorId id, chimera::CMResource res) : SceneNode(id), m_TextureRes(res), m_pSkyGeo(NULL)
+    SkyDomeNode::SkyDomeNode(ActorId id, chimera::CMResource res) : SceneNode(id), m_TextureRes(res)
     {
         VSetRenderPaths(CM_RENDERPATH_SKY);
     }
@@ -73,9 +73,9 @@ namespace chimera
         GetActorCompnent<TransformComponent>(m_actor, CM_CMP_TRANSFORM)->GetTransformation()->SetScale(400);
         m_textureHandle = std::static_pointer_cast<IDeviceTexture>(CmGetApp()->VGetHumanView()->VGetVRamManager()->VGetHandle(m_TextureRes));
 
-        if(!m_pSkyGeo)
+        if(!m_pGeometry)
         {
-            m_pSkyGeo = CreateSkyDome();
+            m_pGeometry = std::shared_ptr<IGeometry>(CreateSkyDome());
         }
     }
 
@@ -96,8 +96,8 @@ namespace chimera
                     renderer->VPushWorldTransform(*VGetTransformation());
                     renderer->VSetTexture(eDiffuseColorSampler, m_textureHandle.get());
                     //chimera::GetContext()->OMSetDepthStencilState(chimera::m_pDepthCmpStencilState, 0);
-                    m_pSkyGeo->VBind();
-                    m_pSkyGeo->VDraw();
+                    m_pGeometry->VBind();
+                    m_pGeometry->VDraw();
                     
                 }
                 else
@@ -111,8 +111,7 @@ namespace chimera
 
     SkyDomeNode::~SkyDomeNode(VOID)
     {
-        m_pSkyGeo->VDestroy();
-        SAFE_DELETE(m_pSkyGeo);
+        m_pGeometry->VDestroy();
     }
 }
 

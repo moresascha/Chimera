@@ -76,6 +76,10 @@ namespace chimera
 
         std::shared_ptr<chimera::ISceneNode> m_sceneNode;
 
+        std::unique_ptr<IGeometry> m_geo;
+
+        std::shared_ptr<IVertexBuffer> m_vmemInstances;
+
         RenderComponent(VOID);
 
         CMResource m_resource;

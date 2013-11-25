@@ -17,7 +17,6 @@
 #define ADD_SHADER_WATCHER
 #endif
 
-
 namespace chimera
 {
     namespace d3d
@@ -196,6 +195,10 @@ namespace chimera
         std::unique_ptr<IShaderFactory> D3DGraphicsFactory::VCreateShaderFactory(VOID) { return std::unique_ptr<IShaderFactory>(new D3DShaderFactory()); }
 
         std::unique_ptr<IConstShaderBuffer> D3DGraphicsFactory::VCreateConstShaderBuffer(VOID) { return std::unique_ptr<IConstShaderBuffer>(new ConstBuffer()); }
+
+        std::unique_ptr<IVertexBuffer> D3DGraphicsFactory::VCreateVertexBuffer(VOID) { return std::unique_ptr<IVertexBuffer>(new VertexBuffer()); }
+        
+        std::unique_ptr<IDeviceBuffer> D3DGraphicsFactory::VCreateIndexBuffer(VOID) { return std::unique_ptr<IDeviceBuffer>(new IndexBuffer()); }
 
         std::unique_ptr<IDeviceTexture> D3DGraphicsFactory::VCreateTexture(CONST CMTextureDescription* desc)
         {

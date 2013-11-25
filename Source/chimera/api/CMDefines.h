@@ -26,6 +26,12 @@
 #define DEFERRED_SHADER_FILE L"DefShading.hlsl"
 #define DEFERRED_SHADER_VS_FUNCTION "DefShading_VS"
 #define DEFERRED_SHADER_FS_FUNCTION "DefShading_PS"
+#define DEFERRED_INSTANCED_SHADER_VS_FUNCTION "DefShadingInstanced_VS"
+
+#define DEFERRED_WIREFRAME_SHADER_NAME "DefWireFrameShader"
+#define DEFERRED_WIREFRAME_SHADER_FILE L"DefShading.hlsl"
+#define DEFERRED_WIREFRAME_SHADER_VS_FUNCTION "DefShading_VS"
+#define DEFERRED_WIREFRAME_SHADER_FS_FUNCTION "DefShadingWire_PS"
 
 #define GLOBAL_LIGHTING_SHADER_NAME "GlobalLighting"
 #define GLOBAL_LIGHTING_SHADER_FILE L"Lighting.hlsl"
@@ -125,7 +131,8 @@
 #define CM_RENDERPATH_EDITOR 0x40
 #define CM_RENDERPATH_SKY 0x80
 #define CM_RENDERPATH_ALBEDO_WIRE 0x100
-#define CM_RENDERPATH_CNT 9
+#define CM_RENDERPATH_SHADOWMAP_INSTANCED 0x200
+#define CM_RENDERPATH_CNT 10
 
 /*RenderPath_DrawToAlbedo = 1,
     eRenderPath_DrawToShadowMap = 1 << 1,
@@ -145,19 +152,19 @@
 #define ADD_EVENT_LISTENER(_this, function, type) \
     { \
     chimera::EventListener listener = fastdelegate::MakeDelegate(_this, function); \
-    chimera::CmGetApp()->VGetEventManager()->VAddEventListener(listener, (EventType)type); \
+    chimera::CmGetApp()->VGetEventManager()->VAddEventListener(listener, (chimera::EventType)type); \
     }
 
 #define ADD_EVENT_LISTENER_STATIC(function, type) \
     { \
     chimera::EventListener listener = function; \
-    chimera::CmGetApp()->VGetEventManager()->VAddEventListener(listener, (EventType)type); \
+    chimera::CmGetApp()->VGetEventManager()->VAddEventListener(listener, (chimera::EventType)type); \
     }
 
 #define REMOVE_EVENT_LISTENER(_this, function, type) \
     { \
     chimera::EventListener listener = fastdelegate::MakeDelegate(_this, function); \
-    chimera::CmGetApp()->VGetEventManager()->VRemoveEventListener(listener, (EventType)type); \
+    chimera::CmGetApp()->VGetEventManager()->VRemoveEventListener(listener, (chimera::EventType)type); \
     }
 
 #define QUEUE_EVENT(_eventPtr) \

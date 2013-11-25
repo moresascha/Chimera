@@ -1,12 +1,43 @@
 #pragma once
+#include "../../Nutty/Nutty/Nutty.h"
 #include <device_launch_parameters.h>
 #include <cutil_inline.h>
 #include <cutil_math.h>
 
-struct SplitData
+__forceinline __device__ __host__ uint elemsBeforeLevel(byte l)
+{
+    return (1 << l) - 1;
+}
+
+__forceinline __device__ __host__ uint elemsOnLevel(byte l)
+{
+    return (1 << l);
+}
+
+
+__forceinline __device__ __host__ uint elemsBeforeNextLevel(byte l)
+{
+    return elemsBeforeLevel(l + 1);
+}
+
+enum DeviceBufferType
+{
+    eNodesContent,
+    eNodesContentCount,
+    eSplits,
+    eSplitData,
+    ePosSplits,
+    eAxisAlignedBB,
+    eBufferCount
+};
+
+struct Split
 {
     int axis;
     float split;
+    float sah;
+    uint below;
+    uint above;
 };
 
 struct AABB
@@ -75,3 +106,12 @@ __device__ __host__ void getSplit(T mmax, T mmin, float* split, uint* axis)
         } break;
     }
 }
+
+class IKDtree
+{
+public:
+    virtual void Generate(void) = 0;
+    virtual void Init(void* mappedPtr, uint depth) = 0;
+    virtual void SetDepth(uint d);
+    virtual void GetContentCountStr(std::string& str) = 0;
+};

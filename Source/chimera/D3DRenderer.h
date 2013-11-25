@@ -153,6 +153,8 @@ namespace chimera
 
             BOOL VOnRestore(VOID);
 
+            VOID* VGetDevice(VOID);
+
             VOID VPreRender(VOID);
 
             VOID VPresent(VOID);
@@ -202,6 +204,8 @@ namespace chimera
             VOID VPopMaterial(VOID);
 
             VOID VSetDefaultMaterial(VOID);
+
+            VOID VSetDefaultTexture(VOID);
 
             VOID VClearAndBindBackBuffer(VOID);
 

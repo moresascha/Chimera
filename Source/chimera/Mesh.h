@@ -28,9 +28,10 @@ namespace chimera
             return m_materials;
         }
 
-        VOID VAddIndexBufferInterval(UINT start, UINT count, UINT material)
+        VOID VAddIndexBufferInterval(UINT start, UINT count, UINT material, GeometryTopology topo)
         {
             IndexBufferInterval bi;
+            bi.topo = topo;
             bi.start = start;
             bi.count = count;
             bi.material = material;
@@ -51,11 +52,11 @@ namespace chimera
 
         CONST UINT* VGetIndices(VOID) CONST { return m_indices; }
 
-        VOID VSetIndices(UINT* indices, UINT count) { this->m_indices = indices; m_indexCount = count; }
+        VOID VSetIndices(UINT* indices, UINT count) { m_indices = indices; m_indexCount = count; }
 
         VOID VSetVertices(FLOAT* vertices, UINT count, UINT stride) { this->m_vertices = vertices; m_vertexCount = count; m_vertexStride = stride; }
 
-        std::vector<chimera::IndexBufferInterval>& VGetIndexBufferIntervals(VOID) { return m_indexIntervals; }
+        std::vector<IndexBufferInterval>& VGetIndexBufferIntervals(VOID) { return m_indexIntervals; }
 
         ~Mesh(VOID) 
         {

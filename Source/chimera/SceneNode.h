@@ -35,6 +35,7 @@ namespace chimera
         util::AxisAlignedBB m_aabb;
         ISceneNode* m_parent;
         RenderPath m_paths;
+        std::shared_ptr<IGeometry> m_pGeometry;
 
         BOOL HasParent(VOID);
 
@@ -42,6 +43,8 @@ namespace chimera
         SceneNode(ActorId ActorId);
 
         SceneNode(VOID);
+
+        VOID VQueryGeometry(IGeometry** geo);
 
         util::Mat4* VGetTransformation(VOID);
 
@@ -106,8 +109,8 @@ namespace chimera
     {
     protected:
         util::Vec3 m_transformedBBPoint;
+        FLOAT m_longestScale;
         chimera::CMResource m_ressource;
-        std::shared_ptr<IGeometry> m_geo;
         std::shared_ptr<IMesh> m_mesh;
         std::shared_ptr<MaterialSet> m_materials;
         std::shared_ptr<IDeviceTexture> m_diffuseTextures[32];
@@ -134,9 +137,8 @@ namespace chimera
     private:
         CMResource m_TextureRes;
         std::shared_ptr<IDeviceTexture> m_textureHandle;
-        IGeometry* m_pSkyGeo;
-    public:
 
+    public:
         SkyDomeNode(ActorId id, CMResource texture);
 
         VOID _VRender(ISceneGraph* graph, RenderPath& path);
@@ -148,28 +150,26 @@ namespace chimera
         ~SkyDomeNode(VOID);
     };
 
-    /*
     class InstancedMeshNode : public MeshNode
     {
     private:
-        std::shared_ptr<chimera::VertexBufferHandle> m_pInstanceHandle;
+        std::shared_ptr<IVertexBuffer> m_pInstances;
 
     public:
-        InstancedMeshNode(ActorId actorid, chimera::CMResource ressource);
+        InstancedMeshNode(ActorId actorid, std::shared_ptr<IVertexBuffer> instances, CMResource ressource);
 
-        BOOL VIsVisible(SceneGraph* graph);
+        BOOL VIsVisible(ISceneGraph* graph);
 
-        VOID _VRender(chimera::SceneGraph* graph, chimera::RenderPath& path);
+        VOID _VRender(ISceneGraph* graph, RenderPath& path);
 
         VOID VOnActorMoved(VOID);
 
-        VOID VOnRestore(chimera::SceneGraph* graph);
-
-        UINT VGetRenderPaths(VOID);
+        VOID VOnRestore(ISceneGraph* graph);
 
         ~InstancedMeshNode(VOID);
     };
 
+    /*
     enum AnchorMeshType
     {
         eBOX,
@@ -211,28 +211,21 @@ namespace chimera
 
         UINT VGetRenderPaths(VOID);
     };
-
-    typedef chimera::Geometry*(*GeoCreator)(VOID);
-
+    */
     class GeometryNode : public SceneNode
     {
-        GeoCreator m_pFuncGeometry;
-        std::shared_ptr<chimera::Geometry> m_pGeometry;
-        chimera::Material* m_pMaterial;
+    private:
+        std::unique_ptr<IMaterial> m_pMaterial;
 
     public:
-        GeometryNode(GeoCreator gc);
+        GeometryNode(ActorId id, std::unique_ptr<IGeometry> geo);
 
-        VOID SetMaterial(CONST chimera::Material& mat);
+        VOID SetMaterial(CONST IMaterial& mat);
 
-        VOID SetAABB(CONST util::AxisAlignedBB& aabb);
+        VOID _VRender(ISceneGraph* graph, RenderPath& path);
 
-        VOID _VRender(chimera::SceneGraph* graph, chimera::RenderPath& path);
-
-        VOID VOnRestore(chimera::SceneGraph* graph);
-
-        UINT VGetRenderPaths(VOID);
+        VOID VOnRestore(ISceneGraph* graph);
 
         ~GeometryNode(VOID);
-    }; */
+    };
 }

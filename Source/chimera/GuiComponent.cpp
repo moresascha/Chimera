@@ -380,7 +380,7 @@ namespace chimera
             for(INT i = 0; i < m_textLines.size(); ++i)
             {
                 TextLine line = m_textLines[i];
-                DrawText(line, x + 2, y - 2);
+                DrawText(line, x + 2, y);
                 y += lineheight;
                 if((y+lineheight) > (INT)(VGetPosY() + VGetHeight()))
                 {

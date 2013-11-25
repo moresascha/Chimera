@@ -52,6 +52,7 @@ namespace chimera
     class CMIStream;
     class ActorDescription;
     class ILevel;
+    class ICommand;
     class ICommandInterpreter;
     class IVRamHandleCreator;
     class IScheduler;
@@ -107,7 +108,7 @@ namespace chimera
     typedef std::shared_ptr<IEvent> IEventPtr;
     typedef fastdelegate::FastDelegate1<IEventPtr> EventListener;
     typedef CMResource VRamResource;
-    typedef fastdelegate::FastDelegate1<Command&, BOOL> CommandHandler;
+    typedef fastdelegate::FastDelegate1<ICommand&, BOOL> CommandHandler;
     typedef std::string ErrorLog;
     typedef INT PixelFormat;
     typedef INT GameState;

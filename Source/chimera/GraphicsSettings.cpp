@@ -51,9 +51,9 @@ namespace chimera
         CmGetApp()->VGetHumanView()->VGetSceneGraph()->VOnRender((RenderPath)m_renderPath);
     }
 
-    AlbedoSetting::AlbedoSetting(VOID) : ShaderPathSetting(CM_RENDERPATH_ALBEDO, DEFERRED_SHADER_NAME, DEFERRED_SHADER_NAME)
+    AlbedoSetting::AlbedoSetting(VOID) : ShaderPathSetting(CM_RENDERPATH_ALBEDO, DEFERRED_SHADER_NAME, DEFERRED_SHADER_NAME), m_pInstanced(NULL)
     {
-
+        m_pInstanced = new ShaderPathSetting(CM_RENDERPATH_ALBEDO_INSTANCED, "DefShadingInstanced", "Instanced");
     }
 
     BOOL AlbedoSetting::VOnRestore(UINT w, UINT h)
@@ -84,7 +84,53 @@ namespace chimera
         VGetProgramDescription()->fs.file = DEFERRED_SHADER_FILE;
         VGetProgramDescription()->fs.function = DEFERRED_SHADER_FS_FUNCTION;
 
+        //instanced
+        m_pInstanced->VGetProgramDescription()->vs.file = DEFERRED_SHADER_FILE;
+        m_pInstanced->VGetProgramDescription()->vs.function = DEFERRED_INSTANCED_SHADER_VS_FUNCTION;
+
+        m_pInstanced->VGetProgramDescription()->vs.layoutCount = 4;
+
+        m_pInstanced->VGetProgramDescription()->vs.inputLayout[0].instanced = FALSE;
+        m_pInstanced->VGetProgramDescription()->vs.inputLayout[0].name = "POSITION";
+        m_pInstanced->VGetProgramDescription()->vs.inputLayout[0].position = 0;
+        m_pInstanced->VGetProgramDescription()->vs.inputLayout[0].slot = 0;
+        m_pInstanced->VGetProgramDescription()->vs.inputLayout[0].format = eFormat_R32G32B32_FLOAT;
+
+        m_pInstanced->VGetProgramDescription()->vs.inputLayout[1].instanced = FALSE;
+        m_pInstanced->VGetProgramDescription()->vs.inputLayout[1].name = "NORMAL";
+        m_pInstanced->VGetProgramDescription()->vs.inputLayout[1].position = 1;
+        m_pInstanced->VGetProgramDescription()->vs.inputLayout[1].slot = 0;
+        m_pInstanced->VGetProgramDescription()->vs.inputLayout[1].format = eFormat_R32G32B32_FLOAT;
+
+        m_pInstanced->VGetProgramDescription()->vs.inputLayout[2].instanced = FALSE;
+        m_pInstanced->VGetProgramDescription()->vs.inputLayout[2].name = "TEXCOORD";
+        m_pInstanced->VGetProgramDescription()->vs.inputLayout[2].position = 2;
+        m_pInstanced->VGetProgramDescription()->vs.inputLayout[2].slot = 0;
+        m_pInstanced->VGetProgramDescription()->vs.inputLayout[2].format = eFormat_R32G32_FLOAT;
+
+        m_pInstanced->VGetProgramDescription()->vs.inputLayout[3].instanced = TRUE;
+        m_pInstanced->VGetProgramDescription()->vs.inputLayout[3].name = "TANGENT";
+        m_pInstanced->VGetProgramDescription()->vs.inputLayout[3].position = 3;
+        m_pInstanced->VGetProgramDescription()->vs.inputLayout[3].slot = 1;
+        m_pInstanced->VGetProgramDescription()->vs.inputLayout[3].format = eFormat_R32G32B32_FLOAT;
+
+        m_pInstanced->VGetProgramDescription()->fs.file = DEFERRED_SHADER_FILE;
+        m_pInstanced->VGetProgramDescription()->fs.function = DEFERRED_SHADER_FS_FUNCTION;
+
+        m_pInstanced->VOnRestore(w, h);
+
         return ShaderPathSetting::VOnRestore(w, h);
+    }
+
+    VOID AlbedoSetting::VRender(VOID)
+    {
+        ShaderPathSetting::VRender();
+        m_pInstanced->VRender();
+    }
+
+    AlbedoSetting::~AlbedoSetting(VOID)
+    {
+        SAFE_DELETE(m_pInstanced);
     }
 
     GloablLightingSetting::GloablLightingSetting(VOID) : ShaderPathSetting(CM_RENDERPATH_LIGHTING, GLOBAL_LIGHTING_SHADER_NAME, GLOBAL_LIGHTING_SHADER_NAME)
@@ -151,7 +197,7 @@ namespace chimera
         SAFE_DELETE(m_pCSM);
     }
 
-	WireFrameSettings::WireFrameSettings(VOID) : ShaderPathSetting(CM_RENDERPATH_ALBEDO_WIRE, DEFERRED_SHADER_NAME, DEFERRED_SHADER_NAME)
+	WireFrameSettings::WireFrameSettings(VOID) : ShaderPathSetting(CM_RENDERPATH_ALBEDO_WIRE, DEFERRED_WIREFRAME_SHADER_NAME, DEFERRED_WIREFRAME_SHADER_NAME)
 	{
 		m_pWireFrameState = NULL;
 	}
@@ -175,6 +221,32 @@ namespace chimera
 		rasterDesc.FrontCounterClockwise = TRUE;
 		rasterDesc.MultisampleEnable = FALSE;
 		rasterDesc.AntialiasedLineEnable = FALSE;
+
+        VGetProgramDescription()->vs.file = DEFERRED_WIREFRAME_SHADER_FILE;
+        VGetProgramDescription()->vs.function = DEFERRED_WIREFRAME_SHADER_VS_FUNCTION;
+
+        VGetProgramDescription()->vs.layoutCount = 3;
+
+        VGetProgramDescription()->vs.inputLayout[0].instanced = FALSE;
+        VGetProgramDescription()->vs.inputLayout[0].name = "POSITION";
+        VGetProgramDescription()->vs.inputLayout[0].position = 0;
+        VGetProgramDescription()->vs.inputLayout[0].slot = 0;
+        VGetProgramDescription()->vs.inputLayout[0].format = eFormat_R32G32B32_FLOAT;
+
+        VGetProgramDescription()->vs.inputLayout[1].instanced = FALSE;
+        VGetProgramDescription()->vs.inputLayout[1].name = "NORMAL";
+        VGetProgramDescription()->vs.inputLayout[1].position = 1;
+        VGetProgramDescription()->vs.inputLayout[1].slot = 0;
+        VGetProgramDescription()->vs.inputLayout[1].format = eFormat_R32G32B32_FLOAT;
+
+        VGetProgramDescription()->vs.inputLayout[2].instanced = FALSE;
+        VGetProgramDescription()->vs.inputLayout[2].name = "TEXCOORD";
+        VGetProgramDescription()->vs.inputLayout[2].position = 2;
+        VGetProgramDescription()->vs.inputLayout[2].slot = 0;
+        VGetProgramDescription()->vs.inputLayout[2].format = eFormat_R32G32_FLOAT;
+
+        VGetProgramDescription()->fs.file = DEFERRED_WIREFRAME_SHADER_FILE;
+        VGetProgramDescription()->fs.function = DEFERRED_WIREFRAME_SHADER_FS_FUNCTION;
 
 		m_pWireFrameState.reset();
 

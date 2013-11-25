@@ -221,7 +221,8 @@ namespace chimera
         UINT start;
         UINT count;
         UINT material;
-        IndexBufferInterval(VOID) : start(0), count(0), material(0) {}
+        GeometryTopology topo;
+        IndexBufferInterval(VOID) : start(0), count(0), material(0), topo(eTopo_Triangles) {}
     };
 
     class IMesh : public ResHandle
@@ -229,7 +230,7 @@ namespace chimera
     public:
         virtual CMResource& VGetMaterials(VOID) = 0;
 
-        virtual VOID VAddIndexBufferInterval(UINT start, UINT count, UINT material) = 0;
+        virtual VOID VAddIndexBufferInterval(UINT start, UINT count, UINT material, GeometryTopology topo) = 0;
 
         virtual UINT VGetIndexCount(VOID) CONST = 0;
 

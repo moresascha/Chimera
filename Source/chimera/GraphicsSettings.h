@@ -16,13 +16,18 @@ namespace chimera
         virtual VOID VRender(VOID);
         virtual BOOL VOnRestore(UINT w, UINT h);
         CMShaderProgramDescription* VGetProgramDescription(VOID) { return &m_desc; }
+        virtual ~ShaderPathSetting(VOID) { }
     };
 
     class AlbedoSetting : public ShaderPathSetting
     {
+    private:
+        ShaderPathSetting* m_pInstanced;
     public:
         AlbedoSetting(VOID);
+        VOID VRender(VOID);
         BOOL VOnRestore(UINT w, UINT h);
+        ~AlbedoSetting(VOID);
     };
 
 	class WireFrameSettings : public ShaderPathSetting

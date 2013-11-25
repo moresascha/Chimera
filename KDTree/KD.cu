@@ -5,6 +5,9 @@
 
 #define INVALID_ADDRESS ((uint)-1)
 #define FLT_MAX 3.402823466e+38F
+#define FLT_MAX_DIV2 (FLT_MAX/2.0f)
+#define PI 3.14159265359
+#define PI_MUL2 (2 * PI)
 
 
 //todo: template it
@@ -86,92 +89,116 @@ extern "C" __global__ void scanKD(uint* content, uint* contentCount, uint neutra
     }
 }
 
-__device__ SplitData* getParentSplit(SplitData* splitData, uint* nodesContent, uint* address, uint depth)
+struct DstDesc
 {
-    return 0;
-}
+    int isright;
+    uint prefixSum;
+    Split s;
+};
 
-extern "C" __global__ void spreadContent(uint* nodesContent, uint* nodesContentCount, SplitData* splitData, float3* data, uint count, uint depth)
+__device__ DstDesc getDstNode(Split* splitData, uint* scannedContentCount, uint* prefixContent, uint count, uint depth)
 {
     uint id = GlobalId;
-    uint contentCountStartAdd = (1 << depth) - 1;
-    uint address = count * contentCountStartAdd;
-
-    uint sa = 0;
-    uint last = 1;
-    uint m = 0;
     
-    for(uint i = 0; i < (1 << depth); ++i)
-    {
-        last = nodesContentCount[contentCountStartAdd];
-        sa += last;
-        if(id < sa)
-        {
-            break;
-        }
-        m++;
-        contentCountStartAdd++;
-        address += count;
-    }
+    uint startAdd = elemsBeforeLevel(depth);
 
-    SplitData sd = splitData[contentCountStartAdd];
+    uint index = scannedContentCount[id];
+
+    Split sd = splitData[startAdd + index];
     
-    address += (id % last);
+    uint prefixSum = prefixContent[id];
+    
+    uint modi = id - prefixSum;
+    
+    int right = modi >= sd.below;
 
-    uint add = nodesContent[address];
+    DstDesc d;
+    d.isright = right;
+    d.prefixSum = prefixSum;
+    d.s = sd;
 
-    if(add == INVALID_ADDRESS)
+    return d;
+}
+
+__device__ uint getNextScanValue(uint* scannedContentCount, uint count, int isright, uint depth)
+{
+    uint id = GlobalId;
+
+    uint scanVal = scannedContentCount[id];
+
+    scanVal += scanVal * (scanVal > 0);
+
+    return scanVal + isright;
+}
+
+extern "C" __global__ void spreadContent(uint* nodesContent, uint* nodesContentCount, Split* splitData, float3* data, uint count, uint depth, 
+                                         uint* scannedContentCount,
+                                         uint* prefixScan)
+{
+    uint id = GlobalId;
+
+//     if(id >= count)
+//     {
+//         return;
+//     }
+
+    DstDesc dd = getDstNode(splitData, scannedContentCount, prefixScan, count, depth);
+
+    uint nextScanVal = getNextScanValue(scannedContentCount, count, dd.isright, depth);
+
+//     uint memoryOffset = count * ((1 << (depth + 1)) - 1) + scanVal * count;
+//     uint osright = memoryOffset + id - sd.below - prefixSum;
+//     uint osleft = memoryOffset + id;
+
+    if(!dd.isright)
     {
-        return;
-    }
-
-    float3 d = data[add];
-
-    uint memoryOffset = count * ((1 << (depth+1)) - 1) + 2 * m * count;
-
-    if(sd.split < getAxis(&d, sd.axis))
-    {
-        nodesContent[memoryOffset + id] = add;
+        prefixScan[id] = dd.prefixSum;
     }
     else
     {
-        nodesContent[memoryOffset + count + id] = add;
+        prefixScan[id] = dd.prefixSum + dd.s.below;
     }
+
+    scannedContentCount[id] = nextScanVal;
 }
 
-float3 __device__ getBHE(AABB* aabb)
+float3 __device__ getAxisScale(AABB* aabb)
 {
     return make_float3(aabb->max.x - aabb->min.x, aabb->max.y - aabb->min.y, aabb->max.z - aabb->min.z);
 }
 
 float __device__ getArea(AABB* aabb)
 {
-    float3 bhe = getBHE(aabb);
-    return 2 * bhe.x * bhe.y + 2 * bhe.x * bhe.z + 2 * bhe.y * bhe.z;
+    float3 axisScale = getAxisScale(aabb);
+    return 2 * axisScale.x * axisScale.y + 2 * axisScale.x * axisScale.z + 2 * axisScale.y * axisScale.z;
 }
 
-float __device__ getSAH(AABB* node, int axis, float split, int primAbove, int primBelow, float traversalCost = 0, float isectCost = 1)
+float __device__ getSAH(AABB* node, int axis, float split, int primBelow, int primAbove, float traversalCost = 0, float isectCost = 1)
 {
-    float3 bhe = getBHE(node);
-    float invTotalSA = 1.0f / getArea(node);
-    int otherAxis0 = (axis+1) % 3;
-    int otherAxis1 = (axis+2) % 3;
-    float belowSA = 
+    float cost = FLT_MAX;
+    if(split > getAxis(&node->min, axis) && split < getAxis(&node->max, axis))
+    {
+        float3 axisScale = getAxisScale(node);
+        float invTotalSA = 1.0f / getArea(node);
+        int otherAxis0 = (axis+1) % 3;
+        int otherAxis1 = (axis+2) % 3;
+        float belowSA = 
             2 * 
-            (getAxis(&bhe, otherAxis0) * getAxis(&bhe, otherAxis1) + 
+            (getAxis(&axisScale, otherAxis0) * getAxis(&axisScale, otherAxis1) + 
             (split - getAxis(&node->min, axis)) * 
-            (getAxis(&bhe, otherAxis0) + getAxis(&bhe, otherAxis1)));
+            (getAxis(&axisScale, otherAxis0) + getAxis(&axisScale, otherAxis1)));
     
-    float aboveSA = 
+        float aboveSA = 
             2 * 
-            (getAxis(&bhe, otherAxis0) * getAxis(&bhe, otherAxis1) + 
+            (getAxis(&axisScale, otherAxis0) * getAxis(&axisScale, otherAxis1) + 
             (getAxis(&node->max, axis) - split) * 
-            (getAxis(&bhe, otherAxis0) + getAxis(&bhe, otherAxis1)));    
+            (getAxis(&axisScale, otherAxis0) + getAxis(&axisScale, otherAxis1)));    
         
-    float pbelow = belowSA * invTotalSA;
-    float pabove = aboveSA * invTotalSA;
-    float bonus = 0;//(primAbove == 0 || primBelow == 0) ? 1 : 0;
-    float cost = traversalCost + isectCost * (1.0f - bonus) * (pbelow * primBelow + pabove * primAbove);
+        float pbelow = belowSA * invTotalSA;
+        float pabove = aboveSA * invTotalSA;
+        float bonus = 0;//(primAbove == 0 || primBelow == 0) ? 1 : 0;
+        cost = traversalCost + isectCost * (1.0f - bonus) * (pbelow * primBelow + pabove * primAbove);
+    }
     return cost;
 }
 
@@ -179,6 +206,8 @@ void __device__ splitAABB(AABB* aabb, float split, uint axis, AABB* l, AABB* r)
 {
     l->max = aabb->max;
     l->min = aabb->min;
+    r->max = aabb->max;
+    r->min = aabb->min;
     switch(axis)
     {
     case 0:
@@ -196,102 +225,186 @@ void __device__ splitAABB(AABB* aabb, float split, uint axis, AABB* l, AABB* r)
     }
 }
 
-extern "C" __global__ void computeSplits(AABB* aabb, uint* nodesContent, uint* nodesContentCount, float2* splits, float3* data, uint count, uint depth)
+extern "C" __global__ void splitNodes(AABB* aabb, Split* splits, uint depth)
 {
-    uint aabbStartAddress = (1 << depth) - 1;
+    uint pos = (1 << (depth+1)) - 1 + 2*GlobalId;
+    uint me = (1 << (depth)) - 1 + GlobalId;
+
+    AABB node = aabb[me];
+    AABB l; AABB r;
+
+    r.min = make_float3(0,0,0);
+    r.max = make_float3(0,0,0);
+    l.min = make_float3(0,0,0);
+    l.max = make_float3(0,0,0);
+    
+    Split s = splits[me];
+
+    if(s.split < FLT_MAX_DIV2)
+    {
+        splitAABB(&node, s.split, s.axis, &l, &r); 
+    }
+
+    aabb[pos + 0] = l;
+    aabb[pos + 1] = r;
+}
+
+extern "C" __global__ void computeSplits(AABB* aabb, uint* nodesContent, uint* nodesContentCount, Split* splits, float3* data, uint count, uint depth,
+                                         uint* scannedContentCount,
+                                         uint* prefixScan,
+                                         Split* nodeSplitData)
+{
     uint id = GlobalId;
-    uint sa = 0;
-    uint last = 1;
-    uint address = count * depth;
+    
+//     if(id >= count)
+//     {
+//         return;
+//     }
 
-    for(uint i = 0; i < (1 << depth); ++i)
-    {
-        last = nodesContentCount[aabbStartAddress];
-        sa += last;
-        if(id < sa)
-        {
-            break;
-        }
-        aabbStartAddress++;
-    }
+    uint levelOffset = elemsBeforeLevel(depth); //(1 << depth) - 1;
 
-    AABB aa = aabb[aabbStartAddress];
+    uint pos = id - prefixScan[id];
 
-    uint pos = (id % last);
+    uint nodeIndex = scannedContentCount[id]; //count * depth + 
 
-    address += pos;
+    Split split = nodeSplitData[levelOffset + nodeIndex];
 
-    uint add = nodesContent[address];
+    AABB aa = aabb[levelOffset + nodeIndex];
 
-    if(add == -1) //TODO
-    {
-        float2 split;
-        split.x = 3.402823466e+38F;
-        split.y = 0;
-        splits[id] = split;
-        return;
-    }
-
-    float3 d = data[add];
+    float3 d = data[nodesContent[id]];
     
     int axis = getLongestAxis(aa.min, aa.max);
 
     float s = getAxis(&d, axis);
 
-    float2 split;
-    split.x = getSAH(&aa, axis, s, last - pos, pos+1);
-    split.y = s;
+    uint elemsInNode = nodesContentCount[levelOffset + nodeIndex];
+
+    split.sah = getSAH(&aa, axis, s, pos + 1, elemsInNode - pos);
+    split.split = s;
+    split.axis = axis;
+    split.above = elemsInNode - pos - 1;
+    split.below = pos + 1;
+
+     split.above = max((int)split.above, 0);
+     split.below = max((int)split.below, 0);
 
     splits[id] = split;
 }
 
-template<typename T>
-__device__ void bitonicMergeSortShrd(T* g_values, uint stage)
+extern "C" __global__ void animateGeometry(float* data, float time, float scale, uint parts, uint N)
 {
-    uint i = GlobalId;
+    const uint stride = 3;
+    uint id = threadIdx.x + blockDim.x * blockIdx.x;
 
-    extern __shared__ T values[];
-    
-    values[2 * i + 0] = g_values[2 * i + 0];
-    values[2 * i + 1] = g_values[2 * i + 1];
-
-    for(uint step = stage >> 1; step > 0; step = step >> 1)
+    if(id >= N)
     {
-        uint first = (step << 1) * (i/step);
-        uint second = first + step;
-
-        if((i % step) > 0)
-        {
-            first += (i % step);
-            second += (i % step);
-        }
-        
-        T n0 = values[first];
-           
-        T n1 = values[second];
-        
-        char dir = ((2*i)/stage) % 2;
-        char cmp = n0 > n1;
-        
-        if(dir == 0 && cmp)
-        {
-            values[first] =  n1;
-            values[second] =  n0;
-        }
-        else if(dir == 1 && !cmp)
-        {
-            values[first] =  n1;
-            values[second] =  n0;
-        }
-        
-        __syncthreads();
+        return;
     }
+
+    uint elemsPerPart = N/parts;
+    uint row = 4;
+    uint elemsPerRow = 4 * elemsPerPart;
+
+    float elemntPerPartId = id % elemsPerPart;
+
+    uint x = (id / elemsPerPart) % row;
+    uint z = id / elemsPerRow;
+
+    float os = id / elemsPerPart;
     
-    g_values[2 * i + 0] = values[2 * i + 0];
-    g_values[2 * i + 1] = values[2 * i + 1];
+    float t = PI_MUL2 * elemntPerPartId / (float)elemsPerPart;
+
+    float dir = (id / elemsPerPart) % 2 > 0 ? 1 : -1;
+
+    data[stride * id + 0] = 2 * x + scale * dir * cos(dir * (t + time));
+    data[stride * id + 1] = scale + scale * dir * sin(dir * (t + time)) * cos(dir * (t + time));
+    data[stride * id + 2] = 2 * z + scale * dir * sin(dir * (t + time ));
 }
 
-extern "C" __global__ void bitonicMergeSortFloatShrd(float* values, uint stage)
+extern "C" __global__ void animateGeometry1(float* data, float time, float scale, uint parts, uint N)
 {
-    bitonicMergeSortShrd<float>(values, stage);
+    const uint stride = 3;
+    uint id = threadIdx.x + blockDim.x * blockIdx.x;
+    if(id >= N)
+    {
+        return;
+    }
+
+    uint elemsPerPart = N/parts;
+    uint row = 4;
+    uint elemsPerRow = 4 * elemsPerPart;
+
+    float elemntPerPartId = id % elemsPerPart;
+
+    uint x = (id / elemsPerPart) % row;
+    uint z = id / elemsPerRow;
+
+    float t = PI_MUL2 * elemntPerPartId / (float)elemsPerPart;
+
+    data[stride * id + 0] = 1.7*scale * x + scale * cos(t + time);
+    data[stride * id + 1] = scale + scale * sin(t + time) * cos(t + time);
+    data[stride * id + 2] = 1.7*scale * z + scale * sin(t + time);
+}
+
+struct vertex
+{
+    float3 pos;
+    float3 norm;
+    float2 tex;
+};
+
+__constant__ uint lpt = 24;
+
+__device__ void addLine(vertex* lines, float3 start, float3 end, int index)
+{
+    uint id = threadIdx.x + blockDim.x * blockIdx.x;
+    vertex v0;
+    v0.pos = start;
+    v0.norm = make_float3(0,1,0);
+    v0.tex = make_float2(0,0);
+    vertex v1;
+    v1.pos = end;
+    v1.tex = make_float2(1,1);
+    v1.norm = make_float3(0,1,0);
+
+    lines[lpt * id + 2*index] = v0;
+    lines[lpt * id + 2*index+1] = v1;
+}
+
+extern "C" __global__ void createBBox(AABB* bbox, vertex* lines, uint N, uint d)
+{
+    uint stride = 8;
+    uint id = threadIdx.x + blockDim.x * blockIdx.x;
+
+    if(id >= N)
+    {
+        return;
+    }
+
+    uint os = (1 << (d-1)) - 1;
+    AABB bb = bbox[os + id];
+    float3 m_min = bb.min;
+    float3 m_max = bb.max;
+
+    if(!(abs(m_min.x) < FLT_MAX_DIV2 && abs(m_min.y) < FLT_MAX_DIV2 && abs(m_min.z) < FLT_MAX_DIV2 &&
+        abs(m_max.x) < FLT_MAX_DIV2 && abs(m_max.y) < FLT_MAX_DIV2 && abs(m_max.z) < FLT_MAX_DIV2))
+    {
+        m_max = make_float3(0,0,0);
+        m_min = make_float3(0,0,0);
+    }
+
+    addLine(lines, m_min, make_float3(m_min.x, m_min.y, m_max.z), 0);
+    addLine(lines, make_float3(m_min.x, m_min.y, m_max.z), make_float3(m_max.x, m_min.y, m_max.z), 1);
+    addLine(lines, make_float3(m_max.x, m_min.y, m_max.z), make_float3(m_max.x, m_min.y, m_min.z), 2);
+    addLine(lines, make_float3(m_max.x, m_min.y, m_min.z), m_min, 3);
+
+    addLine(lines, m_min, make_float3(m_min.x, m_max.y, m_min.z), 4);
+    addLine(lines, make_float3(m_min.x, m_min.y, m_max.z), make_float3(m_min.x, m_max.y, m_max.z), 5);
+    addLine(lines, make_float3(m_max.x, m_min.y, m_max.z), make_float3(m_max.x, m_max.y, m_max.z), 6);
+    addLine(lines, make_float3(m_max.x, m_min.y, m_min.z), make_float3(m_max.x, m_max.y, m_min.z), 7);
+
+    addLine(lines, make_float3(m_min.x, m_max.y, m_min.z), make_float3(m_min.x, m_max.y, m_max.z), 8);
+    addLine(lines, make_float3(m_min.x, m_max.y, m_max.z), make_float3(m_max.x, m_max.y, m_max.z), 9);
+    addLine(lines, make_float3(m_max.x, m_max.y, m_max.z), make_float3(m_max.x, m_max.y, m_min.z), 10);
+    addLine(lines, make_float3(m_max.x, m_max.y, m_min.z), make_float3(m_min.x, m_max.y, m_min.z), 11);
 }

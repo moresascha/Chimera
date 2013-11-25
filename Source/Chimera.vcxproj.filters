@@ -332,12 +332,6 @@
     <ClCompile Include="chimera\GameInputActions.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="chimera\GeometryNode.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="chimera\InstancedMeshNode.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="chimera\LuaHelper.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -550,6 +544,12 @@
     </ClCompile>
     <ClCompile Include="chimera\GeometryFactory.cpp">
       <Filter>Source Files\resource</Filter>
+    </ClCompile>
+    <ClCompile Include="chimera\GeometryNode.cpp">
+      <Filter>Source Files\view</Filter>
+    </ClCompile>
+    <ClCompile Include="chimera\InstancedMeshNode.cpp">
+      <Filter>Source Files\view</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

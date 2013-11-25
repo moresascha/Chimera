@@ -16,9 +16,31 @@ namespace chimera
     class IDeviceBuffer
     {
     public:
-        virtual VOID VSetData(VOID* v, UINT bytes) = 0;
+        virtual VOID VSetData(CONST VOID* v, UINT bytes) = 0;
+
+        virtual VOID VCreate(VOID) = 0;
+
+        virtual VOID VBind(VOID) = 0;
+
+        virtual UINT VGetByteCount(VOID) CONST = 0;
+
+        virtual UINT VGetElementCount(VOID) CONST = 0;
+
+        virtual VOID* VGetDevicePtr(VOID) = 0;
 
         virtual ~IDeviceBuffer(VOID) {}
+    };
+
+    class IVertexBuffer : public virtual IDeviceBuffer
+    {
+    public:
+        virtual UINT VGetStride(VOID) CONST = 0;
+
+        virtual VOID VInitParamater(UINT vertexCount, UINT stride, CONST VOID* data = NULL, BOOL cpuAccessFlags = FALSE) = 0;
+
+        virtual UINT VGetOffset(VOID) CONST = 0;
+
+        virtual ~IVertexBuffer(VOID) {}
     };
 
     class IGeometry : public VRamHandle
@@ -36,9 +58,15 @@ namespace chimera
 
         virtual VOID VSetIndexBuffer(CONST UINT* indices, UINT size) = 0;
 
-        virtual VOID VAddInstanceBuffer(FLOAT* vertices, UINT count, UINT byteStride) = 0;
+        //virtual VOID VAddInstanceBuffer(FLOAT* vertices, UINT count, UINT byteStride) = 0;
 
-        virtual IDeviceBuffer* VGetVertexBuffer(VOID) = 0;
+        virtual VOID VSetInstanceBuffer(IVertexBuffer* instanceBuffer) = 0;
+
+        virtual IVertexBuffer* VGetVertexBuffer(VOID) = 0;
+
+        virtual IVertexBuffer* VGetInstanceBuffer(VOID) = 0;
+
+        virtual IDeviceBuffer* VGetIndexBuffer(VOID) = 0;
 
         virtual ~IGeometry(VOID) {}
     };
@@ -178,6 +206,7 @@ namespace chimera
         virtual VOID VPopBlendState(VOID) = 0;
 
         virtual VOID VSetDefaultMaterial(VOID) = 0;
+        virtual VOID VSetDefaultTexture(VOID) = 0;
 
         virtual IAlbedoBuffer* VGetAlbedoBuffer(VOID) = 0;
 
@@ -214,6 +243,8 @@ namespace chimera
         virtual VOID VDrawScreenQuad(VOID) = 0;
 
         virtual VOID VDrawLine(INT x, INT y, INT w, INT h) = 0;
+
+        virtual VOID* VGetDevice(VOID) = 0;
 
         virtual ~IRenderer(VOID) {}
     };
@@ -328,6 +359,10 @@ namespace chimera
         virtual std::unique_ptr<IRenderTarget> VCreateRenderTarget(VOID) = 0;
 
         virtual std::unique_ptr<IGeometry> VCreateGeoemtry(VOID) = 0;
+
+        virtual std::unique_ptr<IVertexBuffer> VCreateVertexBuffer(VOID) = 0;
+
+        virtual std::unique_ptr<IDeviceBuffer> VCreateIndexBuffer(VOID) = 0;
 
         virtual std::unique_ptr<IDeviceTexture> VCreateTexture(CONST CMTextureDescription* desc) = 0;
 

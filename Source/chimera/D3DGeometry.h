@@ -5,13 +5,11 @@ namespace chimera
 {
     namespace d3d
     {
-        class Buffer : public D3DResource, public IDeviceBuffer
+        class Buffer : public D3DResource, public virtual IDeviceBuffer
         {
         protected:
             BOOL m_created;
             UINT m_elementCount;
-            UINT m_stride;
-            UINT m_offset;
 
             ID3D11Buffer* m_pBuffer;
             D3D11_BUFFER_DESC m_desc;
@@ -21,19 +19,18 @@ namespace chimera
         public:
             Buffer(VOID);
 
-            VOID virtual Bind(VOID) = 0;
-
-            VOID Create(VOID);
+            VOID VCreate(VOID);
 
             D3D11_MAPPED_SUBRESOURCE* Map(VOID);
 
-            UINT GetStride(VOID) CONST { return m_stride; }
-
-            UINT GetElementCount(VOID) CONST { return m_elementCount; }
-
-            UINT GetOffset(VOID) CONST { return m_offset; }
+            UINT VGetElementCount(VOID) CONST { return m_elementCount; }
 
             ID3D11Buffer* GetBuffer(VOID) { return m_pBuffer; }
+            
+            VOID* VGetDevicePtr(VOID)
+            {
+                return (VOID*)GetBuffer();
+            }
 
             //WARNING: this might be NULL most of the time
             CONST VOID* GetRawData(VOID) { return m_data.pSysMem; }
@@ -42,47 +39,48 @@ namespace chimera
 
             VOID Unmap(VOID);
 
-            VOID VSetData(VOID* v, UINT bytes);
+            VOID VSetData(CONST VOID* v, UINT bytes);
 
             virtual ~Buffer(VOID);
         };
 
-        class IndexBuffer : public Buffer 
+        class IndexBuffer : public Buffer
         {
         public:
+            IndexBuffer(VOID);
+
             IndexBuffer(CONST UINT* data, UINT size);
 
-            VOID Bind(VOID);
+            UINT VGetByteCount(VOID) CONST { return m_elementCount; }
+
+            VOID VBind(VOID);
 
             ~IndexBuffer(VOID);
         };
 
-        class VertexBuffer : public Buffer 
+        class VertexBuffer : public Buffer, public IVertexBuffer
         {
+        private:
+            UINT m_stride;
+            UINT m_offset;
+
         public:
 
             VertexBuffer(VOID);
 
-            VertexBuffer(CONST VOID* data, UINT vertexCount, UINT stride, D3D11_CPU_ACCESS_FLAG cpuAccessFlags = (D3D11_CPU_ACCESS_FLAG)0);
+            VertexBuffer(UINT vertexCount, UINT stride, CONST VOID* data = NULL, BOOL cpuWrite = FALSE);
 
-            VOID Bind(VOID);
+            VOID VBind(VOID);
 
-            VOID SetData(CONST VOID* data, UINT vertexCount, UINT stride, D3D11_CPU_ACCESS_FLAG cpuAccessFlags = (D3D11_CPU_ACCESS_FLAG)0);
+            UINT VGetStride(VOID) CONST { return m_stride; }
+
+            VOID VInitParamater(UINT vertexCount, UINT stride, CONST VOID* data = NULL, BOOL cpuAccessFlags = FALSE);
+
+            UINT VGetByteCount(VOID) CONST { return m_elementCount * m_stride; }
+
+            UINT VGetOffset(VOID) CONST { return m_offset; }
 
             ~VertexBuffer(VOID);
-        };
-
-        class VertexBufferHandle : public chimera::IVRamHandle
-        {
-        private:
-            VertexBuffer* m_pVertexBuffer;
-        public:
-            VertexBufferHandle(VOID);
-            VOID SetVertexData(CONST VOID* data, UINT vertexCount, UINT stride, D3D11_CPU_ACCESS_FLAG cpuAccessFlags = (D3D11_CPU_ACCESS_FLAG)0);
-            BOOL VCreate(VOID);
-            VOID VDestroy();
-            UINT VGetByteCount(VOID) CONST;
-            VertexBuffer* GetBuffer(VOID) CONST;
         };
 
         class Geometry;
@@ -95,7 +93,6 @@ namespace chimera
 
         class Geometry : public IGeometry
         {
-            friend class VertexBuffer;
         protected:
 
             static Geometry* m_psCurrentBound;
@@ -104,8 +101,9 @@ namespace chimera
             static GeometryDrawer* ARRAY_DRAWER;
 
             VertexBuffer* m_pVertexBuffer;
+            IVertexBuffer* m_pInstanceBuffer;
+
             IndexBuffer* m_pIndexBuffer;
-            VertexBuffer* m_pInstanceBuffer;
 
             D3D_PRIMITIVE_TOPOLOGY m_primType;
             BOOL m_initialized;        
@@ -143,17 +141,15 @@ namespace chimera
 
             VOID VSetIndexBuffer(CONST UINT* indices, UINT size);
 
-            IDeviceBuffer* VGetVertexBuffer(VOID);
+            IVertexBuffer* VGetVertexBuffer(VOID);
 
-            VertexBuffer* GetVertexBuffer(VOID);
+            IVertexBuffer* VGetInstanceBuffer(VOID);
 
-            VertexBuffer* GetInstanceBuffer(VOID);
-
-            IndexBuffer* GetIndexBuffer(VOID);
+            IDeviceBuffer* VGetIndexBuffer(VOID);
 
             VOID VAddInstanceBuffer(FLOAT* data, UINT count, UINT stride);
 
-            VOID SetInstanceBuffer(VertexBuffer* buffer);
+            VOID VSetInstanceBuffer(IVertexBuffer* buffer);
 
             VOID SetOwnsInstanceBuffer(BOOL owns);
 

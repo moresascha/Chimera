@@ -105,7 +105,7 @@ PixelOutput DefShading_PS(PixelInput input)
 {
     PixelOutput op;
     float4 tex = g_diffuseColor.Sample(g_samplerWrap, g_textureScale * input.texCoords);
-    
+
     if(tex.a < 0.1) discard;
 
     //float3 tangent = normalize(input.tangent);
@@ -145,7 +145,7 @@ PixelOutput DefShading_PS(PixelInput input)
     
     op.reflectionStr = (half)g_reflectanceMaterial;
 
-    float scale = 0.1;
+    //float scale = 0.1;
     //op.ambientMaterialSpecG += half4((g_selectedActorId.x == g_actorId.x) * scale, 0, 0, 0);
     //op.diffuseColorSpecB += half4((g_selectedActorId.x == g_actorId.x) * scale, 0, 0, 0);
 
@@ -155,21 +155,23 @@ PixelOutput DefShading_PS(PixelInput input)
 PixelOutput DefShadingWire_PS(PixelInput input)
 {
     PixelOutput op;
+    if(input.texCoords.x > 0.1 || input.texCoords.x > 0.9)
+    {
+        //discard;
+    }
 
-    //float3 tangent = normalize(input.tangent);
-    float3 iNormal = normalize(input.normal);
-    //float3 bitangent = cross(tangent, iNormal);
-    op.normal.xyz = iNormal;
-    op.normal.w = dot(normalize(g_lightPos.xyz), iNormal); //peter panning hack
-
-    op.worldPosDepth = input.world;
-    op.worldPosDepth.w = length(input.worldView.xyz);
-    half4 c = half4(1,0,0,0);
-    op.diffMaterialSpecR = c;
-    op.ambientMaterialSpecG = half4(0,0,0,0);
-    op.diffuseColorSpecB = c;
+    float4 tex = g_diffuseColor.Sample(g_samplerWrap, g_textureScale * input.texCoords);
     
-    op.reflectionStr = 0;
+    op.worldPosDepth.xyz = input.position.xyz;
+    op.worldPosDepth.w = input.position.w;
+
+    op.normal = float4(0,1,0,0);
+
+    op.diffMaterialSpecR = half4(g_diffuseMaterial.x, g_diffuseMaterial.y, g_diffuseMaterial.z, g_specularMaterial.x);
+    op.ambientMaterialSpecG = half4(g_ambientMaterial.x, g_ambientMaterial.y, g_ambientMaterial.z, g_specularMaterial.y);
+    op.diffuseColorSpecB = half4(tex.x, tex.y, tex.z, g_specularMaterial.z);
+
+    op.reflectionStr = (half)g_reflectanceMaterial;
 
     return op;
 }
