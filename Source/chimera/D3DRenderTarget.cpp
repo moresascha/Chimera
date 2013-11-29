@@ -8,13 +8,19 @@ namespace chimera
         class RTDevTexture : public IDeviceTexture
         {
             VOID* m_pView;
+            VOID* m_pTexture;
         public:
-            RTDevTexture(VOID* view) : m_pView(view)
+            RTDevTexture(VOID* view, VOID* texture) : m_pView(view), m_pTexture(texture)
             {
 
             }
 
             VOID* VGetDevicePtr()
+            {
+                return m_pTexture;
+            }
+
+            VOID* VGetViewDevicePtr(VOID)
             {
                 return m_pView;
             }
@@ -176,8 +182,8 @@ namespace chimera
                 }
             }
 
-            m_pDevTexture = new RTDevTexture(m_pShaderRessourceView);
-            m_pDevDepthStencilTexture = new RTDevTexture(m_pDepthStencilView);
+            m_pDevTexture = new RTDevTexture(m_pShaderRessourceView, m_pTexture);
+            m_pDevDepthStencilTexture = new RTDevTexture(m_pDepthStencilView, m_pDevTexture);
 
             return TRUE;
         }
@@ -186,7 +192,6 @@ namespace chimera
         {
             return m_pDevTexture;
         }
-
 
         IDeviceTexture* RenderTarget::VGetDepthStencilTexture(VOID)
         {

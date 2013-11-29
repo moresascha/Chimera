@@ -2,8 +2,44 @@
 #include "../../Nutty/Nutty/Nutty.h"
 #include <device_launch_parameters.h>
 #include <cutil_inline.h>
+
+#include "../../Nutty/Nutty/Functions.h"
+
+#ifdef max
+#undef max
+#endif
+
+#ifdef min
+#undef min
+#endif
+
 #include <cutil_math.h>
 
+#define DYNAMIC_PARALLELISM
+
+struct float3min
+{
+    __device__ float3 operator()(float3 t0, float3 t1)
+    {
+        float3 r;
+        r.x = nutty::binary::Min<float>()(t0.x, t1.x);
+        r.y = nutty::binary::Min<float>()(t0.y, t1.y);
+        r.z = nutty::binary::Min<float>()(t0.z, t1.z);
+        return r;
+    }
+};
+
+struct float3max
+{
+    __device__  float3 operator()(float3 t0, float3 t1)
+    {
+        float3 r;
+        r.x = nutty::binary::Max<float>()(t0.x, t1.x);
+        r.y = nutty::binary::Max<float>()(t0.y, t1.y);
+        r.z = nutty::binary::Max<float>()(t0.z, t1.z);
+        return r;
+    }
+};
 
 __forceinline __device__ __host__ uint elemsBeforeLevel(byte l)
 {
@@ -39,6 +75,20 @@ struct Split
     float sah;
     uint below;
     uint above;
+    uint contentStartIndex;
+};
+
+enum EdgeType
+{
+    eStart,
+    eEnd
+};
+
+struct Edge
+{
+    EdgeType type;
+    uint primId;
+    float t;
 };
 
 struct AABB
@@ -80,8 +130,8 @@ __forceinline __device__ __host__ int getLongestAxis(float3 mini, float3 maxi)
     float dx = maxi.x - mini.x;
     float dy = maxi.y - mini.y;
     float dz = maxi.z - mini.z;
-    float max = fmaxf(dx, fmaxf(dy, dz));
-    return max == dx ? 0 : max == dy ? 1 : 2;
+    float m = max(dx, max(dy, dz));
+    return m == dx ? 0 : m == dy ? 1 : 2;
 }
 
 template<typename T>
@@ -118,4 +168,5 @@ public:
     virtual uint GetCurrentDepth(void) = 0;
     virtual void GetContentCountStr(std::string& str) = 0;
     virtual void* GetBuffer(DeviceBufferType id) = 0;
+    virtual void* GetData(void) = 0;
 };

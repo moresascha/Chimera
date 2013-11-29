@@ -1,4 +1,5 @@
 #include "kdtree.cuh"
+#include "../Source/chimera/Logger.h"
 
 #include <windows.h>
 #include "../../Nutty/Nutty/Nutty.h"
@@ -27,7 +28,7 @@ struct ShrdMemory<Split>
     }
 };
 
-bool debug_out = false; 
+bool debug_out = true; 
  
 void print(const char* str)
 {
@@ -39,30 +40,6 @@ struct SAH
     __device__ Split operator()(Split t0, Split t1)
     {
         return t0.sah < t1.sah ? t0 : t1;
-    }
-};
-
-struct float3min
-{
-    __device__ float3 operator()(float3 t0, float3 t1)
-    {
-        float3 r;
-        r.x = nutty::binary::Min<float>()(t0.x, t1.x);
-        r.y = nutty::binary::Min<float>()(t0.y, t1.y);
-        r.z = nutty::binary::Min<float>()(t0.z, t1.z);
-        return r;
-    }
-};
-
-struct float3max
-{
-    __device__  float3 operator()(float3 t0, float3 t1)
-    {
-        float3 r;
-        r.x = nutty::binary::Max<float>()(t0.x, t1.x);
-        r.y = nutty::binary::Max<float>()(t0.y, t1.y);
-        r.z = nutty::binary::Max<float>()(t0.z, t1.z);
-        return r;
     }
 };
 
@@ -186,6 +163,27 @@ void printContentCount(nutty::DeviceBuffer<uint>& b)
 }
 
 template <
+    typename Data,
+    typename Index
+>
+void printindexcontent(Data& d, Index& index, size_t size)
+{
+    if(!debug_out)
+    {
+        return;
+    }
+    nutty::HostBuffer<float3> t(1);
+    for(int i = 0; i < size; ++i)
+    {
+        auto it = index + i;
+        uint id = *it;
+        nutty::Copy(t.Begin(), d + id, 1);
+        DEBUG_OUT_A("[%f] %f %f, ", t[0].x, t[0].y, t[0].z);
+    }
+    DEBUG_OUT("\n");
+}
+
+template <
     typename T
 >
 struct clearT
@@ -216,6 +214,19 @@ struct AxisSort
     }
 };
 
+struct EdgeSort
+{
+    char axis;
+    EdgeSort(char a) : axis(a)
+    {
+
+    }
+    __device__ __host__ char operator()(Edge f0, Edge f1)
+    {
+        return f0.t > f1.t;
+    }
+};
+
 __global__ void setNodesCount(uint* prefixNodesContentCount, uint* nodesContentCount, Split* allSplits, Split* nodeSplits, uint count, uint depth)
 {
     uint id = GlobalId;
@@ -234,6 +245,7 @@ __global__ void setNodesCount(uint* prefixNodesContentCount, uint* nodesContentC
     }
 
     Split s = allSplits[sa];
+    s.contentStartIndex = sa;
     if(last > 0 || sa == 0)
     {
         nodesContentCount[contentCountOffset + 2 * id + 0] = s.below;
@@ -242,26 +254,58 @@ __global__ void setNodesCount(uint* prefixNodesContentCount, uint* nodesContentC
  	nodeSplits[contentCountOffsetMe + id] = s;
 }
 
-template <
-    typename Data,
-    typename Index
->
-void printindexcontent(Data& d, Index& index, size_t size)
+struct SphereBBox
 {
-    if(!debug_out)
+    __device__ AABB operator()(float3 pos)
+    {
+        AABB bbox;
+
+        bbox.min = pos - make_float3(0.5, 0.5, 0.5);
+        bbox.max = pos + make_float3(0.5, 0.5, 0.5);
+
+        return bbox;
+    }
+};
+
+template <
+    typename T,
+    typename BBoxComputer
+>
+__global__ void computePerPrimBBox(T* prims, AABB* aabbs, BBoxComputer bboxc, uint N)
+{
+    uint id = GlobalId;
+    if(id >= N)
     {
         return;
     }
-    nutty::HostBuffer<float3> t(1);
-    for(int i = 0; i < size; ++i)
-    {
-        auto it = index + i;
-        uint id = *it;
-        nutty::Copy(t.Begin(), d + id, 1);
-        DEBUG_OUT_A("[%f] %f %f, ", t[0].x, t[0].y, t[0].z);
-    }
-    DEBUG_OUT("\n");
+    aabbs[id] = bboxc(prims[id]);
 }
+
+__global__ void computePerPrimEdges(Edge* edges, AABB* aabbs, uint N)
+{
+    uint id = GlobalId;
+    if(id >= N)
+    {
+        return;
+    }
+
+    AABB aabb = aabbs[id];
+
+    Edge start;
+    start.type = eStart;
+    Edge end;
+    end.type = eEnd;
+
+    for(byte i = 0; i < 3; ++i)
+    {
+        start.t = getAxis(&aabb.min, i);
+        end.t = getAxis(&aabb.max, i);
+        edges[2 * N * i + 2 * id + 0] = start;
+        edges[2 * N * i + 2 * id + 1] = end;
+    }
+}
+
+
 
 template <
     typename T
@@ -275,7 +319,7 @@ public:
     byte m_maxDepth;
     uint m_nodesCount;
     uint m_elements;
-    nutty::MappedPtr<T>* m_data;
+    nutty::DeviceBuffer<float3>* m_data;
     nutty::cuModule* m_cudaModule;
     nutty::cuKernel* m_computePossibleSplits;
     nutty::cuKernel* m_scan;
@@ -294,7 +338,14 @@ public:
     nutty::DeviceBuffer<float3> m_aabbMin;
     nutty::DeviceBuffer<float3> m_aabbMax;
 
+    nutty::DeviceBuffer<AABB> m_primBBox;
+    nutty::DeviceBuffer<Edge> m_edges;
+
     nutty::DeviceBuffer<uint> m_null;
+
+    nutty::cuStreamPool* m_pStreamPool;
+
+    nutty::cuStream m_defaultStream;
 
     kdTree(byte depth, byte maxDepth) : m_cudaModule(NULL), m_depth(depth), m_maxDepth(maxDepth), m_nodesCount(0), m_computePossibleSplits(NULL), m_scan(NULL), m_elements(0)
     {    
@@ -302,8 +353,9 @@ public:
         {
             m_pBuffer[i] = m_pClearBuffer[i] = NULL;
         }
-        countTmp.Resize((1 << (maxDepth)));
-        bboxTmp.Resize((1 << (maxDepth)));
+        countTmp.Resize(1 << maxDepth);
+        bboxTmp.Resize(1 << maxDepth);
+        m_pStreamPool = new nutty::cuStreamPool();
     }
 
     std::stringstream _stream;
@@ -334,6 +386,11 @@ public:
         return m_depth;
     }
 
+    void* GetData(void)
+    {
+        return m_data;
+    }
+
     void SetDepth(uint d)
     {
         m_depth = min(m_maxDepth, max(1, d));
@@ -346,22 +403,27 @@ public:
             SAFE_DELETE(m_pBuffer[i]);
             SAFE_DELETE(m_pClearBuffer[i]);
         }
+        SAFE_DELETE(m_data);
         SAFE_DELETE(m_computePossibleSplits);
         SAFE_DELETE(m_cudaModule);
         SAFE_DELETE(m_scan);
         SAFE_DELETE(m_spread);
         SAFE_DELETE(m_splitBBox);
+        SAFE_DELETE(m_pStreamPool);
     }
 
     void Init(void* data, uint elements)
     {
-        m_data = (nutty::MappedPtr<T>*)data;
+        m_data = (nutty::DeviceBuffer<T>*)(data); //(nutty::MappedBufferPtr<T>*)data;
+
+        m_primBBox.Resize(elements);
+        m_edges.Resize(elements * 3 * 2); //3 axis, 2 edges per element
 
         m_elements = elements;
 
-        splitTmp.Resize(elements);
+        m_nodesCount = (1 << (uint)m_maxDepth) - 1;
 
-        m_nodesCount = (1 << (uint)m_maxDepth);
+        splitTmp.Resize(elements);
 
         hostContentCount.Resize(m_nodesCount);
         
@@ -402,6 +464,9 @@ public:
 
         m_splitBBox->SetKernelArg(0, GetBuffer<uint>(eAxisAlignedBB));
         m_splitBBox->SetKernelArg(1, GetBuffer<uint>(eSplitData));
+
+        computePerPrimBBox<<<grid, block>>>(m_data->Begin()(), m_primBBox.Begin()(), SphereBBox(), elements);
+        computePerPrimEdges<<<grid, block>>>(m_edges.Begin()(), m_primBBox.Begin()(), elements);
     }
 
     void Generate(void)
@@ -419,94 +484,36 @@ public:
         
         uint stride = (uint)elementCount;
 
-        nutty::DevicePtr<T> dataBuffer = m_data->Bind();
+        auto dataBuffer = m_data->Begin();
 
-        m_computePossibleSplits->SetKernelArg(4, dataBuffer);
-        m_spread->SetKernelArg(3, dataBuffer);
+        m_computePossibleSplits->SetKernelArg(4, *m_data);
+        m_spread->SetKernelArg(3, *m_data);
 
-//          nutty::base::ReduceIndexed(aabbs.Begin(), dataBuffer, dataBuffer + elementCount, nodesContent.Begin(), max3f, float3min());
-//          nutty::base::ReduceIndexed(aabbs.Begin()+1, dataBuffer, dataBuffer + elementCount, nodesContent.Begin(), min3f, float3max());
-
+        const nutty::cuStream& smin = m_pStreamPool->PeekNextStream();
+        nutty::SetStream(smin);
         nutty::Reduce(m_aabbMin.Begin(), dataBuffer, dataBuffer + elementCount, float3min());
+        m_defaultStream.WaitEvent(std::move(smin.RecordEvent()));
+
+        const nutty::cuStream& smax = m_pStreamPool->PeekNextStream();
+        nutty::SetStream(smax);
         nutty::Reduce(m_aabbMax.Begin(), dataBuffer, dataBuffer + elementCount, float3max());
+        m_defaultStream.WaitEvent(std::move(smax.RecordEvent()));
 
         nutty::Copy(aabbs.Begin(), m_aabbMin.Begin(), 1);
         nutty::Copy(aabbs.Begin()+1, m_aabbMax.Begin(), 1);
 
         for(int i = 0; i < m_depth-1; ++i)
-        {
-            /*
-            if(i > 0)
-            {
-                uint invalidAddress = (uint)-1;
-                
-//                 printBuffer(nodesContent);
-//                 printBuffer(nodesContentCount);
-// 
-//                 for(int k = 0; k < (1 << i); ++k)
-//                 {
-//                     uint nodesContenCounttOffset = ((1 << i) - 1) + k;
-//                     uint nodesContentOffset = offset + k * elementCount;
-//                     if(debug_out)
-//                     {
-//                         DEBUG_OUT_A("%d %d\n", nodesContenCounttOffset, nodesContentOffset);
-//                     }
-//                     auto contentStart = nodesContent.Begin() + nodesContentOffset;
-//                     auto countStart = nodesContentCount.Begin() + nodesContenCounttOffset;
-//                     auto scanTmpStart = m_scanTmp.Begin() + nodesContentOffset;
-//                     nutty::Scan(contentStart, contentStart + elementCount, scanTmpStart, countStart);
-//                 }
-				printBuffer(nodesContentCount);
-                printBuffer(nodesContent, elementCount);
-                auto contentStart = nodesContent.Begin() + elementCount;
-                auto countStart = nodesContentCount.Begin() + 1;
-                auto scanTmpStart = m_scanTmp.Begin();
-                nutty::Scan(contentStart, contentStart + elementCount, scanTmpStart, countStart);
-
-                contentStart = nodesContent.Begin() + 2 * elementCount;
-                countStart = nodesContentCount.Begin() + 2;
-                scanTmpStart = m_scanTmp.Begin() + elementCount;
-                nutty::Scan(contentStart, contentStart + elementCount, scanTmpStart, countStart);
-                
-//                 m_scan->SetDimension(1 << (i), (uint)elementCount / 2);
-//                 m_scan->SetKernelArg(2, invalidAddress);
-//                 m_scan->SetKernelArg(3, offset);
-//                 m_scan->SetKernelArg(4, i);
-//                 m_scan->Call();
-				printBuffer(m_scanTmp);
-                printBuffer(nodesContentCount);
-                printBuffer(nodesContent, elementCount);
-
-                offset += elementCount * (1 << (i));
-            }
-            */
-            /*for(int j = (1 << i); j < (1 << (i+1)); ++j)
-            {
-                auto start0 = aabbs.Begin() + (size_t)((2*(j-1)));
-                auto start1 = aabbs.Begin() + (size_t)(2*j-1);
-                
-                nutty::base::ReduceIndexed(start0, dataBuffer, dataBuffer + elementCount, nodesContent.Begin() + ((j-1) * elementCount), max3f, float3min());
-                nutty::base::ReduceIndexed(start1, dataBuffer, dataBuffer + elementCount, nodesContent.Begin() + ((j-1) * elementCount), min3f, float3max());
-            }*/
-// 
-//             printBuffer(nodesContentCount);
-//             printBuffer(nodesContent, elementCount);
-
-            
+        {           
             uint contentSum = 0;
 	
             uint copyStartAdd = (1 << i) - 1;
             uint copyLength = ((1 << (i+1)) - 1) - copyStartAdd;
 
             nutty::Copy(bboxTmp.Begin() + 2 * copyStartAdd, aabbs.Begin() + 2 * copyStartAdd, copyLength * 2);
-
-//            printBuffer(bboxTmp);
-
+			
             nutty::Copy(countTmp.Begin() + copyStartAdd, nodesContentCount.Begin() + copyStartAdd, copyLength);
 
-/*            nutty::Copy(splitDataTmp.Begin() + copyStartAdd, splitData.Begin() + copyStartAdd, copyLength);*/
-//             printBuffer(nodesContent);
-//             printindexcontent(dataBuffer, nodesContent.Begin(), elementCount);
+            //printBuffer(nodesContent);
             for(int j = (1 << i); j < (1 << (i+1)); ++j)
             {
                 float3 min = bboxTmp[(size_t)(2*(j-1))];
@@ -514,27 +521,31 @@ public:
                 
                 int axis = getLongestAxis(min, max);
 
-                auto begin = nodesContent.Begin() + contentSum;
+                //auto begin = nodesContent.Begin() + contentSum;
+                auto begin = dataBuffer + contentSum;
 
                 uint c = countTmp[(size_t)(j-1)];
-                if(c)
-                {
-                   // DEBUG_OUT_A("%d %d\n", contentSum, nutty::Distance(begin, begin + c));
-					nutty::Sort(begin, begin + c, dataBuffer, AxisSort(axis));
-					//printBuffer(nodesContent);
-                    //printindexcontent(dataBuffer, begin, c);
+                if(c > 0)
+                {                
+                    //nutty::Sort(begin, begin + c, dataBuffer, AxisSort(axis)); key/value
+                    const nutty::cuStream& s = m_pStreamPool->PeekNextStream();
+                    nutty::SetStream(s);
+                    nutty::Sort(begin, begin + c, AxisSort(axis));
+                    m_defaultStream.WaitEvent(std::move(s.RecordEvent()));
+                    //printindexcontent(dataBuffer, nodesContent.Begin(), m_elements);
                 }
                 contentSum += c;
             }
-		
-            //printBuffer(nodesContent);
-            //nutty::Copy(splitData.Begin() + copyStartAdd, splitDataTmp.Begin() + copyStartAdd, copyLength);
 
+           // printBuffer(nodesContent);
+            nutty::SetStream(m_defaultStream);
+            
             m_computePossibleSplits->SetKernelArg(5, elementCount);
             m_computePossibleSplits->SetKernelArg(6, i);
             m_computePossibleSplits->Call();
-            printBuffer(posSplits);
- 
+
+            m_defaultStream.ClearEvents();
+
             contentSum = 0;
 
             for(int j = (1 << i); j < (1 << (i+1)); ++j)
@@ -543,65 +554,37 @@ public:
                 if((int)(c) > 0)
                 {
                     auto begin = posSplits.Begin() + contentSum;
-                    //DEBUG_OUT_A("%d %d %d %d\n", j, i, c, contentSum);
                     if(c > 1)
                     {
+                        const nutty::cuStream& s = m_pStreamPool->PeekNextStream();
+                        nutty::SetStream(s);
                         nutty::Reduce(begin, begin + c, SAH());
+                        m_defaultStream.WaitEvent(std::move(s.RecordEvent()));
                     }
+
 //                     printsplit(*begin);
-//                     DEBUG_OUT("\n");
+//                     DEBUG_OUT("\n"); 
                 }
                 //if((int)(c) > 0)
                 {
                     contentSum += c;
                 }
             }
+
             uint g = 1;
             uint b = (1 << i);
+
             if(b > 256)
             {
                 g = nutty::cuda::getCudaGrid(b, 256U);
                 b = 256;
             }
-            //printBuffer(posSplits);
+
+            nutty::SetStream(m_defaultStream);
 
             setNodesCount<<<g, b>>>(m_prefixSumNodeCount.Begin()(), nodesContentCount.Begin()(), posSplits.Begin()(), splitData.Begin()(), m_elements, i);
-//             printBuffer(nodesContentCount);
-//             printBuffer(splitData);
-			/*
-            nutty::DeviceBuffer<uint> sums(1);
 
-            uint b = ((1 << (i+1)) - 1);
-            uint e = (1 << (i+1));
-            auto scanBegin = nodesContentCount.Begin() + b;
-            nutty::PrefixSumScan(scanBegin, scanBegin + e, m_prefixSumNodeCount.Begin() + b, sums.Begin());
-            *(
-            /*
-            nutty::Copy(splitTmp.Begin(), posSplits.Begin(), m_elements);
-
-            contentSum = 0;
-
-            for(int j = (1 << i); j < (1 << (i+1)); ++j)
-            {
-                uint c = countTmp[(size_t)(j-1)];
-                SplitData sp = splitDataTmp[(size_t)(j-1)];
-                if(c)
-                {
-                    //printBuffer(posSplits);
-
-                    float2 s = splitTmp[contentSum];
-                    sp.split = s.y;
-                    splitDataTmp.Insert(j-1, sp);
-                }
-                else
-                {
-                    sp.split = FLT_MAX;
-                    splitDataTmp.Insert(j-1, sp);
-                }
-                contentSum += c;
-            }
-
-            nutty::Copy(splitData.Begin() + copyStartAdd, splitDataTmp.Begin() + copyStartAdd, copyLength); */
+            m_defaultStream.ClearEvents();
 
 //             if(i+1 == m_depth-1)
 //             {
@@ -614,20 +597,10 @@ public:
             m_spread->SetKernelArg(7, m_prefixSumNodeCount);
             m_spread->Call();
 
-			printBuffer(m_prefixSumNodeCount, elementCount);
-            printBuffer(m_perThreadNodePos, elementCount);
-// 			printBuffer(nodesContent, elementCount);
-
-            printBuffer(nodesContentCount);
-
             m_splitBBox->SetDimension(g, b);
             m_splitBBox->SetKernelArg(2, i);
             m_splitBBox->Call();
         }
-        cuCtxSynchronize();
-        m_data->Unbind();
-
-        //printContentCount(nodesContentCount);
     }
 
     void Update(void)
@@ -738,10 +711,10 @@ extern "C" void release(void)
     nutty::Release();
 }
 
-extern "C" IKDTree* generate(nutty::MappedPtr<float3>* data, uint elements, uint d, uint maxDepth)
+extern "C" IKDTree* generate(nutty::DeviceBuffer<float3>* data, uint elements, uint d, uint maxDepth)
 {
     kdTree<float3>* tree = new kdTree<float3>(d, maxDepth);
-    tree->Init(data, elements);
+    tree->Init((void*)data, elements);
     tree->Generate();
     g_trees.push_back(tree);
     return tree;

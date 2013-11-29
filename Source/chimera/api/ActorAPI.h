@@ -3,17 +3,6 @@
 
 namespace chimera
 {
-    template <typename T>
-    T* GetActorCompnent(IActor* actor, ComponentId id)
-    {
-        IActorComponent* cmp = actor->VGetComponent(id);
-        if(cmp)
-        {
-            return (T*)(cmp);
-        }
-        return NULL;
-    }
-
     class IActorComponent
     {
     public:
@@ -66,6 +55,17 @@ namespace chimera
 
         virtual ~IActor(VOID) {}
     };
+
+    template <typename T>
+    T* GetActorCompnent(IActor* actor, ComponentId id)
+    {
+        IActorComponent* cmp = actor->VGetComponent(id);
+        if(cmp)
+        {
+            return (T*)(cmp);
+        }
+        return NULL;
+    }
     
     class IActorFactory
     {
@@ -96,10 +96,10 @@ namespace chimera
         template<class ComponentType>
         ComponentType* AddComponent(CONST std::string& comp) 
         {
-            std::unique_ptr<IActorComponent> cmp = m_pFactory->VCreateComponent(comp);
+            std::unique_ptr<IActorComponent> cmp = m_pFactory->VCreateComponent(comp.c_str());
             if(!cmp)
             {
-                LOG_CRITICAL_ERROR_A("%s does not exist", cmp.c_str());
+                LOG_CRITICAL_ERROR_A("%s does not exist", cmp->VGetName());
             }
             m_components.push_back(std::move(cmp));
             return (ComponentType*)m_components.back().get();

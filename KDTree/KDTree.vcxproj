@@ -90,7 +90,8 @@
       <WarningLevel>Level3</WarningLevel>
       <Optimization>Disabled</Optimization>
       <AdditionalIncludeDirectories>../Cudah;../Include;../Source/chimera/api;$(CUDA_PATH)/include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
-      <UndefinePreprocessorDefinitions>__COMPILING_DLL</UndefinePreprocessorDefinitions>
+      <UndefinePreprocessorDefinitions>
+      </UndefinePreprocessorDefinitions>
     </ClCompile>
     <Link>
       <GenerateDebugInformation>true</GenerateDebugInformation>
@@ -102,11 +103,12 @@
     <CudaCompile>
       <CompileOut>$(IntDir)%(Filename)%(Extension).obj</CompileOut>
       <Include>../Include;../../Nutty/Nutty/../Source/chimera/api;</Include>
-      <UseHostInclude>false</UseHostInclude>
+      <UseHostInclude>true</UseHostInclude>
       <KeepDir>$(SolutionDir)..\Tmp\$(ProjectName)$(PlatformName)$(Configuration)\</KeepDir>
       <NvccCompilation>compile</NvccCompilation>
       <CudaRuntime>Static</CudaRuntime>
       <TargetMachinePlatform>64</TargetMachinePlatform>
+      <CodeGeneration>compute_20,sm_20</CodeGeneration>
     </CudaCompile>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
@@ -128,22 +130,25 @@
       <Optimization>MaxSpeed</Optimization>
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
-      <AdditionalIncludeDirectories>../Cudah/Source;../Include;$(CUDA_PATH)/include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>../Cudah;../Include;../Source/chimera/api;$(CUDA_PATH)/include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <UndefinePreprocessorDefinitions>
+      </UndefinePreprocessorDefinitions>
     </ClCompile>
     <Link>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
-      <AdditionalLibraryDirectories>../Lib</AdditionalLibraryDirectories>
+      <AdditionalLibraryDirectories>../Lib;../Bin/x64$(Configuration);../../Nutty/lib</AdditionalLibraryDirectories>
       <IgnoreSpecificDefaultLibraries>LIBCMTD;LIBCMT;libcpmt;%(IgnoreSpecificDefaultLibraries)</IgnoreSpecificDefaultLibraries>
     </Link>
     <CudaCompile>
-      <CompileOut>./ptx/%(Filename).ptx</CompileOut>
-      <Include>../Include</Include>
-      <UseHostInclude>false</UseHostInclude>
+      <CompileOut>$(IntDir)%(Filename)%(Extension).obj</CompileOut>
+      <Include>
+      </Include>
+      <UseHostInclude>true</UseHostInclude>
       <KeepDir>$(SolutionDir)..\Tmp\$(ProjectName)$(PlatformName)$(Configuration)\</KeepDir>
-      <NvccCompilation>ptx</NvccCompilation>
-      <CudaRuntime>None</CudaRuntime>
+      <NvccCompilation>compile</NvccCompilation>
+      <CudaRuntime>Static</CudaRuntime>
       <TargetMachinePlatform>64</TargetMachinePlatform>
       <CodeGeneration>compute_20,sm_20</CodeGeneration>
     </CudaCompile>
@@ -162,14 +167,17 @@
     <CudaCompile Include="kdtree.cu">
       <CodeGeneration Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">compute_20,sm_20</CodeGeneration>
     </CudaCompile>
+    <CudaCompile Include="rtracer\RTracer.cu" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="main.cpp" />
   </ItemGroup>
   <ItemGroup>
     <None Include="kdtree.cuh" />
+    <None Include="kernel.cuh" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="rtracer\RTracer.h" />
     <ClInclude Include="WaitForActorCreated.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

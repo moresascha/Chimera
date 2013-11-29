@@ -10,8 +10,14 @@ namespace chimera
 
         VOID* Texture::VGetDevicePtr(VOID) 
         {
+            return (VOID*)m_pTexture;
+        }
+
+        VOID* Texture::VGetViewDevicePtr(VOID) 
+        {
             return (VOID*)m_pTextureView;
         }
+
 
         VOID Texture::VDestroy(VOID)
         {

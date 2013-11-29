@@ -21,6 +21,9 @@
     <CudaCompile Include="kdtree.cu">
       <Filter>Source Files</Filter>
     </CudaCompile>
+    <CudaCompile Include="rtracer\RTracer.cu">
+      <Filter>Source Files</Filter>
+    </CudaCompile>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="main.cpp">
@@ -31,9 +34,15 @@
     <None Include="kdtree.cuh">
       <Filter>Source Files</Filter>
     </None>
+    <None Include="kernel.cuh">
+      <Filter>Source Files</Filter>
+    </None>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="WaitForActorCreated.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="rtracer\RTracer.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

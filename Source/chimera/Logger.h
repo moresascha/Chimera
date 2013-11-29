@@ -5,6 +5,8 @@
 #include <sstream>
 #endif
 
+#include <string>
+
 typedef VOID (*WriteLogCallBack) (std::string);
 
 namespace Logger 

@@ -1,5 +1,6 @@
 #pragma once
-#include "stdafx.h"
+//#include "stdafx.h"
+#include <DirectXMath.h>
 #include "Vec3.h"
 #include "Vec4.h"
 namespace chimera

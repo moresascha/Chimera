@@ -616,7 +616,7 @@ namespace chimera
 
         VOID Renderer::VSetTexture(TextureSlot slot, IDeviceTexture* texture)
         {
-            ID3D11ShaderResourceView* v = (ID3D11ShaderResourceView*)(texture == NULL ? NULL : texture->VGetDevicePtr());
+            ID3D11ShaderResourceView* v = (ID3D11ShaderResourceView*)(texture == NULL ? NULL : texture->VGetViewDevicePtr());
             if(m_currentSetSampler[slot] != v)
             {
                 chimera::d3d::GetContext()->PSSetShaderResources(slot, 1, &v);
@@ -630,7 +630,7 @@ namespace chimera
             
             assert(count <= D3D11_COMMONSHADER_INPUT_RESOURCE_SLOT_COUNT);
 
-            TBD_FOR_INT(count) { v[i] = (ID3D11ShaderResourceView*)(texture[i] == NULL ? NULL : texture[i]->VGetDevicePtr()); }
+            TBD_FOR_INT(count) { v[i] = (ID3D11ShaderResourceView*)(texture[i] == NULL ? NULL : texture[i]->VGetViewDevicePtr()); }
             SetSampler(slot, v, count, PS_Stage);
         }
 

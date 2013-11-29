@@ -3,14 +3,10 @@
 
 #define CM_API __stdcall
 
-#ifndef GDEBUG
 #ifdef __COMPILING_DLL
-#define CM_DLL_API __declspec(dllexport)
+    #define CM_DLL_API __declspec(dllexport)
 #else 
-#define CM_DLL_API __declspec(dllimport)
-#endif
-#else
-#define CM_DLL_API
+    #define CM_DLL_API __declspec(dllimport)
 #endif
 
 #define CM_INLINE __inline

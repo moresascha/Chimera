@@ -65,7 +65,7 @@ namespace chimera
 
             for(UCHAR i = 0; i < m_systemCores; ++i)
             {
-                std::shared_ptr<IProcess> proc = m_currentRunning[i];
+                std::shared_ptr<IProcess>& proc = m_currentRunning[i];
                 if(proc != NULL)
                 {
                     if(proc->IsDead())

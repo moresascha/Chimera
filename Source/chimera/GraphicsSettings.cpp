@@ -439,6 +439,7 @@ namespace chimera
 
     VOID GraphicsSettings::VAddSetting(std::unique_ptr<IGraphicSetting> setting, GraphicsSettingType type)
     {
+        setting->VOnRestore(m_lastW, m_lastH);
         if(type == eGraphicsSetting_Albedo)
         {
             m_albedoSettings.push_back(std::move(setting));

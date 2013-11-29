@@ -176,7 +176,7 @@ float __device__ getArea(AABB* aabb)
 float __device__ getSAH(AABB* node, int axis, float split, int primBelow, int primAbove, float traversalCost = 0, float isectCost = 1)
 {
     float cost = FLT_MAX;
-    if(split > getAxis(&node->min, axis) && split < getAxis(&node->max, axis))
+    if(split > getAxis(&node->min, axis) && split < getAxis(&node->max, axis)) //primBelow && primAbove) //
     {
         float3 axisScale = getAxisScale(node);
         float invTotalSA = 1.0f / getArea(node);
@@ -258,17 +258,17 @@ extern "C" __global__ void computeSplits(AABB* aabb, uint* nodesContent, uint* n
         return;
     }
 
-    uint levelOffset = elemsBeforeLevel(depth); //(1 << depth) - 1;
+    uint levelOffset = elemsBeforeLevel(depth);
 
     uint pos = id - prefixScan[id];
 
-    uint nodeIndex = scannedContentCount[id]; //count * depth + 
+    uint nodeIndex = scannedContentCount[id];
 
     Split split = nodeSplitData[levelOffset + nodeIndex];
 
     AABB aa = aabb[levelOffset + nodeIndex];
 
-    float3 d = data[nodesContent[id]];
+    float3 d = data[id];//nodesContent[id]];
     
     int axis = getLongestAxis(aa.min, aa.max);
 
@@ -282,43 +282,117 @@ extern "C" __global__ void computeSplits(AABB* aabb, uint* nodesContent, uint* n
     split.above = elemsInNode - pos - 1;
     split.below = pos + 1;
 
-     split.above = max((int)split.above, 0);
-     split.below = max((int)split.below, 0);
+    split.above = max((int)split.above, 0);
+    split.below = max((int)split.below, 0);
 
     splits[id] = split;
 }
 
-extern "C" __global__ void animateGeometry(float* data, float time, float scale, uint parts, uint N)
+__device__ void rotX(float a, float3* p)
 {
-    const uint stride = 3;
-    uint id = threadIdx.x + blockDim.x * blockIdx.x;
-
-    if(id >= N)
-    {
-        return;
-    }
-
-    uint elemsPerPart = N/parts;
-    uint row = 4;
-    uint elemsPerRow = 4 * elemsPerPart;
-
-    float elemntPerPartId = id % elemsPerPart;
-
-    uint x = (id / elemsPerPart) % row;
-    uint z = id / elemsPerRow;
-
-    float os = id / elemsPerPart;
-    
-    float t = PI_MUL2 * elemntPerPartId / (float)elemsPerPart;
-
-    float dir = (id / elemsPerPart) % 2 > 0 ? 1 : -1;
-
-    data[stride * id + 0] = 2 * x + scale * dir * cos(dir * (t + time));
-    data[stride * id + 1] = scale + scale * dir * sin(dir * (t + time)) * cos(dir * (t + time));
-    data[stride * id + 2] = 2 * z + scale * dir * sin(dir * (t + time ));
+	float3 pt = *p;
+	p->y = cos(a) * pt.y - sin(a) * pt.z;
+	p->z = sin(a) * pt.y + cos(a) * pt.z;
 }
 
-extern "C" __global__ void animateGeometry1(float* data, float time, float scale, uint parts, uint N)
+__device__ void rotY(float a, float3* p)
+{
+	float3 pt = *p;
+	p->x = cos(a) * pt.x + sin(a) * pt.z;
+	p->z = -sin(a) * pt.x + cos(a) * pt.z;
+}
+
+__device__ void rotZ(float a, float3* p)
+{
+	float3 pt = *p;
+	p->x = cos(a) * pt.x - sin(a) * pt.y;
+	p->y = sin(a) * pt.x + cos(a) * pt.y;
+}
+
+__device__ void rotA(float a, float3* p, uint axis)
+{
+	switch(axis)
+	{
+		case 0 :
+		{
+			rotX(a, p);
+		} break;
+		case 1 :
+		{
+			rotY(a, p);
+		} break;
+		case 2 :
+		{
+			rotZ(a, p);
+		} break;
+	}
+
+}
+
+extern "C" __global__ void animateGeometry2(float* data, float time, float scale, uint parts, uint N)
+{
+	const uint stride = 3;
+
+    uint id = threadIdx.x + blockDim.x * blockIdx.x;
+
+    if(id >= N)
+    {
+        return;
+    }
+	float t = PI_MUL2 * (float)id / (float)N;
+    data[stride * id + 0] += 0.05 * cos(t + time);
+    data[stride * id + 1] += 0.05 * sin(t + time);
+    data[stride * id + 2] += 0.05 * cos(t + time) * cos(t + time);
+}
+
+extern "C" __global__ void animateGeometry(float* data, float time, float scale, uint parts, uint N)
+{
+	const uint stride = 3;
+
+    uint id = threadIdx.x + blockDim.x * blockIdx.x;
+
+    if(id >= N)
+    {
+        return;
+    }
+
+    uint elemsPerPart = N/parts;
+    elemsPerPart = elemsPerPart < 1 ? 1 : elemsPerPart;
+    uint row = 4;
+    uint elemsPerRow = 4 * elemsPerPart;
+
+    uint elemntPerPartId = id % elemsPerPart;
+
+    uint x = (id / elemsPerPart) % row;
+    uint z = id / elemsPerRow;
+
+    uint partId = id / elemsPerPart;
+    
+    float t = PI_MUL2 * (float)elemntPerPartId / (float)elemsPerPart;
+
+    float dir = (partId) % 2 > 0 ? 1 : -1;
+
+	float3 p;
+	p.x = dir * cos(dir * t + time);
+	p.y = dir * sin(dir * t + time) * cos(dir * t + time);
+	p.z = dir * sin(dir * t + time);
+
+	p.x = scale * p.x;
+	p.y = scale * p.y;
+	p.z = scale * p.z;
+
+	rotA(5 * dir * time, &p, partId%3);
+
+	p.x += 2 * x;
+	p.y += scale;
+	p.z += 2 * z;
+
+    data[stride * id + 0] = p.x;
+    data[stride * id + 1] = p.y;
+    data[stride * id + 2] = p.z;
+}
+
+extern "C" __global__ void animateGeometry0(float* data, float time, float scale, uint parts, uint N)
 {
     const uint stride = 3;
     uint id = threadIdx.x + blockDim.x * blockIdx.x;
@@ -332,10 +406,12 @@ extern "C" __global__ void animateGeometry1(float* data, float time, float scale
     uint row = 4;
     uint elemsPerRow = 4 * elemsPerPart;
 
-    float elemntPerPartId = id % elemsPerPart;
+    uint elemntPerPartId = id % elemsPerPart;
 
     uint x = (id / elemsPerPart) % row;
     uint z = id / elemsPerRow;
+
+    uint partId = id / elemsPerPart;
 
     float t = PI_MUL2 * elemntPerPartId / (float)elemsPerPart;
 
@@ -385,11 +461,11 @@ extern "C" __global__ void createBBox(AABB* bbox, uint* contentCount, vertex* li
     float3 m_min = bb.min;
     float3 m_max = bb.max;
 
-    if(cc <= 0 || (!(abs(m_min.x) < FLT_MAX_DIV2 && abs(m_min.y) < FLT_MAX_DIV2 && abs(m_min.z) < FLT_MAX_DIV2 &&
+    if((!(abs(m_min.x) < FLT_MAX_DIV2 && abs(m_min.y) < FLT_MAX_DIV2 && abs(m_min.z) < FLT_MAX_DIV2 &&
         abs(m_max.x) < FLT_MAX_DIV2 && abs(m_max.y) < FLT_MAX_DIV2 && abs(m_max.z) < FLT_MAX_DIV2)))
     {
-        m_max = make_float3(0,0,0);
-        m_min = make_float3(0,0,0);
+        m_max = make_float3(-1,-1,-1);
+        m_min = make_float3(-1,-10,-1);
     }
 
     addLine(lines, m_min, make_float3(m_min.x, m_min.y, m_max.z), 0);

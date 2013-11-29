@@ -13,6 +13,7 @@ namespace chimera
         public:
             Texture(VOID);
             VOID* VGetDevicePtr(VOID);
+            VOID* VGetViewDevicePtr(VOID);
             virtual BOOL VCreate(VOID) = 0;
             VOID VDestroy();
             virtual UINT VGetByteCount(VOID) CONST = 0;

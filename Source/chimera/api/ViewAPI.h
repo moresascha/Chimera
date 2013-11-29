@@ -10,7 +10,7 @@ namespace chimera
         IActor* m_actor;
         std::string m_name;
     public:
-        IView(VOID) : m_id(-1), m_actor(NULL), m_name("undefined")
+        IView(VOID) : m_id((ViewId)-1), m_actor(NULL), m_name("undefined")
         {
 
         }

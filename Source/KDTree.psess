@@ -20,13 +20,12 @@
       <PdhCountersRate>500</PdhCountersRate>
       <PdhCounters>
         <PdhCounter>\Arbeitsspeicher\Seiten/s</PdhCounter>
-        <PdhCounter>\Physikalischer Datentr&amp;amp;amp;amp;amp;amp;amp;#228;ger(_Total)\Durchschnittl. Warteschlangenl&amp;amp;amp;amp;amp;amp;amp;#228;nge des Datentr&amp;amp;amp;amp;amp;amp;amp;#228;gers</PdhCounter>
+        <PdhCounter>\Physikalischer Datentr&amp;amp;amp;amp;amp;amp;amp;amp;amp;amp;amp;amp;amp;#228;ger(_Total)\Durchschnittl. Warteschlangenl&amp;amp;amp;amp;amp;amp;amp;amp;amp;amp;amp;amp;amp;#228;nge des Datentr&amp;amp;amp;amp;amp;amp;amp;amp;amp;amp;amp;amp;amp;#228;gers</PdhCounter>
         <PdhCounter>\Prozessor(_Total)\Prozessorzeit (%)</PdhCounter>
       </PdhCounters>
     </PdhSettings>
   </Options>
   <ExcludeSmallFuncs>true</ExcludeSmallFuncs>
-  <InteractionProfilingEnabled>false</InteractionProfilingEnabled>
   <JScriptProfilingEnabled>false</JScriptProfilingEnabled>
   <PreinstrumentEvent>
     <InstrEventExclude>false</InstrEventExclude>
@@ -34,56 +33,4 @@
   <PostinstrumentEvent>
     <InstrEventExclude>false</InstrEventExclude>
   </PostinstrumentEvent>
-  <Binaries>
-    <ProjBinary>
-      <Path>..\Bin\x64Debug\KDTree.exe</Path>
-      <ArgumentTimestamp>01/01/0001 00:00:00</ArgumentTimestamp>
-      <Instrument>true</Instrument>
-      <Sample>true</Sample>
-      <ExternalWebsite>false</ExternalWebsite>
-      <InteractionProfilingEnabled>false</InteractionProfilingEnabled>
-      <IsLocalJavascript>false</IsLocalJavascript>
-      <IsWindowsStoreApp>false</IsWindowsStoreApp>
-      <IsWWA>false</IsWWA>
-      <LaunchProject>true</LaunchProject>
-      <OverrideProjectSettings>false</OverrideProjectSettings>
-      <LaunchMethod>Executable</LaunchMethod>
-      <ExecutablePath>..\Bin\x64Debug\KDTree.exe</ExecutablePath>
-      <StartupDirectory>..\KDTree\</StartupDirectory>
-      <Arguments>
-      </Arguments>
-      <NetAppHost>IIS</NetAppHost>
-      <NetBrowser>InternetExplorer</NetBrowser>
-      <ExcludeSmallFuncs>true</ExcludeSmallFuncs>
-      <JScriptProfilingEnabled>false</JScriptProfilingEnabled>
-      <PreinstrumentEvent>
-        <InstrEventExclude>false</InstrEventExclude>
-      </PreinstrumentEvent>
-      <PostinstrumentEvent>
-        <InstrEventExclude>false</InstrEventExclude>
-      </PostinstrumentEvent>
-      <ProjRef>{F0B22F49-8D61-4B7D-A34D-2A2EA8538C8B}|..\KDTree\KDTree.vcxproj</ProjRef>
-      <ProjPath>..\KDTree\KDTree.vcxproj</ProjPath>
-      <ProjName>KDTree</ProjName>
-    </ProjBinary>
-  </Binaries>
-  <Reports>
-    <Report>
-      <Path>KDTree131104.vsp</Path>
-    </Report>
-    <Report>
-      <Path>KDTree131118.vsp</Path>
-    </Report>
-    <Report>
-      <Path>KDTree131118(1).vsp</Path>
-    </Report>
-    <Report>
-      <Path>KDTree131123.vsp</Path>
-    </Report>
-  </Reports>
-  <Launches>
-    <ProjBinary>
-      <Path>:PB:{F0B22F49-8D61-4B7D-A34D-2A2EA8538C8B}|..\KDTree\KDTree.vcxproj</Path>
-    </ProjBinary>
-  </Launches>
 </VSPerformanceSession>

@@ -26,7 +26,7 @@ namespace chimera
 
     VOID ScreenElement::VSetName(LPCSTR name)
     {
-        m_name = name;
+        m_name = std::string(name);
     }
 
     BOOL ScreenElement::VIsActive(VOID) CONST

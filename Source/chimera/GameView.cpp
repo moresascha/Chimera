@@ -124,6 +124,15 @@ namespace chimera
     {
         VGetRenderer()->VOnRestore();
 
+        m_pSceneGraph->VOnRestore();
+
+        if(m_pSceneGraph->VGetCamera())
+        {
+            m_pSceneGraph->VGetCamera()->SetAspect(VGetRenderer()->VGetWidth(), VGetRenderer()->VGetHeight());
+            VGetRenderer()->VSetProjectionTransform(m_pSceneGraph->VGetCamera()->GetProjection(), m_pSceneGraph->VGetCamera()->GetFar());
+            VGetRenderer()->VSetViewTransform(m_pSceneGraph->VGetCamera()->GetView(), m_pSceneGraph->VGetCamera()->GetIView(), m_pSceneGraph->VGetCamera()->GetEyePos());
+        }
+
         std::string fontFile = CmGetApp()->VGetConfig()->VGetString("sFontPath") + std::string("font_16.fnt");
         VGetFontManager()->VGetCurrentFont()->VCreate(fontFile);
 
@@ -143,15 +152,6 @@ namespace chimera
         {
             m_pGui->VOnRestore();
         } */
-
-        m_pSceneGraph->VOnRestore();
-
-        if(m_pSceneGraph->VGetCamera())
-        {
-            m_pSceneGraph->VGetCamera()->SetAspect(VGetRenderer()->VGetWidth(), VGetRenderer()->VGetHeight());
-            VGetRenderer()->VSetProjectionTransform(m_pSceneGraph->VGetCamera()->GetProjection(), m_pSceneGraph->VGetCamera()->GetFar());
-            VGetRenderer()->VSetViewTransform(m_pSceneGraph->VGetCamera()->GetView(), m_pSceneGraph->VGetCamera()->GetIView(), m_pSceneGraph->VGetCamera()->GetEyePos());
-        }
 
         return TRUE;
     }
@@ -433,7 +433,7 @@ namespace chimera
     {
         TBD_FOR(m_scenes)
         {
-            if((*it)->VGetName() == std::string(name))
+            if(!strcmp((*it)->VGetName(), name))
             {
                 return (*it).get();
             }
@@ -445,7 +445,7 @@ namespace chimera
     {
         TBD_FOR(m_scenes)
         {
-            if((*it)->VGetName() == std::string(name))
+            if(!strcmp((*it)->VGetName(), name))
             {
                 m_pCurrentScene = (*it).get();
                 m_pCurrentScene->VGetSettings()->VOnActivate();

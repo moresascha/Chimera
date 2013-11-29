@@ -29,7 +29,7 @@ namespace chimera
 
         virtual BOOL VAbortEvent(CONST EventType& type, BOOL all = FALSE) = 0;
 
-        virtual BOOL VUpdate(CONST ULONG maxMillis = -1) = 0;
+        virtual BOOL VUpdate(CONST ULONG maxMillis = (ULONG)-1) = 0;
 
         virtual ~IEventManager(VOID) {}
     };

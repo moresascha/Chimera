@@ -251,7 +251,10 @@ namespace chimera
             APISetError(eErrorCode_InvalidValue);
         }
 
-        if(!app->VGetHumanView()->VGetRenderer()->VCreate(chimera::WndProc, desc->hInstance, desc->titel.c_str(), 800, 600))
+        int w = app->VGetConfig()->VGetInteger("iWidth");
+        int h = app->VGetConfig()->VGetInteger("iHeight");
+
+        if(!app->VGetHumanView()->VGetRenderer()->VCreate(chimera::WndProc, desc->hInstance, desc->titel.c_str(), w, h))
         {
             APISetError(eErrorCode_InvalidValue);
         }

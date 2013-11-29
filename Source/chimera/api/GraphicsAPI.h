@@ -10,6 +10,8 @@ namespace chimera
     public:
         virtual VOID* VGetDevicePtr(VOID) = 0;
 
+        virtual VOID* VGetViewDevicePtr(VOID) = 0;
+
         virtual ~IDeviceTexture(VOID) {}
     };
 

@@ -1,4 +1,4 @@
-﻿Build started 25.11.2013 22:06:22.
+﻿Build started 29.11.2013 20:46:11.
      1>Project "E:\Dropbox\VisualStudio\Chimera\Source\Chimera.vcxproj" on node 2 (Build target(s)).
      1>InitializeBuildStatus:
          Creating "E:\Dropbox\VisualStudio\Chimera\Source\..\Tmp\Chimerax64Debug\Chimera.unsuccessfulbuild" because "AlwaysCreate" was specified.
@@ -129,4 +129,4 @@
 
 Build succeeded.
 
-Time Elapsed 00:00:03.73
+Time Elapsed 00:00:02.45
