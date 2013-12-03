@@ -96,7 +96,7 @@ struct DstDesc
     Split s;
 };
 
-__device__ DstDesc getDstNode(Split* splitData, uint* scannedContentCount, uint* prefixContent, uint count, uint depth)
+__device__ DstDesc getDstNode(Split* splitData, uint* scannedContentCount, uint* prefixContent, uint depth)
 {
     uint id = GlobalId;
     
@@ -120,7 +120,7 @@ __device__ DstDesc getDstNode(Split* splitData, uint* scannedContentCount, uint*
     return d;
 }
 
-__device__ uint getNextScanValue(uint* scannedContentCount, uint count, int isright, uint depth)
+__device__ uint getNextScanValue(uint* scannedContentCount, int isright, uint depth)
 {
     uint id = GlobalId;
 
@@ -131,20 +131,20 @@ __device__ uint getNextScanValue(uint* scannedContentCount, uint count, int isri
     return scanVal + isright;
 }
 
-extern "C" __global__ void spreadContent(uint* nodesContent, uint* nodesContentCount, Split* splitData, float3* data, uint count, uint depth, 
+extern "C" __global__ void spreadContent(uint* nodesContent, uint* nodesContentCount, Split* splitData, uint count, uint depth, 
                                          uint* scannedContentCount,
                                          uint* prefixScan)
 {
     uint id = GlobalId;
 
-    if(id >= count)
+    if(id >= 2*count)
     {
         return;
     }
 
-    DstDesc dd = getDstNode(splitData, scannedContentCount, prefixScan, count, depth);
+    DstDesc dd = getDstNode(splitData, scannedContentCount, prefixScan, depth);
 
-    uint nextScanVal = getNextScanValue(scannedContentCount, count, dd.isright, depth);
+    uint nextScanVal = getNextScanValue(scannedContentCount, dd.isright, depth);
 
 //     uint memoryOffset = count * ((1 << (depth + 1)) - 1) + scanVal * count;
 //     uint osright = memoryOffset + id - sd.below - prefixSum;
@@ -173,10 +173,10 @@ float __device__ getArea(AABB* aabb)
     return 2 * axisScale.x * axisScale.y + 2 * axisScale.x * axisScale.z + 2 * axisScale.y * axisScale.z;
 }
 
-float __device__ getSAH(AABB* node, int axis, float split, int primBelow, int primAbove, float traversalCost = 0, float isectCost = 1)
+float __device__ getSAH(AABB* node, int axis, float split, int primBelow, int primAbove, float bonus, float traversalCost = 0, float isectCost = 1)
 {
     float cost = FLT_MAX;
-    if(split > getAxis(&node->min, axis) && split < getAxis(&node->max, axis)) //primBelow && primAbove) //
+    if(split > getAxis(&node->min, axis) && split < getAxis(&node->max, axis))
     {
         float3 axisScale = getAxisScale(node);
         float invTotalSA = 1.0f / getArea(node);
@@ -196,7 +196,7 @@ float __device__ getSAH(AABB* node, int axis, float split, int primBelow, int pr
         
         float pbelow = belowSA * invTotalSA;
         float pabove = aboveSA * invTotalSA;
-        float bonus = 0;//(primAbove == 0 || primBelow == 0) ? 1 : 0;
+        //float bonus = 0;//(primAbove == 0 || primBelow == 0) ? 1 : 0;
         cost = traversalCost + isectCost * (1.0f - bonus) * (pbelow * primBelow + pabove * primAbove);
     }
     return cost;
@@ -246,14 +246,14 @@ extern "C" __global__ void splitNodes(AABB* aabb, Split* splits, uint depth)
     aabb[pos + 1] = r;
 }
 
-extern "C" __global__ void computeSplits(AABB* aabb, uint* nodesContent, uint* nodesContentCount, Split* splits, float3* data, uint count, uint depth,
+extern "C" __global__ void computeSplits(AABB* aabb, uint* nodesContent, uint* nodesContentCount, Split* splits, Edge* data, uint count, uint depth,
                                          uint* scannedContentCount,
                                          uint* prefixScan,
                                          Split* nodeSplitData)
 {
     uint id = GlobalId;
     
-    if(id >= count)
+    if(id >= 2*count)
     {
         return;
     }
@@ -264,26 +264,27 @@ extern "C" __global__ void computeSplits(AABB* aabb, uint* nodesContent, uint* n
 
     uint nodeIndex = scannedContentCount[id];
 
-    Split split = nodeSplitData[levelOffset + nodeIndex];
-
     AABB aa = aabb[levelOffset + nodeIndex];
-
-    float3 d = data[id];//nodesContent[id]];
     
     int axis = getLongestAxis(aa.min, aa.max);
 
-    float s = getAxis(&d, axis);
+    Edge edge = data[id]; //axis * 2 * count
 
     uint elemsInNode = nodesContentCount[levelOffset + nodeIndex];
 
-    split.sah = getSAH(&aa, axis, s, pos + 1, elemsInNode - pos);
-    split.split = s;
-    split.axis = axis;
-    split.above = elemsInNode - pos - 1;
-    split.below = pos + 1;
+    Split split;
 
+    split.split = edge.getSplit(axis);
+    split.axis = axis;
+    split.above = elemsInNode - pos - (edge.type == eStart ? 0 : 1);
+    split.below = pos + (edge.type == eEnd ? 1 : 0);
+    split.primId = edge.primId;
     split.above = max((int)split.above, 0);
     split.below = max((int)split.below, 0);
+
+    float sah = getSAH(&aa, axis, split.split, pos, elemsInNode - pos, !(split.above || split.below));
+
+    split.sah = sah;
 
     splits[id] = split;
 }
@@ -455,17 +456,16 @@ extern "C" __global__ void createBBox(AABB* bbox, uint* contentCount, vertex* li
         return;
     }
 
-    uint os = (1 << (d-1)) - 1;
-    int cc = (int)contentCount[os + id];
+    uint os = 0;//(1 << (d-1)) - 1;
     AABB bb = bbox[os + id];
     float3 m_min = bb.min;
     float3 m_max = bb.max;
+    uint cc = contentCount[id];
 
-    if((!(abs(m_min.x) < FLT_MAX_DIV2 && abs(m_min.y) < FLT_MAX_DIV2 && abs(m_min.z) < FLT_MAX_DIV2 &&
-        abs(m_max.x) < FLT_MAX_DIV2 && abs(m_max.y) < FLT_MAX_DIV2 && abs(m_max.z) < FLT_MAX_DIV2)))
+    if(cc == 0 || abs(dot(m_min, m_max)) < 0.1)
     {
-        m_max = make_float3(-1,-1,-1);
-        m_min = make_float3(-1,-10,-1);
+        m_max = make_float3(1,-10000,1);
+        m_min = make_float3(-1,-10001,-1);
     }
 
     addLine(lines, m_min, make_float3(m_min.x, m_min.y, m_max.z), 0);

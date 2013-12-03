@@ -48,11 +48,11 @@ extern "C" void release();
 struct ID3D11Buffer;
 
 UINT elems = 64;
-float g_scale = 10;//30;
+float g_scale = 30;//30;
 uint g_depth = 7;
-uint g_maxDepth = 11;
-uint g_parts = 256;
-float g_timeScale = 1e-5f;
+uint g_maxDepth = 12;
+uint g_parts = 4;
+float g_timeScale = 1e-4f;
 
 chimera::IGuiTextComponent* g_textInfo;
 
@@ -119,21 +119,24 @@ public:
 
     VOID VOnUpdate(ULONG deltaMillis)
     {
-         //AnimateGeo(deltaMillis);
+          AnimateGeo(deltaMillis);
 // 
-         m_timer.Start();
-         g_tree->Update();
-         m_timer.Stop();
+        m_timer.Start();
+        g_tree->Update();
+        m_timer.Stop();
 
         g_tree->GetContentCountStr(cc);
 
+        chimera::IActor* player = chimera::CmGetApp()->VGetHumanView()->VGetTarget();
+        chimera::util::Vec3 pos = chimera::GetActorCompnent<chimera::TransformComponent>(player, CM_CMP_TRANSFORM)->GetTransformation()->GetTranslation();
         _ss.str("");
         _ss << "Rendering: " << chimera::CmGetApp()->VGetRenderingTimer()->VGetLastMillis()/1000.0f << "\n";
         _ss << "Construction (" << g_tree->GetCurrentDepth() << "): " << m_timer.GetMillis()/1000.0f << "\n";
-        _ss << cc;
+        _ss << "Elements:" << cc << "\n";
+        _ss << "Player: " << pos.x << ", " << pos.y << ", " << pos.z;
 
         g_textInfo->VClearText();
-        g_textInfo->VAppendText(_ss.str().c_str());
+        g_textInfo->VAppendText(_ss.str());
     }
 
     ~AnimationProc(VOID)
@@ -263,39 +266,40 @@ void createBBoxGeo(uint aabbsCount)
 
 void createWorld(void)
 {
-//     std::unique_ptr<chimera::ActorDescription> actorDesc = chimera::CmGetApp()->VGetLogic()->VGetActorFactory()->VCreateActorDescription();
-//     chimera::TransformComponent* tcmp = actorDesc->AddComponent<chimera::TransformComponent>(CM_CMP_TRANSFORM);
-//     float meshScale = 0.2f;
-//     tcmp->GetTransformation()->SetScale(meshScale, meshScale, meshScale);
-//     chimera::RenderComponent* rcmp = actorDesc->AddComponent<chimera::RenderComponent>(CM_CMP_RENDERING);
-//     rcmp->m_resource = "sphere_low.obj";
-//     std::shared_ptr<chimera::IVertexBuffer> geo = std::shared_ptr<chimera::IVertexBuffer>(chimera::CmGetApp()->VGetHumanView()->VGetGraphicsFactory()->VCreateVertexBuffer());
+    std::unique_ptr<chimera::ActorDescription> actorDesc = chimera::CmGetApp()->VGetLogic()->VGetActorFactory()->VCreateActorDescription();
+    chimera::TransformComponent* tcmp = actorDesc->AddComponent<chimera::TransformComponent>(CM_CMP_TRANSFORM);
+    float meshScale = 1;
+    tcmp->GetTransformation()->SetScale(meshScale, meshScale, meshScale);
+    chimera::RenderComponent* rcmp = actorDesc->AddComponent<chimera::RenderComponent>(CM_CMP_RENDERING);
+    rcmp->m_resource = "sphere_low.obj";
+    std::shared_ptr<chimera::IVertexBuffer> geo = std::shared_ptr<chimera::IVertexBuffer>(chimera::CmGetApp()->VGetHumanView()->VGetGraphicsFactory()->VCreateVertexBuffer());
 
-   // std::shared_ptr<chimera::IMesh>& monkey = std::static_pointer_cast<chimera::IMesh>(chimera::CmGetApp()->VGetCache()->VGetHandle(chimera::CMResource("bunny.obj")));
-    float scale = 10;
+    std::shared_ptr<chimera::IMesh>& monkey = std::static_pointer_cast<chimera::IMesh>(chimera::CmGetApp()->VGetCache()->VGetHandle(chimera::CMResource("monkey.obj")));
     UINT bunnys = 1;
-    //CONST FLOAT* monkeyVertes = monkey->VGetVertices();
-    elems = 64;//bunnys * monkey->VGetVertexCount();
-
+    CONST FLOAT* monkeyVertes = monkey->VGetVertices();
+    UINT perObjectCount = 512;//monkey->VGetVertexCount();
+    elems = bunnys * perObjectCount;
+    UINT scale = 20;//20*(UINT)(log(perObjectCount));
     nutty::HostBuffer<float3> v(elems);
 
     INT vi = 0;
     for(UINT b = 0; b < bunnys; ++b)
     {
-//         float x = (float)(rand()%10);
-//         float y = (float)(rand()%10);
-//         float z = (float)(rand()%10);
+        float x = 0;//2*(float)(rand()%scale);
+        float y = 2;
+        float z = 0;//2*(float)(rand()%scale);
 
-        for(UINT i = 0; i < elems; ++i)
+        for(UINT i = 0; i < perObjectCount; ++i)
         {
-            float x = (float)(rand()%10);
-            float y = 2 + (float)(rand()%10);
-            float z = (float)(rand()%10);
-
             float3 pos;
-            pos.x = x;//scale * monkeyVertes[8 * i + 0];
-            pos.y = y;//scale * monkeyVertes[8 * i + 1];
-            pos.z = z;//scale * monkeyVertes[8 * i + 2];
+            pos.x = scale * (float)(rand()/(float)RAND_MAX);// + scale * monkeyVertes[8 * i + 0];
+            pos.y = scale * (float)(rand()/(float)RAND_MAX);//y + scale * monkeyVertes[8 * i + 1];
+            pos.z = scale * (float)(rand()/(float)RAND_MAX);//z + scale * monkeyVertes[8 * i + 2];
+
+//             pos.x = x + scale * monkeyVertes[8 * i + 0];
+//             pos.y = scale + y + scale * monkeyVertes[8 * i + 1];
+//             pos.z = z + scale * monkeyVertes[8 * i + 2];
+           // DEBUG_OUT_A("%f %f %f\n", pos.x, pos.y, pos.z);
             v[vi++] = pos;
         }
     }
@@ -303,9 +307,9 @@ void createWorld(void)
     nutty::DeviceBuffer<float3>* data = new nutty::DeviceBuffer<float3>(elems);
     nutty::Copy(data->Begin(), v.Begin(), elems);
     
-//     geo->VInitParamater(elems, 3 * sizeof(float), v);
-//     geo->VCreate();
-//     SAFE_DELETE(v);
+    geo->VInitParamater(elems, 3 * sizeof(float), *v.GetRawPointer());
+    geo->VCreate();
+    /*SAFE_DELETE(v);*/
 
 //     ID3D11Buffer* buffer = (ID3D11Buffer*)geo->VGetDevicePtr();
 //     nutty::MappedBufferPtr<float>* mappedPtr = new nutty::MappedBufferPtr<float>(std::move(nutty::WrapBuffer<float>(buffer)));
@@ -313,19 +317,19 @@ void createWorld(void)
     AnimationProc* ap = new AnimationProc(data, elems);
     chimera::IProcess* proc = chimera::CmGetApp()->VGetLogic()->VGetProcessManager()->VAttach(std::unique_ptr<chimera::IProcess>(ap));
     
-//     rcmp->m_vmemInstances = geo;
-//     chimera::CmGetApp()->VGetLogic()->VCreateActor(std::move(actorDesc));
+    rcmp->m_vmemInstances = geo;
+    //chimera::CmGetApp()->VGetLogic()->VCreateActor(std::move(actorDesc));
 
-    uint leafBBoxCount = (1 << (uint)(g_maxDepth-1));
+    uint bboxCount = (1 << (uint)g_maxDepth) - 1;
 
     g_tree = generate((void*)data, elems, g_depth, g_maxDepth);
 
     g_tracer = createTracer(g_tree);
-
+// 
     chimera::IGraphicsSettings* settings = chimera::CmGetApp()->VGetHumanView()->VGetSceneByName("main")->VGetSettings();
     settings->VAddSetting(std::unique_ptr<chimera::IGraphicSetting>(g_tracer), chimera::eGraphicsSetting_Lighting);
 
-    createBBoxGeo(leafBBoxCount);
+    //createBBoxGeo(bboxCount);
 
     g_textInfo = chimera::CmGetApp()->VGetHumanView()->VGetGuiFactory()->VCreateTextComponent();
     chimera::CMDimension dim;

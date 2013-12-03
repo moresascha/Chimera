@@ -4,6 +4,7 @@
 #include <cutil_inline.h>
 
 #include "../../Nutty/Nutty/Functions.h"
+#include "../../Nutty/Nutty/DeviceBuffer.h"
 
 #ifdef max
 #undef max
@@ -62,7 +63,7 @@ enum DeviceBufferType
     eNodesContent,
     eNodesContentCount,
     eSplits,
-    eSplitData,
+    eNodeSplits,
     ePosSplits,
     eAxisAlignedBB,
     eBufferCount
@@ -71,11 +72,26 @@ enum DeviceBufferType
 struct Split
 {
     int axis;
+    uint primId;
     float split;
     float sah;
     uint below;
     uint above;
+};
+
+struct Node
+{
+    float split;
     uint contentStartIndex;
+    uint contentCount;
+    uint leaf;
+    uint axis;
+};
+
+struct ContentPoint
+{
+    float3 pos;
+    uint primId;
 };
 
 enum EdgeType
@@ -88,7 +104,31 @@ struct Edge
 {
     EdgeType type;
     uint primId;
-    float t;
+    float tx;
+    float ty;
+    float tz;
+
+    __device__ __host__ float getSplit(byte axis)
+    {
+        switch(axis)
+        {
+        case 0 : { return tx; }
+        case 1 : { return ty; }
+        case 2 : { return tz; }
+        }
+        return 0;
+    }
+
+    __device__ void setSplit(byte axis, float f)
+    {
+        switch(axis)
+        {
+        case 0 : tx = f; break;
+        case 1 : ty = f; break;
+        case 2 : tz = f; break;
+        }
+    }
+
 };
 
 struct AABB
@@ -169,4 +209,5 @@ public:
     virtual void GetContentCountStr(std::string& str) = 0;
     virtual void* GetBuffer(DeviceBufferType id) = 0;
     virtual void* GetData(void) = 0;
+    virtual nutty::DeviceBuffer<Node>* GetNodes(void) = 0;
 };

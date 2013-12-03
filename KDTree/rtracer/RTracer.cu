@@ -196,116 +196,101 @@ __device__ int computeHit(float3 sphere, float4 eye, float4 ray, float tmin, flo
 
 struct ToDo 
 {
-    Split node;
+    Node node;
     float min;
     float max;
     uint treePos;
     uint level;
 };
 
-__device__ void traversal(float3* spheres, Split* splits, uint* contentCount, float4 eye, float4 ray, HitResult* hit, float4 min, float4 max, uint treeDepth) 
+__device__ float4 traversal0(float3* spheres, Node* nodes, Split* splits, float4 eye, float4 ray, HitResult* hit, float4 min, float4 max, uint treeDepth) 
 {
-    float tmin, tmax;
+    float4 c = make_float4(1,1,1,1);
+    float sceneMin, sceneMax;
 
     hit->isHit = 0;
 
-    if(!intersectP(eye, ray, 1.0/ray, min, max, &tmin, &tmax))
+    if(!intersectP(eye, ray, 1.0/ray, min, max, &sceneMin, &sceneMax))
     {
-        return;
+        return c;
     }
-
-    if(tmin < 0.0f) tmax = 0.0f;
 
     hit->t = FLT_MAX;
 
-    ToDo toDo[16];
+    float tmin;
+    float tmax;
+    tmin = tmax = sceneMin;
 
-    Split n = splits[0];
-
-    int pos = 0; 
-
-    float4 invDir = make_float4(1.0 / ray.x, 1.0 / ray.y, 1.0 / ray.z, 0);
-
-    uint treePos = 0;
-    uint level = 0;
-
-    while(level < treeDepth) 
+    while(tmax < sceneMax) 
     {
-        if(hit->t < tmin) 
-        {
-            break;
-        }
+        Node n = nodes[0];
+        tmin = tmax;
+        tmax = sceneMax;
+        uint treePos = 0;
+        uint level = 0;
 
-        if(contentCount[treePos] > 2 && level < (treeDepth-1)) 
+        while(!n.leaf)
         {
             int axis = n.axis;
-
-            float tplane = (n.split - getAxis(eye, axis)) * getAxis(invDir, axis);
-
-            Split c0; Split c1;
+            float tsplit = (n.split - getAxis(eye, axis)) / getAxis(ray, axis);
 
             int belowFirst = (getAxis(eye, axis) < n.split) || ((getAxis(eye, axis) == n.split) && (getAxis(ray, axis) >= 0));
+            
+            Node first, second;
 
             if(belowFirst)
             {
-                c0 = splits[treePos + (1 << level)];
-                c1 = splits[treePos + (1 << level)+1];
-            } else 
-            {
-                c0 = splits[treePos + (1 << level)+1];
-                c1 = splits[treePos + (1 << level)];
-            }
-            if(tplane > tmax || tplane <= 0)
-            {
-                n = c0;
-                treePos += (1 << level);
-            } else if(tplane < tmin) 
-            {
-                n = c1;
+                first = nodes[treePos + (1 << level)];
+                second = nodes[treePos + (1 << level)+1];
                 treePos += (1 << level)+1;
             } else 
             {
-//                 ToDo td;
-//                 td.treePos = treePos + (1 << level)+1;
-//                 td.level = level;
-//                 td.node = c1;
-//                 td.min = tplane;
-//                 td.max = tmax;
-//                 toDo[pos] = td;
-//                 pos++;
-//                 n = c0;
-//                 treePos += (1 << level);
-//                 tmax = tplane;
+                first = nodes[treePos + (1 << level)+1];
+                second = nodes[treePos + (1 << level)];
+                treePos += (1 << level);
+            }
+
+            if(tsplit >= tmax || tsplit < 0)
+            {
+                n = first;
+            } else if(tsplit <= tmin) 
+            {
+                n = second;
+            }
+            else
+            {
+                n = first;
+                tmax = tsplit;
+            }
+            for(int i = 0; i < n.contentCount; ++i)
+            {
+//                 if(n.contentStartIndex + i >=12)
+//                 {
+//                     c = make_float4(1,0,0,0);
+//                     return c;
+//                 }
+//                 else
+                {
+                    int h = computeHit(spheres[n.contentStartIndex + i], eye, ray, tmin, tmax, 1, hit);
+
+                    if(h && hit->t < tmax)
+                    {
+                        return c;
+                    }
+                }
             }
             level++;
-        } else
-        {
-            uint spheresCnt = contentCount[treePos];
-            for(int i = 0; i < spheresCnt; ++i)
-            {
-                computeHit(spheres[n.contentStartIndex + i], eye, ray, tmin, tmax, 1, hit);
-            }
-            if(pos > 0) 
-            {
-//                 pos -= 1;
-//                 n = toDo[pos].node;
-//                 tmin = toDo[pos].min;
-//                 tmax = toDo[pos].max;
-//                 treePos = toDo[pos].treePos;
-//                 level = toDo[pos].level;
-            } else 
-            {
-                break;
-            }
         }
     }
+
+    return c;
 }
 
 __global__ void simpleSphereTracer(
     float4* dst, 
     float3* spheres,
     float3* aabbs,
-    uint* nodesContentCount,
+    Node* nodes,
     Split* splits,
     uint treeDepth,
     float* view, float3 _eye, uint w, uint h)
@@ -347,13 +332,13 @@ __global__ void simpleSphereTracer(
     memset(&res, 0, sizeof(HitResult));
     res.t = FLT_MAX;
 
-    traversal(spheres, splits, nodesContentCount, eye, ray, &res, mini, maxi, treeDepth);
+    float4 debug = traversal0(spheres, nodes, splits, eye, ray, &res, mini, maxi, treeDepth);
 
     if(!res.isHit)
     {
         dst[id] = color;
         return;
-    }
+    } 
 
     float4 light = make_float4(1.0f,0.3f,-0.2f,0);
 
@@ -365,7 +350,7 @@ __global__ void simpleSphereTracer(
     float4 refractionColor = tex2D(src, rfract.x, rfract.y);
    
     float4 c = 1.05*refractionColor;// * lerp(make_float4(0.1,0.1,0.1, 0), make_float4(1,1,1,1), dot(light, normal));
-
+    
     dst[id] = make_float4(c.x, c.y, c.z, color.w);
 }
 
@@ -377,6 +362,7 @@ private:
     nutty::DeviceBuffer<float3>* m_kdData;
     nutty::DeviceBuffer<float3>* m_kdBBox;
     nutty::DeviceBuffer<Split>* m_splits;
+    nutty::DeviceBuffer<Node>* m_nodes;
     nutty::DeviceBuffer<uint>* m_contentCount;
     uint m_width;
     uint m_height;
@@ -406,9 +392,9 @@ wtf_tracer::wtf_tracer(IKDTree* tree)
 
     m_kdData = (nutty::DeviceBuffer<float3>*)m_tree->GetData();
     m_kdBBox = (nutty::DeviceBuffer<float3>*)m_tree->GetBuffer(eAxisAlignedBB);
-    m_splits = (nutty::DeviceBuffer<Split>*)m_tree->GetBuffer(eSplitData);
+    m_splits = (nutty::DeviceBuffer<Split>*)m_tree->GetBuffer(eNodeSplits);
     m_contentCount = (nutty::DeviceBuffer<uint>*)m_tree->GetBuffer(eNodesContentCount);
-
+    m_nodes = m_tree->GetNodes();
 }
 
 IRTracer* createTracer(IKDTree* tree, int flags)
@@ -450,7 +436,7 @@ void wtf_tracer::VRender(void)
         (float4*)m_linearMem,
         m_kdData->Begin()(),
         m_kdBBox->Begin()(), 
-        m_contentCount->Begin()(),
+        m_nodes->Begin()(),
         m_splits->Begin()(),
         
         m_tree->GetCurrentDepth(), m_view.Begin()(), *m_eye.Begin(), m_width, m_height);
