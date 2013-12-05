@@ -97,6 +97,9 @@
     <Filter Include="Source Files\screen">
       <UniqueIdentifier>{667ea646-a34c-41c7-922f-249114067022}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Source Files\unused">
+      <UniqueIdentifier>{b56b1440-b8b1-4c87-bcde-8b212c918bd8}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\Assets\shader\ShaderGlobals.h">
@@ -308,103 +311,10 @@
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="chimera\AIView.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="chimera\AnchorNode.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="chimera\BasicApp.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="chimera\ByteStream.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="chimera\CameraTracking.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="chimera\CudaTransformationNode.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="chimera\FPSControler.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="chimera\GameInputActions.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="chimera\LuaHelper.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="chimera\Main.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="chimera\Maze.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="chimera\Modifier.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="chimera\Packman.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="chimera\PackmanLogic.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="chimera\ParticleManager.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="chimera\ParticleNode.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="chimera\ParticleSystem.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="chimera\Picker.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="chimera\Profiling.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="chimera\Script.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="chimera\ScriptEvent.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="chimera\Sound.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="chimera\SoundEngine.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="chimera\SoundProcess.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="chimera\Spline.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="chimera\tbdStack.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="chimera\Thread.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="chimera\tinyxml2.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="chimera\SpotlightNode.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="chimera\CameraNode.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="chimera\LevelManager.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="chimera\PointlightNode.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="chimera\FileSystem.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="chimera\D3DTexture.cpp">
@@ -550,6 +460,99 @@
     </ClCompile>
     <ClCompile Include="chimera\InstancedMeshNode.cpp">
       <Filter>Source Files\view</Filter>
+    </ClCompile>
+    <ClCompile Include="chimera\Maze.cpp">
+      <Filter>Source Files\unused</Filter>
+    </ClCompile>
+    <ClCompile Include="chimera\Modifier.cpp">
+      <Filter>Source Files\unused</Filter>
+    </ClCompile>
+    <ClCompile Include="chimera\Packman.cpp">
+      <Filter>Source Files\unused</Filter>
+    </ClCompile>
+    <ClCompile Include="chimera\PackmanLogic.cpp">
+      <Filter>Source Files\unused</Filter>
+    </ClCompile>
+    <ClCompile Include="chimera\ParticleManager.cpp">
+      <Filter>Source Files\unused</Filter>
+    </ClCompile>
+    <ClCompile Include="chimera\ParticleNode.cpp">
+      <Filter>Source Files\unused</Filter>
+    </ClCompile>
+    <ClCompile Include="chimera\ParticleSystem.cpp">
+      <Filter>Source Files\unused</Filter>
+    </ClCompile>
+    <ClCompile Include="chimera\Picker.cpp">
+      <Filter>Source Files\unused</Filter>
+    </ClCompile>
+    <ClCompile Include="chimera\PointlightNode.cpp">
+      <Filter>Source Files\unused</Filter>
+    </ClCompile>
+    <ClCompile Include="chimera\Profiling.cpp">
+      <Filter>Source Files\unused</Filter>
+    </ClCompile>
+    <ClCompile Include="chimera\Script.cpp">
+      <Filter>Source Files\unused</Filter>
+    </ClCompile>
+    <ClCompile Include="chimera\ScriptEvent.cpp">
+      <Filter>Source Files\unused</Filter>
+    </ClCompile>
+    <ClCompile Include="chimera\Sound.cpp">
+      <Filter>Source Files\unused</Filter>
+    </ClCompile>
+    <ClCompile Include="chimera\SoundEngine.cpp">
+      <Filter>Source Files\unused</Filter>
+    </ClCompile>
+    <ClCompile Include="chimera\SoundProcess.cpp">
+      <Filter>Source Files\unused</Filter>
+    </ClCompile>
+    <ClCompile Include="chimera\Spline.cpp">
+      <Filter>Source Files\unused</Filter>
+    </ClCompile>
+    <ClCompile Include="chimera\SpotlightNode.cpp">
+      <Filter>Source Files\unused</Filter>
+    </ClCompile>
+    <ClCompile Include="chimera\tbdStack.cpp">
+      <Filter>Source Files\unused</Filter>
+    </ClCompile>
+    <ClCompile Include="chimera\Thread.cpp">
+      <Filter>Source Files\unused</Filter>
+    </ClCompile>
+    <ClCompile Include="chimera\AIView.cpp">
+      <Filter>Source Files\unused</Filter>
+    </ClCompile>
+    <ClCompile Include="chimera\AnchorNode.cpp">
+      <Filter>Source Files\unused</Filter>
+    </ClCompile>
+    <ClCompile Include="chimera\BasicApp.cpp">
+      <Filter>Source Files\unused</Filter>
+    </ClCompile>
+    <ClCompile Include="chimera\ByteStream.cpp">
+      <Filter>Source Files\unused</Filter>
+    </ClCompile>
+    <ClCompile Include="chimera\CameraNode.cpp">
+      <Filter>Source Files\unused</Filter>
+    </ClCompile>
+    <ClCompile Include="chimera\CameraTracking.cpp">
+      <Filter>Source Files\unused</Filter>
+    </ClCompile>
+    <ClCompile Include="chimera\CudaTransformationNode.cpp">
+      <Filter>Source Files\unused</Filter>
+    </ClCompile>
+    <ClCompile Include="chimera\FileSystem.cpp">
+      <Filter>Source Files\unused</Filter>
+    </ClCompile>
+    <ClCompile Include="chimera\FPSControler.cpp">
+      <Filter>Source Files\unused</Filter>
+    </ClCompile>
+    <ClCompile Include="chimera\GameInputActions.cpp">
+      <Filter>Source Files\unused</Filter>
+    </ClCompile>
+    <ClCompile Include="chimera\LevelManager.cpp">
+      <Filter>Source Files\unused</Filter>
+    </ClCompile>
+    <ClCompile Include="chimera\LuaHelper.cpp">
+      <Filter>Source Files\unused</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

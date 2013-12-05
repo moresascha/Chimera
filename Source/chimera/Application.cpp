@@ -4,6 +4,7 @@
 #include "Cache.h"
 #include "util.h"
 #include "Timer.h"
+#include "Event.h"
 
 namespace chimera
 {
@@ -110,6 +111,10 @@ namespace chimera
                     TranslateMessage(&msg);
                     DispatchMessage(&msg);
                 }
+                if(msg.message == WM_QUIT)
+                {
+                    g_pApp->VStopRunning();
+                }
             } 
             else 
             {
@@ -162,8 +167,9 @@ namespace chimera
                     UINT w = LOWORD(lParam);
                     UINT h = HIWORD(lParam);
                     s_mimnimized = wParam == SIZE_MINIMIZED;
-                    if(!s_mimnimized)
+                    if(!s_mimnimized && (w > 0 && h > 0))
                     {
+                        CmGetApp()->VGetEventManager()->VTriggetEvent(IEventPtr(new PreRestoreEvent()));
                         CmGetApp()->VGetHumanView()->VOnResize(w, h);
                     }
                 }

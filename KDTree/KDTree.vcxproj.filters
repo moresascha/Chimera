@@ -15,13 +15,16 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <CudaCompile Include="KD.cu">
-      <Filter>Resource Files</Filter>
-    </CudaCompile>
     <CudaCompile Include="kdtree.cu">
       <Filter>Source Files</Filter>
     </CudaCompile>
-    <CudaCompile Include="rtracer\RTracer.cu">
+    <CudaCompile Include="kd_kernel.cu">
+      <Filter>Resource Files</Filter>
+    </CudaCompile>
+    <CudaCompile Include="animation_n_stuff.cu">
+      <Filter>Resource Files</Filter>
+    </CudaCompile>
+    <CudaCompile Include="rtracer\tracer.cu">
       <Filter>Source Files</Filter>
     </CudaCompile>
   </ItemGroup>
@@ -34,14 +37,11 @@
     <None Include="kdtree.cuh">
       <Filter>Source Files</Filter>
     </None>
-    <None Include="kernel.cuh">
-      <Filter>Source Files</Filter>
+    <None Include="kd_kernel.cuh">
+      <Filter>Resource Files</Filter>
     </None>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="WaitForActorCreated.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="rtracer\RTracer.h">
       <Filter>Header Files</Filter>
     </ClInclude>

@@ -494,6 +494,8 @@ namespace chimera
         {
             m_pPreResult->VOnRestore(w, h, eFormat_R32G32B32A32_FLOAT);
         }*/
+
+        m_pScene->VOnRestore(w, h, eFormat_R32G32B32A32_FLOAT);
         
         if(m_pPostFX)
         {
@@ -511,8 +513,6 @@ namespace chimera
             (*it)->VOnRestore(w, h);
         }
         
-        m_pScene->VOnRestore(w, h, eFormat_R32G32B32A32_FLOAT);
-
         std::unique_ptr<IGraphicsStateFactroy> factory = CmGetApp()->VGetHumanView()->VGetGraphicsFactory()->VCreateStateFactory();
         
         RasterStateDesc rasterDesc;

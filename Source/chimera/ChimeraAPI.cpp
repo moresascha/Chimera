@@ -244,11 +244,13 @@ namespace chimera
         if(!app->VInitialise(ff))
         {
             APISetError(eErrorCode_InvalidValue);
+            return NULL;
         }
 
         if(!app->VGetHumanView()->VInitialise(ff))
         {
             APISetError(eErrorCode_InvalidValue);
+            return NULL;
         }
 
         int w = app->VGetConfig()->VGetInteger("iWidth");
@@ -257,11 +259,13 @@ namespace chimera
         if(!app->VGetHumanView()->VGetRenderer()->VCreate(chimera::WndProc, desc->hInstance, desc->titel.c_str(), w, h))
         {
             APISetError(eErrorCode_InvalidValue);
+            return NULL;
         }
 
         if(!app->VGetHumanView()->VOnRestore())
         {
             APISetError(eErrorCode_InvalidValue);
+            return NULL;
         }
         
         //for testing

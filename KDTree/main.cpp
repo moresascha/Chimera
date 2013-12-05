@@ -21,10 +21,7 @@
 
 #include "rtracer/RTracer.h"
 
-#include "WaitForActorCreated.h"
-
 #include <fstream>
-
 
 IKDTree* g_tree;
 IRTracer* g_tracer;
@@ -47,9 +44,9 @@ extern "C" void release();
 
 struct ID3D11Buffer;
 
-UINT elems = 64;
-float g_scale = 30;//30;
-uint g_depth = 7;
+UINT elems = 8;
+float g_scale = 10; //30;
+uint g_depth = 4;
 uint g_maxDepth = 12;
 uint g_parts = 4;
 float g_timeScale = 1e-4f;
@@ -88,18 +85,21 @@ class AnimationProc : public chimera::IProcess
 private:
     nutty::cuKernel* k;
     nutty::DeviceBuffer<float3>* ptr;
+    nutty::MappedBufferPtr<float>* _gfxGeo;
     nutty::cuModule* m;
     float time;
     std::string cc;
     chimera::util::HTimer m_timer;
+    float m_scale;
 
 public:
-    AnimationProc(nutty::DeviceBuffer<float3>* geo, uint lineCount) :  time(0)
+    AnimationProc(nutty::DeviceBuffer<float3>* geo, uint elems, nutty::MappedBufferPtr<float>* gfxGeo = NULL) : time(0), _gfxGeo(gfxGeo)
     {
         ptr = geo;
-        m = new nutty::cuModule("./ptx/KD.ptx");
+        m = new nutty::cuModule("./ptx/animation_N_stuff.ptx");
         k = new nutty::cuKernel(m->GetFunction("animateGeometry"));
-        k->SetDimension(nutty::cuda::getCudaGrid(lineCount, 256U), 256);        
+        k->SetDimension(nutty::cuda::GetCudaGrid(elems, 256U), 256);
+        m_scale = g_scale;
     }
 
     std::stringstream _ss;
@@ -107,20 +107,28 @@ public:
     VOID AnimateGeo(ULONG deltaMillis)
     {
         time += g_timeScale * deltaMillis;
-        //nutty::DevicePtr<float> devptr = mappedPtr->Bind();
+        m_scale = g_scale*20*(UINT)(log(elems));
         k->SetKernelArg(0, *ptr);
         k->SetKernelArg(1, time);
         k->SetKernelArg(2, g_scale);
         k->SetKernelArg(3, g_parts);
         k->SetKernelArg(4, elems);
-        k->Call();
-        //mappedPtr->Unbind();
+        k->Call(g_tree->GetDefaultStream().GetPointer());
+
+        if(_gfxGeo)
+        {
+            nutty::DevicePtr<float> devptr = _gfxGeo->Bind();
+            k->SetKernelArg(0, devptr);
+            k->Call(g_tree->GetDefaultStream().GetPointer());
+            _gfxGeo->Unbind();
+        }
     }
 
     VOID VOnUpdate(ULONG deltaMillis)
     {
-          AnimateGeo(deltaMillis);
-// 
+        //AnimateGeo(deltaMillis);
+
+        cudaDeviceSynchronize();
         m_timer.Start();
         g_tree->Update();
         m_timer.Stop();
@@ -130,9 +138,9 @@ public:
         chimera::IActor* player = chimera::CmGetApp()->VGetHumanView()->VGetTarget();
         chimera::util::Vec3 pos = chimera::GetActorCompnent<chimera::TransformComponent>(player, CM_CMP_TRANSFORM)->GetTransformation()->GetTranslation();
         _ss.str("");
-        _ss << "Rendering: " << chimera::CmGetApp()->VGetRenderingTimer()->VGetLastMillis()/1000.0f << "\n";
-        _ss << "Construction (" << g_tree->GetCurrentDepth() << "): " << m_timer.GetMillis()/1000.0f << "\n";
-        _ss << "Elements:" << cc << "\n";
+        _ss << "Rendering: " << (float)chimera::CmGetApp()->VGetRenderingTimer()->VGetFPS() << "\n";
+        _ss << "Construction (" << g_tree->GetCurrentDepth() << "): " << m_timer.GetMillis() << "\n";
+        _ss << cc << "\n";
         _ss << "Player: " << pos.x << ", " << pos.y << ", " << pos.z;
 
         g_textInfo->VClearText();
@@ -143,6 +151,7 @@ public:
     {
         SAFE_DELETE(k);
         SAFE_DELETE(m);
+        SAFE_DELETE(_gfxGeo);
     }
 };
 
@@ -158,13 +167,13 @@ public:
     UpdateBBoxes(nutty::MappedBufferPtr<float>* geo, uint count)
     {
         mappedPtr = geo;
-        m = new nutty::cuModule("./ptx/KD.ptx");
+        m = new nutty::cuModule("./ptx/animation_N_stuff.ptx");
         k = new nutty::cuKernel(m->GetFunction("createBBox"));
         uint grid = 1;
         uint block = count;
         if(count > 32)
         {
-            grid = nutty::cuda::getCudaGrid(count, 32U);
+            grid = nutty::cuda::GetCudaGrid(count, 32U);
             block = 32;
         }
         k->SetDimension(grid, block);        
@@ -174,13 +183,13 @@ public:
     VOID VOnUpdate(ULONG deltaMillis)
     {
         nutty::DevicePtr<float> ptr = mappedPtr->Bind();
-        nutty::DeviceBuffer<float3>* aabbs = (nutty::DeviceBuffer<float3>*)g_tree->GetBuffer(eAxisAlignedBB);
+        nutty::DeviceBuffer<AABB>* aabbs = g_tree->GetAABBs();
         k->SetKernelArg(0, *aabbs);
-        k->SetKernelArg(1, *((nutty::DeviceBuffer<uint>*)g_tree->GetBuffer(eNodesContentCount)));
+        k->SetKernelArg(1, *((nutty::DeviceBuffer<Node>*)g_tree->GetNodes()));
         k->SetKernelArg(2, ptr);
         k->SetKernelArg(3, c);
         k->SetKernelArg(4, g_depth);
-        k->Call();
+        k->Call(g_tree->GetDefaultStream().GetPointer());
         mappedPtr->Unbind();
     }
 
@@ -191,6 +200,14 @@ public:
         SAFE_DELETE(m);
     }
 };
+
+void PreRestoreDelegate(chimera::IEventPtr event)
+{
+    if(g_tracer)
+    {
+        g_tracer->ReleaseSharedResources();
+    }
+}
 
 BOOL commandScale(chimera::ICommand& cmd)
 {
@@ -220,6 +237,12 @@ BOOL commandIncDecDepth(chimera::ICommand& cmd)
     g_depth += d;
     g_tree->SetDepth(g_depth);
     g_depth = g_tree->GetCurrentDepth();
+    return true;
+}
+
+BOOL commandToggleRaytracer(chimera::ICommand& cmd)
+{
+    g_tracer->ToggleEnable();
     return true;
 }
 
@@ -272,14 +295,14 @@ void createWorld(void)
     tcmp->GetTransformation()->SetScale(meshScale, meshScale, meshScale);
     chimera::RenderComponent* rcmp = actorDesc->AddComponent<chimera::RenderComponent>(CM_CMP_RENDERING);
     rcmp->m_resource = "sphere_low.obj";
-    std::shared_ptr<chimera::IVertexBuffer> geo = std::shared_ptr<chimera::IVertexBuffer>(chimera::CmGetApp()->VGetHumanView()->VGetGraphicsFactory()->VCreateVertexBuffer());
-
-    std::shared_ptr<chimera::IMesh>& monkey = std::static_pointer_cast<chimera::IMesh>(chimera::CmGetApp()->VGetCache()->VGetHandle(chimera::CMResource("monkey.obj")));
+    
+//     std::shared_ptr<chimera::IMesh>& monkey = std::static_pointer_cast<chimera::IMesh>(chimera::CmGetApp()->VGetCache()->VGetHandle(chimera::CMResource("monkey.obj")));
+//     CONST FLOAT* monkeyVertes = monkey->VGetVertices();
     UINT bunnys = 1;
-    CONST FLOAT* monkeyVertes = monkey->VGetVertices();
-    UINT perObjectCount = 512;//monkey->VGetVertexCount();
+    elems = chimera::CmGetApp()->VGetConfig()->VGetInteger("iPoints");
+    UINT perObjectCount = elems;//monkey->VGetVertexCount();
     elems = bunnys * perObjectCount;
-    UINT scale = 20;//20*(UINT)(log(perObjectCount));
+    UINT scale = 5*(UINT)(log(perObjectCount));
     nutty::HostBuffer<float3> v(elems);
 
     INT vi = 0;
@@ -306,30 +329,47 @@ void createWorld(void)
 
     nutty::DeviceBuffer<float3>* data = new nutty::DeviceBuffer<float3>(elems);
     nutty::Copy(data->Begin(), v.Begin(), elems);
+
+    nutty::MappedBufferPtr<float>* mappedPtr = NULL;
     
-    geo->VInitParamater(elems, 3 * sizeof(float), *v.GetRawPointer());
-    geo->VCreate();
+    if(chimera::CmGetApp()->VGetConfig()->VGetBool("bDrawRasterGeo"))
+    {
+        std::shared_ptr<chimera::IVertexBuffer> geo = std::shared_ptr<chimera::IVertexBuffer>(chimera::CmGetApp()->VGetHumanView()->VGetGraphicsFactory()->VCreateVertexBuffer());
+
+        geo->VInitParamater(elems, 3 * sizeof(float), *v.GetRawPointer());
+        geo->VCreate();
+
+        rcmp->m_vmemInstances = geo;
+        chimera::CmGetApp()->VGetLogic()->VCreateActor(std::move(actorDesc));
+
+        ID3D11Buffer* buffer = (ID3D11Buffer*)geo->VGetDevicePtr();
+        mappedPtr = new nutty::MappedBufferPtr<float>(std::move(nutty::WrapBuffer<float>(buffer)));
+    }
+
     /*SAFE_DELETE(v);*/
 
-//     ID3D11Buffer* buffer = (ID3D11Buffer*)geo->VGetDevicePtr();
-//     nutty::MappedBufferPtr<float>* mappedPtr = new nutty::MappedBufferPtr<float>(std::move(nutty::WrapBuffer<float>(buffer)));
-
-    AnimationProc* ap = new AnimationProc(data, elems);
+    AnimationProc* ap = new AnimationProc(data, elems, mappedPtr);
     chimera::IProcess* proc = chimera::CmGetApp()->VGetLogic()->VGetProcessManager()->VAttach(std::unique_ptr<chimera::IProcess>(ap));
     
-    rcmp->m_vmemInstances = geo;
-    //chimera::CmGetApp()->VGetLogic()->VCreateActor(std::move(actorDesc));
 
+    g_depth = chimera::CmGetApp()->VGetConfig()->VGetInteger("iTreeDepth");
+    g_maxDepth = chimera::CmGetApp()->VGetConfig()->VGetInteger("iTreeMaxDepth");
     uint bboxCount = (1 << (uint)g_maxDepth) - 1;
 
     g_tree = generate((void*)data, elems, g_depth, g_maxDepth);
 
-    g_tracer = createTracer(g_tree);
-// 
-    chimera::IGraphicsSettings* settings = chimera::CmGetApp()->VGetHumanView()->VGetSceneByName("main")->VGetSettings();
-    settings->VAddSetting(std::unique_ptr<chimera::IGraphicSetting>(g_tracer), chimera::eGraphicsSetting_Lighting);
+    if(chimera::CmGetApp()->VGetConfig()->VGetBool("bRayTrace"))
+    {
+        g_tracer = createTracer(g_tree);
+        chimera::IGraphicsSettings* settings = chimera::CmGetApp()->VGetHumanView()->VGetSceneByName("main")->VGetSettings();
+        settings->VAddSetting(std::unique_ptr<chimera::IGraphicSetting>(g_tracer), chimera::eGraphicsSetting_Lighting);
+        ADD_EVENT_LISTENER_STATIC(&PreRestoreDelegate, CM_EVENT_PRE_RESTORE);
+    }
 
-    //createBBoxGeo(bboxCount);
+    if(chimera::CmGetApp()->VGetConfig()->VGetBool("bDrawBBox"))
+    {
+        createBBoxGeo(bboxCount);
+    }
 
     g_textInfo = chimera::CmGetApp()->VGetHumanView()->VGetGuiFactory()->VCreateTextComponent();
     chimera::CMDimension dim;
@@ -361,6 +401,8 @@ void createWorld(void)
     chimera::CmGetApp()->VGetLogic()->VGetCommandInterpreter()->VCallCommand("bind + incDescdepth 1");
     chimera::CmGetApp()->VGetLogic()->VGetCommandInterpreter()->VCallCommand("bind - incDescdepth -1");
 
+    chimera::CmGetApp()->VGetLogic()->VGetCommandInterpreter()->VRegisterCommand("toogleRT", commandToggleRaytracer);
+    chimera::CmGetApp()->VGetLogic()->VGetCommandInterpreter()->VCallCommand("bind n toogleRT");
 }
 
 int APIENTRY _tWinMain(HINSTANCE hInstance,
@@ -381,9 +423,13 @@ int APIENTRY _tWinMain(HINSTANCE hInstance,
 
     nutty::Init((ID3D11Device*)chimera::CmGetApp()->VGetHumanView()->VGetRenderer()->VGetDevice());
    
+    g_treeDebug = chimera::CmGetApp()->VGetConfig()->VGetBool("bDebug") == 1;
+
     createWorld();
     
     chimera::CmGetApp()->VRun();
+
+    REMOVE_EVENT_LISTENER_STATIC(PreRestoreDelegate, CM_EVENT_PRE_RESTORE);
 
     chimera::CmReleaseApplication();
 

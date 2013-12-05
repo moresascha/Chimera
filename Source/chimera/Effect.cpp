@@ -36,7 +36,7 @@ namespace chimera
 
         if(m_target)
         {
-            m_target->VOnRestore((UINT)(w * m_w), (UINT)(h * m_h), eFormat_R32G32B32A32_FLOAT, FALSE);
+            m_target->VOnRestore(max(1, (UINT)(w * m_w)), max(1, (UINT)(h * m_h)), eFormat_R32G32B32A32_FLOAT, FALSE);
         }
 
         return TRUE;

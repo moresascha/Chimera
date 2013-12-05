@@ -52,7 +52,7 @@ namespace Logger
     VOID Log(CONST std::string& tag, CONST std::string& message, CONST CHAR* funcName, CONST CHAR* file, CONST UINT line);
 }
 
-#ifdef _DEBUG
+//#ifdef _DEBUG
 
 #define _GET_TEXT(format, ...) \
     CHAR __tmp[2048]; \
@@ -146,7 +146,7 @@ while(0)
 } \
 while(0)
 
-#else
+/*#else
 #define LOG_CRITICAL_ERROR_A(message, ...) ((VOID)0)
 #define LOG_WARNING_A(message, ...) ((VOID)0)
 #define LOG_INFO_A(message, ...) ((VOID)0)
@@ -160,4 +160,4 @@ while(0)
 #define LOG_ERROR(message) ((VOID)0)
 #define DEBUG_OUT(message) ((VOID)0)
 #define LOG_ERROR_NR(message) ((VOID)0)
-#endif
+#endif*/

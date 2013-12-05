@@ -21,6 +21,7 @@
 #define CM_EVENT_RESOURCE_CHANGED 0xec7c39db
 #define CM_EVENT_FILE_CHANGED 0x8a985188
 #define CM_EVENT_CREATE_PROCESS 0xd3f662bb
+#define CM_EVENT_PRE_RESTORE 0x29845e71
 
 #define CM_CREATE_EVENT_HEADER(__type, __name) \
     EventType VGetEventType(VOID) CONST { return __type; } \
@@ -36,6 +37,11 @@ namespace chimera
         CM_INLINE SetSunPositionEvent(FLOAT x, FLOAT y, FLOAT z);
 
         CM_CREATE_EVENT_HEADER(CM_EVENT_SET_SUN_POSITION, SetSunPositionEvent);
+    };
+
+    class PreRestoreEvent : public Event
+    {
+        CM_CREATE_EVENT_HEADER(CM_EVENT_PRE_RESTORE, PreRestoreEvent);
     };
 
     class MoveActorEvent : public Event 

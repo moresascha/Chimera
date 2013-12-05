@@ -2,6 +2,26 @@
 #include "stdafx.h"
 #include "Vec3.h"
 
+namespace physx
+{
+    class PxMaterial;
+    class PxPhysics;
+    class PxController;
+    class PxFoundation;
+    class PxProfileZoneManager;
+    class PxCooking;
+    class PxScene;
+    class PxSceneDesc;
+    class PxControllerManager;
+    class PxActor;
+    class PxGeometry;
+};
+
+namespace PVD
+{
+    class PvdConnection;
+};
+
 namespace chimera 
 {
     class Mesh;
@@ -51,72 +71,6 @@ namespace chimera
         virtual VOID VDrawCube(CONST util::Vec3& extends, CONST util::Vec3& position) = 0;
     };
 
-    class ErrorCallback : public physx::PxErrorCallback
-    {
-    public:
-        ErrorCallback(VOID) {}
-        VOID reportError(physx::PxErrorCode::Enum code, const char* message, const char* file, int line) {
-            char* error = NULL;
-            switch(code) {
-            case physx::PxErrorCode::eNO_ERROR : { return; } break;
-            case physx::PxErrorCode::eDEBUG_INFO : 
-                { 
-                error = "Debug Info";                         
-                } break;
-
-            case physx::PxErrorCode::eDEBUG_WARNING : 
-                {
-                error = "Debug Warning";
-                } break;
-
-            case physx::PxErrorCode::eINVALID_PARAMETER : 
-                {
-                error = "Invalid Parameter";                            
-                } break;
-            case physx::PxErrorCode::eINVALID_OPERATION : 
-                {
-                error = "Invalid Operation";
-                } break;
-            case physx::PxErrorCode::eOUT_OF_MEMORY : 
-                {
-                error = "Out of Memory";
-                } break;
-            case physx::PxErrorCode::eINTERNAL_ERROR : 
-                {
-                error = "Internal Error";
-                } break;
-            case physx::PxErrorCode::eMASK_ALL : 
-                {
-                error = "Mask All";
-                } break;
-
-            default:
-                {
-                    error = "Default Error";
-                } break;
-            }
-            std::string errorMessage("PHX: ");
-            errorMessage += message;
-            errorMessage += " : " + std::string(error) + "\n";
-            OutputDebugStringA(errorMessage.c_str());
-            //std::cout << buffer << std::endl;
-        }
-        ~ErrorCallback(VOID) {}
-    };
-
-    class Allocator : public physx::PxAllocatorCallback
-    {
-    public:
-        Allocator(VOID) {}
-        void* allocate(size_t size, const char* typeName, const char* filename, int line) {
-            return _aligned_malloc(size, 16);
-        }
-        VOID deallocate(VOID* ptr) {
-            _aligned_free(ptr);
-        }
-        ~Allocator(VOID) {}
-    };
-
     namespace px
     {
         struct Material 
@@ -128,11 +82,7 @@ namespace chimera
             FLOAT m_angulardamping;
             //FLOAT m_
             physx::PxMaterial* m_material;
-            Material(FLOAT staticFriction, FLOAT dynamicFriction, FLOAT restitution, FLOAT mass, FLOAT angularDamping, physx::PxPhysics* physx) : 
-                m_staticFriction(staticFriction), m_dynamicFriction(dynamicFriction), m_restitution(restitution), m_mass(mass), m_angulardamping(angularDamping) {
-
-                    m_material = physx->createMaterial(staticFriction, dynamicFriction, restitution);
-            }
+            Material(FLOAT staticFriction, FLOAT dynamicFriction, FLOAT restitution, FLOAT mass, FLOAT angularDamping, physx::PxPhysics* physx);
 
             Material(VOID) : m_material(NULL) {}
 
@@ -182,8 +132,6 @@ namespace chimera
         std::map<std::string, ActorId> m_resourceToActor;
 
         DefaultFilterCallback* m_pDefaultFilterCallback;
-        ErrorCallback m_errorCallback;
-        Allocator m_allocator;
 
         FLOAT m_lastMillis;
 

@@ -154,31 +154,29 @@
     </CudaCompile>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <CudaCompile Include="KD.cu">
-      <CompileOut Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">./ptx/%(Filename).ptx</CompileOut>
-      <KeepDir Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">$(SolutionDir)..\Tmp\$(ProjectName)$(PlatformName)$(Configuration)\</KeepDir>
+    <CudaCompile Include="animation_n_stuff.cu">
+      <CompileOut Condition="'$(Configuration)|$(Platform)'=='Release|x64'">.\ptx\%(Filename).ptx</CompileOut>
+      <NvccCompilation Condition="'$(Configuration)|$(Platform)'=='Release|x64'">ptx</NvccCompilation>
+      <CompileOut Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">.\ptx\%(Filename).ptx</CompileOut>
+      <Include Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+      </Include>
       <NvccCompilation Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">ptx</NvccCompilation>
-      <TargetMachinePlatform Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">64</TargetMachinePlatform>
-      <Include Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">../Include</Include>
-      <UseHostInclude Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">false</UseHostInclude>
-      <CodeGeneration Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">compute_20,sm_20</CodeGeneration>
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">false</ExcludedFromBuild>
     </CudaCompile>
     <CudaCompile Include="kdtree.cu">
       <CodeGeneration Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">compute_20,sm_20</CodeGeneration>
     </CudaCompile>
-    <CudaCompile Include="rtracer\RTracer.cu" />
+    <CudaCompile Include="kd_kernel.cu" />
+    <CudaCompile Include="rtracer\tracer.cu" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="main.cpp" />
   </ItemGroup>
   <ItemGroup>
     <None Include="kdtree.cuh" />
-    <None Include="kernel.cuh" />
+    <None Include="kd_kernel.cuh" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="rtracer\RTracer.h" />
-    <ClInclude Include="WaitForActorCreated.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

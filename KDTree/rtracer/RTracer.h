@@ -13,7 +13,11 @@ public:
 
     virtual void VRender(void) = 0;
 
-    virtual BOOL VOnRestore(UINT w, UINT h) = 0;
+    virtual int VOnRestore(uint w, uint h) = 0;
+
+    virtual void ReleaseSharedResources(void) = 0;
+
+    virtual void ToggleEnable(void) = 0;
 
     chimera::CMShaderProgramDescription* VGetProgramDescription(VOID)
     {

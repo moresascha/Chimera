@@ -2,7 +2,29 @@
 #include "Components.h"
 #include "Mesh.h"
 #include "Event.h"
+
+#ifdef free
+    #define free_save free
+    #undef free
+#endif
+
+#ifdef realloc
+    #define realloc_save realloc
+    #undef realloc
+#endif
+
+#include <physx/PxPhysicsAPI.h>
 #include "physx/PxToolkit.h"
+#include "physx/pvd/PxVisualDebugger.h"
+
+#ifdef free_save
+    #define free free_save
+#endif
+
+#ifdef realloc_save
+    #define realloc realloc_save
+#endif
+
 
 #define NDEBUG
 
@@ -28,8 +50,81 @@
 
 namespace chimera 
 {
-
     using namespace physx;
+
+    namespace px
+    {
+        Material::Material(FLOAT staticFriction, FLOAT dynamicFriction, FLOAT restitution, FLOAT mass, FLOAT angularDamping, physx::PxPhysics* physx) : 
+        m_staticFriction(staticFriction), m_dynamicFriction(dynamicFriction), m_restitution(restitution), m_mass(mass), m_angulardamping(angularDamping) {
+            m_material = physx->createMaterial(staticFriction, dynamicFriction, restitution);
+        }
+    }
+
+    class ErrorCallback : public physx::PxErrorCallback
+    {
+    public:
+        ErrorCallback(VOID) {}
+        VOID reportError(physx::PxErrorCode::Enum code, const char* message, const char* file, int line) {
+            char* error = NULL;
+            switch(code) {
+            case physx::PxErrorCode::eNO_ERROR : { return; } break;
+            case physx::PxErrorCode::eDEBUG_INFO : 
+                { 
+                    error = "Debug Info";                         
+                } break;
+
+            case physx::PxErrorCode::eDEBUG_WARNING : 
+                {
+                    error = "Debug Warning";
+                } break;
+
+            case physx::PxErrorCode::eINVALID_PARAMETER : 
+                {
+                    error = "Invalid Parameter";                            
+                } break;
+            case physx::PxErrorCode::eINVALID_OPERATION : 
+                {
+                    error = "Invalid Operation";
+                } break;
+            case physx::PxErrorCode::eOUT_OF_MEMORY : 
+                {
+                    error = "Out of Memory";
+                } break;
+            case physx::PxErrorCode::eINTERNAL_ERROR : 
+                {
+                    error = "Internal Error";
+                } break;
+            case physx::PxErrorCode::eMASK_ALL : 
+                {
+                    error = "Mask All";
+                } break;
+
+            default:
+                {
+                    error = "Default Error";
+                } break;
+            }
+            std::string errorMessage("PHX: ");
+            errorMessage += message;
+            errorMessage += " : " + std::string(error) + "\n";
+            OutputDebugStringA(errorMessage.c_str());
+            //std::cout << buffer << std::endl;
+        }
+        ~ErrorCallback(VOID) {}
+    };
+
+    class Allocator : public physx::PxAllocatorCallback
+    {
+    public:
+        Allocator(VOID) {}
+        void* allocate(size_t size, const char* typeName, const char* filename, int line) {
+            return _aligned_malloc(size, 16);
+        }
+        VOID deallocate(VOID* ptr) {
+            _aligned_free(ptr);
+        }
+        ~Allocator(VOID) {}
+    };
 
     PxFilterFlags DefaultFilterShader(
         PxFilterObjectAttributes attributes0, PxFilterData filterData0,
@@ -128,6 +223,9 @@ namespace chimera
         m_pDefaultFilterCallback = new DefaultFilterCallback(this);
     }
 
+    Allocator m_allocator;
+    ErrorCallback m_errorCallback;
+
     BOOL PhysX::VInit(VOID) 
     {
         m_pFoundation = PxCreateFoundation(PX_PHYSICS_VERSION, m_allocator, m_errorCallback);
@@ -199,7 +297,7 @@ namespace chimera
         ADD_EVENT_LISTENER(this, &PhysX::ApplyForceTorqueDelegate, CM_EVENT_APPLY_FORCE);
         ADD_EVENT_LISTENER(this, &PhysX::ApplyForceTorqueDelegate, CM_EVENT_APPLY_TORQUE);
 
-    #ifdef _DEBUG
+    #if 0
         // DEBUGGING
         if(m_pPhysx->getPvdConnectionManager() == NULL)
             return FALSE;
@@ -836,10 +934,10 @@ namespace chimera
 
         delete m_pDesc;
 
-        if(m_pDebugConnection)
+        /*if(m_pDebugConnection)
         {
             m_pDebugConnection->release();
-        }
+        }*/
 
         SAFE_DELETE(m_pDefaultFilterCallback);
 

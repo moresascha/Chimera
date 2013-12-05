@@ -1,5 +1,6 @@
 #include "GuiComponent.h"
 #include "GeometryFactory.h"
+#include "util.h"
 
 namespace chimera
 {
@@ -271,18 +272,26 @@ namespace chimera
         {
             m_textLines.erase(m_textLines.begin());
         }
-        TextLine line;
-        line.text = text;
-        for(INT i = 0; i < text.size(); ++i)
+        std::vector<std::string> lines = util::split(text, '\n');
+        if(lines.empty())
         {
-            CONST CMCharMetric* metric = CmGetApp()->VGetHumanView()->VGetFontManager()->VGetCurrentFont()->VGetCharMetric(text[i]);
-            if(!metric)
-            {
-                metric = CmGetApp()->VGetHumanView()->VGetFontManager()->VGetCurrentFont()->VGetCharMetric('?');
-            }
-            line.width += metric->xadvance;
+            lines.push_back(text);
         }
-        m_textLines.push_back(line);
+        TBD_FOR(lines)
+        {
+            TextLine line;
+            line.text = *it;
+            for(INT i = 0; i < line.text.size(); ++i)
+            {
+                CONST CMCharMetric* metric = CmGetApp()->VGetHumanView()->VGetFontManager()->VGetCurrentFont()->VGetCharMetric(line.text[i]);
+                if(!metric)
+                {
+                    metric = CmGetApp()->VGetHumanView()->VGetFontManager()->VGetCurrentFont()->VGetCharMetric('?');
+                }
+                line.width += metric->xadvance;
+            }
+            m_textLines.push_back(line);
+        }
     }
 
     BOOL GuiTextComponent::VOnRestore(VOID)

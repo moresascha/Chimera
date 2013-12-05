@@ -163,6 +163,12 @@
     chimera::CmGetApp()->VGetEventManager()->VRemoveEventListener(listener, (chimera::EventType)type); \
     }
 
+#define REMOVE_EVENT_LISTENER_STATIC(function, type) \
+    { \
+    chimera::EventListener listener = function; \
+    chimera::CmGetApp()->VGetEventManager()->VRemoveEventListener(listener, (chimera::EventType)type); \
+    }
+
 #define QUEUE_EVENT(_eventPtr) \
     { \
     chimera::IEventPtr event(_eventPtr); \
