@@ -43,9 +43,9 @@ __global__ void initLeafs(Split allSplits, Node nodes, uint count, uint depth)
 
  	nodes.contentCount[contentCountOffsetMe + id] = (id%2) * s.above + ((id+1)%2) * s.below;
     nodes.contentStartIndex[contentCountOffsetMe + id] = sa;
-    nodes.split[contentCountOffsetMe + id] = s.split;
+    nodes.split[contentCountOffsetMe + id] = 0;
     nodes.leaf[contentCountOffsetMe + id] = 1;
-    nodes.axis[contentCountOffsetMe + id] = s.axis;
+    nodes.axis[contentCountOffsetMe + id] = 0;
     nodes.below[contentCountOffsetMe + id] = s.below;
 }
 

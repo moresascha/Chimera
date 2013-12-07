@@ -22,6 +22,8 @@
 #include "rtracer/RTracer.h"
 
 #include <fstream>
+//-ptx -arch=sm_20 --use-local-env --cl-version 2012 -I\"C:\\Program Files (x86)\\Microsoft Visual Studio 11.0\\VC\\include\" -I\"C:\\Program Files\\NVIDIA GPU Computing Toolkit\\CUDA\\v5.5\\include\" -I\"../include\" -G --keep-dir E:\Dropbox\VisualStudio\Chimera\Source\..\Tmp\KDTreex64Debug\ -maxrregcount=0  --machine 64 -ptx -cudart static 
+const char* c = "runproc nvcc -I\"E:\\Dropbox\\VisualStudio\\Chimera\\Include\" -I\"C:\\Program Files\\NVIDIA GPU Computing Toolkit\\CUDA\\v5.5\\include\" -ptx ./rtracer/tracer_kernel.cu -o ./ptx/tracer_kernel.ptx ";//-o .\ptx\tracer_kernel.ptx \"E:\Dropbox\VisualStudio\Chimera\KDTree\rtracer\tracer_kernel.cu";
 
 IKDTree* g_tree;
 IRTracer* g_tracer;
@@ -50,6 +52,7 @@ uint g_depth = 4;
 uint g_maxDepth = 12;
 uint g_parts = 4;
 float g_timeScale = 1e-4f;
+chimera::util::HTimer g_timer;
 
 chimera::IGuiTextComponent* g_textInfo;
 
@@ -88,8 +91,6 @@ private:
     nutty::MappedBufferPtr<float>* _gfxGeo;
     nutty::cuModule* m;
     float time;
-    std::string cc;
-    chimera::util::HTimer m_timer;
     float m_scale;
 
 public:
@@ -129,22 +130,10 @@ public:
         //AnimateGeo(deltaMillis);
 
         cudaDeviceSynchronize();
-        m_timer.Start();
+        g_timer.Start();
         g_tree->Update();
-        m_timer.Stop();
-
-        g_tree->GetContentCountStr(cc);
-
-        chimera::IActor* player = chimera::CmGetApp()->VGetHumanView()->VGetTarget();
-        chimera::util::Vec3 pos = chimera::GetActorCompnent<chimera::TransformComponent>(player, CM_CMP_TRANSFORM)->GetTransformation()->GetTranslation();
-        _ss.str("");
-        _ss << "Rendering: " << (float)chimera::CmGetApp()->VGetRenderingTimer()->VGetFPS() << "\n";
-        _ss << "Construction (" << g_tree->GetCurrentDepth() << "): " << m_timer.GetMillis() << "\n";
-        _ss << cc << "\n";
-        _ss << "Player: " << pos.x << ", " << pos.y << ", " << pos.z;
-
-        g_textInfo->VClearText();
-        g_textInfo->VAppendText(_ss.str());
+        cudaDeviceSynchronize();
+        g_timer.Stop();
     }
 
     ~AnimationProc(VOID)
@@ -176,13 +165,14 @@ public:
             grid = nutty::cuda::GetCudaGrid(count, 32U);
             block = 32;
         }
-        k->SetDimension(grid, block);        
+        k->SetDimension(grid, block);
         c = count;
     }
 
     VOID VOnUpdate(ULONG deltaMillis)
     {
-        nutty::DevicePtr<float> ptr = mappedPtr->Bind();
+        chimera::CmGetApp()->VGetRenderer()->VPresent();
+        nutty::DevicePtr<float> ptr = mappedPtr->Bind(g_tree->GetDefaultStream().GetPointer());
         nutty::DeviceBuffer<AABB>* aabbs = g_tree->GetAABBs();
         k->SetKernelArg(0, *aabbs);
         k->SetKernelArg(1, *((nutty::DeviceBuffer<Node>*)g_tree->GetNodes()));
@@ -190,7 +180,7 @@ public:
         k->SetKernelArg(3, c);
         k->SetKernelArg(4, g_depth);
         k->Call(g_tree->GetDefaultStream().GetPointer());
-        mappedPtr->Unbind();
+        mappedPtr->Unbind(g_tree->GetDefaultStream().GetPointer());
     }
 
     ~UpdateBBoxes(VOID)
@@ -198,6 +188,28 @@ public:
         SAFE_DELETE(mappedPtr);
         SAFE_DELETE(k);
         SAFE_DELETE(m);
+    }
+};
+
+class Status : public chimera::IProcess
+{
+private:
+    std::string cc;
+    std::stringstream _ss;
+public:
+    VOID VOnUpdate(ULONG deltaMillis)
+    {
+        g_tree->GetContentCountStr(cc);
+        chimera::IActor* player = chimera::CmGetApp()->VGetHumanView()->VGetTarget();
+        chimera::util::Vec3 pos = chimera::GetActorCompnent<chimera::TransformComponent>(player, CM_CMP_TRANSFORM)->GetTransformation()->GetTranslation();
+        _ss.str("");
+        _ss << "Overall Rendering FPS: " << (float)chimera::CmGetApp()->VGetRenderingTimer()->VGetFPS() << "\n";
+        _ss << "Tracing: " << g_tracer->GetLastMillis() << " ms\n";
+        _ss << "Construction (d=" << g_tree->GetCurrentDepth() << "): " << g_timer.GetMillis() << " ms\n";
+        _ss << "Prims: " << elems << "\n";
+        _ss << "Player: " << pos.x << ", " << pos.y << ", " << pos.z;
+        g_textInfo->VClearText();
+        g_textInfo->VAppendText(_ss.str());
     }
 };
 
@@ -213,6 +225,17 @@ BOOL commandScale(chimera::ICommand& cmd)
 {
     float d = cmd.VGetNextFloat();
     g_scale += d;
+    return true;
+}
+
+BOOL commandCompile(chimera::ICommand& cmd)
+{
+    
+    chimera::CmGetApp()->VGetLogic()->VGetCommandInterpreter()->VCallCommand(c);
+    if(g_tracer)
+    {
+        g_tracer->Compile();
+    }
     return true;
 }
 
@@ -302,7 +325,7 @@ void createWorld(void)
     elems = chimera::CmGetApp()->VGetConfig()->VGetInteger("iPoints");
     UINT perObjectCount = elems;//monkey->VGetVertexCount();
     elems = bunnys * perObjectCount;
-    UINT scale = 5*(UINT)(log(perObjectCount));
+    UINT scale = 20*(UINT)(log(perObjectCount));
     nutty::HostBuffer<float3> v(elems);
 
     INT vi = 0;
@@ -347,9 +370,13 @@ void createWorld(void)
     }
 
     /*SAFE_DELETE(v);*/
+    if(chimera::CmGetApp()->VGetConfig()->VGetBool("bAnimate"))
+    {
+        AnimationProc* ap = new AnimationProc(data, elems, mappedPtr);
+        chimera::IProcess* proc = chimera::CmGetApp()->VGetLogic()->VGetProcessManager()->VAttach(std::unique_ptr<chimera::IProcess>(ap));
+    }
 
-    AnimationProc* ap = new AnimationProc(data, elems, mappedPtr);
-    chimera::IProcess* proc = chimera::CmGetApp()->VGetLogic()->VGetProcessManager()->VAttach(std::unique_ptr<chimera::IProcess>(ap));
+    chimera::IProcess* proc = chimera::CmGetApp()->VGetLogic()->VGetProcessManager()->VAttach(std::unique_ptr<chimera::IProcess>(new Status()));
     
 
     g_depth = chimera::CmGetApp()->VGetConfig()->VGetInteger("iTreeDepth");
@@ -375,12 +402,13 @@ void createWorld(void)
     chimera::CMDimension dim;
     dim.x = 5;
     dim.y = 10;
-    dim.w = chimera::CmGetApp()->VGetWindowWidth();
-    dim.h = 60;
+    dim.w = 200;
+    dim.h = 82;
     g_textInfo->VSetDimension(dim);
     g_textInfo->VSetName("nodes_content");
     g_textInfo->VAppendText("");
-    g_textInfo->VSetAlpha(0);
+    g_textInfo->VSetAlpha(0.85f);
+    g_textInfo->VSetBackgroundColor(0.25f, 0.25f, 0.25f);
     g_textInfo->VSetTextColor(chimera::Color(0,1,0,0));
     chimera::CmGetApp()->VGetHumanView()->VAddScreenElement(std::unique_ptr<chimera::IGuiComponent>(g_textInfo));
 
@@ -403,6 +431,9 @@ void createWorld(void)
 
     chimera::CmGetApp()->VGetLogic()->VGetCommandInterpreter()->VRegisterCommand("toogleRT", commandToggleRaytracer);
     chimera::CmGetApp()->VGetLogic()->VGetCommandInterpreter()->VCallCommand("bind n toogleRT");
+
+    chimera::CmGetApp()->VGetLogic()->VGetCommandInterpreter()->VRegisterCommand("cmprtkernel", commandCompile);
+    chimera::CmGetApp()->VGetLogic()->VGetCommandInterpreter()->VCallCommand("bind c cmprtkernel");
 }
 
 int APIENTRY _tWinMain(HINSTANCE hInstance,

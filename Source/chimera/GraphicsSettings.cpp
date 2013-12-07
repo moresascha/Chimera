@@ -675,7 +675,7 @@ namespace chimera
 
         VAddSetting(std::unique_ptr<IGraphicSetting>(skySettings), eGraphicsSetting_Albedo);
 
-        VAddSetting(std::unique_ptr<IGraphicSetting>(new CSMSetting()), eGraphicsSetting_Lighting);
+        //VAddSetting(std::unique_ptr<IGraphicSetting>(new CSMSetting()), eGraphicsSetting_Lighting);
         VAddSetting(std::unique_ptr<IGraphicSetting>(new GloablLightingSetting()), eGraphicsSetting_Lighting);
         //VAddSetting(std::unique_ptr<IGraphicSetting>(new LightingSetting()), chimera::eLighting);
 

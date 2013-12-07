@@ -275,15 +275,15 @@ namespace chimera
         screen->VSetName("main");
         app->VGetHumanView()->VAddScene(std::move(std::unique_ptr<IRenderScreen>(screen)));
 
-        IScreenElement* normalScreen = new RenderTargetScreen(app->VGetHumanView()->VGetRenderer()->VGetAlbedoBuffer()->VGetRenderTarget(eDiff_DiffuseColorSpecBTarget));
         CMDimension dim;
+/*        IScreenElement* normalScreen = new RenderTargetScreen(app->VGetHumanView()->VGetRenderer()->VGetAlbedoBuffer()->VGetRenderTarget(eDiff_DiffuseColorSpecBTarget));
         dim.x = 0;
         dim.y = 0;
         dim.w = 200;
         dim.h = 150;
         normalScreen->VSetDimension(dim);
         normalScreen->VSetName("diffuse_color");
-        app->VGetHumanView()->VAddScreenElement(std::move(std::unique_ptr<IScreenElement>(normalScreen)));
+        app->VGetHumanView()->VAddScreenElement(std::move(std::unique_ptr<IScreenElement>(normalScreen)));*/ 
 
         //console
         if(desc->args.find("-console") != std::string::npos)

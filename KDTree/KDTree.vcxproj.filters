@@ -13,19 +13,25 @@
       <UniqueIdentifier>{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}</UniqueIdentifier>
       <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav;mfcribbon-ms</Extensions>
     </Filter>
+    <Filter Include="Source Files\rt">
+      <UniqueIdentifier>{3f547d69-7fe5-4cd3-8996-16b63804220b}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <CudaCompile Include="kdtree.cu">
       <Filter>Source Files</Filter>
     </CudaCompile>
-    <CudaCompile Include="kd_kernel.cu">
-      <Filter>Resource Files</Filter>
-    </CudaCompile>
     <CudaCompile Include="animation_n_stuff.cu">
-      <Filter>Resource Files</Filter>
+      <Filter>Source Files</Filter>
+    </CudaCompile>
+    <CudaCompile Include="kd_kernel.cu">
+      <Filter>Source Files</Filter>
     </CudaCompile>
     <CudaCompile Include="rtracer\tracer.cu">
-      <Filter>Source Files</Filter>
+      <Filter>Source Files\rt</Filter>
+    </CudaCompile>
+    <CudaCompile Include="rtracer\tracer_kernel.cu">
+      <Filter>Source Files\rt</Filter>
     </CudaCompile>
   </ItemGroup>
   <ItemGroup>
@@ -34,11 +40,11 @@
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <None Include="kdtree.cuh">
-      <Filter>Source Files</Filter>
-    </None>
     <None Include="kd_kernel.cuh">
-      <Filter>Resource Files</Filter>
+      <Filter>Header Files</Filter>
+    </None>
+    <None Include="kdtree.cuh">
+      <Filter>Header Files</Filter>
     </None>
   </ItemGroup>
   <ItemGroup>

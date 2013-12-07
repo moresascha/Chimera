@@ -503,7 +503,7 @@ public:
               m_splitStructOfArrayArg, 2 * m_elements
               );
             
-            //printSplit(m_splitStructOfArrayArg, 0);
+            printSplits(m_splitStructOfArrayArg, 2 + m_elements);
             DEVICE_SYNC_CHECK();
 
             uint g = 1;
@@ -536,6 +536,9 @@ public:
                 m_perThreadNodePos.Begin()(),
                 m_prefixSumNodeCount.Begin()()
                 );
+
+            /*printBuffer(m_perThreadNodePos);
+            printBuffer(m_prefixSumNodeCount);*/
             
             DEVICE_SYNC_CHECK();
 
@@ -582,8 +585,8 @@ public:
             );
 
         DEVICE_SYNC_CHECK();
-        cudaDeviceSynchronize();
-        printBuffer(m_nodeContentCount);
+        //printBuffer(m_nodeContentCount);
+        printBuffer(m_nodeStructOfArrayArg, m_nodesCount);
     }
 
     void Update(void)

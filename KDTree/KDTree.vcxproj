@@ -166,7 +166,13 @@
       <CodeGeneration Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">compute_20,sm_20</CodeGeneration>
     </CudaCompile>
     <CudaCompile Include="kd_kernel.cu" />
-    <CudaCompile Include="rtracer\tracer.cu" />
+    <CudaCompile Include="rtracer\tracer.cu">
+      <NvccCompilation Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">compile</NvccCompilation>
+    </CudaCompile>
+    <CudaCompile Include="rtracer\tracer_kernel.cu">
+      <CompileOut Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">.\ptx\%(Filename).ptx</CompileOut>
+      <NvccCompilation Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">ptx</NvccCompilation>
+    </CudaCompile>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="main.cpp" />
