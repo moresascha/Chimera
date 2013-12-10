@@ -36,10 +36,10 @@ EXTC
 __global__ void computePerPrimEdges(Edge edges, AABB* aabbs, uint N);
 
 EXTC
-__global__ void reOrderFromEdges(Edge edges, uint N);
+__global__ void reOrderFromEdges(Edge edgesDst, Edge edgesSrc, uint N);
 
 EXTC
-__global__ void reOrderFromSAH(Split split, uint N);
+__global__ void reOrderFromSAH(Split splitDst, Split splitSrc, uint N);
 
 template <
     typename T
@@ -52,15 +52,8 @@ __global__ void postProcess(T* transformed, T* original, Edge edges, uint N)
     {
         return;
     }
-    //Todo: use sharedmemory for this
-    if(edges.primId[id] >= N)
-    {
-        transformed[id] = original[0];
-    }
-    else
-    {
-        transformed[id] = original[edges.primId[id]];
-    }
+
+    transformed[id] = original[edges.primId[id]];
 }
 
 EXTC 

@@ -16,6 +16,8 @@
 
 #include "../Source/chimera/Logger.h"
 
+#include "cuTimer.cuh"
+
 #include "kd_kernel.cuh"
 
 #include <sstream>
@@ -34,6 +36,14 @@ void printaabb(AABB aabb)
     ss << " | " << aabb.max.x << ", " << aabb.max.y << ", " << aabb.max.z << ")";
     print(ss.str().c_str());
 }
+
+void printf3(float3 data)
+{
+    std::stringstream ss; 
+    ss << "(" << data.x << ", " << data.y << ", " << data.z << ") ";
+    print(ss.str().c_str());
+}
+
 
 void printSplit(Split&b, uint i)
 {
@@ -70,7 +80,7 @@ void printEdge(Edge&b, uint i)
     i << ", y=" << ie[0].t3.y <<
     i << ", z=" << ie[0].t3.z <<
     ", primId=" << primId[0] <<
-    ", type=" << type[0] << "\n";
+    ", type=" << type[0] << ") ";
     print(ss.str().c_str());
 }
 
@@ -127,6 +137,19 @@ void printBuffer(nutty::DeviceBuffer<AABB>& b)
     print("\n");
 }
 
+void printBuffer(nutty::DeviceBuffer<float3>& b)
+{
+    if(!g_treeDebug) return;
+    nutty::ForEach(b.Begin(), b.End(), printf3);
+    print("\n");
+}
+
+std::stringstream & operator << (std::stringstream &out, Indexed3DEdge const &t)
+{
+    out << t.index << " " << t.t3.x << " ";
+    return out;
+}
+
 template <
     typename T
 >
@@ -136,6 +159,7 @@ void printT(T t)
     ss << t << " ";
     print(ss.str().c_str());
 }
+
 
 template <
     typename T
@@ -249,20 +273,20 @@ public:
     nutty::DeviceBuffer<Node> m_nodesBuffer;
     Node m_nodeStructOfArrayArg;
 
-    nutty::DeviceBuffer<byte> m_splitAxis;
-    nutty::DeviceBuffer<uint> m_splitPrimId;
-    nutty::DeviceBuffer<float> m_splitSplitT;
+    nutty::DeviceBuffer<byte> m_splitAxis[2];
+    nutty::DeviceBuffer<uint> m_splitPrimId[2];
+    nutty::DeviceBuffer<float> m_splitSplitT[2];
     nutty::DeviceBuffer<IndexedSAH> m_splitSAH;
-    nutty::DeviceBuffer<uint> m_splitBelow;
-    nutty::DeviceBuffer<uint> m_splitAbove;
-    Split m_splitStructOfArrayArg;
+    nutty::DeviceBuffer<uint> m_splitBelow[2];
+    nutty::DeviceBuffer<uint> m_splitAbove[2];
+    Split m_splitStructOfArrayArg[2];
 
-    nutty::DeviceBuffer<EdgeType> m_edgeType;
-    nutty::DeviceBuffer<uint> m_edgePrimId;
+    nutty::DeviceBuffer<EdgeType> m_edgeType[2];
+    nutty::DeviceBuffer<uint> m_edgePrimId[2];
     nutty::DeviceBuffer<Indexed3DEdge> m_edgeIndexedEdge;
     /*nutty::DeviceBuffer<float> m_edgeTy;
     nutty::DeviceBuffer<float> m_edgeTz;*/
-    Edge m_edgeStructOfArrayArg;
+    Edge m_edgeStructOfArrayArg[2];
 
     nutty::DeviceBuffer<float3> m_aabbMin;
     nutty::DeviceBuffer<float3> m_aabbMax;
@@ -277,13 +301,18 @@ public:
 
     nutty::cuStream m_defaultStream;
 
+    byte m_toggleBit;
+
+    cuTimer m_timer[16];
+
     kdTree(byte depth, byte maxDepth) 
         : m_cudaModule(NULL), 
         m_depth(depth), 
         m_maxDepth(maxDepth), 
         m_nodesCount(0), 
         m_computePossibleSplits(NULL), 
-        m_elements(0)
+        m_elements(0),
+        m_toggleBit(0)
     {    
         assert(maxDepth >= depth);
         m_pStreamPool = new nutty::cuStreamPool();
@@ -357,6 +386,8 @@ public:
     {
         static float3 max3f = {FLT_MAX, FLT_MAX, FLT_MAX};
         static float3 min3f = -max3f;
+
+        m_toggleBit = 0;
         
         auto dataBuffer = m_data->Begin();
 
@@ -370,7 +401,7 @@ public:
         sedges.WaitEvent(std::move(sbbox.RecordEvent()));
 
         computePerPrimEdges<<<_grid, _block, 0, sedges()>>>
-            (m_edgeStructOfArrayArg, m_primBBox.Begin()(), m_elements);
+            (m_edgeStructOfArrayArg[m_toggleBit], m_primBBox.Begin()(), m_elements);
         m_defaultStream.WaitEvent(std::move(sedges.RecordEvent()));
 
         const nutty::cuStream& smin = m_pStreamPool->PeekNextStream();
@@ -401,7 +432,7 @@ public:
         DEVICE_SYNC_CHECK();
 
         for(int i = 0; i < m_depth-1; ++i)
-        {           
+        {                       
             uint contentSum = 0;
 	
             uint copyStartAdd = (1 << i) - 1;
@@ -409,11 +440,9 @@ public:
 
             nutty::Copy(bboxTmp.Begin() + copyStartAdd, m_nodeAABBs.Begin() + copyStartAdd, copyLength);
             nutty::Copy(countTmp.Begin() + copyStartAdd, m_nodeContentCount.Begin() + copyStartAdd, copyLength);
-            /*printBuffer(m_nodeContentCount);
-            printBuffer(m_perThreadNodePos);
-            printBuffer(m_prefixSumNodeCount);
-            printSplits(m_splitStructOfArrayArg, 2 * m_elements);*/
-            //printBuffer(m_edgeStructOfArrayArg, 2 * m_elements);
+
+            //m_timer[i].Tick();
+ 
             for(int j = (1 << i); j < (1 << (i+1)); ++j)
             {
                 AABB aabb = bboxTmp[(size_t)(j-1)];
@@ -422,11 +451,6 @@ public:
                 auto begin = m_edgeIndexedEdge.Begin() + contentSum;
                 
                 uint c = countTmp[(size_t)(j-1)];
-
-                if(contentSum + c > m_elements * 2)
-                {
-                    __debugbreak();
-                }
 
                 if(c > 1)
                 {                
@@ -440,27 +464,25 @@ public:
                 }
                 contentSum += c;
             }
-  
-            nutty::SetStream(m_defaultStream);
+
+            //m_timer[i].Tock();
+   
+            //DEBUG_OUT_A("%d %f\n", (i+1), m_timer[i].GetAverageMillis());
             DEVICE_SYNC_CHECK();
-
-            //printBuffer(m_edgeStructOfArrayArg, 2 * m_elements);
-
+ 
             reOrderFromEdges<<<grid, block, 0, m_defaultStream()>>>
                 (
-                m_edgeStructOfArrayArg, 2 * m_elements
+                m_edgeStructOfArrayArg[(m_toggleBit+1) % 2], m_edgeStructOfArrayArg[m_toggleBit], 2 * m_elements
                 );
-            
-           // printBuffer(m_edgeStructOfArrayArg, 2 * m_elements);
 
             DEVICE_SYNC_CHECK();
             
             computeSplits<<<grid, block, 0, m_defaultStream()>>>
                 (
                 m_nodeAABBs.Begin()(), 
-                m_splitStructOfArrayArg,
+                m_splitStructOfArrayArg[m_toggleBit],
                 m_nodeStructOfArrayArg,
-                m_edgeStructOfArrayArg,
+                m_edgeStructOfArrayArg[(m_toggleBit+1) % 2],
                 m_elements, 
                 i, 
                 m_perThreadNodePos.Begin()(), 
@@ -468,10 +490,6 @@ public:
                 );
 
             DEVICE_SYNC_CHECK();
-
-            //printSplits(m_splitStructOfArrayArg, 2 * m_elements);
-
-            m_defaultStream.ClearEvents();
             
             contentSum = 0;
 
@@ -484,12 +502,11 @@ public:
                     if(c > 1)
                     {
                         nutty::cuStream& s = m_pStreamPool->PeekNextStream();
-                        s.ClearEvents();
                         s.WaitEvent(m_defaultStream.RecordEvent());
                         nutty::SetStream(s);
                         nutty::Reduce(begin, begin + c, ReduceIndexedSAH());
                         m_defaultStream.WaitEvent(std::move(s.RecordEvent()));
-                        printSplit(m_splitStructOfArrayArg, contentSum);
+                        //printSplit(m_splitStructOfArrayArg, contentSum);
                         DEVICE_SYNC_CHECK();
                     }
                 }
@@ -500,10 +517,9 @@ public:
 
             reOrderFromSAH<<<grid, block, 0, m_defaultStream()>>>
               (
-              m_splitStructOfArrayArg, 2 * m_elements
+              m_splitStructOfArrayArg[(m_toggleBit+1) % 2], m_splitStructOfArrayArg[m_toggleBit], 2 * m_elements
               );
             
-            printSplits(m_splitStructOfArrayArg, 2 + m_elements);
             DEVICE_SYNC_CHECK();
 
             uint g = 1;
@@ -520,7 +536,7 @@ public:
             setNodesCount<<<g, b, 0, m_defaultStream()>>>
                 (
                 m_prefixSumNodeCount.Begin()(), 
-                m_splitStructOfArrayArg,
+                m_splitStructOfArrayArg[(m_toggleBit+1) % 2],
                 m_nodeStructOfArrayArg,
                 m_elements, 
                 i
@@ -536,10 +552,7 @@ public:
                 m_perThreadNodePos.Begin()(),
                 m_prefixSumNodeCount.Begin()()
                 );
-
-            /*printBuffer(m_perThreadNodePos);
-            printBuffer(m_prefixSumNodeCount);*/
-            
+           
             DEVICE_SYNC_CHECK();
 
             splitNodes<<<g, b, 0, m_defaultStream()>>>
@@ -551,7 +564,7 @@ public:
 
             DEVICE_SYNC_CHECK();
 
-            m_defaultStream.ClearEvents();
+            m_toggleBit = (m_toggleBit + 1) % 2;
         }
 
         uint g = 1;
@@ -565,7 +578,7 @@ public:
 
         initLeafs<<<g, b, 0, m_defaultStream()>>>
             (
-            m_splitStructOfArrayArg,
+            m_splitStructOfArrayArg[m_toggleBit],
             m_nodeStructOfArrayArg,
             m_elements,
             m_depth-1
@@ -580,13 +593,21 @@ public:
             (
             m_transformedData.Begin()(), 
             m_data->Begin()(), 
-            m_edgeStructOfArrayArg,
+            m_edgeStructOfArrayArg[m_toggleBit],
             2 * m_elements
             );
 
         DEVICE_SYNC_CHECK();
-        //printBuffer(m_nodeContentCount);
-        printBuffer(m_nodeStructOfArrayArg, m_nodesCount);
+        m_defaultStream.ClearEvents();
+        m_pStreamPool->ClearEvents();
+
+        //printBuffer(m_transformedData);
+        printBuffer(m_nodeContentCount);
+    }
+
+    void Generate2(void)
+    {
+
     }
 
     void Update(void)
@@ -622,28 +643,45 @@ private:
         nutty::Copy(m_perThreadNodePos.Begin(), m_null.Begin(), m_perThreadNodePos.Size());
 
         uint splitCount = 2 * m_elements;
-        m_splitAxis.Resize(splitCount);
-        m_splitPrimId.Resize(splitCount);
-        m_splitSplitT.Resize(splitCount);
         m_splitSAH.Resize(splitCount);
-        m_splitBelow.Resize(splitCount);
-        m_splitAbove.Resize(splitCount);
+        m_splitAxis[0].Resize(splitCount);
+        m_splitAxis[1].Resize(splitCount);
+        m_splitPrimId[0].Resize(splitCount);
+        m_splitPrimId[1].Resize(splitCount);
+        m_splitSplitT[0].Resize(splitCount);
+        m_splitSplitT[1].Resize(splitCount);
+        m_splitBelow[0].Resize(splitCount);
+        m_splitBelow[1].Resize(splitCount);
+        m_splitAbove[0].Resize(splitCount);
+        m_splitAbove[1].Resize(splitCount);
 
-        m_splitStructOfArrayArg.above = m_splitAbove.GetDevicePtr()();
-        m_splitStructOfArrayArg.below = m_splitBelow.GetDevicePtr()();
-        m_splitStructOfArrayArg.sah = m_splitSAH.GetDevicePtr()();
-        m_splitStructOfArrayArg.split = m_splitSplitT.GetDevicePtr()();
-        m_splitStructOfArrayArg.primId = m_splitPrimId.GetDevicePtr()();
-        m_splitStructOfArrayArg.axis = m_splitAxis.GetDevicePtr()();
+        m_splitStructOfArrayArg[0].sah = m_splitSAH.GetDevicePtr()();
+        m_splitStructOfArrayArg[0].above = m_splitAbove[0].GetDevicePtr()();
+        m_splitStructOfArrayArg[0].below = m_splitBelow[0].GetDevicePtr()();
+        m_splitStructOfArrayArg[0].split = m_splitSplitT[0].GetDevicePtr()();
+        m_splitStructOfArrayArg[0].primId = m_splitPrimId[0].GetDevicePtr()();
+        m_splitStructOfArrayArg[0].axis = m_splitAxis[0].GetDevicePtr()();
+
+        m_splitStructOfArrayArg[1].sah = m_splitSAH.GetDevicePtr()();
+        m_splitStructOfArrayArg[1].above = m_splitAbove[1].GetDevicePtr()();
+        m_splitStructOfArrayArg[1].below = m_splitBelow[1].GetDevicePtr()();
+        m_splitStructOfArrayArg[1].split = m_splitSplitT[1].GetDevicePtr()();
+        m_splitStructOfArrayArg[1].primId = m_splitPrimId[1].GetDevicePtr()();
+        m_splitStructOfArrayArg[1].axis = m_splitAxis[1].GetDevicePtr()();
 
         uint edgeCount = m_elements * 2;
-        m_edgeType.Resize(edgeCount);
-        m_edgePrimId.Resize(edgeCount);
+        m_edgeType[0].Resize(edgeCount);
+        m_edgeType[1].Resize(edgeCount);
+        m_edgePrimId[0].Resize(edgeCount);
+        m_edgePrimId[1].Resize(edgeCount);
         m_edgeIndexedEdge.Resize(edgeCount);
 
-        m_edgeStructOfArrayArg.type = m_edgeType.GetDevicePtr()();
-        m_edgeStructOfArrayArg.primId = m_edgePrimId.GetDevicePtr()();
-        m_edgeStructOfArrayArg.indexedEdge = m_edgeIndexedEdge.GetDevicePtr()();
+        m_edgeStructOfArrayArg[0].type = m_edgeType[0].GetDevicePtr()();
+        m_edgeStructOfArrayArg[0].primId = m_edgePrimId[0].GetDevicePtr()();
+        m_edgeStructOfArrayArg[0].indexedEdge = m_edgeIndexedEdge.GetDevicePtr()();
+        m_edgeStructOfArrayArg[1].type = m_edgeType[1].GetDevicePtr()();
+        m_edgeStructOfArrayArg[1].primId = m_edgePrimId[1].GetDevicePtr()();
+        m_edgeStructOfArrayArg[1].indexedEdge = m_edgeIndexedEdge.GetDevicePtr()();
 
         m_nodeSplitAxis.Resize(m_nodesCount);
         m_nodeIsLeaf.Resize(m_nodesCount);
@@ -681,12 +719,12 @@ public:
         nutty::ZeroMem(m_nodeSplitAxis);
         nutty::ZeroMem(m_nodeBelow);
 
-        nutty::ZeroMem(m_splitAbove);
-        nutty::ZeroMem(m_splitBelow);
-        nutty::ZeroMem(m_splitAxis);
-        nutty::ZeroMem(m_splitPrimId);
+        nutty::ZeroMem(m_splitAbove[0]);
+        nutty::ZeroMem(m_splitBelow[0]);
+        nutty::ZeroMem(m_splitAxis[0]);
+        nutty::ZeroMem(m_splitPrimId[0]);
         nutty::ZeroMem(m_splitSAH);
-        nutty::ZeroMem(m_splitSplitT);
+        nutty::ZeroMem(m_splitSplitT[0]);
     }
 };
 

@@ -9,6 +9,7 @@ struct DstDesc
     float s;
 };
 
+//wahrscheinlich überflüssig: todo
 __global__ void initLeafs(Split allSplits, Node nodes, uint count, uint depth)
 {
     uint id = GlobalId;
@@ -41,7 +42,7 @@ __global__ void initLeafs(Split allSplits, Node nodes, uint count, uint depth)
         s.axis = allSplits.axis[sa];
     }    
 
- 	nodes.contentCount[contentCountOffsetMe + id] = (id%2) * s.above + ((id+1)%2) * s.below;
+ 	//nodes.contentCount[contentCountOffsetMe + id] = (id%2) * s.above + ((id+1)%2) * s.below;
     nodes.contentStartIndex[contentCountOffsetMe + id] = sa;
     nodes.split[contentCountOffsetMe + id] = 0;
     nodes.leaf[contentCountOffsetMe + id] = 1;
@@ -95,7 +96,7 @@ __global__ void setNodesCount(
     //nodes.contentCount[contentCountOffsetMe + id] = (s.below + s.above);
     nodes.contentStartIndex[contentCountOffsetMe + id] = sa;
     nodes.split[contentCountOffsetMe + id] = s.split;
-    nodes.leaf[contentCountOffsetMe + id] = (s.below + s.above) < 2;
+    nodes.leaf[contentCountOffsetMe + id] = (s.below + s.above) < 16;
     nodes.axis[contentCountOffsetMe + id] = s.axis;
     nodes.below[contentCountOffsetMe + id] = s.below;
 }
@@ -134,33 +135,33 @@ __global__ void computePerPrimEdges(Edge edges, AABB* aabbs, uint N)
     edges.primId[2 * id + 1] = end.primId;
 }
 
-__global__ void reOrderFromEdges(Edge edges, uint N)
+__global__ void reOrderFromEdges(Edge edgesDst, Edge edgesSrc, uint N)
 {
     uint id = GlobalId;
     if(id >= N)
     {
         return;
     }
-    uint src = edges.indexedEdge[id].index;
-    edges.primId[id] = edges.primId[src];
-    edges.type[id] = edges.type[src];
-    edges.indexedEdge[id].index = id;
+    uint src = edgesSrc.indexedEdge[id].index;
+    edgesDst.primId[id] = edgesSrc.primId[src];
+    edgesDst.type[id] = edgesSrc.type[src];
+    edgesDst.indexedEdge[id].index = id;
 }
 
-__global__ void reOrderFromSAH(Split split, uint N)
+__global__ void reOrderFromSAH(Split splitDst, Split splitSrc, uint N)
 {
     uint id = GlobalId;
     if(id >= N)
     {
         return;
     }
-    uint src = split.sah[id].index;
-    split.primId[id] = split.primId[src];
-    split.axis[id] = split.axis[src];
-    split.split[id] = split.split[src];
-    split.below[id] = split.below[src];
-    split.above[id] = split.above[src];
-    split.sah[id].index = id;
+    uint src = splitSrc.sah[id].index;
+    splitDst.primId[id] = splitSrc.primId[src];
+    splitDst.axis[id] = splitSrc.axis[src];
+    splitDst.split[id] = splitSrc.split[src];
+    splitDst.below[id] = splitSrc.below[src];
+    splitDst.above[id] = splitSrc.above[src];
+    splitDst.sah[id].index = id;
 }
 
 __device__ DstDesc getDstNode(Node nodes, uint* perThreadNodePos, uint* prefixScan, uint depth)
@@ -209,7 +210,7 @@ EXTC __global__ void spreadContent(
 {
     uint id = GlobalId;
 
-    if(id >= 2*count)
+    if(id >= 2 * count)
     {
         return;
     }
@@ -327,7 +328,7 @@ EXTC __global__ void computeSplits(
 {
     uint id = GlobalId;
     
-    if(id >= 2*count)
+    if(id >= 2 * count)
     {
         return;
     }

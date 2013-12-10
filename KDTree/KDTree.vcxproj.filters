@@ -46,6 +46,9 @@
     <None Include="kdtree.cuh">
       <Filter>Header Files</Filter>
     </None>
+    <None Include="cuTimer.cuh">
+      <Filter>Header Files</Filter>
+    </None>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="rtracer\RTracer.h">

@@ -143,7 +143,7 @@ __device__ float4 transform(float* m4x4l, float4* vector)
 
 __device__ float4 refract(float4* i, float4* n, float eta)
 {
-  float cosi = dot(- *i, *n);
+  float cosi = dot(- (*i), (*n));
   float cost2 = 1.0f - eta * eta * (1.0f - cosi*cosi);
   float4 t = eta * (*i) + ((eta*cosi - sqrt(abs(cost2))) * (*n));
   return t * make_float4(cost2 > 0);
@@ -198,7 +198,7 @@ struct ToDo
 __device__ void traversal0(float3* spheres, Node n, float4* eye, float4* ray, HitResult* hit, float4* min, float4* max, uint treeDepth) 
 {
     float sceneMin, sceneMax;
-
+ 
     hit->isHit = 0;
 
     if(!intersectP(eye, ray, min, max, &sceneMin, &sceneMax))
@@ -225,7 +225,7 @@ __device__ void traversal0(float3* spheres, Node n, float4* eye, float4* ray, Hi
         tmin = tmax;
         tmax = sceneMax;
         pushDown = 1;
-
+        
         while(!n.leaf[nodeIndex])
         {
 
@@ -272,11 +272,11 @@ __device__ void traversal0(float3* spheres, Node n, float4* eye, float4* ray, Hi
         uint prims = n.contentCount[nodeIndex];
         for(uint i = 0; i < prims; ++i)
         {
-            computeHit(&spheres[n.contentStartIndex[nodeIndex] + i], eye, ray, tmin, tmax, 1, hit);
+            int h = computeHit(&spheres[n.contentStartIndex[nodeIndex] + i], eye, ray, tmin, tmax, 1, hit);
 
             if(hit->t < tmax)
             {
-                return;
+                //return;
             }
         }
     }
@@ -296,14 +296,41 @@ __device__ bool testShadow(float3* spheres, float4* light, float4* pos, Node roo
 texture<float4, cudaTextureType2D, cudaReadModeElementType> src;
 texture<float4, cudaTextureType2D, cudaReadModeElementType> worldPosTexture;
 
-__device__ float4 getRefraction(float4* ray, HitResult* res)
+__device__ float4 getBackgroundRefraction(float4* ray, HitResult* res)
 {
-    float4 rfract = normalize(refract(&normalize(*ray * res->t), &res->normal, 1.0/1.5));
+    float4 rfract = normalize(refract(&-normalize(*ray * res->t), &res->normal, 1.0/1.5));
 
     rfract = rfract * 0.5 + 0.5;
     rfract.y = 1 - rfract.y;
+    rfract.x *=1;
+    rfract.y *=1;
 
     return tex2D(src, rfract.x, rfract.y);
+}
+
+__device__ float4 getBackgroundReflection(float4* ray, HitResult* res)
+{
+    float3 refl = normalize(reflect(make_float3(normalize(*ray * res->t)), make_float3(res->normal)));
+
+    refl = refl * 0.5 + 0.5;
+    refl.y = 1 - refl.y;
+    refl.x *= 1;
+    refl.y *= 1;
+
+    return tex2D(src, refl.x, refl.y);
+}
+
+__device__ float4 getSingleRefraction(float3* spheres, float4* ray, Node root, HitResult* res, uint treeDepth, float4* mini, float4* maxi)
+{
+    float4 rfract = normalize(refract(&-normalize(*ray * res->t), &res->normal, 1.0/1.5));
+    traversal0(spheres, root, &(res->worldPosition + res->normal * 0.1), &rfract, res, mini, maxi, treeDepth);
+
+    if(res->isHit)
+    {
+        return getBackgroundRefraction(&rfract, res);
+    }
+
+    return make_float4(0,0,0,0);
 }
 
 extern "C" __global__ void simpleSphereTracer(
@@ -316,9 +343,9 @@ extern "C" __global__ void simpleSphereTracer(
     float3 _eye,
     uint w, uint h)
 {
-    uint idx = blockDim.x * blockIdx.x + threadIdx.x;
-    uint idy = blockDim.y * blockIdx.y + threadIdx.y;
-    uint id = idx + idy * blockDim.x * gridDim.x;
+    volatile uint idx = blockDim.x * blockIdx.x + threadIdx.x;
+    volatile uint idy = blockDim.y * blockIdx.y + threadIdx.y;
+    volatile uint id = idx + idy * blockDim.x * gridDim.x;
 
     if(idx >= w || idy >= h)
     {
@@ -334,7 +361,9 @@ extern "C" __global__ void simpleSphereTracer(
 
     float4 color = tex2D(src, u, v);
 
-    float4 ray = normalize(make_float4(2 * u - 1, 2 * (1-v) - 1, 1.0f, 0));
+    float aspect = w / (float)h;
+
+    float4 ray = normalize(make_float4(2 * u - 1, (2 * (1-v) - 1) / aspect, 1.0f, 0));
 
     ray = transform(view, &ray);
     ray.w = 0;
@@ -358,7 +387,7 @@ extern "C" __global__ void simpleSphereTracer(
     
     if(!res.isHit)
     {
-        /*float4 wp = tex2D(worldPosTexture, u, v);
+        float4 wp = tex2D(worldPosTexture, u, v);
         if(wp.w > 0)
         {
             wp.w = 0;
@@ -366,29 +395,35 @@ extern "C" __global__ void simpleSphereTracer(
             {
                 color *= 0.5;
             }
-        }*/
+        } 
         dst[id] = color;
         return;
     }
+    float4 c;
 
 #if 0
-    float4 c;
     c = color * 0;
 
 #else 
-    float4 reflectionColor = make_float4(0,0,0,0);
 
     HitResult refRes;
     memset(&refRes, 0, sizeof(HitResult));
     refRes.t = FLT_MAX;
 
-    traversal0(spheres, root, &(res.worldPosition + res.normal * 0.1), &res.normal, &refRes, &mini, &maxi, treeDepth);
+    float4 refraction = getSingleRefraction(spheres, &ray, root, &res, treeDepth, &mini, &maxi);
 
-    float4 refractionColor = getRefraction(&ray, &res);
+    memset(&refRes, 0, sizeof(HitResult));
+    refRes.t = FLT_MAX;
+
+    traversal0(spheres, root, &(res.worldPosition + res.normal * 0.1), &res.normal, &refRes, &mini, &maxi, treeDepth);
+     
+    float4 refractionColor = getBackgroundRefraction(&ray, &res);
+
+    float4 reflectionColor = getBackgroundReflection(&ray, &res);
 
     if(refRes.isHit)
     {
-        reflectionColor = sphereColor + 0.5 * getRefraction(&refRes.normal, &refRes);
+        reflectionColor += 0.5 * getBackgroundReflection(&refRes.normal, &refRes);
         if(testShadow(spheres, &light, &(refRes.worldPosition + 0.1 * refRes.normal), root, &mini, &maxi, treeDepth, &shadowContri))
         {
             reflectionColor *= shadowContri;
@@ -403,7 +438,7 @@ extern "C" __global__ void simpleSphereTracer(
 
     float specular = pow(max(0.0, dot(make_float4(reflectVec), normalize(eye - res.worldPosition))), 32.0);
 
-    c = diffuse * (0.4*sphereColor + refractionColor + reflectionColor) + 2 * specular * refractionColor;
+    c = diffuse * (1*refractionColor + 0*reflectionColor);// + 2 * specular * reflectionColor;
 
     if(res.isHit)
     {
@@ -413,14 +448,7 @@ extern "C" __global__ void simpleSphereTracer(
         }
     }
 #endif
+
     dst[id] = make_float4(c.x, c.y, c.z, color.w);
-}
-
-extern "C" void runTracer(
-    cudaArray_t srcPtr, cudaArray_t worldPosptr, uint width, uint height, void* linearMem, float3* kdData, AABB* kdBBox, Node* nodes, uint depth, float* view, float3 eye,
-    cudaStream_t stream)
-{
-    
-
 }
 

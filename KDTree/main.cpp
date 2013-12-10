@@ -22,8 +22,9 @@
 #include "rtracer/RTracer.h"
 
 #include <fstream>
-//-ptx -arch=sm_20 --use-local-env --cl-version 2012 -I\"C:\\Program Files (x86)\\Microsoft Visual Studio 11.0\\VC\\include\" -I\"C:\\Program Files\\NVIDIA GPU Computing Toolkit\\CUDA\\v5.5\\include\" -I\"../include\" -G --keep-dir E:\Dropbox\VisualStudio\Chimera\Source\..\Tmp\KDTreex64Debug\ -maxrregcount=0  --machine 64 -ptx -cudart static 
-const char* c = "runproc nvcc -I\"E:\\Dropbox\\VisualStudio\\Chimera\\Include\" -I\"C:\\Program Files\\NVIDIA GPU Computing Toolkit\\CUDA\\v5.5\\include\" -ptx ./rtracer/tracer_kernel.cu -o ./ptx/tracer_kernel.ptx ";//-o .\ptx\tracer_kernel.ptx \"E:\Dropbox\VisualStudio\Chimera\KDTree\rtracer\tracer_kernel.cu";
+const char* c_home = "runproc nvcc -I\"E:\\Dropbox\\VisualStudio\\Chimera\\Include\" -I\"C:\\Program Files\\NVIDIA GPU Computing Toolkit\\CUDA\\v5.5\\include\" -ptx ./rtracer/tracer_kernel.cu -o ./ptx/tracer_kernel.ptx ";//-o .\ptx\tracer_kernel.ptx \"E:\Dropbox\VisualStudio\Chimera\KDTree\rtracer\tracer_kernel.cu";
+const char* c_uni = "runproc nvcc -I../Include -I\"C:\\Program Files\\NVIDIA GPU Computing Toolkit\\CUDA\\v5.5\\include\" -ptx ./rtracer/tracer_kernel.cu -o ./ptx/tracer_kernel.ptx ";//-o .\ptx\tracer_kernel.ptx \"E:\Dropbox\VisualStudio\Chimera\KDTree\rtracer\tracer_kernel.cu";
+const char* c = c_uni;
 
 IKDTree* g_tree;
 IRTracer* g_tracer;
@@ -47,7 +48,7 @@ extern "C" void release();
 struct ID3D11Buffer;
 
 UINT elems = 8;
-float g_scale = 10; //30;
+float g_scale = 50; //30;
 uint g_depth = 4;
 uint g_maxDepth = 12;
 uint g_parts = 4;
@@ -108,7 +109,7 @@ public:
     VOID AnimateGeo(ULONG deltaMillis)
     {
         time += g_timeScale * deltaMillis;
-        m_scale = g_scale*20*(UINT)(log(elems));
+        m_scale = g_scale*(UINT)(log(elems));
         k->SetKernelArg(0, *ptr);
         k->SetKernelArg(1, time);
         k->SetKernelArg(2, g_scale);
@@ -127,7 +128,7 @@ public:
 
     VOID VOnUpdate(ULONG deltaMillis)
     {
-        //AnimateGeo(deltaMillis);
+        AnimateGeo(deltaMillis);
 
         cudaDeviceSynchronize();
         g_timer.Start();
@@ -204,7 +205,10 @@ public:
         chimera::util::Vec3 pos = chimera::GetActorCompnent<chimera::TransformComponent>(player, CM_CMP_TRANSFORM)->GetTransformation()->GetTranslation();
         _ss.str("");
         _ss << "Overall Rendering FPS: " << (float)chimera::CmGetApp()->VGetRenderingTimer()->VGetFPS() << "\n";
-        _ss << "Tracing: " << g_tracer->GetLastMillis() << " ms\n";
+        if(g_tracer)
+        {
+            _ss << "Tracing: " << g_tracer->GetLastMillis() << " ms\n";
+        }
         _ss << "Construction (d=" << g_tree->GetCurrentDepth() << "): " << g_timer.GetMillis() << " ms\n";
         _ss << "Prims: " << elems << "\n";
         _ss << "Player: " << pos.x << ", " << pos.y << ", " << pos.z;
@@ -312,40 +316,44 @@ void createBBoxGeo(uint aabbsCount)
 
 void createWorld(void)
 {
-    std::unique_ptr<chimera::ActorDescription> actorDesc = chimera::CmGetApp()->VGetLogic()->VGetActorFactory()->VCreateActorDescription();
-    chimera::TransformComponent* tcmp = actorDesc->AddComponent<chimera::TransformComponent>(CM_CMP_TRANSFORM);
-    float meshScale = 1;
-    tcmp->GetTransformation()->SetScale(meshScale, meshScale, meshScale);
-    chimera::RenderComponent* rcmp = actorDesc->AddComponent<chimera::RenderComponent>(CM_CMP_RENDERING);
-    rcmp->m_resource = "sphere_low.obj";
-    
-//     std::shared_ptr<chimera::IMesh>& monkey = std::static_pointer_cast<chimera::IMesh>(chimera::CmGetApp()->VGetCache()->VGetHandle(chimera::CMResource("monkey.obj")));
-//     CONST FLOAT* monkeyVertes = monkey->VGetVertices();
-    UINT bunnys = 1;
-    elems = chimera::CmGetApp()->VGetConfig()->VGetInteger("iPoints");
-    UINT perObjectCount = elems;//monkey->VGetVertexCount();
-    elems = bunnys * perObjectCount;
-    UINT scale = 20*(UINT)(log(perObjectCount));
-    nutty::HostBuffer<float3> v(elems);
-
-    INT vi = 0;
-    for(UINT b = 0; b < bunnys; ++b)
+    nutty::HostBuffer<float3> v;
+    std::string m = chimera::CmGetApp()->VGetConfig()->VGetString("sMesh");
+    if(m != "-")
     {
-        float x = 0;//2*(float)(rand()%scale);
-        float y = 2;
-        float z = 0;//2*(float)(rand()%scale);
+        std::shared_ptr<chimera::IMesh>& mesh = std::static_pointer_cast<chimera::IMesh>(chimera::CmGetApp()->VGetCache()->VGetHandle(chimera::CMResource(m)));
+        CONST FLOAT* meshVertices = mesh->VGetVertices();
 
-        for(UINT i = 0; i < perObjectCount; ++i)
+        elems = mesh->VGetVertexCount();
+        UINT scale = 50*(UINT)(log(elems));
+
+        v.Resize(elems);
+
+        INT vi = 0;
+        for(UINT i = 0; i < elems; ++i)
         {
             float3 pos;
-            pos.x = scale * (float)(rand()/(float)RAND_MAX);// + scale * monkeyVertes[8 * i + 0];
-            pos.y = scale * (float)(rand()/(float)RAND_MAX);//y + scale * monkeyVertes[8 * i + 1];
-            pos.z = scale * (float)(rand()/(float)RAND_MAX);//z + scale * monkeyVertes[8 * i + 2];
+            pos.x = scale * meshVertices[8 * i + 0];
+            pos.y = scale * meshVertices[8 * i + 1];
+            pos.z = scale * meshVertices[8 * i + 2];
 
-//             pos.x = x + scale * monkeyVertes[8 * i + 0];
-//             pos.y = scale + y + scale * monkeyVertes[8 * i + 1];
-//             pos.z = z + scale * monkeyVertes[8 * i + 2];
-           // DEBUG_OUT_A("%f %f %f\n", pos.x, pos.y, pos.z);
+            v[vi++] = pos;
+        }
+    }
+    else
+    {
+        elems = chimera::CmGetApp()->VGetConfig()->VGetInteger("iPoints");
+        UINT scale = 5*(UINT)(log(elems));
+
+        v.Resize(elems);
+
+        INT vi = 0;
+        for(UINT i = 0; i < elems; ++i)
+        {
+            float3 pos;
+            pos.x = scale * (float)(rand()/(float)RAND_MAX);
+            pos.y = scale * (float)(rand()/(float)RAND_MAX);
+            pos.z = scale * (float)(rand()/(float)RAND_MAX);
+
             v[vi++] = pos;
         }
     }
@@ -357,6 +365,13 @@ void createWorld(void)
     
     if(chimera::CmGetApp()->VGetConfig()->VGetBool("bDrawRasterGeo"))
     {
+        std::unique_ptr<chimera::ActorDescription> actorDesc = chimera::CmGetApp()->VGetLogic()->VGetActorFactory()->VCreateActorDescription();
+        chimera::TransformComponent* tcmp = actorDesc->AddComponent<chimera::TransformComponent>(CM_CMP_TRANSFORM);
+        float meshScale = 1;
+        tcmp->GetTransformation()->SetScale(meshScale, meshScale, meshScale);
+        chimera::RenderComponent* rcmp = actorDesc->AddComponent<chimera::RenderComponent>(CM_CMP_RENDERING);
+        rcmp->m_resource = "sphere_low.obj";
+
         std::shared_ptr<chimera::IVertexBuffer> geo = std::shared_ptr<chimera::IVertexBuffer>(chimera::CmGetApp()->VGetHumanView()->VGetGraphicsFactory()->VCreateVertexBuffer());
 
         geo->VInitParamater(elems, 3 * sizeof(float), *v.GetRawPointer());

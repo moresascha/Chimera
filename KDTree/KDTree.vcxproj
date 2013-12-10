@@ -151,6 +151,11 @@
       <CudaRuntime>Static</CudaRuntime>
       <TargetMachinePlatform>64</TargetMachinePlatform>
       <CodeGeneration>compute_20,sm_20</CodeGeneration>
+      <AdditionalCompilerOptions>
+      </AdditionalCompilerOptions>
+      <AdditionalOptions>--ptxas-options=-v %(AdditionalOptions)</AdditionalOptions>
+      <PtxAsOptionV>true</PtxAsOptionV>
+      <MaxRegCount>0</MaxRegCount>
     </CudaCompile>
   </ItemDefinitionGroup>
   <ItemGroup>
@@ -172,12 +177,20 @@
     <CudaCompile Include="rtracer\tracer_kernel.cu">
       <CompileOut Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">.\ptx\%(Filename).ptx</CompileOut>
       <NvccCompilation Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">ptx</NvccCompilation>
+      <CompileOut Condition="'$(Configuration)|$(Platform)'=='Release|x64'">.\ptx\%(Filename).ptx</CompileOut>
+      <NvccCompilation Condition="'$(Configuration)|$(Platform)'=='Release|x64'">ptx</NvccCompilation>
+      <MaxRegCount Condition="'$(Configuration)|$(Platform)'=='Release|x64'">20</MaxRegCount>
+      <AdditionalCompilerOptions Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+      </AdditionalCompilerOptions>
+      <AdditionalOptions Condition="'$(Configuration)|$(Platform)'=='Release|x64'">-Xptxas -v %(AdditionalOptions)</AdditionalOptions>
+      <PtxAsOptionV Condition="'$(Configuration)|$(Platform)'=='Release|x64'">false</PtxAsOptionV>
     </CudaCompile>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="main.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <None Include="cuTimer.cuh" />
     <None Include="kdtree.cuh" />
     <None Include="kd_kernel.cuh" />
   </ItemGroup>
