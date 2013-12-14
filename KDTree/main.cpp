@@ -19,12 +19,12 @@
 #include "../../Nutty/Nutty/Wrap.h"
 #include "../../Nutty/Nutty/cuda/cuda_helper.h"
 
-#include "rtracer/RTracer.h"
+#include "rtracer/tracer.cuh"
 
 #include <fstream>
-const char* c_home = "runproc nvcc -I\"E:\\Dropbox\\VisualStudio\\Chimera\\Include\" -I\"C:\\Program Files\\NVIDIA GPU Computing Toolkit\\CUDA\\v5.5\\include\" -ptx ./rtracer/tracer_kernel.cu -o ./ptx/tracer_kernel.ptx ";//-o .\ptx\tracer_kernel.ptx \"E:\Dropbox\VisualStudio\Chimera\KDTree\rtracer\tracer_kernel.cu";
+const char* c_home = "runproc nvcc -I\"E:\\Dropbox\\VisualStudio\\Chimera\\Include\" -I\"E:\\Dropbox\\VisualStudio\\Chimera\\Source\\chimera\\api\" -I\"C:\\Program Files\\NVIDIA GPU Computing Toolkit\\CUDA\\v5.5\\include\" -ptx ./rtracer/tracer_kernel.cu -o ./ptx/tracer_kernel.ptx ";//-o .\ptx\tracer_kernel.ptx \"E:\Dropbox\VisualStudio\Chimera\KDTree\rtracer\tracer_kernel.cu";
 const char* c_uni = "runproc nvcc -I../Include -I\"C:\\Program Files\\NVIDIA GPU Computing Toolkit\\CUDA\\v5.5\\include\" -ptx ./rtracer/tracer_kernel.cu -o ./ptx/tracer_kernel.ptx ";//-o .\ptx\tracer_kernel.ptx \"E:\Dropbox\VisualStudio\Chimera\KDTree\rtracer\tracer_kernel.cu";
-const char* c = c_uni;
+const char* c = c_home;
 
 IKDTree* g_tree;
 IRTracer* g_tracer;
@@ -49,6 +49,7 @@ struct ID3D11Buffer;
 
 UINT elems = 8;
 float g_scale = 50; //30;
+bool g_reconstructTree = true;
 uint g_depth = 4;
 uint g_maxDepth = 12;
 uint g_parts = 4;
@@ -128,13 +129,19 @@ public:
 
     VOID VOnUpdate(ULONG deltaMillis)
     {
-        AnimateGeo(deltaMillis);
+        if(chimera::CmGetApp()->VGetConfig()->VGetBool("bAnimate"))
+        {
+            AnimateGeo(deltaMillis);
+        }
 
-        cudaDeviceSynchronize();
-        g_timer.Start();
-        g_tree->Update();
-        cudaDeviceSynchronize();
-        g_timer.Stop();
+        if(g_reconstructTree)
+        {
+            cudaDeviceSynchronize();
+            g_timer.Start();
+            g_tree->Update();
+            cudaDeviceSynchronize();
+            g_timer.Stop();
+        }
     }
 
     ~AnimationProc(VOID)
@@ -208,6 +215,7 @@ public:
         if(g_tracer)
         {
             _ss << "Tracing: " << g_tracer->GetLastMillis() << " ms\n";
+            _ss << "Rays: " << g_tracer->GetLastRayCount() << " (Shadow: " << g_tracer->GetLastShadowRayCount() << ")\n";
         }
         _ss << "Construction (d=" << g_tree->GetCurrentDepth() << "): " << g_timer.GetMillis() << " ms\n";
         _ss << "Prims: " << elems << "\n";
@@ -350,6 +358,9 @@ void createWorld(void)
         for(UINT i = 0; i < elems; ++i)
         {
             float3 pos;
+            pos.x = 1.5f*i;//scale * (float)(rand()/(float)RAND_MAX);
+            pos.y = 1;//scale * (float)(rand()/(float)RAND_MAX);
+            pos.z = 1.5f * i;//scale * (float)(rand()/(float)RAND_MAX);
             pos.x = scale * (float)(rand()/(float)RAND_MAX);
             pos.y = scale * (float)(rand()/(float)RAND_MAX);
             pos.z = scale * (float)(rand()/(float)RAND_MAX);
@@ -384,28 +395,27 @@ void createWorld(void)
         mappedPtr = new nutty::MappedBufferPtr<float>(std::move(nutty::WrapBuffer<float>(buffer)));
     }
 
-    /*SAFE_DELETE(v);*/
-    if(chimera::CmGetApp()->VGetConfig()->VGetBool("bAnimate"))
-    {
-        AnimationProc* ap = new AnimationProc(data, elems, mappedPtr);
-        chimera::IProcess* proc = chimera::CmGetApp()->VGetLogic()->VGetProcessManager()->VAttach(std::unique_ptr<chimera::IProcess>(ap));
-    }
+    AnimationProc* ap = new AnimationProc(data, elems, mappedPtr);
+    chimera::CmGetApp()->VGetLogic()->VGetProcessManager()->VAttach(std::unique_ptr<chimera::IProcess>(ap));
 
-    chimera::IProcess* proc = chimera::CmGetApp()->VGetLogic()->VGetProcessManager()->VAttach(std::unique_ptr<chimera::IProcess>(new Status()));
+    chimera::CmGetApp()->VGetLogic()->VGetProcessManager()->VAttach(std::unique_ptr<chimera::IProcess>(new Status()));
     
 
     g_depth = chimera::CmGetApp()->VGetConfig()->VGetInteger("iTreeDepth");
     g_maxDepth = chimera::CmGetApp()->VGetConfig()->VGetInteger("iTreeMaxDepth");
     uint bboxCount = (1 << (uint)g_maxDepth) - 1;
+    g_reconstructTree = chimera::CmGetApp()->VGetConfig()->VGetInteger("bReconstructTree") != 0;
 
     g_tree = generate((void*)data, elems, g_depth, g_maxDepth);
 
-    if(chimera::CmGetApp()->VGetConfig()->VGetBool("bRayTrace"))
+    g_tracer = createTracer(g_tree);
+    chimera::IGraphicsSettings* settings = chimera::CmGetApp()->VGetHumanView()->VGetSceneByName("main")->VGetSettings();
+    settings->VAddSetting(std::unique_ptr<chimera::IGraphicSetting>(g_tracer), chimera::eGraphicsSetting_Lighting);
+    ADD_EVENT_LISTENER_STATIC(&PreRestoreDelegate, CM_EVENT_PRE_RESTORE);
+
+    if(!chimera::CmGetApp()->VGetConfig()->VGetBool("bRayTrace"))
     {
-        g_tracer = createTracer(g_tree);
-        chimera::IGraphicsSettings* settings = chimera::CmGetApp()->VGetHumanView()->VGetSceneByName("main")->VGetSettings();
-        settings->VAddSetting(std::unique_ptr<chimera::IGraphicSetting>(g_tracer), chimera::eGraphicsSetting_Lighting);
-        ADD_EVENT_LISTENER_STATIC(&PreRestoreDelegate, CM_EVENT_PRE_RESTORE);
+        g_tracer->ToggleEnable();
     }
 
     if(chimera::CmGetApp()->VGetConfig()->VGetBool("bDrawBBox"))

@@ -32,7 +32,7 @@ __global__ void initLeafs(Split allSplits, Node nodes, uint count, uint depth)
     s.sah.index = 0;
     s.axis = 0;
 
-    if(sa < 2 * count)
+    if(sa < count)
     {
         s.split = allSplits.split[sa];
         s.below = allSplits.below[sa];
@@ -77,7 +77,7 @@ __global__ void setNodesCount(
     s.sah.sah = 0;
     s.sah.index = 0;
 
-    if(sa < 2 * count)
+    if(sa < count)
     {
         s.split = allSplits.split[sa];
         s.below = allSplits.below[sa];
@@ -96,12 +96,12 @@ __global__ void setNodesCount(
     //nodes.contentCount[contentCountOffsetMe + id] = (s.below + s.above);
     nodes.contentStartIndex[contentCountOffsetMe + id] = sa;
     nodes.split[contentCountOffsetMe + id] = s.split;
-    nodes.leaf[contentCountOffsetMe + id] = (s.below + s.above) < 16;
+    nodes.leaf[contentCountOffsetMe + id] = (s.below + s.above) < 2;
     nodes.axis[contentCountOffsetMe + id] = s.axis;
     nodes.below[contentCountOffsetMe + id] = s.below;
 }
 
-__global__ void computePerPrimEdges(Edge edges, AABB* aabbs, uint N)
+/*__global__ void computePerPrimEdges(Edge edges, AABB* aabbs, uint N)
 {
     uint id = GlobalId;
     if(id >= N)
@@ -120,11 +120,14 @@ __global__ void computePerPrimEdges(Edge edges, AABB* aabbs, uint N)
     end.indexedEdge.index = 2 * id + 1;
     end.primId = id;
 
-    for(byte i = 0; i < 3; ++i)
+    /* for(byte i = 0; i < 3; ++i)
     {
         setEdgeSplit(&start, i, getAxis(&aabb.min, i));
         setEdgeSplit(&end, i, getAxis(&aabb.max, i));
-    }
+    }* /
+
+    todo, start.t3 = aabb.min;
+    todo, end.t3 = aabb.max;
 
     edges.type[2 * id + 0] = start.type;
     edges.indexedEdge[2 * id + 0] = start.indexedEdge;
@@ -133,6 +136,70 @@ __global__ void computePerPrimEdges(Edge edges, AABB* aabbs, uint N)
     edges.type[2 * id + 1] = end.type;
     edges.indexedEdge[2 * id + 1] = end.indexedEdge;
     edges.primId[2 * id + 1] = end.primId;
+}*/
+
+__global__ void computePerPrimEdges(Edge edges, AABB* aabbs, uint N)
+{
+    const uint id = GlobalId;
+    if(id >= N)
+    {
+        return;
+    }
+    const int edgesCount = 8;
+
+    AABB aabb = aabbs[id];
+
+    Edge_v1 start;
+    start.primId = id;
+    //start.indexedEdge.t3 = aabb.min;
+
+    Edge_v1 end;
+    end.primId = id;
+    //end.indexedEdge.t3 = aabb.max;
+
+    byte index = 0;
+
+    for(byte ix = 0; ix < 2; ++ix)
+    {
+        float x = aabb.getX(ix);
+        for(byte iy = 0; iy < 2; ++iy)
+        {
+            float y = aabb.getY(iy);
+
+            float z_min = aabb.getZ(0);
+            float z_max = aabb.getZ(1);
+
+            start.indexedEdge.t[0].type = (EdgeType)ix;
+            start.indexedEdge.t[0].v = x;
+            
+            start.indexedEdge.t[1].type = (EdgeType)iy;
+            start.indexedEdge.t[1].v = y;
+
+            start.indexedEdge.t[2].type = eStart;
+            start.indexedEdge.t[2].v = z_min;
+
+            start.indexedEdge.index = edgesCount * id + index;
+
+            edges.indexedEdge[edgesCount * id + index] = start.indexedEdge;
+            edges.primId[edgesCount * id + index] = start.primId;
+            index++;
+
+            end.indexedEdge.t[0].type = (EdgeType)ix;
+            end.indexedEdge.t[0].v = x;
+            
+            end.indexedEdge.t[1].type = (EdgeType)iy;
+            end.indexedEdge.t[1].v = y;
+
+            end.indexedEdge.t[2].type = eEnd;
+            end.indexedEdge.t[2].v = z_max;
+
+            end.indexedEdge.index = edgesCount * id + index;
+
+            edges.indexedEdge[edgesCount * id + index] = end.indexedEdge;
+            edges.primId[edgesCount * id + index] = end.primId;
+            index++;
+        }
+    }
 }
 
 __global__ void reOrderFromEdges(Edge edgesDst, Edge edgesSrc, uint N)
@@ -144,7 +211,9 @@ __global__ void reOrderFromEdges(Edge edgesDst, Edge edgesSrc, uint N)
     }
     uint src = edgesSrc.indexedEdge[id].index;
     edgesDst.primId[id] = edgesSrc.primId[src];
-    edgesDst.type[id] = edgesSrc.type[src];
+    /*edgesDst.indexedEdge[id].t[0] = edgesSrc.indexedEdge[src].t[0];
+    edgesDst.indexedEdge[id].t[1] = edgesSrc.indexedEdge[src].t[1];
+    edgesDst.indexedEdge[id].t[2] = edgesSrc.indexedEdge[src].t[2];*/
     edgesDst.indexedEdge[id].index = id;
 }
 
@@ -210,7 +279,7 @@ EXTC __global__ void spreadContent(
 {
     uint id = GlobalId;
 
-    if(id >= 2 * count)
+    if(id >= count)
     {
         return;
     }
@@ -328,7 +397,7 @@ EXTC __global__ void computeSplits(
 {
     uint id = GlobalId;
     
-    if(id >= 2 * count)
+    if(id >= count)
     {
         return;
     }
@@ -344,7 +413,7 @@ EXTC __global__ void computeSplits(
     int axis = getLongestAxis(aa.min, aa.max);
 
     uint elemsInNode = nodes.contentCount[levelOffset + nodeIndex];
-    EdgeType type = edges.type[id];
+    EdgeType type = edges.indexedEdge[id].t[axis].type;
     float split = getSplit(edges, id, axis);
     splits.split[id] = split;
     splits.axis[id] = axis;

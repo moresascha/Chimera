@@ -22,6 +22,8 @@
 
 #include <sstream>
 
+#include <set>
+
 bool g_treeDebug = false; 
  
 void print(const char* str)
@@ -72,15 +74,14 @@ void printEdge(Edge&b, uint i)
     if(!g_treeDebug) return;
     nutty::DevicePtr<Indexed3DEdge> ie(b.indexedEdge + i);
     nutty::DevicePtr<uint> primId(b.primId + i);
-    nutty::DevicePtr<EdgeType> type(b.type + i);
+    //nutty::DevicePtr<EdgeType> type(b.type + i);
 
     std::stringstream ss;
     ss << "(index=" << 
-    ie[0].index << ", x=" << ie[0].t3.x <<
-    i << ", y=" << ie[0].t3.y <<
-    i << ", z=" << ie[0].t3.z <<
-    ", primId=" << primId[0] <<
-    ", type=" << type[0] << ") ";
+    ie[0].index << ", x=" << ie[0].t[0].v << ", type=" << ie[0].t[0].type <<
+    ", y=" << ie[0].t[1].v << ", type=" << ie[0].t[1].type << 
+    ", z=" << ie[0].t[2].v << ", type=" << ie[0].t[2].type <<
+    ", primId=" << primId[0] << ") \n";
     print(ss.str().c_str());
 }
 
@@ -121,10 +122,10 @@ void printBuffer(Node& b, uint size)
     nutty::DevicePtr<float> split(b.split);
     
     std::stringstream ss;
-    ss << "Nodes: ";
+    ss << "Nodes:\n";
     for(uint i = 0; i < size; ++i)
     {
-        ss << "(index=" << i << ", axis=" << (int)axis[i] << ", split=" << split[i] << ", leaf=" << (int)isLeaf[i] << ", start=" << start[i] << ", count=" << cc[i] << ")";
+        ss << "(index=" << i << ", axis=" << (int)axis[i] << ", split=" << split[i] << ", leaf=" << (int)isLeaf[i] << ", start=" << start[i] << ", count=" << cc[i] << ")\n";
     }
     print(ss.str().c_str());
     print("\n");
@@ -146,7 +147,7 @@ void printBuffer(nutty::DeviceBuffer<float3>& b)
 
 std::stringstream & operator << (std::stringstream &out, Indexed3DEdge const &t)
 {
-    out << t.index << " " << t.t3.x << " ";
+    out << t.index << " x=" << t.t[0].v << " y=" << t.t[1].v << " z=" << t.t[2].v << "\n";
     return out;
 }
 
@@ -159,7 +160,6 @@ void printT(T t)
     ss << t << " ";
     print(ss.str().c_str());
 }
-
 
 template <
     typename T
@@ -234,7 +234,7 @@ struct EdgeSort
     }
     __device__ __host__ char operator()(Indexed3DEdge f0, Indexed3DEdge f1)
     {
-        return getAxis(&f0.t3, axis) > getAxis(&f1.t3, axis);
+        return f0.t[axis].v > f1.t[axis].v;
     }
 };
 
@@ -248,6 +248,7 @@ public:
     byte m_maxDepth;
     uint m_nodesCount;
     uint m_elements;
+    uint m_edgesCount;
 
     nutty::DeviceBuffer<T>* m_data;
     nutty::DeviceBuffer<T> m_transformedData;
@@ -271,6 +272,9 @@ public:
     nutty::DeviceBuffer<float> m_nodeSplit;
     nutty::DeviceBuffer<uint> m_nodeBelow;
     nutty::DeviceBuffer<Node> m_nodesBuffer;
+
+    nutty::DeviceBuffer<uint> m_nodeContent;
+
     Node m_nodeStructOfArrayArg;
 
     nutty::DeviceBuffer<byte> m_splitAxis[2];
@@ -312,7 +316,8 @@ public:
         m_nodesCount(0), 
         m_computePossibleSplits(NULL), 
         m_elements(0),
-        m_toggleBit(0)
+        m_toggleBit(0),
+        m_edgesCount(8)
     {    
         assert(maxDepth >= depth);
         m_pStreamPool = new nutty::cuStreamPool();
@@ -404,6 +409,8 @@ public:
             (m_edgeStructOfArrayArg[m_toggleBit], m_primBBox.Begin()(), m_elements);
         m_defaultStream.WaitEvent(std::move(sedges.RecordEvent()));
 
+        printBuffer(m_edgeStructOfArrayArg[0], m_elements * m_edgesCount);
+
         const nutty::cuStream& smin = m_pStreamPool->PeekNextStream();
         nutty::SetStream(smin);
         nutty::Reduce(m_aabbMin.Begin(), dataBuffer, dataBuffer + m_elements, float3min());
@@ -426,13 +433,14 @@ public:
         aabb.max = maxi;
         m_nodeAABBs.Insert(0, aabb);
 
-        uint block = 2 * m_elements < 256 ? 2 * m_elements : 256;
-        uint grid = nutty::cuda::GetCudaGrid(2 * m_elements, 256U);
+        uint block = m_edgesCount * m_elements < 256 ? m_edgesCount * m_elements : 256;
+        uint grid = nutty::cuda::GetCudaGrid(m_edgesCount * m_elements, 256U);
 
         DEVICE_SYNC_CHECK();
 
         for(int i = 0; i < m_depth-1; ++i)
         {                       
+            printBuffer(m_nodeStructOfArrayArg, m_nodesCount);
             uint contentSum = 0;
 	
             uint copyStartAdd = (1 << i) - 1;
@@ -466,15 +474,18 @@ public:
             }
 
             //m_timer[i].Tock();
+
+            printBuffer(m_edgeStructOfArrayArg[0], m_elements * m_edgesCount);
    
+           // printSplits(m_splitStructOfArrayArg[m_toggleBit], 8 * m_elements);
             //DEBUG_OUT_A("%d %f\n", (i+1), m_timer[i].GetAverageMillis());
             DEVICE_SYNC_CHECK();
  
             reOrderFromEdges<<<grid, block, 0, m_defaultStream()>>>
                 (
-                m_edgeStructOfArrayArg[(m_toggleBit+1) % 2], m_edgeStructOfArrayArg[m_toggleBit], 2 * m_elements
+                m_edgeStructOfArrayArg[(m_toggleBit+1) % 2], m_edgeStructOfArrayArg[m_toggleBit], m_edgesCount * m_elements
                 );
-
+            printBuffer(m_edgeStructOfArrayArg[(m_toggleBit+1) % 2], 8 * m_elements);
             DEVICE_SYNC_CHECK();
             
             computeSplits<<<grid, block, 0, m_defaultStream()>>>
@@ -483,11 +494,13 @@ public:
                 m_splitStructOfArrayArg[m_toggleBit],
                 m_nodeStructOfArrayArg,
                 m_edgeStructOfArrayArg[(m_toggleBit+1) % 2],
-                m_elements, 
+                m_edgesCount * m_elements, 
                 i, 
                 m_perThreadNodePos.Begin()(), 
                 m_prefixSumNodeCount.Begin()()
                 );
+
+            printSplits(m_splitStructOfArrayArg[m_toggleBit], 8 * m_elements);
 
             DEVICE_SYNC_CHECK();
             
@@ -517,9 +530,45 @@ public:
 
             reOrderFromSAH<<<grid, block, 0, m_defaultStream()>>>
               (
-              m_splitStructOfArrayArg[(m_toggleBit+1) % 2], m_splitStructOfArrayArg[m_toggleBit], 2 * m_elements
+              m_splitStructOfArrayArg[(m_toggleBit+1) % 2], m_splitStructOfArrayArg[m_toggleBit], m_edgesCount * m_elements
               );
-            
+            /*
+            if(i == 0)
+            {
+                m_splitBelow[1].Insert(0, 4);
+                m_splitAbove[1].Insert(0, 4);
+                m_splitAxis[1].Insert(0, 0);
+                m_splitPrimId[1].Insert(0, 0);
+                IndexedSAH isah;
+                isah.index = 0;
+                isah.sah = 10;
+                m_splitSAH.Insert(0, isah);
+                m_splitSplitT[1].Insert(0, 0);
+            }
+            else
+            {
+                m_splitBelow[0].Insert(0, 2);
+                m_splitAbove[0].Insert(0, 2);
+                m_splitAxis[0].Insert(0, 0);
+                m_splitPrimId[0].Insert(0, 0);
+                IndexedSAH isah;
+                isah.index = 0;
+                isah.sah = 10;
+                m_splitSAH.Insert(0, isah);
+                m_splitSplitT[0].Insert(0, -0.5f);
+
+                m_splitBelow[0].Insert(4, 2);
+                m_splitAbove[0].Insert(4, 2);
+                m_splitAxis[0].Insert(4, 0);
+                m_splitPrimId[0].Insert(4, 0);
+                isah.index = 1;
+                isah.sah = 10;
+                m_splitSAH.Insert(4, isah);
+                m_splitSplitT[0].Insert(4, 0.5f);
+            }*/
+
+            printSplits(m_splitStructOfArrayArg[(m_toggleBit+1) % 2], 8 * m_elements);
+
             DEVICE_SYNC_CHECK();
 
             uint g = 1;
@@ -538,7 +587,7 @@ public:
                 m_prefixSumNodeCount.Begin()(), 
                 m_splitStructOfArrayArg[(m_toggleBit+1) % 2],
                 m_nodeStructOfArrayArg,
-                m_elements, 
+                m_edgesCount * m_elements, 
                 i
                 );
             
@@ -547,7 +596,7 @@ public:
             spreadContent<<<grid, block, 0, m_defaultStream()>>>
                 (
                 m_nodeStructOfArrayArg,
-                m_elements,
+                m_edgesCount * m_elements,
                 i,
                 m_perThreadNodePos.Begin()(),
                 m_prefixSumNodeCount.Begin()()
@@ -566,7 +615,7 @@ public:
 
             m_toggleBit = (m_toggleBit + 1) % 2;
         }
-
+        printBuffer(m_nodeAABBs);
         uint g = 1;
         uint b = (1 << (m_depth-1));
 
@@ -580,13 +629,13 @@ public:
             (
             m_splitStructOfArrayArg[m_toggleBit],
             m_nodeStructOfArrayArg,
-            m_elements,
+            m_edgesCount * m_elements,
             m_depth-1
             );
         
         DEVICE_SYNC_CHECK();
 
-        g = nutty::cuda::GetCudaGrid(2 * m_elements, 256U);
+        g = nutty::cuda::GetCudaGrid(m_edgesCount * m_elements, 256U);
         b = 256;
 
         postProcess<<<g, b, 0, m_defaultStream()>>>
@@ -594,15 +643,46 @@ public:
             m_transformedData.Begin()(), 
             m_data->Begin()(), 
             m_edgeStructOfArrayArg[m_toggleBit],
-            2 * m_elements
+            m_edgesCount * m_elements
             );
 
         DEVICE_SYNC_CHECK();
         m_defaultStream.ClearEvents();
         m_pStreamPool->ClearEvents();
 
-        //printBuffer(m_transformedData);
+        printBuffer(m_edgeStructOfArrayArg[m_toggleBit], 8 * m_elements);
+        printBuffer(m_nodeStructOfArrayArg, m_nodesCount);
         printBuffer(m_nodeContentCount);
+        printBuffer(m_transformedData);
+
+//         for(int i = 0; i < m_nodesCount; ++i)
+//         {
+//             int leaf = m_nodeIsLeaf[i];
+//             if(leaf == 1)
+//             {
+//                 uint count = m_nodeContentCount[i];
+//                 uint offset = m_nodeContentStartIndex[i];
+//                 //DEBUG_OUT_A("%d\n", count);
+//                 std::vector<uint> indices;
+//                 std::vector<float3> vertices;
+//                 for(int k = offset; k < offset + count; ++k)
+//                 {
+//                     uint id = m_edgePrimId[m_toggleBit][k];
+//                     if(std::find(indices.begin(), indices.end(), id) == indices.end())
+//                     {
+//                         indices.push_back(id);
+//                         vertices.push_back(m_transformedData[k]);
+//                     }
+//                 }
+//                 m_nodeContentCount.Insert(i, indices.size());
+//                 for(int l = 0; l < vertices.size(); ++l)
+//                 {
+//                     m_transformedData.Insert(offset + l, vertices[l]);
+//                 }
+//                 //DEBUG_OUT_A("%d\n", indices.size());
+//             }
+//         }
+
     }
 
     void Generate2(void)
@@ -620,7 +700,7 @@ private:
     void InitBuffer(void)
     {
         m_primBBox.Resize(m_elements);
-        m_transformedData.Resize(2 * m_elements);
+        m_transformedData.Resize(m_edgesCount * m_elements);
 
         hostContentCount.Resize(m_nodesCount);
 
@@ -630,11 +710,11 @@ private:
         countTmp.Resize(m_nodesCount);
         bboxTmp.Resize(m_nodesCount);
 
-        m_prefixSumNodeCount.Resize(2 * m_elements);
-        m_perThreadNodePos.Resize(2 * m_elements);
+        m_prefixSumNodeCount.Resize(m_edgesCount * m_elements);
+        m_perThreadNodePos.Resize(m_edgesCount * m_elements);
         m_nodeAABBs.Resize(m_nodesCount);
 
-        m_null.Resize(max(m_nodesCount, 2 * m_elements));
+        m_null.Resize(max(m_nodesCount, m_edgesCount * m_elements));
 
         nutty::HostBuffer<uint> null(m_null.Size(), 0);
 
@@ -642,7 +722,7 @@ private:
         nutty::Copy(m_prefixSumNodeCount.Begin(), m_null.Begin(), m_prefixSumNodeCount.Size());
         nutty::Copy(m_perThreadNodePos.Begin(), m_null.Begin(), m_perThreadNodePos.Size());
 
-        uint splitCount = 2 * m_elements;
+        uint splitCount = m_edgesCount * m_elements;
         m_splitSAH.Resize(splitCount);
         m_splitAxis[0].Resize(splitCount);
         m_splitAxis[1].Resize(splitCount);
@@ -669,17 +749,17 @@ private:
         m_splitStructOfArrayArg[1].primId = m_splitPrimId[1].GetDevicePtr()();
         m_splitStructOfArrayArg[1].axis = m_splitAxis[1].GetDevicePtr()();
 
-        uint edgeCount = m_elements * 2;
+        uint edgeCount = m_elements * m_edgesCount;
         m_edgeType[0].Resize(edgeCount);
         m_edgeType[1].Resize(edgeCount);
         m_edgePrimId[0].Resize(edgeCount);
         m_edgePrimId[1].Resize(edgeCount);
         m_edgeIndexedEdge.Resize(edgeCount);
 
-        m_edgeStructOfArrayArg[0].type = m_edgeType[0].GetDevicePtr()();
+//        m_edgeStructOfArrayArg[0].type = m_edgeType[0].GetDevicePtr()();
         m_edgeStructOfArrayArg[0].primId = m_edgePrimId[0].GetDevicePtr()();
         m_edgeStructOfArrayArg[0].indexedEdge = m_edgeIndexedEdge.GetDevicePtr()();
-        m_edgeStructOfArrayArg[1].type = m_edgeType[1].GetDevicePtr()();
+//        m_edgeStructOfArrayArg[1].type = m_edgeType[1].GetDevicePtr()();
         m_edgeStructOfArrayArg[1].primId = m_edgePrimId[1].GetDevicePtr()();
         m_edgeStructOfArrayArg[1].indexedEdge = m_edgeIndexedEdge.GetDevicePtr()();
 
@@ -689,7 +769,7 @@ private:
         m_nodeSplit.Resize(m_nodesCount);
         m_nodeContentCount.Resize(m_nodesCount);
         m_nodeBelow.Resize(m_nodesCount);
-        m_nodeContentCount.Insert(0, m_elements * 2);
+        m_nodeContentCount.Insert(0, m_elements * m_edgesCount);
 
         m_nodesBuffer.Resize(1);
 

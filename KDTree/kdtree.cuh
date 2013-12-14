@@ -28,6 +28,43 @@
 
 extern bool g_treeDebug;
 
+__forceinline __device__ __host__ float getAxis(float4* vec, byte axis)
+{
+    switch(axis)
+    {
+    case 0 : return vec->x;
+    case 1 : return vec->y;
+    case 2 : return vec->z;
+    case 3 : return vec->w;
+    }
+    return 0;
+}
+
+__forceinline __device__ __host__ void setAxis(float3* vec, byte axis, float v)
+{
+    switch(axis)
+    {
+    case 0 : vec->x = v; break;
+    case 1 : vec->y = v; break;
+    case 2 : vec->z = v; break;
+    }
+}
+
+__forceinline __device__ __host__ float getAxis(float3* vec, byte axis)
+{
+    float4 v = make_float4(vec->x, vec->y, vec->z, 0);
+    return getAxis(&v, axis);
+}
+
+__forceinline __device__ __host__ int getLongestAxis(float3 mini, float3 maxi) 
+{
+    float dx = maxi.x - mini.x;
+    float dy = maxi.y - mini.y;
+    float dz = maxi.z - mini.z;
+    float m = max(dx, max(dy, dz));
+    return m == dx ? 0 : m == dy ? 1 : 2;
+}
+
 struct float3min
 {
     __device__ float3 operator()(float3 t0, float3 t1)
@@ -119,22 +156,34 @@ enum EdgeType
     eEnd
 };
 
-struct Indexed3DEdge
+struct _Edge
+{
+    float v;
+    EdgeType type;
+};
+
+struct Indexed3DEdge_v1
 {
     float3 t3;
     uint index;
 };
 
+struct Indexed3DEdge_v2
+{
+    _Edge t[3];
+    uint index;
+};
+
+#define Indexed3DEdge Indexed3DEdge_v2
+
 struct Edge_v1
 {
-    EdgeType type;
     uint primId;
     Indexed3DEdge indexedEdge;
 };
 
 struct Edge_v2
 {
-    EdgeType* type;
     uint* primId;
     Indexed3DEdge* indexedEdge;
 };
@@ -143,49 +192,37 @@ struct AABB_v1
 {
     float3 min;
     float3 max;
+
+    __device__ float get(byte axis, byte mm)
+    {
+        switch(mm)
+        {
+        case 0 : return getAxis(&min, axis);
+        case 1 : return getAxis(&max, axis);
+        }
+        return 0;
+    }
+
+    __device__ float getX(byte mm)
+    {
+        return get(0, mm);
+    }
+    
+    __device__ float getY(byte mm)
+    {
+        return get(1, mm);
+    }
+
+    __device__ float getZ(byte mm)
+    {
+        return get(2, mm);
+    }
 };
 
 #define Split Split_v2
 #define Node Node_v2
 #define Edge Edge_v2
 #define AABB AABB_v1
-
-__forceinline __device__ __host__ float getAxis(float4* vec, byte axis)
-{
-    switch(axis)
-    {
-    case 0 : return vec->x;
-    case 1 : return vec->y;
-    case 2 : return vec->z;
-    case 3 : return vec->w;
-    }
-    return 0;
-}
-
-__forceinline __device__ __host__ void setAxis(float3* vec, byte axis, float v)
-{
-    switch(axis)
-    {
-    case 0 : vec->x = v; break;
-    case 1 : vec->y = v; break;
-    case 2 : vec->z = v; break;
-    }
-}
-
-__forceinline __device__ __host__ float getAxis(float3* vec, byte axis)
-{
-    float4 v = make_float4(vec->x, vec->y, vec->z, 0);
-    return getAxis(&v, axis);
-}
-
-__forceinline __device__ __host__ int getLongestAxis(float3 mini, float3 maxi) 
-{
-    float dx = maxi.x - mini.x;
-    float dy = maxi.y - mini.y;
-    float dz = maxi.z - mini.z;
-    float m = max(dx, max(dy, dz));
-    return m == dx ? 0 : m == dy ? 1 : 2;
-}
 
 template<typename T>
 __device__ __host__ void getSplit(T mmax, T mmin, float* split, byte* axis)
@@ -215,14 +252,14 @@ __forceinline __device__ __host__ float getSplit(Edge e, uint id, byte axis)
 {
     switch(axis)
     {
-    case 0 : { return e.indexedEdge[id].t3.x; }
-    case 1 : { return e.indexedEdge[id].t3.y; }
-    case 2 : { return e.indexedEdge[id].t3.z; }
+    case 0 : { return e.indexedEdge[id].t[0].v; }
+    case 1 : { return e.indexedEdge[id].t[1].v; }
+    case 2 : { return e.indexedEdge[id].t[2].v; }
     }
     return 0;
 }
 
-__forceinline __device__ void setEdgeSplit(Edge_v1* e, byte axis, float f)
+/*__forceinline __device__ void setEdgeSplit(Edge_v1* e, byte axis, float f)
 {
     switch(axis)
     {
@@ -230,7 +267,7 @@ __forceinline __device__ void setEdgeSplit(Edge_v1* e, byte axis, float f)
     case 1 : e->indexedEdge.t3.y = f; break;
     case 2 : e->indexedEdge.t3.z = f; break;
     }
-}
+}*/
 
 class IKDTree
 {

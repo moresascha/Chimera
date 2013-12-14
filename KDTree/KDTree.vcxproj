@@ -193,9 +193,10 @@
     <None Include="cuTimer.cuh" />
     <None Include="kdtree.cuh" />
     <None Include="kd_kernel.cuh" />
+    <None Include="rtracer\tracer.cuh" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="rtracer\RTracer.h" />
+    <ClInclude Include="DoubleBuffer.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

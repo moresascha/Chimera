@@ -16,6 +16,9 @@
     <Filter Include="Source Files\rt">
       <UniqueIdentifier>{3f547d69-7fe5-4cd3-8996-16b63804220b}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Header Files\tracer">
+      <UniqueIdentifier>{b5e06382-46a9-4203-b6a8-a387a049ee78}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <CudaCompile Include="kdtree.cu">
@@ -49,9 +52,12 @@
     <None Include="cuTimer.cuh">
       <Filter>Header Files</Filter>
     </None>
+    <None Include="rtracer\tracer.cuh">
+      <Filter>Header Files\tracer</Filter>
+    </None>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="rtracer\RTracer.h">
+    <ClInclude Include="DoubleBuffer.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

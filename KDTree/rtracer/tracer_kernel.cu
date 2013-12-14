@@ -1,31 +1,11 @@
 #pragma once
-#include "../kdtree.cuh"
-#include <cutil_math.h>
+#include "tracer.cuh"
 
-struct Sphere
-{
-    float3 pos;
-    float radius;
-    float4 color;
-};
-
-/*__device__ float getAxis(float4* val, int axis) 
-{
-    switch(axis)
-    {
-        case 0 : return val->x;
-        case 1 : return val->y;
-        case 2 : return val->z;
-        case 3 : return val->w;
-    }
-    return -1;
-}*/
-
-__device__ int intersectP(float4* eye, float4* ray, float4* boxmin, float4* boxmax, float* tmin, float* tmax) {
+__device__ int intersectP(float3* eye, float3* ray, float4* boxmin, float4* boxmax, float* tmin, float* tmax) {
 
     float t0 = 0; float t1 = FLT_MAX;
 
-    float4 invRay = 1.0 / *ray;
+    float3 invRay = 1.0 / *ray;
 
     for(uint i = 0; i < 3; ++i) 
     {
@@ -50,9 +30,9 @@ __device__ int intersectP(float4* eye, float4* ray, float4* boxmin, float4* boxm
 }
 
 //seite 118 in PBRT, Compute quadratic sphere coeffficienten
-__device__ float4 computeQuadraticCoefs(float4* eye, float4* ray, float radius) 
+__device__ float3 computeQuadraticCoefs(float3* eye, float3* ray, float radius) 
 {
-    float4 v;
+    float3 v;
     v.x = 1;//ray.x*ray.x + ray.y*ray.y + ray.z*ray.z;
     v.y = 2 * (ray->x*eye->x + ray->y*eye->y + ray->z*eye->z);
     v.z = eye->x*eye->x + eye->y*eye->y + eye->z*eye->z - radius*radius;
@@ -131,7 +111,7 @@ __device__ void mul(float* m4x4l, float* m4x4r, float* result)
     *(result+15) = dot(r3, c3);
 }
 
-__device__ float4 transform(float* m4x4l, float4* vector)
+__device__ float4 transform4f(float* m4x4l, float4* vector)
 {
     float4 r0 = make_float4(*m4x4l, *(m4x4l+4), *(m4x4l+8), *(m4x4l+12));
     float4 r1 = make_float4(*(m4x4l+1), *(m4x4l+5), *(m4x4l+9), *(m4x4l+13));
@@ -141,26 +121,33 @@ __device__ float4 transform(float* m4x4l, float4* vector)
     return make_float4(dot(r0, *vector), dot(r1, *vector), dot(r2, *vector), dot(r3, *vector));
 }
 
-__device__ float4 refract(float4* i, float4* n, float eta)
+__device__ float3 transform3f(float* m4x4l, float3* vector)
+{
+    float4 v = make_float4(vector->x, vector->y, vector->z, 0);
+    v = transform4f(m4x4l, &v);
+    return make_float3(v);
+}
+
+__device__ float3 refract(float3* i, float3* n, float eta)
 {
   float cosi = dot(- (*i), (*n));
   float cost2 = 1.0f - eta * eta * (1.0f - cosi*cosi);
-  float4 t = eta * (*i) + ((eta*cosi - sqrt(abs(cost2))) * (*n));
-  return t * make_float4(cost2 > 0);
+  float3 t = eta * (*i) + ((eta*cosi - sqrt(abs(cost2))) * (*n));
+  return t * make_float3(cost2 > 0);
 }
 
 struct HitResult
 {
-    float4 normal;
-    float4 worldPosition;
+    float3 normal;
+    float3 worldPosition;
     float t;
     int isHit;
 };
 
-__device__ int computeHit(float3* sphere, float4* eye, float4* ray, float tmin, float tmax, float radius, HitResult* result)
+__device__ int computeHit(float3* sphere, float3* eye, float3* ray, float tmin, float tmax, float radius, HitResult* result)
 {
-    float4 sphereToEye = *eye - make_float4(sphere->x, sphere->y, sphere->z, 0);
-    float4 cos = computeQuadraticCoefs(&sphereToEye, ray, radius);
+    float3 sphereToEye = *eye - *sphere;
+    float3 cos = computeQuadraticCoefs(&sphereToEye, ray, radius);
     float t0, t1;
     if(!quad(cos.x, cos.y, cos.z, &t0, &t1)) 
     {
@@ -179,7 +166,7 @@ __device__ int computeHit(float3* sphere, float4* eye, float4* ray, float tmin, 
     }
 
     result->worldPosition = (*eye + *ray * t);
-    result->normal = normalize(result->worldPosition - make_float4(sphere->x, sphere->y, sphere->z, 0));
+    result->normal = normalize(result->worldPosition - *sphere);
     result->t = t;
     result->isHit = 1;
 
@@ -195,16 +182,16 @@ struct ToDo
     uint level;
 };
 
-__device__ void traversal0(float3* spheres, Node n, float4* eye, float4* ray, HitResult* hit, float4* min, float4* max, uint treeDepth) 
+__device__ void traverse(float3* spheres, Node n, float3* eye, float3* ray, HitResult* hit, float sceneMin, float sceneMax, uint treeDepth) 
 {
-    float sceneMin, sceneMax;
+    //float sceneMin, sceneMax;
  
     hit->isHit = 0;
-
+    /*
     if(!intersectP(eye, ray, min, max, &sceneMin, &sceneMax))
     {
         return;
-    }
+    }*/
 
     //if(sceneMin < 0.0f) sceneMax = 0.0f;
 
@@ -282,12 +269,12 @@ __device__ void traversal0(float3* spheres, Node n, float4* eye, float4* ray, Hi
     }
 }
 
-__device__ bool testShadow(float3* spheres, float4* light, float4* pos, Node root, float4* mini, float4* maxi, uint treeDepth, float* contri)
+__device__ bool testShadow(float3* spheres, float3* light, float3* pos, Node root, float mini, float maxi, uint treeDepth, float* contri)
 {
     HitResult res;
     memset(&res, 0, sizeof(HitResult));
     res.t = FLT_MAX;
-    traversal0(spheres, root, pos, &normalize(*light - *pos), &res, mini, maxi, treeDepth);
+    traverse(spheres, root, pos, &normalize(*light - *pos), &res, mini, maxi, treeDepth);
 
     *contri = 0.5;
     return res.isHit;
@@ -296,9 +283,9 @@ __device__ bool testShadow(float3* spheres, float4* light, float4* pos, Node roo
 texture<float4, cudaTextureType2D, cudaReadModeElementType> src;
 texture<float4, cudaTextureType2D, cudaReadModeElementType> worldPosTexture;
 
-__device__ float4 getBackgroundRefraction(float4* ray, HitResult* res)
+__device__ float4 getBackgroundRefraction(float3* ray, HitResult* res)
 {
-    float4 rfract = normalize(refract(&-normalize(*ray * res->t), &res->normal, 1.0/1.5));
+    float3 rfract = normalize(refract(&-normalize(*ray * res->t), &res->normal, 1.0/1.5));
 
     rfract = rfract * 0.5 + 0.5;
     rfract.y = 1 - rfract.y;
@@ -308,9 +295,9 @@ __device__ float4 getBackgroundRefraction(float4* ray, HitResult* res)
     return tex2D(src, rfract.x, rfract.y);
 }
 
-__device__ float4 getBackgroundReflection(float4* ray, HitResult* res)
+__device__ float4 getBackgroundReflection(float3* ray, HitResult* res)
 {
-    float3 refl = normalize(reflect(make_float3(normalize(*ray * res->t)), make_float3(res->normal)));
+    float3 refl = normalize(reflect(normalize(*ray * res->t), res->normal));
 
     refl = refl * 0.5 + 0.5;
     refl.y = 1 - refl.y;
@@ -320,10 +307,10 @@ __device__ float4 getBackgroundReflection(float4* ray, HitResult* res)
     return tex2D(src, refl.x, refl.y);
 }
 
-__device__ float4 getSingleRefraction(float3* spheres, float4* ray, Node root, HitResult* res, uint treeDepth, float4* mini, float4* maxi)
+__device__ float4 getSingleRefraction(float3* spheres, float3* ray, Node root, HitResult* res, uint treeDepth, float mini, float maxi)
 {
-    float4 rfract = normalize(refract(&-normalize(*ray * res->t), &res->normal, 1.0/1.5));
-    traversal0(spheres, root, &(res->worldPosition + res->normal * 0.1), &rfract, res, mini, maxi, treeDepth);
+    float3 rfract = normalize(refract(&-normalize(*ray * res->t), &res->normal, 1.0/1.5));
+    traverse(spheres, root, &(res->worldPosition + res->normal * 0.1), &rfract, res, mini, maxi, treeDepth);
 
     if(res->isHit)
     {
@@ -343,6 +330,7 @@ extern "C" __global__ void simpleSphereTracer(
     float3 _eye,
     uint w, uint h)
 {
+    /*
     volatile uint idx = blockDim.x * blockIdx.x + threadIdx.x;
     volatile uint idy = blockDim.y * blockIdx.y + threadIdx.y;
     volatile uint id = idx + idy * blockDim.x * gridDim.x;
@@ -450,5 +438,139 @@ extern "C" __global__ void simpleSphereTracer(
 #endif
 
     dst[id] = make_float4(c.x, c.y, c.z, color.w);
+    */
+}
+
+extern "C" __global__ void computeInitialRays(
+    float4* dst,
+    AABB* aabbs,
+    float* view, 
+    float3 eye,
+    Ray* rays,
+    Ray* shadowRays,
+    uint* rayMask,
+    uint* shadowRayMask,
+    uint w, uint h)
+{
+    volatile uint idx = blockDim.x * blockIdx.x + threadIdx.x;
+    volatile uint idy = blockDim.y * blockIdx.y + threadIdx.y;
+    volatile uint id = idx + idy * w;
+
+    if(idx >= w || idy >= h)
+    {
+        rayMask[id] = 0;
+        return;
+    }
+    
+    float u = idx / (float)w;
+    float v = idy / (float)h;
+
+    float aspect = w / (float)h;
+
+    float3 ray = normalize(make_float3(2 * u - 1, (2 * (1-v) - 1) / aspect, 1.0f));
+
+    ray = transform3f(view, &ray);
+
+    float min, max;
+
+    float4 bboxMin = make_float4(aabbs[0].min, 0);
+    float4 bbomxMax = make_float4(aabbs[0].max, 0);
+    
+    if(!intersectP(&eye, &ray, &bboxMin, &bbomxMax, &min, &max))
+    {
+        rayMask[id] = 0;
+        float4 wp = tex2D(worldPosTexture, u, v);
+        if(wp.w > 0)
+        {
+            Ray r;
+            r.origin = make_float3(wp);
+            float3 light = 1000.0f * make_float3(1.0f,0.3f,-0.2f);
+            if(intersectP(&r.origin, &light, &bboxMin, &bbomxMax, &min, &max))
+            {
+                r.screenCoord.x = idx;
+                r.screenCoord.y = idy;  
+                r.min = min < 0 ? 0 : min;
+                r.max = max;
+                shadowRays[id] = r;
+                shadowRayMask[id] = 1;
+            }
+            else
+            {
+                shadowRayMask[id] = 0;
+            }
+        }
+        dst[id] = tex2D(src, u, v);
+        return;
+    }
+
+    Ray r;
+    r.screenCoord.x = idx;
+    r.screenCoord.y = idy;
+    r.dir = ray;
+    r.origin = eye;
+    r.min = min < 0 ? 0 : min;
+    r.max = max;
+    rays[id] = r;
+    rayMask[id] = 1;
+    dst[id] = tex2D(src, u, v);
+}
+
+extern "C" __global__ void computeShadowRays(float4* image, Ray* rays, Node* nodes, float3* spheres, uint treeDepth, uint width)
+{
+    uint id = GlobalId;
+    HitResult res;
+    memset(&res, 0, sizeof(HitResult));
+    res.t = FLT_MAX;
+
+    Node root = nodes[0];
+
+    float shadowContri = 0;
+
+    Ray r = rays[id];
+
+    traverse(spheres, root, &r.origin, &r.dir, &res, r.min, r.max, treeDepth);
+
+    if(res.isHit)
+    {
+        float4 c = image[r.screenCoord.y * width + r.screenCoord.x];
+        c *= 0.5;
+        image[r.screenCoord.y * width + r.screenCoord.x] = c;
+    }
+}
+
+extern "C" __global__ void computeRays(float4* image, Ray* rays, uint* rayMask, Node* nodes, float3* spheres, uint treeDepth, uint width, uint N)
+{
+    uint id = GlobalId;
+    if(id >= N)
+    {
+        return;
+    }
+    HitResult res;
+    memset(&res, 0, sizeof(HitResult));
+    res.t = FLT_MAX;
+
+    Node root = nodes[0];
+
+    float shadowContri = 0;
+
+    Ray r = rays[id];
+
+    traverse(spheres, root, &r.origin, &r.dir, &res, r.min, r.max, treeDepth);
+
+    if(res.isHit)
+    {
+        float4 reflectionColor = getBackgroundReflection(&r.dir, &res);
+
+        image[r.screenCoord.y * width + r.screenCoord.x] = reflectionColor;
+        r.dir = res.normal;
+        r.origin = r.origin + res.normal * 0.1;
+        rays[id] = r;
+        rayMask[id] = 1;
+        rays[id] = r;
+    }
+    else
+    {
+        rayMask[id] = 0;
+    }
 }
 
