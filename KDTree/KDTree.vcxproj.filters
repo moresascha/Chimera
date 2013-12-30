@@ -36,6 +36,9 @@
     <CudaCompile Include="rtracer\tracer_kernel.cu">
       <Filter>Source Files\rt</Filter>
     </CudaCompile>
+    <CudaCompile Include="MemoryPool.cu">
+      <Filter>Source Files</Filter>
+    </CudaCompile>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="main.cpp">
@@ -58,6 +61,12 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="DoubleBuffer.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="MemoryPool.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="SoA.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

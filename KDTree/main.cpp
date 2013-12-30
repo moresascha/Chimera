@@ -181,9 +181,9 @@ public:
     {
         chimera::CmGetApp()->VGetRenderer()->VPresent();
         nutty::DevicePtr<float> ptr = mappedPtr->Bind(g_tree->GetDefaultStream().GetPointer());
-        nutty::DeviceBuffer<AABB>* aabbs = g_tree->GetAABBs();
+        nutty::DeviceBuffer<BBox>* aabbs = g_tree->GetAABBs();
         k->SetKernelArg(0, *aabbs);
-        k->SetKernelArg(1, *((nutty::DeviceBuffer<Node>*)g_tree->GetNodes()));
+        k->SetKernelArg(1, g_tree->GetNodes());
         k->SetKernelArg(2, ptr);
         k->SetKernelArg(3, c);
         k->SetKernelArg(4, g_depth);
@@ -332,7 +332,7 @@ void createWorld(void)
         CONST FLOAT* meshVertices = mesh->VGetVertices();
 
         elems = mesh->VGetVertexCount();
-        UINT scale = 50*(UINT)(log(elems));
+        UINT scale = 2;//*(UINT)(log(elems));
 
         v.Resize(elems);
 
@@ -350,7 +350,7 @@ void createWorld(void)
     else
     {
         elems = chimera::CmGetApp()->VGetConfig()->VGetInteger("iPoints");
-        UINT scale = 5*(UINT)(log(elems));
+        UINT scale = max(1, (UINT)(log(elems)));
 
         v.Resize(elems);
 
@@ -364,7 +364,7 @@ void createWorld(void)
             pos.x = scale * (float)(rand()/(float)RAND_MAX);
             pos.y = scale * (float)(rand()/(float)RAND_MAX);
             pos.z = scale * (float)(rand()/(float)RAND_MAX);
-
+            DEBUG_OUT_A("%f %f %f\n", pos.x, pos.y, pos.z);
             v[vi++] = pos;
         }
     }
@@ -381,7 +381,7 @@ void createWorld(void)
         float meshScale = 1;
         tcmp->GetTransformation()->SetScale(meshScale, meshScale, meshScale);
         chimera::RenderComponent* rcmp = actorDesc->AddComponent<chimera::RenderComponent>(CM_CMP_RENDERING);
-        rcmp->m_resource = "sphere_low.obj";
+        rcmp->m_resource = "sphere.obj";
 
         std::shared_ptr<chimera::IVertexBuffer> geo = std::shared_ptr<chimera::IVertexBuffer>(chimera::CmGetApp()->VGetHumanView()->VGetGraphicsFactory()->VCreateVertexBuffer());
 

@@ -20,6 +20,9 @@
 
 #define GlobalId (blockDim.x * blockIdx.x + threadIdx.x)
 
+#define EDGE_START ((byte)0)
+#define EDGE_END   ((byte)1)
+
 #define INVALID_ADDRESS ((uint)-1)
 #define FLT_MAX 3.402823466e+38F
 #define FLT_MAX_DIV2 (FLT_MAX/2.0f)
@@ -56,38 +59,14 @@ __forceinline __device__ __host__ float getAxis(float3* vec, byte axis)
     return getAxis(&v, axis);
 }
 
-__forceinline __device__ __host__ int getLongestAxis(float3 mini, float3 maxi) 
+__forceinline __device__ __host__ int getLongestAxis(float3* mini, float3* maxi) 
 {
-    float dx = maxi.x - mini.x;
-    float dy = maxi.y - mini.y;
-    float dz = maxi.z - mini.z;
+    float dx = maxi->x - mini->x;
+    float dy = maxi->y - mini->y;
+    float dz = maxi->z - mini->z;
     float m = max(dx, max(dy, dz));
-    return m == dx ? 0 : m == dy ? 1 : 2;
+    return m == dx ? 0 : m == dy ? 1 : 2;//return dx > dy && dx > dz ? 0 : (dy > dz ? 1 : 0);
 }
-
-struct float3min
-{
-    __device__ float3 operator()(float3 t0, float3 t1)
-    {
-        float3 r;
-        r.x = nutty::binary::Min<float>()(t0.x, t1.x);
-        r.y = nutty::binary::Min<float>()(t0.y, t1.y);
-        r.z = nutty::binary::Min<float>()(t0.z, t1.z);
-        return r;
-    }
-};
-
-struct float3max
-{
-    __device__  float3 operator()(float3 t0, float3 t1)
-    {
-        float3 r;
-        r.x = nutty::binary::Max<float>()(t0.x, t1.x);
-        r.y = nutty::binary::Max<float>()(t0.y, t1.y);
-        r.z = nutty::binary::Max<float>()(t0.z, t1.z);
-        return r;
-    }
-};
 
 __forceinline __device__ __host__ uint elemsBeforeLevel(byte l)
 {
@@ -99,96 +78,12 @@ __forceinline __device__ __host__ uint elemsOnLevel(byte l)
     return (1 << l);
 }
 
-
 __forceinline __device__ __host__ uint elemsBeforeNextLevel(byte l)
 {
     return elemsBeforeLevel(l + 1);
 }
 
-struct IndexedSAH
-{
-    float sah;
-    uint index;
-};
-
-struct Split_v1
-{
-    byte axis;
-    uint primId;
-    float split;
-    IndexedSAH sah;
-    uint below;
-    uint above;
-};
-
-struct Split_v2
-{
-    byte* axis;
-    uint* primId;
-    float* split;
-    IndexedSAH* sah;
-    uint* below;
-    uint* above;
-};
-
-struct Node_v1
-{
-    float split;
-    uint contentStartIndex;
-    uint contentCount;
-    byte leaf;
-    byte axis;
-};
-
-struct Node_v2
-{
-    float* split;
-    uint* contentStartIndex;
-    uint* contentCount;
-    uint* below;
-    byte* leaf;
-    byte* axis;
-};
-
-enum EdgeType
-{
-    eStart,
-    eEnd
-};
-
-struct _Edge
-{
-    float v;
-    EdgeType type;
-};
-
-struct Indexed3DEdge_v1
-{
-    float3 t3;
-    uint index;
-};
-
-struct Indexed3DEdge_v2
-{
-    _Edge t[3];
-    uint index;
-};
-
-#define Indexed3DEdge Indexed3DEdge_v2
-
-struct Edge_v1
-{
-    uint primId;
-    Indexed3DEdge indexedEdge;
-};
-
-struct Edge_v2
-{
-    uint* primId;
-    Indexed3DEdge* indexedEdge;
-};
-
-struct AABB_v1
+struct BBox
 {
     float3 min;
     float3 max;
@@ -219,10 +114,53 @@ struct AABB_v1
     }
 };
 
-#define Split Split_v2
-#define Node Node_v2
-#define Edge Edge_v2
-#define AABB AABB_v1
+struct Primitive
+{
+    uint* primIndex;
+    uint* nodeIndex;
+    uint* prefixSum;
+};
+
+struct IndexedEdge
+{
+    uint index;
+    float v;
+};
+
+struct Edge
+{
+    byte* type;
+    IndexedEdge* indexedEdge;
+    uint* nodeIndex;
+    uint* primId;
+    uint* prefixSum;
+};
+
+struct IndexedSplit
+{
+    float sah;
+    uint index;
+};
+
+struct Split
+{
+    IndexedSplit* indexedSplit;
+    byte* axis;
+    uint* below;
+    uint* above;
+    float* v;
+};
+
+struct Node
+{
+    BBox* aabb;
+    byte* isLeaf;
+    float* split;
+    byte* splitAxis;
+    uint* contentCount;
+    uint* contentStart;
+    uint* content;
+};
 
 template<typename T>
 __device__ __host__ void getSplit(T mmax, T mmin, float* split, byte* axis)
@@ -248,51 +186,38 @@ __device__ __host__ void getSplit(T mmax, T mmin, float* split, byte* axis)
     }
 }
 
-__forceinline __device__ __host__ float getSplit(Edge e, uint id, byte axis)
-{
-    switch(axis)
-    {
-    case 0 : { return e.indexedEdge[id].t[0].v; }
-    case 1 : { return e.indexedEdge[id].t[1].v; }
-    case 2 : { return e.indexedEdge[id].t[2].v; }
-    }
-    return 0;
-}
-
-/*__forceinline __device__ void setEdgeSplit(Edge_v1* e, byte axis, float f)
-{
-    switch(axis)
-    {
-    case 0 : e->indexedEdge.t3.x = f; break;
-    case 1 : e->indexedEdge.t3.y = f; break;
-    case 2 : e->indexedEdge.t3.z = f; break;
-    }
-}*/
-
 class IKDTree
 {
 public:
     virtual void Generate(void) = 0;
+
     virtual void Init(void* mappedPtr, uint elements) = 0;
+
     virtual void SetDepth(uint d) = 0;
+
     virtual void Update(void) = 0;
+
     virtual uint GetCurrentDepth(void) = 0;
+
     virtual void GetContentCountStr(std::string& str) = 0;
+
     virtual void* GetData(void) = 0;
-    virtual nutty::DeviceBuffer<Node>* GetNodes(void) = 0;
-    virtual nutty::DeviceBuffer<AABB>* GetAABBs(void) = 0;
+
+    virtual Node GetNodes(void) = 0;
+
+    virtual nutty::DeviceBuffer<BBox>* GetAABBs(void) = 0;
+
     virtual nutty::cuStream& GetDefaultStream(void) = 0;
 };
 
 struct SphereBBox
 {
-    __device__ AABB operator()(float3 pos)
+    __device__ BBox operator()(float3 pos)
     {
-        AABB bbox;
+        BBox bbox;
         float bhe = 1;//sqrtf(1);
         bbox.min = pos - make_float3(bhe, bhe, bhe);
         bbox.max = pos + make_float3(bhe, bhe, bhe);
-
         return bbox;
     }
 };

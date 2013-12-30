@@ -213,10 +213,10 @@ __device__ void traverse(float3* spheres, Node n, float3* eye, float3* ray, HitR
         tmax = sceneMax;
         pushDown = 1;
         
-        while(!n.leaf[nodeIndex])
+        while(!n.isLeaf[nodeIndex])
         {
 
-            byte axis = n.axis[nodeIndex];
+            byte axis = n.splitAxis[nodeIndex];
             float nsplit = n.split[nodeIndex];
 
             float tsplit = (nsplit- getAxis(eye, axis)) / getAxis(ray, axis);
@@ -259,7 +259,8 @@ __device__ void traverse(float3* spheres, Node n, float3* eye, float3* ray, HitR
         uint prims = n.contentCount[nodeIndex];
         for(uint i = 0; i < prims; ++i)
         {
-            int h = computeHit(&spheres[n.contentStartIndex[nodeIndex] + i], eye, ray, tmin, tmax, 1, hit);
+            uint start = n.contentStart[nodeIndex];
+            int h = computeHit(&spheres[n.content[start + i]], eye, ray, tmin, tmax, 1, hit);
 
             if(hit->t < tmax)
             {
@@ -323,8 +324,8 @@ __device__ float4 getSingleRefraction(float3* spheres, float3* ray, Node root, H
 extern "C" __global__ void simpleSphereTracer(
     float4* dst, 
     float3* spheres,
-    AABB* aabbs,
-    Node* nodes,
+    BBox* aabbs,
+    Node nodes,
     uint treeDepth,
     float* view, 
     float3 _eye,
@@ -443,7 +444,7 @@ extern "C" __global__ void simpleSphereTracer(
 
 extern "C" __global__ void computeInitialRays(
     float4* dst,
-    AABB* aabbs,
+    BBox* aabbs,
     float* view, 
     float3 eye,
     Ray* rays,
@@ -515,14 +516,12 @@ extern "C" __global__ void computeInitialRays(
     dst[id] = tex2D(src, u, v);
 }
 
-extern "C" __global__ void computeShadowRays(float4* image, Ray* rays, Node* nodes, float3* spheres, uint treeDepth, uint width)
+extern "C" __global__ void computeShadowRays(float4* image, Ray* rays, Node root, float3* spheres, uint treeDepth, uint width)
 {
     uint id = GlobalId;
     HitResult res;
     memset(&res, 0, sizeof(HitResult));
     res.t = FLT_MAX;
-
-    Node root = nodes[0];
 
     float shadowContri = 0;
 
@@ -538,7 +537,7 @@ extern "C" __global__ void computeShadowRays(float4* image, Ray* rays, Node* nod
     }
 }
 
-extern "C" __global__ void computeRays(float4* image, Ray* rays, uint* rayMask, Node* nodes, float3* spheres, uint treeDepth, uint width, uint N)
+extern "C" __global__ void computeRays(float4* image, Ray* rays, uint* rayMask, Node root, float3* spheres, uint treeDepth, uint width, uint N)
 {
     uint id = GlobalId;
     if(id >= N)
@@ -549,8 +548,6 @@ extern "C" __global__ void computeRays(float4* image, Ray* rays, uint* rayMask, 
     memset(&res, 0, sizeof(HitResult));
     res.t = FLT_MAX;
 
-    Node root = nodes[0];
-
     float shadowContri = 0;
 
     Ray r = rays[id];
@@ -559,11 +556,11 @@ extern "C" __global__ void computeRays(float4* image, Ray* rays, uint* rayMask, 
 
     if(res.isHit)
     {
-        float4 reflectionColor = getBackgroundReflection(&r.dir, &res);
+        float4 reflectionColor = make_float4(res.normal,0);//getBackgroundReflection(&r.dir, &res);
 
         image[r.screenCoord.y * width + r.screenCoord.x] = reflectionColor;
         r.dir = res.normal;
-        r.origin = r.origin + res.normal * 0.1;
+        r.origin = r.origin + res.normal * 0.05;
         rays[id] = r;
         rayMask[id] = 1;
         rays[id] = r;

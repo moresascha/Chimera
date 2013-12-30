@@ -168,7 +168,7 @@ __device__ void addLine(vertex* lines, float3 start, float3 end, int index)
 }
 
 
-EXTC __global__ void createBBox(AABB* bbox, Node* nodes, vertex* lines, uint N, uint d)
+EXTC __global__ void createBBox(BBox* bbox, Node nodes, vertex* lines, uint N, uint d)
 {
     //uint stride = 8;
     uint id = threadIdx.x + blockDim.x * blockIdx.x;  
@@ -179,10 +179,10 @@ EXTC __global__ void createBBox(AABB* bbox, Node* nodes, vertex* lines, uint N, 
     }
 
     uint os = 0;//(1 << (d-1)) - 1;
-    AABB bb = bbox[os + id];
+    BBox bb = bbox[os + id];
     float3 m_min = bb.min;
     float3 m_max = bb.max;
-    uint cc = nodes[0].contentCount[id];
+    uint cc = nodes.contentCount[id];
 
     if(cc == 0 || abs(dot(m_min, m_max)) < 0.1)
     {

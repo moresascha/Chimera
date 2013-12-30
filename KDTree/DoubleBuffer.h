@@ -27,6 +27,7 @@ public:
 
     nutty::DeviceBuffer<T>& Get(byte index)
     {
+        assert(index < 2);
         return m_buffer[index];
     }
 
@@ -38,5 +39,11 @@ public:
     void Toggle(void)
     {
         m_current = (m_current + 1) % 2;
+    }
+
+    void ZeroMem(void)
+    {
+        nutty::ZeroMem(m_buffer[0]);
+        nutty::ZeroMem(m_buffer[1]);
     }
 };

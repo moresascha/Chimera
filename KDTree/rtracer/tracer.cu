@@ -24,8 +24,8 @@ private:
     cudaGraphicsResource_t m_dst;
     cudaGraphicsResource_t m_worldPosition;
     nutty::DeviceBuffer<float3>* m_kdData;
-    nutty::DeviceBuffer<AABB>* m_kdBBox;
-    nutty::DeviceBuffer<Node>* m_nodes;
+    nutty::DeviceBuffer<BBox>* m_kdBBox;
+    Node m_nodes;
 
     nutty::DeviceBuffer<Ray> m_initialRays;
     nutty::DeviceBuffer<uint> m_initRayMask;
@@ -165,17 +165,17 @@ void wtf_tracer::VRender(void)
     m_computeInitialrays.SetDimension(g, tiles);
     m_computeInitialrays.Call(m_tree->GetDefaultStream()());
 
-    for(int i = 0; i < 3; ++i)
+    for(int i = 0; i < 1; ++i)
     {       
         CUDA_SAFE_THREAD_SYNC();
         nutty::SetStream(m_tree->GetDefaultStream());
-        nutty::PrefixSumScan(m_initRayMask.Begin(), m_initRayMask.End(), m_scannedRayMask.Begin(), m_sums.Begin());
+        nutty::ExclusivePrefixSumScan(m_initRayMask.Begin(), m_initRayMask.End(), m_scannedRayMask.Begin(), m_sums.Begin());
         CUDA_SAFE_THREAD_SYNC();
 
         nutty::Compact(m_initialRays.Begin(), m_initialRays.End(), m_initRayMask.Begin(), m_scannedRayMask.Begin(), 0U);
         CUDA_SAFE_THREAD_SYNC();
 
-        m_lastRayCount = *(m_scannedRayMask.End()-1);
+        m_lastRayCount = *(m_scannedRayMask.End()-1) + *(m_initRayMask.End()-1);
     
         //DEBUG_OUT_A("%d %d\n", m_lastRayCount, sum);
     
@@ -263,7 +263,7 @@ void wtf_tracer::Compile(void)
     m_kernel.SetKernelArg(0, m_linearMem);
     m_kernel.SetKernelArg(1, *m_kdData);
     m_kernel.SetKernelArg(2, *m_kdBBox);
-    m_kernel.SetKernelArg(3, *m_nodes);
+    m_kernel.SetKernelArg(3, m_nodes);
     m_kernel.SetKernelArg(5, m_view);
 
     m_computeInitialrays.Create(m_module.GetFunction("computeInitialRays"));
@@ -279,7 +279,7 @@ void wtf_tracer::Compile(void)
     m_computeRays.SetKernelArg(0, m_linearMem);
     m_computeRays.SetKernelArg(1, m_initialRays);
     m_computeRays.SetKernelArg(2, m_initRayMask);
-    m_computeRays.SetKernelArg(3, *m_nodes);
+    m_computeRays.SetKernelArg(3, m_nodes);
     m_computeRays.SetKernelArg(4, *m_kdData);
 
     m_frameBufferRef = m_module.GetTexRef("src");
