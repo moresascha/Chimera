@@ -290,6 +290,7 @@ namespace chimera
         m_materials["bouncy"] = px::Material(0.5f, 0.5f, 0.8f, 1.0f, 2.0f, m_pPhysx);
         m_materials["kinematic"] = px::Material(0.5f, 0.5f, 0.8f, 1.0f, 2.0f, m_pPhysx);
         m_materials["default"] = px::Material(0.5f, 0.5f, 0.1f, 1.0f, 2.0f, m_pPhysx);
+        m_materials[""] = px::Material(0.5f, 0.5f, 0.1f, 1.0f, 2.0f, m_pPhysx);
         //m_materials["bouncy"].m_material->setFlag(physx::PxMaterialFlag::eDISABLE_STRONG_FRICTION, FALSE);
         //end
 
@@ -320,25 +321,31 @@ namespace chimera
         return TRUE;
     }
 
-    VOID PhysX::VCreateStaticPlane(CONST util::Vec3& dimension, IActor* actor, std::string& material) {
-    
+    VOID PhysX::VCreateStaticPlane(CONST util::Vec3& dimension, IActor* actor, std::string& material) 
+    {
         physx::PxMaterial* mat = m_materials[material].m_material;
+        if(!mat)
+        {
+            mat = m_materials["default"].m_material;
+        }
         TransformComponent* comp = GetActorCompnent<TransformComponent>(actor, CM_CMP_TRANSFORM);
         util::Vec3 trans = comp->GetTransformation()->GetTranslation();
         physx::PxRigidStatic* plane = PxCreatePlane(*m_pPhysx, physx::PxPlane(physx::PxVec3(trans.x, trans.y, trans.z), physx::PxVec3(0, 1, 0)), *mat);
 
         m_pScene->addActor(*plane);
 
-        this->m_actorIdToPxActorMap[actor->GetId()].push_back(plane);
-        this->m_pxActorToActorId[plane] = actor->GetId();
+        m_actorIdToPxActorMap[actor->GetId()].push_back(plane);
+        m_pxActorToActorId[plane] = actor->GetId();
     }
 
-    VOID PhysX::VCreateSphere(FLOAT radius, IActor* actor, CONST util::Vec3& offsetPosition, std::string& material) {
+    VOID PhysX::VCreateSphere(FLOAT radius, IActor* actor, CONST util::Vec3& offsetPosition, std::string& material) 
+    {
         physx::PxSphereGeometry geo(radius);
         this->AddActor(geo, actor, offsetPosition, material, physx::PxPi * 4.0f/3.0f * radius * radius * radius);
     }
 
-    VOID PhysX::VCreateCube(CONST util::Vec3& dimension, IActor* actor, CONST util::Vec3& offsetPosition, std::string& material) {
+    VOID PhysX::VCreateCube(CONST util::Vec3& dimension, IActor* actor, CONST util::Vec3& offsetPosition, std::string& material) 
+    {
         physx::PxBoxGeometry geo(dimension.x * 0.5f, dimension.y * 0.5f, dimension.z * 0.5f);
         this->AddActor(geo, actor, offsetPosition, material, dimension.x * dimension.y * dimension.z);
     }
@@ -927,7 +934,10 @@ namespace chimera
 
         for(auto it = m_materials.begin(); it != m_materials.end(); ++it)
         {
-            it->second.m_material->release();
+            if(it->second.m_material)
+            {
+                it->second.m_material->release();
+            }
         }
 
         delete m_pDesc->cpuDispatcher;

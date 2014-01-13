@@ -50,6 +50,8 @@ namespace chimera
 
         ISceneNode* VFindActorNode(ActorId id);
 
+        std::unique_ptr<ISceneNode> VReleaseNode(ActorId id);
+
         VOID VSetCamera(std::shared_ptr<ICamera> camera);
 
         virtual ~SceneGraph(VOID);

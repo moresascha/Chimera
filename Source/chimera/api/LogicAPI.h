@@ -16,7 +16,7 @@ namespace chimera
 
         virtual IActor* VCreateActor(std::unique_ptr<ActorDescription> desc, BOOL appendToLevel = FALSE) = 0;
 
-        virtual VOID VAttachView(std::unique_ptr<IView> view, ActorId actor) = 0;
+        virtual VOID VAttachView(std::unique_ptr<IView> view, IActor* actor) = 0;
 
         virtual VOID VRemoveActor(ActorId id) = 0;
 

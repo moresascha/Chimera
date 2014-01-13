@@ -55,7 +55,7 @@ public:
 
     void Print(const char* info = NULL)
     {
-        DEBUG_OUT_A("%s %f\n", info ? "" : info, GetAverageMillis());
+        DEBUG_OUT_A("%s\n", info ? info : "");
     }
 };
 

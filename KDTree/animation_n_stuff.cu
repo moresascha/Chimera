@@ -60,7 +60,25 @@ EXTC __global__ void animateGeometry2(float* data, float time, float scale, uint
     data[stride * id + 2] += 0.05 * cos(t + time) * cos(t + time);
 }
 
-EXTC __global__ void animateGeometry(float* data, float time, float scale, uint parts, uint N)
+EXTC __global__ void animateGeometry(float3* data, float3* transformed, float* radius, float time, float scale, uint parts, uint N)
+{
+    uint id = threadIdx.x + blockDim.x * blockIdx.x;
+
+    if(id >= N)
+    {
+        return;
+    }
+
+    float3 p = data[id];
+    float3 dp = min(4.0f, 1e-1f*time) * radius[id] * normalize(make_float3(p.x, 0, p.z));
+    float dir = id%2 == 0 ? 1.0f : -1.0f;
+    rotY(time, &dp);
+    p += dir*dp;
+
+    transformed[id] = p;
+}
+
+EXTC __global__ void animateGeometry5(float* data, float time, float scale, uint parts, uint N)
 {
 	const uint stride = 3;
 
@@ -184,11 +202,11 @@ EXTC __global__ void createBBox(BBox* bbox, Node nodes, vertex* lines, uint N, u
     float3 m_max = bb.max;
     uint cc = nodes.contentCount[id];
 
-    if(cc == 0 || abs(dot(m_min, m_max)) < 0.1)
+    /*if(cc == 0 || abs(dot(m_min, m_max)) < 0.1)
     {
         m_max = make_float3(1,-10000, 1);
         m_min = make_float3(-1,-10001,-1);
-    }
+    }*/
 
     addLine(lines, m_min, make_float3(m_min.x, m_min.y, m_max.z), 0);
     addLine(lines, make_float3(m_min.x, m_min.y, m_max.z), make_float3(m_max.x, m_min.y, m_max.z), 1);

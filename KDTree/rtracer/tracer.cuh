@@ -10,7 +10,7 @@ extern "C"
 {
 #endif
 
-IRTracer* createTracer(IKDTree* tree, int flags = NULL);
+IRTracer* createTracer(IKDTree* tree, float radius, int flags = NULL);
 
 #ifdef __cplusplus
 }
@@ -52,10 +52,8 @@ public:
 
 enum RayType
 {
-    eRayTypeShadow = 1,
-    eRayTypeReflection = 2,
-    eRayTypeRefraction = 3,
-    eRayTypeInitial = 0
+    eRayTypeNormal,
+    eRayTypeShadow
 };
 
 struct Ray

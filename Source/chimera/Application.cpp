@@ -192,6 +192,19 @@ namespace chimera
             break;
         case WM_SYSKEYDOWN:
             {
+                //13 == ENTER
+                if(wParam == 13)
+                {
+                    CmGetApp()->VGetHumanView()->VSetFullscreen(!CmGetApp()->VGetHumanView()->VIsFullscreen());
+                    if(CmGetApp()->VGetHumanView()->VIsFullscreen())
+                    {
+                         chimera::CmGetApp()->VGetInputHandler()->VSetCurserOffsets(0, 0); //todo, get systemmetrics
+                    }
+                    else
+                    {
+                        chimera::CmGetApp()->VGetInputHandler()->VSetCurserOffsets(8, 30); //todo, get systemmetrics
+                    }
+                }
                 break;
             }
         case WM_COMMAND:

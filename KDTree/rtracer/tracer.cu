@@ -9,6 +9,7 @@
 #include "../../../Nutty/Nutty/Scan.h"
 #include "../../../Nutty/Nutty/cuda/Stream.h"
 #include "../../../Nutty/Nutty/DeviceBuffer.h"
+#include "../../../Nutty/Nutty/HostBuffer.h"
 #include "../../../Nutty/Nutty/cuda/cuda_helper.h"
 #include "../../Source/chimera/Mat4.h"
 #include "../../Source/chimera/Event.h"
@@ -16,6 +17,8 @@
 #include "../DoubleBuffer.h"
 
 #include <cutil_math.h>
+
+float g_sphereRadius;
 
 class wtf_tracer : public IRTracer
 {
@@ -27,12 +30,12 @@ private:
     nutty::DeviceBuffer<BBox>* m_kdBBox;
     Node m_nodes;
 
-    nutty::DeviceBuffer<Ray> m_initialRays;
+    nutty::DeviceBuffer<Ray> m_rays[2];
     nutty::DeviceBuffer<uint> m_initRayMask;
     nutty::DeviceBuffer<uint> m_scannedRayMask;
     nutty::DeviceBuffer<uint> m_sums;
 
-    nutty::DeviceBuffer<Ray> m_shadowRays;
+    nutty::DeviceBuffer<Ray> m_shadowRays[2];
     nutty::DeviceBuffer<uint> m_shadowRayMask;
 
     uint m_width;
@@ -44,6 +47,7 @@ private:
     nutty::cuKernel m_kernel;
     nutty::cuKernel m_computeInitialrays;
     nutty::cuKernel m_computeRays;
+    nutty::cuKernel m_computeShadowRays;
 
     nutty::cuTexRef m_frameBufferRef;
     nutty::cuTexRef m_worldPositionsRef;
@@ -53,6 +57,7 @@ private:
     IKDTree* m_tree;
     int m_enable;
     uint m_lastRayCount;
+    uint m_lastShadowRaysCount;
     chimera::util::HTimer m_timer;
 
 public:
@@ -66,7 +71,7 @@ public:
 
     uint GetLastRayCount(void) { return m_lastRayCount; }
 
-    uint GetLastShadowRayCount(void) { return 0; }
+    uint GetLastShadowRayCount(void) { return m_lastShadowRaysCount; }
 
     void ToggleEnable(void);
 
@@ -78,12 +83,14 @@ public:
 };
 
 wtf_tracer::wtf_tracer(IKDTree* tree) 
-    : IRTracer("wtf_tracer"), m_width(800), m_height(600), m_linearMem(NULL), m_tree(tree), m_enable(TRUE), m_worldPosition(NULL), m_dst(NULL), m_lastRayCount(0)
+    : IRTracer("wtf_tracer"), m_width(800), m_height(600), m_linearMem(NULL), m_tree(tree), m_enable(TRUE), m_worldPosition(NULL), m_dst(NULL), m_lastRayCount(0), m_lastShadowRaysCount(0)
 {
     m_view.Resize(16);
     m_kdBBox = m_tree->GetAABBs();
     m_nodes = m_tree->GetNodes();
     m_kdData = (nutty::DeviceBuffer<float3>*)m_tree->GetData();
+    m_timer.Start();
+    m_timer.Stop();
 }
 
 double wtf_tracer::GetLastMillis(void)
@@ -123,11 +130,11 @@ void wtf_tracer::VRender(void)
     cudaDeviceSynchronize();
     m_timer.Start();
     
-    CUDA_RT_SAFE_CALLING_SYNC(cudaGraphicsMapResources(1, &m_dst, m_tree->GetDefaultStream()()));
+    CUDA_RT_SAFE_CALLING_SYNC(cudaGraphicsMapResources(1, &m_dst));
     cudaArray_t ptr;
     CUDA_RT_SAFE_CALLING_NO_SYNC(cudaGraphicsSubResourceGetMappedArray((cudaArray_t*)&ptr, m_dst, 0, 0));
 
-    CUDA_RT_SAFE_CALLING_SYNC(cudaGraphicsMapResources(1, &m_worldPosition, m_tree->GetDefaultStream()()));
+    CUDA_RT_SAFE_CALLING_SYNC(cudaGraphicsMapResources(1, &m_worldPosition));
     cudaArray_t worldPosptr;
     CUDA_RT_SAFE_CALLING_NO_SYNC(cudaGraphicsSubResourceGetMappedArray((cudaArray_t*)&worldPosptr, m_worldPosition, 0, 0));
 
@@ -139,77 +146,158 @@ void wtf_tracer::VRender(void)
     m_frameBufferRef.BindToArray((CUarray)ptr);
     m_worldPositionsRef.BindToArray((CUarray)worldPosptr);
 
-    dim3 g;
-    g.x = nutty::cuda::GetCudaGrid(m_width, 16U);
-    g.y = nutty::cuda::GetCudaGrid(m_height, 16U);
-    g.z = 1;
     dim3 tiles;
     tiles.x = 16;
     tiles.y = 16;
     tiles.z = 1;
 
+    dim3 g;
+    g.x = nutty::cuda::GetCudaGrid(m_width, (uint)tiles.x);
+    g.y = nutty::cuda::GetCudaGrid(m_height, (uint)tiles.y);
+    g.z = 1;
+
     uint depth = m_tree->GetCurrentDepth();
-    /*m_kernel.SetKernelArg(4, depth);
+
+#if 0
+    m_kernel.SetDimension(g, tiles);
+    m_kernel.SetKernelArg(4, depth);
+    m_kernel.SetKernelArg(5, m_view);
     m_kernel.SetKernelArg(6, eye);
-    m_kernel.SetKernelArg(7, m_width);
-    m_kernel.SetKernelArg(8, m_height);
-    m_kernel.SetDimension(g, tiles);*/
+    m_kernel.SetKernelArg(7, g_sphereRadius);
+    m_kernel.SetKernelArg(8, m_width);
+    m_kernel.SetKernelArg(9, m_height);
+
+    m_kernel.Call();
+
+#else
+    
+    m_lastRayCount = 0;
+    m_lastShadowRaysCount = 0;
 
     nutty::ZeroMem(m_initRayMask);
     nutty::ZeroMem(m_scannedRayMask);
+    nutty::ZeroMem(m_shadowRayMask);
     nutty::ZeroMem(m_sums);
 
+    m_computeInitialrays.SetDimension(g, tiles);
+
+    m_computeInitialrays.SetKernelArg(4, m_rays[0]);
+    m_computeInitialrays.SetKernelArg(5, m_shadowRays[0]);
     m_computeInitialrays.SetKernelArg(3, eye);
     m_computeInitialrays.SetKernelArg(8, m_width);
     m_computeInitialrays.SetKernelArg(9, m_height);
-    m_computeInitialrays.SetDimension(g, tiles);
-    m_computeInitialrays.Call(m_tree->GetDefaultStream()());
+    m_computeInitialrays.Call();
 
-    for(int i = 0; i < 1; ++i)
+    
+    DEVICE_SYNC_CHECK();
+    
+    nutty::ExclusivePrefixSumScan(m_shadowRayMask.Begin(), m_shadowRayMask.End(), m_scannedRayMask.Begin(), m_sums.Begin());
+    DEVICE_SYNC_CHECK();
+
+    nutty::Compact(m_shadowRays[1].Begin(), m_shadowRays[0].Begin(), m_shadowRays[0].End(), m_shadowRayMask.Begin(), m_scannedRayMask.Begin(), 0U);
+
+    DEVICE_SYNC_CHECK();
+
+    uint shadowRaysCount = *(m_scannedRayMask.End()-1) + *(m_shadowRayMask.End()-1);
+
+    m_lastShadowRaysCount += shadowRaysCount;
+
+    DEVICE_SYNC_CHECK();
+
+    if(shadowRaysCount > 0)
+    {
+        uint blockSize = 256;
+        g = nutty::cuda::GetCudaGrid(shadowRaysCount, blockSize);
+        m_computeShadowRays.SetDimension(g, blockSize);
+        m_computeShadowRays.SetKernelArg(1, m_shadowRays[1]);
+        m_computeShadowRays.SetKernelArg(4, depth);
+        m_computeShadowRays.SetKernelArg(5, g_sphereRadius);
+        m_computeShadowRays.SetKernelArg(6, m_width);
+        m_computeShadowRays.SetKernelArg(7, shadowRaysCount);
+        m_computeShadowRays.Call();
+    }
+
+    uint lastRayCount = m_width * m_height;
+    uint recDepth = 2;
+    byte toggle = 0;
+    for(int i = 0; i < recDepth; ++i)
     {       
-        CUDA_SAFE_THREAD_SYNC();
-        nutty::SetStream(m_tree->GetDefaultStream());
-        nutty::ExclusivePrefixSumScan(m_initRayMask.Begin(), m_initRayMask.End(), m_scannedRayMask.Begin(), m_sums.Begin());
-        CUDA_SAFE_THREAD_SYNC();
+        nutty::ZeroMem(m_scannedRayMask);
+        nutty::ZeroMem(m_sums);
 
-        nutty::Compact(m_initialRays.Begin(), m_initialRays.End(), m_initRayMask.Begin(), m_scannedRayMask.Begin(), 0U);
-        CUDA_SAFE_THREAD_SYNC();
+        DEVICE_SYNC_CHECK();
 
-        m_lastRayCount = *(m_scannedRayMask.End()-1) + *(m_initRayMask.End()-1);
-    
-        //DEBUG_OUT_A("%d %d\n", m_lastRayCount, sum);
-    
-        if(m_lastRayCount > 0)
+        nutty::ExclusivePrefixSumScan(m_initRayMask.Begin(), m_initRayMask.Begin() + lastRayCount, m_scannedRayMask.Begin(), m_sums.Begin());
+        DEVICE_SYNC_CHECK();
+
+        nutty::Compact(m_rays[(toggle+1)%2].Begin(), m_rays[toggle].Begin(), m_rays[toggle].Begin() + lastRayCount, m_initRayMask.Begin(), m_scannedRayMask.Begin(), 0U);
+        DEVICE_SYNC_CHECK();
+
+        lastRayCount = *(m_scannedRayMask.Begin() + lastRayCount - 1) + *(m_initRayMask.Begin() + lastRayCount - 1);
+
+        m_lastRayCount += lastRayCount;
+
+        if(lastRayCount > 0)
         {
             uint blockSize = 256;
-            g = nutty::cuda::GetCudaGrid(m_lastRayCount, blockSize);
+            g = nutty::cuda::GetCudaGrid(lastRayCount, blockSize);
             m_computeRays.SetDimension(g, blockSize);
-            m_computeRays.SetKernelArg(5, depth);
-            m_computeRays.SetKernelArg(6, m_width);
-            m_computeRays.SetKernelArg(7, m_lastRayCount);
-            m_computeRays.Call(m_tree->GetDefaultStream()());
+            m_computeRays.SetKernelArg(6, m_rays[(toggle+1)%2]);
+            m_computeRays.SetKernelArg(7, m_shadowRays[0]);
+            m_computeRays.SetKernelArg(8, depth);
+            m_computeRays.SetKernelArg(9, g_sphereRadius);
+            m_computeRays.SetKernelArg(10, m_width);
+            m_computeRays.SetKernelArg(11, m_height);
+            m_computeRays.SetKernelArg(12, i);
+            m_computeRays.SetKernelArg(13, lastRayCount);
+            m_computeRays.SetKernelArg(14, eye);
+            m_computeRays.SetKernelArg(15, recDepth);
+            m_computeRays.Call();
+   
+            nutty::ZeroMem(m_scannedRayMask);
+            nutty::ZeroMem(m_sums);
+
+            DEVICE_SYNC_CHECK();
+
+            nutty::ExclusivePrefixSumScan(m_shadowRayMask.Begin(), m_shadowRayMask.Begin() + lastRayCount, m_scannedRayMask.Begin(), m_sums.Begin());
+            DEVICE_SYNC_CHECK();
+
+            nutty::Compact(m_shadowRays[1].Begin(), m_shadowRays[0].Begin(), m_shadowRays[0].Begin() + lastRayCount, m_shadowRayMask.Begin(), m_scannedRayMask.Begin(), 0U);
+
+            DEVICE_SYNC_CHECK();
+
+            shadowRaysCount = *(m_scannedRayMask.Begin() + lastRayCount - 1) + *(m_shadowRayMask.Begin() + lastRayCount - 1);
+
+            m_lastShadowRaysCount += shadowRaysCount;
+
+            DEVICE_SYNC_CHECK();
+            
+            if(shadowRaysCount > 0)
+            {
+                g = nutty::cuda::GetCudaGrid(shadowRaysCount, blockSize);
+                m_computeShadowRays.SetDimension(g, blockSize);
+                m_computeShadowRays.SetKernelArg(1, m_shadowRays[1]);
+                m_computeShadowRays.SetKernelArg(4, depth);
+                m_computeShadowRays.SetKernelArg(5, g_sphereRadius);
+                m_computeShadowRays.SetKernelArg(6, m_width);
+                m_computeShadowRays.SetKernelArg(7, shadowRaysCount);
+                m_computeShadowRays.Call();
+            }
+            toggle = (toggle + 1) % 2;
+            DEVICE_SYNC_CHECK();
         }
         else
         {
             break;
         }
     }
-
+#endif
+    
     cudaDeviceSynchronize();
 
-    /*nutty::HostBuffer<uint> cpy(m_width * m_height);
-
-    nutty::Copy(cpy.Begin(), m_initRayMask.Begin(), m_width * m_height);
-    uint sum = 0;
-    for(int i = 0; i < cpy.Size(); ++i)
-    {
-        uint t = cpy[i];
-        sum += t;
-    }*/
-
     CUDA_RT_SAFE_CALLING_SYNC(cudaMemcpy2DToArray(ptr, 0, 0, m_linearMem, m_pitch, m_width * sizeof(float4), m_height, cudaMemcpyDeviceToDevice));
-    CUDA_RT_SAFE_CALLING_SYNC(cudaGraphicsUnmapResources(1, &m_dst, m_tree->GetDefaultStream()()));
-    CUDA_RT_SAFE_CALLING_SYNC(cudaGraphicsUnmapResources(1, &m_worldPosition, m_tree->GetDefaultStream()()));
+    CUDA_RT_SAFE_CALLING_SYNC(cudaGraphicsUnmapResources(1, &m_dst));
+    CUDA_RT_SAFE_CALLING_SYNC(cudaGraphicsUnmapResources(1, &m_worldPosition));
 
     m_timer.Stop();
 }
@@ -223,20 +311,22 @@ BOOL wtf_tracer::VOnRestore(UINT w, UINT h)
     dim.x = nutty::cuda::GetCudaGrid(m_width, 16U);
     dim.y = nutty::cuda::GetCudaGrid(m_height, 16U);
 
-    m_initialRays.Resize(dim.x * dim.y * 16 * 16);
+    m_rays[0].Resize(dim.x * dim.y * 16 * 16);
+    m_rays[1].Resize(dim.x * dim.y * 16 * 16);
     m_initRayMask.Resize(dim.x * dim.y * 16 * 16);
     m_scannedRayMask.Resize(dim.x * dim.y * 16 * 16);
     m_sums.Resize((m_scannedRayMask.Size()) / 512);
 
-    m_shadowRayMask.Resize(w * h);
-    m_shadowRays.Resize(w * h);
+    m_shadowRayMask.Resize(dim.x * dim.y * 16 * 16);
+    m_shadowRays[0].Resize(dim.x * dim.y * 16 * 16);
+    m_shadowRays[1].Resize(dim.x * dim.y * 16 * 16);
 
     if(m_linearMem)
     {
         cudaFree(m_linearMem);
     }
     
-    CUDA_RT_SAFE_CALLING_SYNC(cudaMallocPitch(&m_linearMem, &m_pitch, m_width* sizeof(float4), m_height));
+    CUDA_RT_SAFE_CALLING_SYNC(cudaMallocPitch(&m_linearMem, &m_pitch, m_width * sizeof(float4), m_height));
     
     CUDA_RT_SAFE_CALLING_SYNC(cudaMemset(m_linearMem, 0, m_pitch * m_height));
 
@@ -254,9 +344,6 @@ BOOL wtf_tracer::VOnRestore(UINT w, UINT h)
 
 void wtf_tracer::Compile(void)
 {
-    /*nutty::cuModule test;
-    test.Create("ptx/tracer_kernel.ptx");*/
-
     m_module.Create("ptx/tracer_kernel.ptx");
     m_kernel.Create(m_module.GetFunction("simpleSphereTracer"));
 
@@ -264,23 +351,26 @@ void wtf_tracer::Compile(void)
     m_kernel.SetKernelArg(1, *m_kdData);
     m_kernel.SetKernelArg(2, *m_kdBBox);
     m_kernel.SetKernelArg(3, m_nodes);
-    m_kernel.SetKernelArg(5, m_view);
 
     m_computeInitialrays.Create(m_module.GetFunction("computeInitialRays"));
     m_computeInitialrays.SetKernelArg(0, m_linearMem);
     m_computeInitialrays.SetKernelArg(1, *m_kdBBox);
     m_computeInitialrays.SetKernelArg(2, m_view);
-    m_computeInitialrays.SetKernelArg(4, m_initialRays);
-    m_computeInitialrays.SetKernelArg(5, m_shadowRays);
     m_computeInitialrays.SetKernelArg(6, m_initRayMask);
     m_computeInitialrays.SetKernelArg(7, m_shadowRayMask);
 
     m_computeRays.Create(m_module.GetFunction("computeRays"));
     m_computeRays.SetKernelArg(0, m_linearMem);
-    m_computeRays.SetKernelArg(1, m_initialRays);
-    m_computeRays.SetKernelArg(2, m_initRayMask);
-    m_computeRays.SetKernelArg(3, m_nodes);
-    m_computeRays.SetKernelArg(4, *m_kdData);
+    m_computeRays.SetKernelArg(1, m_nodes);
+    m_computeRays.SetKernelArg(2, *m_kdData);
+    m_computeRays.SetKernelArg(3, m_initRayMask);
+    m_computeRays.SetKernelArg(4, m_shadowRayMask);
+    m_computeRays.SetKernelArg(5, *m_kdBBox);
+
+    m_computeShadowRays.Create(m_module.GetFunction("computeShadowRays"));
+    m_computeShadowRays.SetKernelArg(0, m_linearMem);
+    m_computeShadowRays.SetKernelArg(2, m_nodes);
+    m_computeShadowRays.SetKernelArg(3, *m_kdData);
 
     m_frameBufferRef = m_module.GetTexRef("src");
     m_frameBufferRef.NormalizedCoords();
@@ -305,7 +395,8 @@ wtf_tracer::~wtf_tracer(void)
     }
 }
 
-IRTracer* createTracer(IKDTree* tree, int flags)
+IRTracer* createTracer(IKDTree* tree, float radius, int flags)
 {
+    g_sphereRadius = radius;
     return new wtf_tracer(tree);
 }

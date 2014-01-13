@@ -1,26 +1,73 @@
-// D3D.cpp : Defines the entry point for the application.
-//
-#include "stdafx.h"
+#include "chimera/stdafx.h"
+#include "chimera/Components.h"
+#include "chimera/util.h"
 
-/*static struct LeaksLocator
+static struct LeakDetecter
 {
-    LeaksLocator()
+    LeakDetecter(void)
     {
-        _CrtSetBreakAlloc(82565);
+//        _CrtSetBreakAlloc(217);
     }
-} LeaksLocatorInst; */
+} detecter;
 
-#include "chimera/BasicApp.h"
-#include "chimera/testgame/packman/Packman.h"
-#include "chimera/script/Script.h"
-#include "chimera/testgame/packman/Maze.h"
-#include "chimera/util/math/Spline.h"
+void createSpheres(void)
+{
+    int c = 4;
+    for(int i = 0; i < c; ++i)
+    {
+        for(int j = 0; j < c; ++j)
+        {
+            chimera::IActor* actor = chimera::CmGetApp()->VGetLogic()->VCreateActor("sphere.xml");
+            chimera::TransformComponent* cmp;
+            actor->VQueryComponent(CM_CMP_TRANSFORM, (chimera::IActorComponent**)&cmp);
+            cmp->GetTransformation()->SetTranslate(2.0f*i, 5.0f, 2.0f*j);
+        }
+    }
+}
 
-#define MAX_LOADSTRING 100
-#undef FULL_SCREEN    
-// Global Variables:
-TCHAR szTitle[MAX_LOADSTRING];                         // The title bar text
-TCHAR szWindowClass[MAX_LOADSTRING];               // the main window class name
+void createLights(void)
+{
+    int c = 2;
+    chimera::util::cmRNG rng;
+    for(int i = 0; i < c; ++i)
+    {
+        for(int j = 0; j < c; ++j)
+        {
+            chimera::IActor* actor = chimera::CmGetApp()->VGetLogic()->VCreateActor("pointlight.xml");
+            chimera::TransformComponent* cmp;
+            actor->VQueryComponent(CM_CMP_TRANSFORM, (chimera::IActorComponent**)&cmp);
+            cmp->GetTransformation()->SetTranslate(10*i, 5, 10*j);
+
+            chimera::LightComponent* lightCmp;
+            actor->VQueryComponent(CM_CMP_LIGHT, (chimera::IActorComponent**)&lightCmp);
+            lightCmp->m_color.Set(rng.NextFloat(), rng.NextFloat(), rng.NextFloat(), 1);
+        }
+    }
+}
+
+void run(HINSTANCE hInstance)
+{
+    chimera::CM_APP_DESCRIPTION desc;
+    desc.facts = NULL;
+    desc.hInstance = hInstance;
+    desc.titel = L"Yummy Stuff N so";
+    desc.ival = 60;
+    desc.cachePath = "../Assets/";
+    desc.logFile = "log.log";
+    desc.args = "-console";
+
+    chimera::CmCreateApplication(&desc);
+
+    //createSpheres();
+    //createLights()
+    //chimera::CmGetApp()->VGetLogic()->VLoadLevel("testlevel.xml");
+    chimera::CmGetApp()->VGetLogic()->VCreateActor("ruin.xml");
+    //chimera::CmGetApp()->VGetLogic()->VCreateActor("spotlight.xml");
+
+    chimera::CmGetApp()->VRun();
+
+    chimera::CmReleaseApplication();
+}
 
 int APIENTRY _tWinMain(HINSTANCE hInstance,
                      HINSTANCE hPrevInstance,
@@ -28,46 +75,15 @@ int APIENTRY _tWinMain(HINSTANCE hInstance,
                      int       nCmdShow)
 {
 #ifdef _DEBUG
+#define _CRTDBG_MAP_ALLOC
     _CrtSetDbgFlag (_CRTDBG_ALLOC_MEM_DF | _CRTDBG_LEAK_CHECK_DF);
     _CrtSetReportMode(_CRT_ERROR, _CRTDBG_MODE_FILE);
     _CrtSetReportFile(_CRT_ERROR, _CRTDBG_FILE_STDERR);
 #endif
 
-    UNREFERENCED_PARAMETER(hPrevInstance);
-    UNREFERENCED_PARAMETER(lpCmdLine);
+    run(hInstance);
 
-    /*util::UniformBSpline s;
-    
-    s.AddPoint(util::Vec3(-10,10,0));
-    s.AddPoint(util::Vec3(0,10,10));
-    s.AddPoint(util::Vec3(+10,10,0));
-    s.AddPoint(util::Vec3(0,10,-10));
-
-    s.AddPoint(util::Vec3(0,10,10));
-    s.AddPoint(util::Vec3(+10,10,0));
-    s.AddPoint(util::Vec3(0,10,-10));
-
-    s.Create(); */
-
-    app::GameApp* g_pApp = new app::BasicApp(); //packman::Packman();//
-
-#ifdef _DEBUG
-    g_pApp->Init(hInstance, L"TBD (DEBUG BUILD)", "files", "log.log");
-#else
-    g_pApp->Init(hInstance, L"TBD (RELEASE BUILD)", "files", "log.log");
-#endif
-
-
-    //post init pre run code here
-    //g_pApp->GetLogic()->VLoadLevel(new packman::Maze(100, 3));//
-
-    g_pApp->Run();
-
-    delete g_pApp;
-
-    _CrtDumpMemoryLeaks();
-
-     return 0;
+    return 0;
 }
 
 

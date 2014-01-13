@@ -10,26 +10,30 @@ namespace chimera
     class SpotlightNode : public chimera::SceneNode
     {
     private:
-        util::ICamera* m_pCamera;
-        std::shared_ptr<chimera::LightComponent> m_lightComponent;
-        chimera::ShaderProgram* m_drawShadow;
-        chimera::ShaderProgram* m_drawShadowInstanced;
-        chimera::ShaderProgram* m_drawLighting;
+        chimera::ICamera* m_pCamera;
+        std::shared_ptr<LightComponent> m_lightComponent;
         util::Vec3 m_middle;
         FLOAT m_distance;
+        IBlendState* m_alphaBlendingState;
+        IDepthStencilState* m_depthState;
+        std::shared_ptr<IDeviceTexture> m_projectedTextureHandle;
 
-    public:
-        static chimera::RenderTarget* g_pShadowRenderTarget;
+        static std::shared_ptr<IVRamHandle> m_pShadowRenderTargetHandle;
+        static IShaderProgram* m_drawShadow;
+        static IShaderProgram* m_drawShadowInstanced;
+        static IShaderProgram* m_drawLighting;
+
     public:
         SpotlightNode(ActorId actorid);
-        VOID _VRender(chimera::SceneGraph* graph, chimera::RenderPath& path);
-        BOOL VIsVisible(SceneGraph* graph);
-        VOID VOnRestore(chimera::SceneGraph* graph);
-        VOID VOnActorMoved(VOID);
-        UINT VGetRenderPaths(VOID);
-        ~SpotlightNode(VOID);
 
-        static BOOL Create(VOID);
-        static VOID Destroy(VOID);
+        VOID _VRender(ISceneGraph* graph, RenderPath& path);
+
+        BOOL VIsVisible(ISceneGraph* graph);
+
+        VOID VOnRestore(ISceneGraph* graph);
+
+        VOID VOnActorMoved(VOID);
+
+        ~SpotlightNode(VOID);
     };
 }

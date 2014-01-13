@@ -1,128 +1,305 @@
 #include "SpotlightNode.h"
-#include "Vec3.h"
-#include "Mat4.h"
 #include "SceneGraph.h"
-#include "ShaderProgram.h"
-#include "GameApp.h"
-#include "GeometryFactory.h"
 #include "Components.h"
-#include "D3DRenderer.h"
-#include "GameLogic.h"
 #include "Camera.h"
-#include "math.h"
 
 namespace chimera
 {
-    chimera::RenderTarget* SpotlightNode::g_pShadowRenderTarget = NULL;
+    std::shared_ptr<IVRamHandle> SpotlightNode::m_pShadowRenderTargetHandle = NULL;
 
-    SpotlightNode::SpotlightNode(ActorId actorid) : SceneNode(actorid), m_distance(0)
+    IShaderProgram* SpotlightNode::m_drawShadow = NULL;
+
+    IShaderProgram* SpotlightNode::m_drawShadowInstanced = NULL;
+
+    IShaderProgram* SpotlightNode::m_drawLighting = NULL;
+
+
+    class ShadowMapHandle : public VRamHandle
     {
-        std::shared_ptr<chimera::Actor> actor = chimera::g_pApp->GetLogic()->VFindActor(actorid);
-        this->m_lightComponent = m_actor->GetComponent<chimera::LightComponent>(chimera::LightComponent::COMPONENT_ID).lock();
+    public:
+        IRenderTarget* m_texture;
 
-        m_drawShadow = chimera::ShaderProgram::GetProgram("SpotLightShadowMap").get();
-        m_drawShadowInstanced = chimera::ShaderProgram::GetProgram("SpotLightShadowMapInstanced").get();
-        m_drawLighting = chimera::ShaderProgram::GetProgram("SpotLight").get();
+        ShadowMapHandle(VOID) : m_texture(NULL)
+        {
+            VSetResource(CMResource("SpotLightShadowMap"));
+        }
 
-        UINT wh = chimera::g_pApp->GetConfig()->GetInteger("iSpotLightSMSize");
+        BOOL VCreate(VOID) 
+        {
+            if(!m_texture)
+            {
+                m_texture = CmGetApp()->VGetHumanView()->VGetGraphicsFactory()->VCreateRenderTarget().release();
+            }
 
-        m_pCamera = new util::Camera(wh, wh, 1e-2f, GetTransformation()->GetScale().x);
+            UINT shadowMapSize = CmGetApp()->VGetConfig()->VGetInteger("iSpotLightSMSize");
+
+            if(!m_texture->VOnRestore(shadowMapSize, shadowMapSize, eFormat_R32_FLOAT, TRUE))
+            {
+                LOG_CRITICAL_ERROR("Failed to create render target");
+                return FALSE;
+            }
+
+            return TRUE;
+        }
+
+        VOID VDestroy(VOID)
+        {
+            SAFE_DELETE(m_texture);
+        }
+
+        UINT VGetByteCount(VOID) CONST
+        {
+            UINT size = CmGetApp()->VGetConfig()->VGetInteger("iSpotLightSMSize");
+            return size * size * sizeof(FLOAT);
+        }
+    };
+
+    SpotlightNode::SpotlightNode(ActorId actorid) : SceneNode(actorid), m_distance(0), m_depthState(NULL), m_alphaBlendingState(NULL)
+    {
+        IActor* actor = CmGetApp()->VGetLogic()->VFindActor(actorid);
+        m_actor->VQueryComponent(CM_CMP_LIGHT, (IActorComponent**)&m_lightComponent);
+
+        if(!m_drawShadow)
+        {
+            CMShaderProgramDescription desc;
+            ZeroMemory(&desc, sizeof(CMShaderProgramDescription));
+
+            desc.fs.file = L"SpotLightShadowMap.hlsl";
+            desc.fs.function = "SpotLightShadow_PS";
+
+            desc.vs.file = L"SpotLightShadowMap.hlsl";
+            desc.vs.function = "SpotLightShadow_VS";
+            desc.vs.layoutCount = 3;
+
+            desc.vs.inputLayout[0].instanced = FALSE;
+            desc.vs.inputLayout[0].name = "POSITION";
+            desc.vs.inputLayout[0].position = 0;
+            desc.vs.inputLayout[0].slot = 0;
+            desc.vs.inputLayout[0].format = eFormat_R32G32B32_FLOAT;
+
+            desc.vs.inputLayout[1].instanced = FALSE;
+            desc.vs.inputLayout[1].name = "NORMAL";
+            desc.vs.inputLayout[1].position = 1;
+            desc.vs.inputLayout[1].slot = 0;
+            desc.vs.inputLayout[1].format = eFormat_R32G32B32_FLOAT;
+
+            desc.vs.inputLayout[2].instanced = FALSE;
+            desc.vs.inputLayout[2].name = "TEXCOORD";
+            desc.vs.inputLayout[2].position = 2;
+            desc.vs.inputLayout[2].slot = 0;
+            desc.vs.inputLayout[2].format = eFormat_R32G32_FLOAT;
+            CmGetApp()->VGetHumanView()->VGetRenderer()->VGetShaderCache()->VCreateShaderProgram("SpotLightShadowMap", &desc);
+
+            ZeroMemory(&desc, sizeof(CMShaderProgramDescription));
+            desc.fs.file = L"SpotLightShadowMap.hlsl";
+            desc.fs.function = "SpotLightShadow_PS";
+
+            desc.vs.file = L"SpotLightShadowMap.hlsl";
+            desc.vs.function = "SpotLightShadowInstanced_VS";
+            desc.vs.layoutCount = 4;
+
+            desc.vs.inputLayout[0].instanced = FALSE;
+            desc.vs.inputLayout[0].name = "POSITION";
+            desc.vs.inputLayout[0].position = 0;
+            desc.vs.inputLayout[0].slot = 0;
+            desc.vs.inputLayout[0].format = eFormat_R32G32B32_FLOAT;
+
+            desc.vs.inputLayout[1].instanced = FALSE;
+            desc.vs.inputLayout[1].name = "NORMAL";
+            desc.vs.inputLayout[1].position = 1;
+            desc.vs.inputLayout[1].slot = 0;
+            desc.vs.inputLayout[1].format = eFormat_R32G32B32_FLOAT;
+
+            desc.vs.inputLayout[2].instanced = FALSE;
+            desc.vs.inputLayout[2].name = "TEXCOORD";
+            desc.vs.inputLayout[2].position = 2;
+            desc.vs.inputLayout[2].slot = 0;
+            desc.vs.inputLayout[2].format = eFormat_R32G32_FLOAT;
+
+            desc.vs.inputLayout[3].instanced = TRUE;
+            desc.vs.inputLayout[3].name = "TANGENT";
+            desc.vs.inputLayout[3].position = 3;
+            desc.vs.inputLayout[3].slot = 1;
+            desc.vs.inputLayout[3].format = eFormat_R32G32B32_FLOAT;
+            CmGetApp()->VGetHumanView()->VGetRenderer()->VGetShaderCache()->VCreateShaderProgram("SpotLightShadowMapInstanced", &desc);
+
+            ZeroMemory(&desc, sizeof(CMShaderProgramDescription));
+            desc.fs.file = L"Lighting.hlsl";
+            desc.fs.function = "SpotLighting_PS";
+
+            desc.vs.file = L"Lighting.hlsl";
+            desc.vs.function = "Lighting_VS";
+            desc.vs.layoutCount = 2;
+
+            desc.vs.inputLayout[0].instanced = FALSE;
+            desc.vs.inputLayout[0].name = "POSITION";
+            desc.vs.inputLayout[0].position = 0;
+            desc.vs.inputLayout[0].slot = 0;
+            desc.vs.inputLayout[0].format = eFormat_R32G32B32_FLOAT;
+
+            desc.vs.inputLayout[1].instanced = FALSE;
+            desc.vs.inputLayout[1].name = "TEXCOORD";
+            desc.vs.inputLayout[1].position = 1;
+            desc.vs.inputLayout[1].slot = 0;
+            desc.vs.inputLayout[1].format = eFormat_R32G32_FLOAT;
+
+            CmGetApp()->VGetHumanView()->VGetRenderer()->VGetShaderCache()->VCreateShaderProgram("SpotLight", &desc);
+        }
+
+        m_drawShadow = CmGetApp()->VGetHumanView()->VGetRenderer()->VGetShaderCache()->VGetShaderProgram("SpotLightShadowMap");
+        m_drawShadowInstanced = CmGetApp()->VGetHumanView()->VGetRenderer()->VGetShaderCache()->VGetShaderProgram("SpotLightShadowMapInstanced");
+        m_drawLighting = CmGetApp()->VGetHumanView()->VGetRenderer()->VGetShaderCache()->VGetShaderProgram("SpotLight");
+
+        UINT wh = CmGetApp()->VGetConfig()->VGetInteger("iSpotLightSMSize");
+
+        m_pCamera = new util::Camera(wh, wh, 1e-2f, VGetTransformation()->GetScale().x);
         
         VOnActorMoved();
+
+        VSetRenderPaths(CM_RENDERPATH_LIGHTING);
     }
 
     VOID SpotlightNode::VOnActorMoved(VOID)
     {
         SceneNode::VOnActorMoved();
-        m_pCamera->SetPerspectiveProjection(1.0f, DEGREE_TO_RAD(m_lightComponent->m_angle), 0.01f, GetTransformation()->GetScale().x);
+        m_pCamera->SetPerspectiveProjection(1.0f, DEGREE_TO_RAD(m_lightComponent->m_angle), 0.01f, VGetTransformation()->GetScale().x);
         
         util::Vec4 up(0,1,0,0);
         util::Vec4 dir(0,0,1,0);
-        up = util::Mat4::Transform(*GetTransformation(), up);
-        dir = util::Mat4::Transform(*GetTransformation(), dir);
+        up = util::Mat4::Transform(*VGetTransformation(), up);
+        dir = util::Mat4::Transform(*VGetTransformation(), dir);
         up.Normalize();
         dir.Normalize();
         m_pCamera->FromViewUp(util::Vec3(dir.x,dir.y,dir.z), util::Vec3(up.x,up.y,up.z));
 
-        m_pCamera->SetEyePos(GetTransformation()->GetTranslation());
+        m_pCamera->SetEyePos(VGetTransformation()->GetTranslation());
 
         //m_pCamera->SetRotation(GetTransformation()->GetPYR().y, GetTransformation()->GetPYR().x);
         
-        m_middle = GetTransformation()->GetTranslation();
+        m_middle = VGetTransformation()->GetTranslation();
         FLOAT c = cos(m_pCamera->GetFoV() / 2.0f); //Todo: need a tighter bb here
-        FLOAT h = GetTransformation()->GetScale().x / c;
+        FLOAT h = VGetTransformation()->GetScale().x / c;
         m_distance = h / 2.0f;
         m_middle = m_middle + (m_pCamera->GetViewDir() * m_distance);
     }
 
-    VOID SpotlightNode::VOnRestore(chimera::SceneGraph* graph)
+    VOID SpotlightNode::VOnRestore(ISceneGraph* graph)
     {
+        std::unique_ptr<IGraphicsStateFactroy> factroy = CmGetApp()->VGetHumanView()->VGetGraphicsFactory()->VCreateStateFactory();
+        SAFE_DELETE(m_alphaBlendingState);
+        BlendStateDesc blendDesc;
+        ZeroMemory(&blendDesc, sizeof(BlendStateDesc));
+
+        for(int i = 0; i < 8; ++i)
+        {
+            blendDesc.RenderTarget[i].BlendEnable = TRUE;
+            blendDesc.RenderTarget[i].RenderTargetWriteMask = eColorWriteAll;
+
+            blendDesc.RenderTarget[i].BlendOp = eBlendOP_Add;
+            blendDesc.RenderTarget[i].BlendOpAlpha = eBlendOP_Add;
+
+            blendDesc.RenderTarget[i].DestBlend = eBlend_One;
+            blendDesc.RenderTarget[i].DestBlendAlpha = eBlend_One;
+
+            blendDesc.RenderTarget[i].SrcBlend = eBlend_SrcAlpha;
+            blendDesc.RenderTarget[i].SrcBlendAlpha = eBlend_One;  
+        }
+
+        m_alphaBlendingState = factroy->VCreateBlendState(&blendDesc);
+
+        SAFE_DELETE(m_depthState);
+        DepthStencilStateDesc depthDesc;
+        ZeroMemory(&depthDesc, sizeof(DepthStencilStateDesc));
+        depthDesc.DepthEnable = FALSE;
+        depthDesc.StencilEnable = FALSE;
+
+        m_depthState = factroy->VCreateDepthStencilState(&depthDesc);
+
         SceneNode::VOnRestore(graph);
     }
 
-    BOOL SpotlightNode::VIsVisible(SceneGraph* graph)
+    BOOL SpotlightNode::VIsVisible(ISceneGraph* graph)
     {
-        return graph->GetFrustum()->IsInside(m_middle,  m_distance);
+        return graph->VGetFrustum()->IsInside(m_middle, m_distance);
     }
 
-    UINT SpotlightNode::VGetRenderPaths(VOID)
-    {
-        return eRenderPath_DrawLighting | eRenderPath_DrawPicking | eRenderPath_DrawBounding | eRenderPath_DrawEditMode | eRenderPath_DrawDebugInfo;
-    }
-
-    VOID SpotlightNode::_VRender(chimera::SceneGraph* graph, RenderPath& path)
+    VOID SpotlightNode::_VRender(ISceneGraph* graph, RenderPath& path)
     {
         switch(path)
         {
-        case eRenderPath_DrawLighting: 
+        case CM_RENDERPATH_LIGHTING: 
             {
                 if(!m_lightComponent->m_activated)
                 {
                     return;
                 }
 
-                m_drawShadow->Bind();
-                chimera::D3DRenderer* renderer = chimera::g_pApp->GetHumanView()->GetRenderer();
+                IRenderer* renderer = CmGetApp()->VGetHumanView()->VGetRenderer();
                 renderer->VPushViewTransform(m_pCamera->GetView(), m_pCamera->GetIView(), m_pCamera->GetEyePos());
-                renderer->VPushProjectionTransform(m_pCamera->GetProjection(), GetTransformation()->GetScale().x);
+                renderer->VPushProjectionTransform(m_pCamera->GetProjection(), VGetTransformation()->GetScale().x);
 
-                renderer->SetLightSettings(m_lightComponent->m_color, GetTransformation()->GetTranslation(), 
+                renderer->VSetLightSettings(m_lightComponent->m_color, VGetTransformation()->GetTranslation(), 
                     m_pCamera->GetViewDir(),
-                    GetTransformation()->GetScale().x, DEGREE_TO_RAD(m_lightComponent->m_angle), m_lightComponent->m_intensity);
+                    VGetTransformation()->GetScale().x, DEGREE_TO_RAD(m_lightComponent->m_angle), m_lightComponent->m_intensity, m_lightComponent->m_castShadow);
 
-                g_pShadowRenderTarget->Bind();
-                g_pShadowRenderTarget->Clear();
+                if(m_lightComponent->m_castShadow)
+                {
+                    m_drawShadow->VBind();
 
-                graph->PushFrustum(&m_pCamera->GetFrustum());
+                    IRenderTarget* shadowRT;
 
-                graph->OnRender(chimera::eRenderPath_DrawToShadowMap);
+                    if(!m_pShadowRenderTargetHandle || !m_pShadowRenderTargetHandle->VIsReady())
+                    {
+                        m_pShadowRenderTargetHandle = std::shared_ptr<ShadowMapHandle>(new ShadowMapHandle());
+                        CmGetApp()->VGetHumanView()->VGetVRamManager()->VAppendAndCreateHandle(m_pShadowRenderTargetHandle);
+                    }
 
-                m_drawShadowInstanced->Bind();
+                    m_pShadowRenderTargetHandle->VUpdate();
 
-                graph->OnRender(chimera::eRenderPath_DrawToShadowMapInstanced);
+                    shadowRT = ((ShadowMapHandle*)m_pShadowRenderTargetHandle.get())->m_texture;
 
-                graph->PopFrustum();
+                    shadowRT->VBind();
+                    shadowRT->VClear();
 
-                renderer->ActivateCurrentRendertarget();
+                    graph->VPushFrustum(&m_pCamera->GetFrustum());
 
-                renderer->SetSampler(chimera::eDiffuseColorSampler, g_pShadowRenderTarget->GetShaderRessourceView()); //todo
+                    graph->VOnRender(CM_RENDERPATH_SHADOWMAP);
 
-                m_drawLighting->Bind();
+                    m_drawShadowInstanced->VBind();
 
-                chimera::GetContext()->OMSetDepthStencilState(chimera::m_pNoDepthNoStencilState, 0);
-                chimera::GetContext()->OMSetBlendState(chimera::g_pBlendStateBlendAdd, NULL, 0xffffff);
-                GeometryFactory::GetGlobalScreenQuad()->Bind();
-                GeometryFactory::GetGlobalScreenQuad()->Draw();
-                chimera::GetContext()->OMSetBlendState(chimera::g_pBlendStateNoBlending, NULL, 0xffffff);
-                chimera::GetContext()->OMSetDepthStencilState(chimera::m_pDepthNoStencilState, 0);
+                    graph->VOnRender(CM_RENDERPATH_SHADOWMAP_INSTANCED);
+
+                    graph->VPopFrustum();
+
+                    renderer->VGetCurrentRenderTarget()->VBind();
+
+                    renderer->VSetTexture(chimera::eDiffuseColorSampler, shadowRT->VGetTexture()); //todo
+                }
+
+                if(m_lightComponent->m_projTexture.c_str())
+                {
+                    if(!m_projectedTextureHandle || !m_projectedTextureHandle->VIsReady())
+                    {
+                        m_projectedTextureHandle = std::static_pointer_cast<IDeviceTexture>(CmGetApp()->VGetHumanView()->VGetVRamManager()->VGetHandle(m_lightComponent->m_projTexture));
+                    }
+                    renderer->VSetTexture(eNormalColorSampler, m_projectedTextureHandle.get());
+                }
+
+                m_drawLighting->VBind();
+
+                renderer->VPushBlendState(m_alphaBlendingState);
+                renderer->VPushDepthStencilState(m_depthState);
+                renderer->VDrawScreenQuad();
+                renderer->VPopBlendState();
+                renderer->VPopDepthStencilState();
 
                 renderer->VPopViewTransform();
                 renderer->VPopProjectionTransform();
 
-                renderer->SetSampler(chimera::eDiffuseColorSampler, NULL); //todo
+                renderer->VSetTexture(chimera::eDiffuseColorSampler, NULL); //todo
 
             } break;
-
+            /*
         case eRenderPath_DrawBounding :
             {
                 util::Mat4 t;
@@ -155,34 +332,14 @@ namespace chimera
                 ss << m_actorId;
                 DrawInfoTextOnScreen(graph->GetCamera().get(), GetTransformation(), ss.str());
                 break;
-            }
+            }*/
         }
     }
 
     SpotlightNode::~SpotlightNode(VOID)
     {
         SAFE_DELETE(m_pCamera);
-    }
-
-    //static
-
-    BOOL SpotlightNode::Create(VOID)
-    {
-        g_pShadowRenderTarget = new chimera::RenderTarget();
-
-        UINT shadowMapSize = chimera::g_pApp->GetConfig()->GetInteger("iSpotLightSMSize");
-
-        if(!g_pShadowRenderTarget->OnRestore(shadowMapSize, shadowMapSize, DXGI_FORMAT_R32_FLOAT, TRUE))
-        {
-            LOG_CRITICAL_ERROR("Failed to create render target");
-            return FALSE;
-        }
-
-        return TRUE;
-    }
-
-    VOID SpotlightNode::Destroy(VOID)
-    {
-        SAFE_DELETE(g_pShadowRenderTarget);
+        SAFE_DELETE(m_alphaBlendingState);
+        SAFE_DELETE(m_depthState);
     }
 }

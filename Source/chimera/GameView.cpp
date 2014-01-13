@@ -6,16 +6,39 @@
 #include "GraphicsSettings.h"
 #include "SceneGraph.h"
 #include "SceneNode.h"
+#include "PointLightNode.h"
+#include "SpotLightNode.h"
 
 namespace chimera
 {
     //default creator
+    ISceneNode* CreateLightNode(IHumanView* gw, IActor* actor)
+    {
+        ISceneNode* mn = NULL;
+
+        LightComponent* comp = GetActorCompnent<LightComponent>(actor, CM_CMP_LIGHT);
+
+        if(comp->m_type == "point")
+        {
+            mn = new PointlightNode(actor->GetId());
+        }
+        else if(comp->m_type == "spot")
+        {
+            mn = new SpotlightNode(actor->GetId());
+        }
+        else
+        {
+            LOG_CRITICAL_ERROR("Unknown LightType");
+        }
+
+        return mn;
+    }
 
     ISceneNode* CreateRenderNode(IHumanView* gw, IActor* actor)
     {
         RenderComponent* comp = GetActorCompnent<RenderComponent>(actor, CM_CMP_RENDERING);
-        ISceneNode* mn;
-        if(comp->m_type == std::string("skydome"))
+        ISceneNode* mn = NULL;
+        if(comp->m_type == std::string("environment"))
         {            
             return new SkyDomeNode(actor->GetId(), comp->m_resource);
         }
@@ -46,19 +69,19 @@ namespace chimera
         }
 
         return mn;
+    }
 
+    ISceneNode* CreateCameraNode(IHumanView* gw, IActor* actor)
+    {
+        CameraComponent* comp = GetActorCompnent<CameraComponent>(actor, CM_CMP_CAMERA);
+        ISceneNode* mn = new CameraNode(actor->GetId());
+        return mn;
     }
 
     ISceneNode* CreateInstancedMeshNode(IHumanView* gw, IActor* actor)
     {
         RenderComponent* comp = GetActorCompnent<RenderComponent>(actor, CM_CMP_RENDERING);
         return new MeshNode(actor->GetId(), comp->m_resource);
-    }
-
-    ISceneNode* CreateLightNode(IHumanView* gw, IActor* actor)
-    {
-        LightComponent* comp = GetActorCompnent<LightComponent>(actor, CM_CMP_LIGHT);
-        return new MeshNode(actor->GetId(), "");
     }
 
     //default creator end
@@ -75,6 +98,7 @@ namespace chimera
         m_pEffectFactory = NULL;
         m_pFontManager = NULL;
         m_pGuiFactroy = NULL;
+        m_isFullscreen = FALSE;
     }
 
     BOOL HumanGameView::VInitialise(FactoryPtr* facts)
@@ -113,9 +137,13 @@ namespace chimera
 
         ADD_EVENT_LISTENER(this, &HumanGameView::NewComponentDelegate, CM_EVENT_COMPONENT_CREATED);
 
+        ADD_EVENT_LISTENER(this, &HumanGameView::SetParentDelegate, CM_EVENT_SET_PARENT_ACTOR);
+
         ADD_EVENT_LISTENER((VRamManager*)m_pVramManager, &VRamManager::OnResourceChanged, CM_EVENT_RESOURCE_CHANGED);
 
         VAddSceneNodeCreator(CreateRenderNode, CM_CMP_RENDERING);
+        VAddSceneNodeCreator(CreateLightNode, CM_CMP_LIGHT);
+        VAddSceneNodeCreator(CreateCameraNode, CM_CMP_CAMERA);
 
         return TRUE;
     }
@@ -161,15 +189,19 @@ namespace chimera
         return m_pRenderer.get();
     }
 
+    VOID HumanGameView::VSetFullscreen(BOOL fullscreen)
+    {
+        m_isFullscreen = fullscreen;
+        m_pRenderer->VSetFullscreen(m_isFullscreen);
+    }
+
+    BOOL HumanGameView::VIsFullscreen(VOID)
+    {
+        return m_isFullscreen;
+    }
+
     VOID HumanGameView::VOnResize(UINT w, UINT h)
     {
-       /* if(chimera::g_pSwapChain) 
-        {
-            chimera::Resize(w, h);
-            VOnRestore();
-            BOOL fullscreen = chimera::GetFullscreenState();
-            chimera::g_pApp->GetInputHandler()->VSetCurserOffsets(fullscreen ? 0 : 8 , fullscreen ? 0 : 30); //todo, get systemmetrics
-        } */
         m_pRenderer->VResize(w, h);
 
         VOnRestore();
@@ -370,8 +402,7 @@ namespace chimera
             ISceneNode* a = m_pSceneGraph->VFindActorNode(actor);
             if(p)
             {
-                //p->VAddChild(a);
-                LOG_CRITICAL_ERROR("ASD");
+                p->VAddChild(m_pSceneGraph->VReleaseNode(actor));
             }
             else
             {
@@ -537,7 +568,7 @@ namespace chimera
             }
             else
             {
-                LOG_CRITICAL_ERROR("fix only camras as target");
+                LOG_CRITICAL_ERROR("fix only cameras as target");
             }
         }
     }
@@ -547,6 +578,8 @@ namespace chimera
         REMOVE_EVENT_LISTENER(this, &HumanGameView::ActorMovedDelegate, CM_EVENT_ACTOR_MOVED);
 
         REMOVE_EVENT_LISTENER(this, &HumanGameView::NewComponentDelegate, CM_EVENT_COMPONENT_CREATED);
+
+        REMOVE_EVENT_LISTENER(this, &HumanGameView::SetParentDelegate, CM_EVENT_SET_PARENT_ACTOR);
 
         REMOVE_EVENT_LISTENER((VRamManager*)m_pVramManager, &VRamManager::OnResourceChanged, CM_EVENT_RESOURCE_CHANGED);
         /*
@@ -573,7 +606,7 @@ namespace chimera
             listener = fastdelegate::MakeDelegate(&m_soundEngine, &chimera::SoundEngine::NewComponentDelegate);
             chimera::IEventManager::Get()->VRemoveEventListener(listener, chimera::NewComponentCreatedEvent::TYPE);
 
-            REMOVE_EVENT_LISTENER(this, &HumanGameView::SetParentDelegate, chimera::SetParentActorEvent::TYPE);
+            
         } */
 
         TBD_FOR(m_screenElements)

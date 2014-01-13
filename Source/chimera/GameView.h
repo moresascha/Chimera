@@ -22,6 +22,7 @@ namespace chimera
         IGraphicsFactory* m_pGraphicsFactory;
         IEffectFactory* m_pEffectFactory;
         IGuiFactory* m_pGuiFactroy;
+        BOOL m_isFullscreen;
 
     public:
         HumanGameView(VOID);
@@ -31,6 +32,10 @@ namespace chimera
         VOID VOnRender(VOID);
     
         VOID VPostRender(VOID);
+
+        VOID VSetFullscreen(BOOL fullscreen);
+
+        BOOL VIsFullscreen(VOID);
         
         BOOL VInitialise(FactoryPtr* facts);
 

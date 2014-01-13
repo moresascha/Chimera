@@ -7,8 +7,6 @@
 #define NDEBUG
 #endif
 
-//#include <physx/PxPhysicsAPI.h>
-
 #ifdef _DEBUG
 #define _CRTDBG_MAP_ALLOC
 #endif

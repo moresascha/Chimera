@@ -1,4 +1,6 @@
 #include "D3DGraphics.h"
+#include <dxgi.h>
+#include <dxgi1_2.h>
 
 #include <Initguid.h>
 #include <dxgidebug.h>
@@ -380,9 +382,8 @@ namespace chimera
             };
 
 #ifdef _DEBUG
-          // flags |= D3D11_CREATE_DEVICE_DEBUG;
+           //flags |= D3D11_CREATE_DEVICE_DEBUG;
 #endif
-
             D3D_SAVE_CALL(D3D11CreateDeviceAndSwapChain(NULL,
                 D3D_DRIVER_TYPE_HARDWARE,
                 NULL,
@@ -395,6 +396,17 @@ namespace chimera
                 &g_pDevice,
                 &level,
                 &g_pContext));
+
+            IDXGIDevice* dev;
+            g_pDevice->QueryInterface(__uuidof(IDXGIDevice), (void **)&dev);
+            IDXGIAdapter* a;
+            dev->GetParent(__uuidof(IDXGIAdapter), (void **)&a);
+            IDXGIFactory* f;
+            a->GetParent(__uuidof(IDXGIFactory), (void **)&f);
+            f->MakeWindowAssociation(g_hWnd, DXGI_MWA_NO_ALT_ENTER | DXGI_MWA_NO_WINDOW_CHANGES);
+            dev->Release();
+            a->Release();
+            f->Release();
 
             switch(level) 
             {

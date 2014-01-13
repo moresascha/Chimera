@@ -248,6 +248,12 @@ namespace chimera
 
         virtual VOID* VGetDevice(VOID) = 0;
 
+        virtual VOID VSetFullscreen(BOOL fullscreen) = 0;
+
+        virtual VOID VSetLightSettings(CONST util::Vec4& color, CONST util::Vec3& position, CONST util::Vec3& viewDir, FLOAT radius, FLOAT angel, FLOAT intensity, BOOL castShadow) = 0;
+
+        virtual VOID VSetLightSettings(CONST util::Vec4& color, CONST util::Vec3& position, FLOAT radius, BOOL castShadow) = 0;
+
         virtual ~IRenderer(VOID) {}
     };
 

@@ -18,7 +18,13 @@ namespace chimera
           }
       }
 
-      CONST std::map<ComponentId, std::unique_ptr<IActorComponent>>& VGetComponents(VOID) { return m_components; } 
+      CONST std::map<ComponentId, std::unique_ptr<IActorComponent>>& VGetComponents(VOID) { return m_components; }
+
+      template <typename T>
+      T* VGetComponent(ComponentId id) 
+      {
+          return (T*)VGetComponent(id);
+      }
 
       IActorComponent* VGetComponent(ComponentId id) 
       {
@@ -29,6 +35,11 @@ namespace chimera
               return it->second.get();
           }
           return NULL;
+      }
+
+      VOID VQueryComponent(ComponentId id, IActorComponent** cmp)
+      {
+          *cmp = VGetComponent(id);
       }
 
       VOID VAddComponent(std::unique_ptr<IActorComponent> pComponent)

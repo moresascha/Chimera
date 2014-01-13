@@ -1,12 +1,13 @@
 #pragma once
 #include "stdafx.h"
-#include "Actor.h"
-#include "ActorFactory.h"
-#include "Event.h"
+
+namespace tinyxml2
+{
+    class XMLNode;
+}
 
 namespace chimera
 {
-    class ILevel;
     class ISaveXLevel
     {
     public:
@@ -37,11 +38,11 @@ namespace chimera
     protected:
         std::map<ActorId, std::unique_ptr<IActor>> m_actors;
         std::vector<ActorId> m_idsToLoad;
-        chimera::ActorFactory* m_pActorFactory;
+        IActorFactory* m_pActorFactory;
 
     public:
 
-        BaseLevel::BaseLevel(CONST std::string& file, chimera::ActorFactory* factory);
+        BaseLevel::BaseLevel(CONST std::string& file, IActorFactory* factory);
 
         CONST std::string& VGetName(VOID)
         {
@@ -74,13 +75,13 @@ namespace chimera
 
         VOID VRemoveActor(ActorId id);
 
-        VOID ActorCreatedDelegate(chimera::IEventPtr eventData);
+        VOID ActorCreatedDelegate(IEventPtr eventData);
 
         FLOAT VGetLoadingProgress(VOID);
 
         VOID VUnload(VOID);
 
-        std::shared_ptr<chimera::Actor> VAddActor(ActorDescription& desc);
+        IActor* VAddActor(std::unique_ptr<ActorDescription> desc);
 
         virtual ~BaseLevel(VOID);
     };
@@ -90,19 +91,19 @@ namespace chimera
     private:
 
     public:
-        XMLLevel(CONST std::string& file, chimera::ActorFactory* factory);
+        XMLLevel(CONST std::string& file, IActorFactory* factory);
         
         BOOL VLoad(BOOL block);
         
         BOOL VSave(LPCSTR file = NULL);
                 
-        std::shared_ptr<chimera::Actor> VAddActor(tinyxml2::XMLElement* pNode);
+        IActor* VAddActor(tinyxml2::XMLNode* pNode);
     };
 
     class RandomLevel : public BaseLevel
     {
     public:
-        RandomLevel(CONST std::string& file, chimera::ActorFactory* factory);
+        RandomLevel(CONST std::string& file, IActorFactory* factory);
 
         BOOL VLoad(BOOL block);
 
@@ -112,7 +113,7 @@ namespace chimera
     class GroupedObjLevel : public BaseLevel
     {
     public:
-        GroupedObjLevel(LPCSTR file, chimera::ActorFactory* factory);
+        GroupedObjLevel(LPCSTR file, IActorFactory* factory);
         BOOL VLoad(BOOL block);
         BOOL VSave(LPCSTR file = NULL);
     };
@@ -120,7 +121,7 @@ namespace chimera
     class TransformShowRoom : public BaseLevel
     {
     public:
-        TransformShowRoom(CONST std::string& file, chimera::ActorFactory* factory);
+        TransformShowRoom(CONST std::string& file, IActorFactory* factory);
 
         BOOL VLoad(BOOL block);
 
@@ -132,11 +133,11 @@ namespace chimera
     class BSplinePatchLevel : public BaseLevel
     {
     private:
-        std::shared_ptr<chimera::Actor>* m_controlPoints;
+        IActor* m_controlPoints;
         chimera::CudaTransformationNode* m_node;
 
     public:
-        BSplinePatchLevel(CONST std::string& file, chimera::ActorFactory* factory);
+        BSplinePatchLevel(CONST std::string& file, IActorFactory* factory);
 
         BOOL VLoad(BOOL block);
 
@@ -147,7 +148,7 @@ namespace chimera
         ~BSplinePatchLevel(VOID);
     };
 
-    std::shared_ptr<chimera::Actor> CreateSphere(CONST util::Vec3& pos, BaseLevel* level);
-    VOID CreateStaticPlane(BaseLevel* level);
-    std::shared_ptr<chimera::Actor> CreateCube(CONST util::Vec3& pos, BaseLevel* level);
+    //std::shared_ptr<IActor> CreateSphere(CONST util::Vec3& pos, BaseLevel* level);
+    //VOID CreateStaticPlane(BaseLevel* level);
+    //std::shared_ptr<chimera::Actor> CreateCube(CONST util::Vec3& pos, BaseLevel* level);
 }

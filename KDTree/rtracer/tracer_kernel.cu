@@ -1,6 +1,9 @@
 #pragma once
 #include "tracer.cuh"
 
+#define LIGHT normalize(make_float3(1.0f,0.9f,+0.3f))
+#define LIGHT_POS (1000*make_float3(1.0f,0.9f,+0.3f))
+
 __device__ int intersectP(float3* eye, float3* ray, float4* boxmin, float4* boxmax, float* tmin, float* tmax) {
 
     float t0 = 0; float t1 = FLT_MAX;
@@ -175,47 +178,50 @@ __device__ int computeHit(float3* sphere, float3* eye, float3* ray, float tmin, 
 
 struct ToDo 
 {
-    Node node;
-    float min;
-    float max;
-    uint treePos;
-    uint level;
+    uint nodeIndex;
+    float tmax;
+    float tmin;
 };
 
-__device__ void traverse(float3* spheres, Node n, float3* eye, float3* ray, HitResult* hit, float sceneMin, float sceneMax, uint treeDepth) 
-{
-    //float sceneMin, sceneMax;
- 
+__device__ void traverse(const float3* __restrict spheres, Node& n, float3* eye, float3* ray, HitResult* hit, float bhe, float sceneMin, float sceneMax, uint treeDepth) 
+{ 
     hit->isHit = 0;
-    /*
-    if(!intersectP(eye, ray, min, max, &sceneMin, &sceneMax))
-    {
-        return;
-    }*/
-
-    //if(sceneMin < 0.0f) sceneMax = 0.0f;
 
     hit->t = FLT_MAX;
 
     float tmin;
     float tmax;
     tmin = tmax = sceneMin;
-    int pushDown = 1;
     uint root = 0;
-    uint lastlevel = 0;
+    uint stackPos = 1;
+    ToDo todo[16];
+    uint nodeIndex;
+    int pushDown;
 
-    float c = 1;
+    todo[0].nodeIndex = 0;
+    todo[0].tmin = sceneMin;
+    todo[0].tmax = sceneMax;
 
     while(tmax < sceneMax) 
     {
-        uint nodeIndex = root;
-        tmin = tmax;
-        tmax = sceneMax;
-        pushDown = 1;
-        
+        if(stackPos == -1)
+        {
+            pushDown = 1;
+            nodeIndex = 0;
+            tmin = tmax;
+            tmax = sceneMax;
+        }
+        else
+        {
+            stackPos--;
+            nodeIndex = todo[stackPos].nodeIndex;
+            tmin = todo[stackPos].tmin;
+            tmax = todo[stackPos].tmax;
+            pushDown = 0;
+        }
+
         while(!n.isLeaf[nodeIndex])
         {
-
             byte axis = n.splitAxis[nodeIndex];
             float nsplit = n.split[nodeIndex];
 
@@ -246,10 +252,102 @@ __device__ void traverse(float3* spheres, Node n, float3* eye, float3* ray, HitR
             }
             else
             {
+                todo[stackPos].nodeIndex = second;
+                todo[stackPos].tmin = tsplit;
+                todo[stackPos].tmax = tmax;
+                stackPos++;
+
                 nodeIndex = first;
                 tmax = tsplit;
                 pushDown = 0;
             }
+
+            if(pushDown)
+            {
+                nodeIndex = 0;
+            }
+        }
+
+        uint prims = n.contentCount[nodeIndex];
+        for(uint i = 0; i < prims; ++i)
+        {
+            uint start = n.contentStart[nodeIndex];
+            float3 p = spheres[start + i];
+            computeHit(&p, eye, ray, tmin, tmax, bhe, hit);
+        }
+        
+        if(hit->isHit && (hit->t < tmax))
+        {
+            return;
+        }
+
+    }
+}
+
+__device__ void traverse0(const float3* __restrict spheres, Node& n, float3* eye, float3* ray, HitResult* hit, float bhe, float sceneMin, float sceneMax, uint treeDepth) 
+{ 
+    hit->isHit = 0;
+
+    hit->t = FLT_MAX;
+
+    float tmin;
+    float tmax;
+    tmin = tmax = sceneMin;
+    int pushDown = 1;
+    uint root = 0;
+
+    while(tmax < sceneMax) 
+    {
+        uint nodeIndex = root;
+        tmin = tmax;
+        tmax = sceneMax;
+        pushDown = 1;
+        
+        while(!n.isLeaf[nodeIndex])
+        {
+            byte axis = n.splitAxis[nodeIndex];
+            float nsplit = n.split[nodeIndex];
+
+            float tsplit = (nsplit- getAxis(eye, axis)) / getAxis(ray, axis);
+
+            int belowFirst = (getAxis(eye, axis) < nsplit) || ((getAxis(eye, axis) == nsplit) && (getAxis(ray, axis) >= 0));
+
+            uint first, second;
+
+            if(belowFirst)
+            {
+                first = nodeIndex + nodeIndex + 1;
+                second = nodeIndex + nodeIndex + 2;
+                
+                //dfo
+//                 first = nodeIndex + 1;
+//                 second = nodeIndex + (1 << (treeDepth - depth - 1));
+            } 
+            else 
+            {
+                first = nodeIndex + nodeIndex + 2;
+                second = nodeIndex + nodeIndex + 1;
+
+                //dfo
+//                 second = nodeIndex + 1;
+//                 first = nodeIndex + (1 << (treeDepth - depth - 1));
+            }
+
+            if(tsplit >= tmax || tsplit < 0)
+            {
+                nodeIndex = first;
+            } 
+            else if(tsplit <= tmin) 
+            {
+                nodeIndex = second;
+            }
+            else
+            {
+                nodeIndex = first;
+                tmax = tsplit;
+                pushDown = 0;
+            }
+
             if(pushDown)
             {
                 root = nodeIndex;
@@ -260,24 +358,31 @@ __device__ void traverse(float3* spheres, Node n, float3* eye, float3* ray, HitR
         for(uint i = 0; i < prims; ++i)
         {
             uint start = n.contentStart[nodeIndex];
-            int h = computeHit(&spheres[n.content[start + i]], eye, ray, tmin, tmax, 1, hit);
-
-            if(hit->t < tmax)
+            
+            //BBox bbox = perPrimBBox[start + i];
+           // float ttmin = tmin;
+            //float ttmax = tmax;
+            //if(intersectP(eye, ray, &make_float4(bbox.min, 0), &make_float4(bbox.max, 0), &ttmin, &ttmax))
             {
-                //return;
+                float3 p = spheres[start + i];
+                //float3  p = spheres[n.content[start + i]];
+                computeHit(&p, eye, ray, tmin, tmax, bhe, hit);
             }
+        }
+        
+        if(hit->isHit && (hit->t < tmax))
+        {
+            return;
         }
     }
 }
 
-__device__ bool testShadow(float3* spheres, float3* light, float3* pos, Node root, float mini, float maxi, uint treeDepth, float* contri)
+__device__ bool testShadow(float3* spheres, float3* light, float3* pos, Node root, float mini, float maxi, uint treeDepth, float radius)
 {
     HitResult res;
     memset(&res, 0, sizeof(HitResult));
     res.t = FLT_MAX;
-    traverse(spheres, root, pos, &normalize(*light - *pos), &res, mini, maxi, treeDepth);
-
-    *contri = 0.5;
+    traverse(spheres, root, pos, &normalize(*light - *pos), &res, mini, maxi, treeDepth, radius);
     return res.isHit;
 }
 
@@ -308,10 +413,10 @@ __device__ float4 getBackgroundReflection(float3* ray, HitResult* res)
     return tex2D(src, refl.x, refl.y);
 }
 
-__device__ float4 getSingleRefraction(float3* spheres, float3* ray, Node root, HitResult* res, uint treeDepth, float mini, float maxi)
+__device__ float4 getSingleRefraction(float3* spheres, float3* ray, Node root, HitResult* res, uint treeDepth, float radius, float mini, float maxi)
 {
     float3 rfract = normalize(refract(&-normalize(*ray * res->t), &res->normal, 1.0/1.5));
-    traverse(spheres, root, &(res->worldPosition + res->normal * 0.1), &rfract, res, mini, maxi, treeDepth);
+    traverse(spheres, root, &(res->worldPosition + res->normal * 0.1), &rfract, res, radius, mini, maxi, treeDepth);
 
     if(res->isHit)
     {
@@ -325,13 +430,14 @@ extern "C" __global__ void simpleSphereTracer(
     float4* dst, 
     float3* spheres,
     BBox* aabbs,
-    Node nodes,
+    Node root,
     uint treeDepth,
     float* view, 
-    float3 _eye,
+    float3 eye,
+    float radius,
     uint w, uint h)
 {
-    /*
+
     volatile uint idx = blockDim.x * blockIdx.x + threadIdx.x;
     volatile uint idy = blockDim.y * blockIdx.y + threadIdx.y;
     volatile uint id = idx + idy * blockDim.x * gridDim.x;
@@ -344,102 +450,102 @@ extern "C" __global__ void simpleSphereTracer(
     float u = idx / (float)w;
     float v = idy / (float)h;
 
-    float4 eye = make_float4(_eye, 0);
-
-    float4 light = 1000* make_float4(1.0f,0.3f,-0.2f, 0);
+    float3 light = LIGHT;
 
     float4 color = tex2D(src, u, v);
 
     float aspect = w / (float)h;
 
-    float4 ray = normalize(make_float4(2 * u - 1, (2 * (1-v) - 1) / aspect, 1.0f, 0));
+    float3 ray = normalize(make_float3(2 * u - 1, (2 * (1-v) - 1) / aspect, 1.0f));
 
-    ray = transform(view, &ray);
-    ray.w = 0;
+    ray = transform3f(view, &ray);
 
-    float4 mini = make_float4(aabbs[0].min, 0);
-    float4 maxi = make_float4(aabbs[0].max, 0);
-    mini -= make_float4(1,1,1,0);
-    maxi += make_float4(1,1,1,0);
+    float4 bboxMin = make_float4(aabbs[0].min, 0);
+    float4 bbomxMax = make_float4(aabbs[0].max, 0);
 
-    float4 sphereColor = make_float4(0, 0, 0, 0);
-    
-    HitResult res;
-    memset(&res, 0, sizeof(HitResult));
-    res.t = FLT_MAX;
+    float mini, maxi;
 
-    Node root = nodes[0];
-
-    float shadowContri = 0;
-
-    traversal0(spheres, root, &eye, &ray, &res, &mini, &maxi, treeDepth);
-    
-    if(!res.isHit)
+    //shadows out of bbox
+    if(!intersectP(&eye, &ray, &bboxMin, &bbomxMax, &mini, &maxi))
     {
         float4 wp = tex2D(worldPosTexture, u, v);
         if(wp.w > 0)
         {
-            wp.w = 0;
-            if(testShadow(spheres, &light, &wp, root, &mini, &maxi, treeDepth, &shadowContri))
+            HitResult res;
+            memset(&res, 0, sizeof(HitResult));
+            res.t = FLT_MAX;
+            traverse(spheres, root, &make_float3(wp), &light, &res, radius, 0, 1000, treeDepth);
+            if(res.isHit)
             {
-                color *= 0.5;
+                color *= 0.2;
+            }
+        }
+        dst[id] = color;
+        return;
+    }
+    
+    HitResult res;
+    memset(&res, 0, sizeof(HitResult));
+    res.t = FLT_MAX;
+    traverse(spheres, root, &eye, &ray, &res, radius, mini, maxi, treeDepth);
+    
+    if(!res.isHit)
+    {
+        //shadows insid bbox on ground
+        float4 wp = tex2D(worldPosTexture, u, v);
+        if(wp.w > 0)
+        {
+            res.isHit = 0;
+            traverse(spheres, root, &make_float3(wp), &light, &res, radius, 0, 1000, treeDepth);
+            if(res.isHit)
+            {
+               color *= 0.2;
             }
         } 
         dst[id] = color;
         return;
     }
-    float4 c;
 
-#if 0
-    c = color * 0;
-
-#else 
-
+    
+    //one reflection
     HitResult refRes;
     memset(&refRes, 0, sizeof(HitResult));
     refRes.t = FLT_MAX;
-
-    float4 refraction = getSingleRefraction(spheres, &ray, root, &res, treeDepth, &mini, &maxi);
-
-    memset(&refRes, 0, sizeof(HitResult));
-    refRes.t = FLT_MAX;
-
-    traversal0(spheres, root, &(res.worldPosition + res.normal * 0.1), &res.normal, &refRes, &mini, &maxi, treeDepth);
-     
-    float4 refractionColor = getBackgroundRefraction(&ray, &res);
-
-    float4 reflectionColor = getBackgroundReflection(&ray, &res);
+    intersectP(&(res.worldPosition + res.normal * 0.1), &res.normal, &bboxMin, &bbomxMax, &mini, &maxi);
+    traverse(spheres, root, &(res.worldPosition + res.normal * 0.1), &res.normal, &refRes, radius, mini, maxi, treeDepth);
 
     if(refRes.isHit)
     {
-        reflectionColor += 0.5 * getBackgroundReflection(&refRes.normal, &refRes);
-        if(testShadow(spheres, &light, &(refRes.worldPosition + 0.1 * refRes.normal), root, &mini, &maxi, treeDepth, &shadowContri))
-        {
-            reflectionColor *= shadowContri;
-        }
+        color = getBackgroundReflection(&refRes.normal, &refRes);
     }
-
-    float4 lightToPos = normalize(res.worldPosition - light);
-
-    float3 reflectVec = reflect(make_float3(lightToPos), make_float3(normalize(res.normal)));
-
-    float diffuse = 0.8 + 0.2 * max(0.0, dot(-lightToPos, normalize(res.normal)));
-
-    float specular = pow(max(0.0, dot(make_float4(reflectVec), normalize(eye - res.worldPosition))), 32.0);
-
-    c = diffuse * (1*refractionColor + 0*reflectionColor);// + 2 * specular * reflectionColor;
-
-    if(res.isHit)
+    else
     {
-        if(testShadow(spheres, &light, &(res.worldPosition + 0.1 * res.normal), root, &mini, &maxi, treeDepth, &shadowContri))
-        {
-            c *= shadowContri;
-        }
+        color = getBackgroundReflection(&ray, &res);
     }
-#endif
 
-    dst[id] = make_float4(c.x, c.y, c.z, color.w);
-    */
+    float3 posToLight = normalize(LIGHT_POS - res.worldPosition);
+
+    float3 posToEye = normalize(res.worldPosition - eye);
+
+    float3 reflectVec = reflect(posToLight, normalize(res.normal));
+
+    float diffuse = max(0.0, dot(posToLight, normalize(res.normal)));
+
+    float specular = pow(max(0.0, dot(reflectVec, posToEye)), 32.0);
+    
+    color += 0.1*(specular + diffuse) * color;
+
+    HitResult shadowRes;
+    memset(&shadowRes, 0, sizeof(HitResult));
+    shadowRes.t = FLT_MAX;
+    traverse(spheres, root, &(res.worldPosition + res.normal * 0.1), &light, &shadowRes, radius, 0, 1000, treeDepth);
+    if(shadowRes.isHit)
+    {
+        color *= 0.2;
+    }
+
+    dst[id] = make_float4(make_float3(color), color.w);
+
 }
 
 extern "C" __global__ void computeInitialRays(
@@ -485,11 +591,12 @@ extern "C" __global__ void computeInitialRays(
         {
             Ray r;
             r.origin = make_float3(wp);
-            float3 light = 1000.0f * make_float3(1.0f,0.3f,-0.2f);
+            float3 light = LIGHT;
             if(intersectP(&r.origin, &light, &bboxMin, &bbomxMax, &min, &max))
             {
                 r.screenCoord.x = idx;
-                r.screenCoord.y = idy;  
+                r.screenCoord.y = idy;
+                r.dir = light;
                 r.min = min < 0 ? 0 : min;
                 r.max = max;
                 shadowRays[id] = r;
@@ -513,31 +620,53 @@ extern "C" __global__ void computeInitialRays(
     r.max = max;
     rays[id] = r;
     rayMask[id] = 1;
+    shadowRayMask[id] = 0;
     dst[id] = tex2D(src, u, v);
 }
 
-extern "C" __global__ void computeShadowRays(float4* image, Ray* rays, Node root, float3* spheres, uint treeDepth, uint width)
+__device__ void spawnShadowRay(uint* shadowRayMask, Ray* shadowRays, Ray& r, float4& bboxMin, float4& bbomxMax, uint id, uint width, uint height)
 {
-    uint id = GlobalId;
-    HitResult res;
-    memset(&res, 0, sizeof(HitResult));
-    res.t = FLT_MAX;
-
-    float shadowContri = 0;
-
-    Ray r = rays[id];
-
-    traverse(spheres, root, &r.origin, &r.dir, &res, r.min, r.max, treeDepth);
-
-    if(res.isHit)
+    r.dir = LIGHT;
+    if(!intersectP(&r.origin, &r.dir, &bboxMin, &bbomxMax, &r.min, &r.max))
     {
-        float4 c = image[r.screenCoord.y * width + r.screenCoord.x];
-        c *= 0.5;
-        image[r.screenCoord.y * width + r.screenCoord.x] = c;
+        shadowRayMask[id] = 0;
+        return;
     }
+    r.min = max(0.0f, r.min);
+    shadowRayMask[id] = 1;
+    shadowRays[id] = r;
 }
 
-extern "C" __global__ void computeRays(float4* image, Ray* rays, uint* rayMask, Node root, float3* spheres, uint treeDepth, uint width, uint N)
+__device__ void spawnShadowRayFromEnv(uint* shadowRayMask, Ray* shadowRays, Ray& r, float4& bboxMin, float4& bbomxMax, uint id, uint width, uint height)
+{
+    float4 wp = tex2D(worldPosTexture, r.screenCoord.x / (float)width, r.screenCoord.y / (float)height);
+    if(wp.w > 0)
+    {
+        r.origin = make_float3(wp);
+
+        spawnShadowRay(shadowRayMask, shadowRays, r, bboxMin, bbomxMax, id, width, height);
+        return;
+    }
+
+    shadowRayMask[id] = 0;
+}
+
+extern "C" __global__ void computeRays(
+    float4* image, 
+    Node root, 
+    float3* spheres,
+    uint* rayMask,
+    uint* shadowRayMask,
+    BBox* aabbs,
+    Ray* rays,
+    Ray* shadowRays, 
+    uint treeDepth, 
+    float radius,
+    uint width,
+    uint height, 
+    uint i,
+    uint N,
+    uint rDepth)
 {
     uint id = GlobalId;
     if(id >= N)
@@ -548,26 +677,91 @@ extern "C" __global__ void computeRays(float4* image, Ray* rays, uint* rayMask, 
     memset(&res, 0, sizeof(HitResult));
     res.t = FLT_MAX;
 
-    float shadowContri = 0;
-
     Ray r = rays[id];
 
-    traverse(spheres, root, &r.origin, &r.dir, &res, r.min, r.max, treeDepth);
+    traverse(spheres, root, &r.origin, &r.dir, &res, radius, r.min, r.max, treeDepth);
+
+    float4 bboxMin = make_float4(aabbs[0].min);
+    float4 bbomxMax = make_float4(aabbs[0].max);
 
     if(res.isHit)
     {
-        float4 reflectionColor = make_float4(res.normal,0);//getBackgroundReflection(&r.dir, &res);
+        float4 reflectionColor = getBackgroundReflection(&r.dir, &res);
 
-        image[r.screenCoord.y * width + r.screenCoord.x] = reflectionColor;
+        float3 posToLight = normalize(LIGHT_POS - res.worldPosition);
+
+        float3 posToEye = normalize(res.worldPosition - r.origin);
+
+        float3 reflectVec = reflect(posToLight, normalize(res.normal));
+
+        float diffuse = max(0.0, dot(posToLight, normalize(res.normal)));
+
+        float specular = pow(max(0.0, dot(reflectVec, posToEye)), 32.0);
+    
+        reflectionColor += 1*(specular + diffuse) * reflectionColor;
+
+        float4 w = image[r.screenCoord.y * width + r.screenCoord.x];
+        if(w.w < 0.5)
+        {
+            image[r.screenCoord.y * width + r.screenCoord.x] = reflectionColor * 0.2;
+        }
+        else
+        {
+            image[r.screenCoord.y * width + r.screenCoord.x] = reflectionColor;
+        }
         r.dir = res.normal;
-        r.origin = r.origin + res.normal * 0.05;
-        rays[id] = r;
-        rayMask[id] = 1;
-        rays[id] = r;
+        r.origin = res.worldPosition + res.normal * 0.05;
+
+        if(!intersectP(&r.origin, &r.dir, &bboxMin, &bbomxMax, &r.min, &r.max))
+        {
+            rayMask[id] = 0;
+            shadowRayMask[id] = 0;
+            return;
+        }
+
+        if(i != rDepth - 1)
+        {
+            r.min = r.min < 0 ? 0 : r.min;
+            rays[id] = r;
+            rayMask[id] = 1;
+        }
+        spawnShadowRay(shadowRayMask, shadowRays, r, bboxMin, bbomxMax, id, width, height);
     }
     else
     {
         rayMask[id] = 0;
+        if(i == 0)
+        {
+            spawnShadowRayFromEnv(shadowRayMask, shadowRays, r, bboxMin, bbomxMax, id, width, height);
+        }
+        else
+        {
+            shadowRayMask[id] = 0;
+        }
+    }
+}
+
+extern "C" __global__ void computeShadowRays(float4* image, Ray* rays, Node root, float3* spheres, uint treeDepth, float radius, uint width, uint N)
+{
+    uint id = GlobalId;
+    if(id >= N)
+    {
+        return;
+    }
+    HitResult res;
+    memset(&res, 0, sizeof(HitResult));
+    res.t = FLT_MAX;
+
+    Ray r = rays[id];
+
+    traverse(spheres, root, &r.origin, &r.dir, &res, radius, r.min, r.max, treeDepth);
+
+    if(res.isHit)
+    {
+        float4 c = image[r.screenCoord.y * width + r.screenCoord.x];
+        c.w = 0;
+        c *= 0.3;
+        image[r.screenCoord.y * width + r.screenCoord.x] = c;
     }
 }
 

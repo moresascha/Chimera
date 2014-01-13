@@ -80,9 +80,9 @@ namespace chimera
 
         VOID VAddChild(std::unique_ptr<ISceneNode> child);
 
-        BOOL VRemoveChild(ActorId actorId);
+        std::unique_ptr<ISceneNode> VRemoveChild(ActorId actorId);
 
-        BOOL VRemoveChild(ISceneNode* child);
+        std::unique_ptr<ISceneNode> VRemoveChild(ISceneNode* child);
 
         virtual CONST util::AxisAlignedBB& VGetAABB(VOID) CONST { return m_aabb; }
 
@@ -113,8 +113,8 @@ namespace chimera
         chimera::CMResource m_ressource;
         std::shared_ptr<IMesh> m_mesh;
         std::shared_ptr<MaterialSet> m_materials;
-        std::shared_ptr<IDeviceTexture> m_diffuseTextures[32];
-        std::shared_ptr<IDeviceTexture> m_normalTextures[32];
+        std::shared_ptr<IDeviceTexture> m_diffuseTextures[1024];
+        std::shared_ptr<IDeviceTexture> m_normalTextures[1024];
         UINT m_diffuseTexturesCount;
         VOID DrawToAlbedo(VOID);
 
@@ -198,20 +198,17 @@ namespace chimera
 
         UINT VGetRenderPaths(VOID);
     };
-
+    */
     class CameraNode : public SceneNode
     {
     private:
         std::shared_ptr<chimera::ICamera> m_pCamera;
-
     public:
         CameraNode(ActorId id);
 
-        VOID _VRender(chimera::SceneGraph* graph, chimera::RenderPath& path);
-
-        UINT VGetRenderPaths(VOID);
+        VOID _VRender(ISceneGraph* graph, RenderPath& path);
     };
-    */
+    
     class GeometryNode : public SceneNode
     {
     private:

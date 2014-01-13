@@ -10,6 +10,8 @@
 #define CM_CMP_PICKABLE 0xd295188c
 #define CM_CMP_SOUND 0x568a0c05
 #define CM_CMP_PARENT_ACTOR 0xde7b06f1
+#define CM_CMP_CONTROLLER 0xc591361a
+
 
 #define CM_CREATE_CMP_HEADER(__type, __name) \
     ComponentId VGetComponentId(VOID) CONST { return __type; } \
@@ -26,10 +28,6 @@ namespace chimera
 
         VOID VSetOwner(IActor* pOwner) { m_owner = pOwner; }
 
-        virtual BOOL VInitialize(IStream* stream) { return TRUE; }
-
-        virtual VOID VSerialize(IStream* stream) CONST { }
-
         virtual VOID VPostInit(VOID);
 
         virtual VOID VCreateResources(VOID) { }
@@ -37,6 +35,12 @@ namespace chimera
         IActor* VGetActor(VOID) { return m_owner; }
 
         virtual ~ActorComponent(VOID);
+    };
+
+    class ControllerComponent : public ActorComponent
+    {
+    public:
+        CM_CREATE_CMP_HEADER(CM_CMP_CONTROLLER, ControllerComponent);
     };
 
     class TransformComponent : public ActorComponent
@@ -48,10 +52,6 @@ namespace chimera
         FLOAT m_theta;
 
         TransformComponent(VOID);
-
-        BOOL VInitialize(IStream* stream);
-
-        VOID VSerialize(IStream* stream) CONST;
 
         util::Mat4* GetTransformation(VOID) {
             return &m_transformation;
@@ -84,10 +84,6 @@ namespace chimera
 
         CMResource m_resource;
 
-        BOOL VInitialize(IStream* stream);
-
-        VOID VSerialize(IStream* stream) CONST;
-
         VOID VCreateResources(VOID);
 
         CM_CREATE_CMP_HEADER(CM_CMP_RENDERING, RenderComponent);
@@ -95,16 +91,14 @@ namespace chimera
 
     class CameraComponent : public ActorComponent
     {
-    private:
+    public:
         std::shared_ptr<ICamera> m_camera;
         std::string m_type;
-    public:
+
         CameraComponent(VOID)
         {
 
         }
-        BOOL VInitialize(IStream* stream);
-
         std::shared_ptr<ICamera> GetCamera(VOID) { return m_camera; }
 
         VOID SetCamera(std::shared_ptr<ICamera> cam) { m_camera = cam; }
@@ -130,10 +124,6 @@ namespace chimera
 
         }
 
-        BOOL VInitialize(IStream* stream);
-
-        VOID VSerialize(IStream* stream) CONST;
-
         VOID VCreateResources(VOID);
 
         CM_CREATE_CMP_HEADER(CM_CMP_PHX, PhysicComponent); 
@@ -148,15 +138,13 @@ namespace chimera
         FLOAT m_angle;
         FLOAT m_intensity;
         BOOL m_activated;
+        std::string m_projTexture;
+        BOOL m_castShadow;
 
-        LightComponent(VOID) : m_angle(0), m_activated(TRUE), m_intensity(1)
+        LightComponent(VOID) : m_angle(0), m_activated(TRUE), m_intensity(1), m_color(1,1,1,1), m_projTexture("white.png"), m_castShadow(1)
         {
 
         }
-
-        BOOL VInitialize(IStream* stream);
-
-        VOID VSerialize(IStream* stream) CONST;
 
         CM_CREATE_CMP_HEADER(CM_CMP_LIGHT, LightComponent); 
     };
@@ -165,7 +153,6 @@ namespace chimera
     {
     public:
         BOOL VInit(tinyxml2::XMLElement* pData) { return TRUE; }
-        VOID VSerialize(IStream* stream) CONST;
 
         CM_CREATE_CMP_HEADER(CM_CMP_PICKABLE, PickableComponent); 
     };
@@ -178,8 +165,6 @@ namespace chimera
         FLOAT m_radius;
         BOOL m_emitter;
         BOOL m_loop;
-        BOOL VInitialize(IStream* stream);
-        VOID VSerialize(IStream* stream) CONST;
         VOID VCreateResources(VOID);
         
         CM_CREATE_CMP_HEADER(CM_CMP_SOUND, SoundComponent); 

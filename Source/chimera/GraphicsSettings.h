@@ -47,15 +47,14 @@ namespace chimera
         BOOL VOnRestore(UINT w, UINT h);
         VOID VRender(VOID);
     };
-
+    //todo settings for all lightsources?
     class LightingSetting : public IGraphicSetting
     {   
-    private:
-        IShaderProgram* m_pGlobalLightProgram;
     public:
-        LightingSetting(VOID) : IGraphicSetting("Lighting") {}
+        LightingSetting(VOID);
         VOID VRender(VOID);
-        BOOL VOnRestore(UINT w, UINT h) { return TRUE; }
+        BOOL VOnRestore(UINT w, UINT h);
+        CMShaderProgramDescription* VGetProgramDescription(VOID) { return NULL; }
     };
 
     class CSMSetting : public IGraphicSetting

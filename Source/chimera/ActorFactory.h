@@ -12,10 +12,17 @@ namespace chimera
     protected:
         std::map<std::string, ActorComponentCreator> m_creators;
         std::map<ComponentId, ActorComponentCreator> m_creatorsId;
+        std::map<std::string, ActorComponentSerializer> m_serializerId;
+        std::map<std::string, ActorComponentInitializer> m_initializerId;
+
     public:
         ActorFactory(VOID);
 
-        std::unique_ptr<IActor> VCreateActor(CONST CMResource& resource, std::vector<std::unique_ptr<IActor>>& actors);
+        std::unique_ptr<IActorComponent> VCreateComponent(ICMStream* stream);
+
+        IActor* VCreateActor(CONST CMResource& resource, std::vector<std::unique_ptr<IActor>>& actors);
+
+        IActor* VCreateActor(ICMStream* stream, std::vector<std::unique_ptr<IActor>>& actors);
 
         std::unique_ptr<IActor> VCreateActor(std::unique_ptr<ActorDescription> actorDesc);
 
@@ -26,6 +33,10 @@ namespace chimera
         std::unique_ptr<ActorDescription> VCreateActorDescription(VOID) { return std::unique_ptr<ActorDescription>(new ActorDescription(this)); }
 
         VOID VAddComponentCreator(ActorComponentCreator creator, LPCSTR name, ComponentId id);
+
+        VOID VAddComponentSerializer(ActorComponentSerializer serializer, LPCSTR name, ComponentId id);
+
+        VOID VAddComponentInitializer(ActorComponentInitializer serializer, LPCSTR name, ComponentId id);
 
         virtual ~ActorFactory(VOID) { }
     };

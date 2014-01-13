@@ -255,10 +255,19 @@ namespace chimera
 		return ShaderPathSetting::VOnRestore(w, h);
 	}
 
+    LightingSetting::LightingSetting(VOID) : IGraphicSetting("Lighting")
+    {
+
+    }
+
     VOID LightingSetting::VRender(VOID)
     {
-        //d3d::GetContext()->OMSetDepthStencilState(d3d::m_pDepthNoStencilState, 0);
         CmGetApp()->VGetHumanView()->VGetSceneGraph()->VOnRender(CM_RENDERPATH_LIGHTING);
+    }
+
+    BOOL LightingSetting::VOnRestore(UINT w, UINT h)
+    {
+        return TRUE;
     }
     
     VOID PostFXSetting::VSetTarget(IRenderTarget* target)
@@ -677,7 +686,7 @@ namespace chimera
 
         VAddSetting(std::unique_ptr<IGraphicSetting>(new CSMSetting()), eGraphicsSetting_Lighting);
         VAddSetting(std::unique_ptr<IGraphicSetting>(new GloablLightingSetting()), eGraphicsSetting_Lighting);
-        //VAddSetting(std::unique_ptr<IGraphicSetting>(new LightingSetting()), chimera::eLighting);
+        VAddSetting(std::unique_ptr<IGraphicSetting>(new LightingSetting()), eGraphicsSetting_Lighting);
 
         VSetPostFX(std::unique_ptr<IPostFXSetting>(new PostFXSetting()));
     }

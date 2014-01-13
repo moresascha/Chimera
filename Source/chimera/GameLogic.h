@@ -36,7 +36,7 @@ namespace chimera
 
         BOOL VInitialise(FactoryPtr* facts);
 
-        VOID VAttachView(std::unique_ptr<IView> view, ActorId actor);
+        VOID VAttachView(std::unique_ptr<IView> view, IActor* actor);
 
         IActor* VFindActor(ActorId id);
 

@@ -241,7 +241,7 @@ PixelOutput GlobalLighting_PS(PixelInput input)
         float powa = pow(saturate(dot(ray.xyz, sunposition)), 32);
         
         float l = clamp(worldDepth.y * 0.1, 0, 1);
-        op.color = 1.1*diffuse;//lerp(sky, tex, l);
+        op.color = 0.802*diffuse;//lerp(sky, tex, l);
         //op.color += sun * powa;
     }
 
@@ -346,6 +346,7 @@ PixelOutput PointLighting_PS(PixelInput input)
     color *= intensity; // * fShadow;
 
     op.color = float4(color, 1);
+
     return op;
 }
 
@@ -381,10 +382,10 @@ PixelOutput SpotLighting_PS(PixelInput input)
     float3 dir = normalize(g_lightViewDirAngel.xyz);
     float angel = g_lightViewDirAngel.w;
 
-    /*if(distSquared > length*length) 
+    if(distSquared > length*length) 
     {
         discard;
-    } */
+    } 
     
     float3 lightToPos = normalize(world - lightPos);
     float lpd = max(dot(lightToPos, dir), 0);
@@ -402,8 +403,8 @@ PixelOutput SpotLighting_PS(PixelInput input)
 
     float shadowSample = g_diffuseColor.Sample(g_samplerClamp, tc).r;
     float bias = 0.15;
-    
-    int shadow = shadowSample < (distSquared - bias) ? 1 : 0;
+
+    int shadow = g_castShadow[0] * (shadowSample < (distSquared - bias) ? 1 : 0);
 
     normal = g_normals.Sample(g_samplerClamp, input.texCoord).xyz;
 
@@ -414,10 +415,10 @@ PixelOutput SpotLighting_PS(PixelInput input)
         normal = normalize(normal);
     }
 
-    if(shadow && hasNormal)
+    /*if(shadow && hasNormal)
     {
         discard;
-    }
+    }*/
 
     float4 dmsmr = g_diffuseMaterialSpecR.Sample(g_samplerClamp, input.texCoord);
     float4 amsmg = g_ambientMaterialSpecG.Sample(g_samplerClamp, input.texCoord);
@@ -431,11 +432,11 @@ PixelOutput SpotLighting_PS(PixelInput input)
     float intensity = (angel * 0.5 - a) * (1  - distSquared / (length * length));
     float3 lightColor = g_lightColorRadius.xyz;
 
-    if(!hasNormal)
+    /*if(!hasNormal)
     {
         op.color = float4(intensity * lightColor * diffuseColor, 1);
         return op;
-    }
+    }*/
 
     float3 posToEye = normalize(g_eyePos.xyz - world);
 
@@ -452,13 +453,15 @@ PixelOutput SpotLighting_PS(PixelInput input)
     intensity = intensity < 0 ? 0 : intensity;
     float intensityScale = g_lightPos.w;
     intensity *= intensityScale;
-    float3 color = 0; 
-
-    color = lightColor * (specular * specularMat + diffuseMat * diffuse * diffuseColor);
     
-    color *= intensity; // * fShadow;
+    float3 projTex = g_normalColor.Sample(g_samplerClamp, float2(tc.x, 1 - tc.y)).rgb;
 
-    op.color = float4(color, 1);
+    float3 color = projTex * lightColor * (specular * specularMat + diffuseMat * diffuse * diffuseColor);
+    
+    color *= intensity;
+
+    op.color = !hasNormal * float4(intensity * lightColor * diffuseColor, 1) 
+        + hasNormal * !shadow * float4(color, 1);
     return op;
 }
 

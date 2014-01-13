@@ -2,6 +2,7 @@
 #include "Components.h"
 #include "Event.h"
 #include "Process.h"
+#include "tinyxml2.h"
 
 namespace chimera
 {
@@ -134,6 +135,23 @@ namespace chimera
         return new ParentComponent;
     }
 
+    IActorComponent* CreateControllerComponent(VOID)
+    {
+        return new ControllerComponent;
+    }
+
+    BOOL InitiaizeTransformComponent(IActorComponent* cmp, ICMStream* stream);
+
+    BOOL InitiaizeRenderingComponent(IActorComponent* cmp, ICMStream* stream);
+
+    BOOL InitiaizeCameraComponent(IActorComponent* cmp, ICMStream* stream);
+
+    BOOL InitiaizeControllerComponent(IActorComponent* cmp, ICMStream* stream);
+
+    BOOL InitiaizePhysicsComponent(IActorComponent* cmp, ICMStream* stream);
+
+    BOOL InitiaizeLightComponent(IActorComponent* cmp, ICMStream* stream);
+
     ActorFactory::ActorFactory(VOID) : m_lastActorId(0)
     {
         VAddComponentCreator(CreateTransformComponent, "TransformComponent", CM_CMP_TRANSFORM);
@@ -143,12 +161,30 @@ namespace chimera
         VAddComponentCreator(CreateLightComponent, "LightComponent", CM_CMP_LIGHT);
         VAddComponentCreator(CreateSoundEmitterComponent, "SoundComponent", CM_CMP_SOUND);
         VAddComponentCreator(CreateParentComponent, "ParentComponent", CM_CMP_PARENT_ACTOR);
+        VAddComponentCreator(CreateControllerComponent, "ControllerComponent", CM_CMP_CONTROLLER);
+
+        VAddComponentInitializer(InitiaizeTransformComponent, "TransformComponent", CM_CMP_TRANSFORM);
+        VAddComponentInitializer(InitiaizeRenderingComponent, "RenderComponent", CM_CMP_RENDERING);
+        VAddComponentInitializer(InitiaizeCameraComponent, "CameraComponent", CM_CMP_CAMERA);
+        VAddComponentInitializer(InitiaizeControllerComponent, "ControllerComponent", CM_CMP_CONTROLLER);
+        VAddComponentInitializer(InitiaizePhysicsComponent, "PhysicComponent", CM_CMP_PHX);
+        VAddComponentInitializer(InitiaizeLightComponent, "LightComponent", CM_CMP_LIGHT);
     }
 
     VOID ActorFactory::VAddComponentCreator(ActorComponentCreator creator, LPCSTR name, ComponentId id)
     {
         m_creators[std::string(name)] = creator;
         m_creatorsId[id] = creator;
+    }
+
+    VOID ActorFactory::VAddComponentSerializer(ActorComponentSerializer serializer, LPCSTR name, ComponentId id)
+    {
+        m_serializerId[std::string(name)] = serializer;
+    }
+
+    VOID ActorFactory::VAddComponentInitializer(ActorComponentInitializer initializer, LPCSTR name, ComponentId id)
+    {
+        m_initializerId[std::string(name)] = initializer;
     }
 
     std::unique_ptr<IActor> ActorFactory::VCreateActor(std::unique_ptr<ActorDescription> desc)
@@ -187,96 +223,98 @@ namespace chimera
         return std::unique_ptr<IActorComponent>(it->second());
     }
 
-    std::unique_ptr<IActor> ActorFactory::VCreateActor(CONST CMResource& resource, std::vector<std::unique_ptr<IActor>>& actors)
+    IActor* ActorFactory::VCreateActor(ICMStream* stream, std::vector<std::unique_ptr<IActor>>& actors)
     {
-        return NULL;
-    }
-    /*
-    std::shared_ptr<chimera::Actor> ActorFactory::VCreateActor(tinyxml2::XMLElement* pData, std::vector<std::shared_ptr<chimera::Actor>>& actors) 
-    {
-        if(!pData)
-        {
-            LOG_CRITICAL_ERROR("Failed to load XML file");
-            return NULL;
-        }
+        IActor* pActor = new Actor(GetNextActorId());
+        tinyxml2::XMLNode* pData = (tinyxml2::XMLNode*)stream;
 
-        std::shared_ptr<chimera::Actor> pActor(new Actor(GetNextActorId()));
-
-        if(!pActor->Init(pData))
+        if(pData->ToElement()->Attribute("name"))
         {
-            LOG_CRITICAL_ERROR("Failed to init actor");
-            return NULL;
-        }
+            std::string name = pData->ToElement()->Attribute("name");
+            pActor->SetName(name);
+        }    
 
         for(tinyxml2::XMLElement* pNode = pData->FirstChildElement(); pNode; pNode = pNode->NextSiblingElement())
         {
             std::string name(pNode->Value());
             if(name == "Actor")
             {
-                std::shared_ptr<chimera::Actor> child = CreateActor(pNode, actors);
-                std::shared_ptr<chimera::ParentComponent> pcmp = std::shared_ptr<chimera::ParentComponent>(new chimera::ParentComponent());
-                pcmp->m_parentId = pActor->GetId();
-                child->AddComponent(pcmp);
-                pcmp->SetOwner(child);
-            }
-            else
-            {
-                std::shared_ptr<chimera::ActorComponent> pComponent(CreateComponent(pNode));
-                if(pComponent)
+                if(pNode->Attribute("file"))
                 {
-                    pActor->AddComponent(pComponent);
-
-                    pComponent->SetOwner(pActor);
+                    CMResource r = pNode->Attribute("file");
+                    IActor* child = VCreateActor(r, actors);
+                    std::unique_ptr<ParentComponent> pcmp = std::unique_ptr<ParentComponent>(new ParentComponent());
+                    pcmp->m_parentId = pActor->GetId();
+                    pcmp->VSetOwner(child);
+                    child->VAddComponent(std::move(pcmp));
                 }
                 else
                 {
-                    return NULL;
+                    LOG_CRITICAL_ERROR("No Actor file specified!");
                 }
             }
+            else
+            {
+                std::string componentName(pNode->Value());
+
+                std::unique_ptr<IActorComponent> pComponent(VCreateComponent((ICMStream*)pNode));
+
+                if(pComponent)
+                {
+                    IActorComponent* cmp = pComponent.get();
+                    pComponent->VSetOwner(pActor);
+                    pActor->VAddComponent(std::move(pComponent));
+                    auto itInit = m_initializerId.find(componentName);
+                    if(itInit != m_initializerId.end())
+                    {
+                        ActorComponentInitializer initializer = itInit->second;
+                        initializer(cmp, (ICMStream*)pNode);
+                    }
+                }   
+            }
         }
-        std::shared_ptr<chimera::Process> chimera = std::shared_ptr<chimera::Process>(new CreateActorComponentsProcess(pActor));
-        chimera::g_pApp->GetLogic()->GetProcessManager()->VAttachWithScheduler(chimera);
-        pActor->PostInit();
-        actors.push_back(pActor);
+
+        std::unique_ptr<IProcess> proc = std::unique_ptr<IProcess>(new CreateActorComponentsProcess(pActor));
+        CmGetApp()->VGetLogic()->VGetProcessManager()->VAttachWithScheduler(std::move(proc));
+        actors.push_back(std::unique_ptr<IActor>(pActor));
         return pActor;
-    } */
-    /*
-    std::shared_ptr<chimera::Actor> ActorFactory::VCreateActor(CONST CHAR* ressource, std::vector<std::shared_ptr<chimera::Actor>>& actors) 
-    {
-        tinyxml2::XMLDocument doc;
-        chimera::CMResource r(ressource);
-        std::shared_ptr<chimera::ResHandle> handle = chimera::g_pApp->GetCache()->GetHandle(r);
-        doc.Parse(handle->Buffer());
-        tinyxml2::XMLElement* root = doc.RootElement();
-        return CreateActor(root, actors);
     }
 
-    std::shared_ptr<chimera::ActorComponent> ActorFactory::VCreateComponent(tinyxml2::XMLElement* pData) 
+    IActor* ActorFactory::VCreateActor(CONST CMResource& resource, std::vector<std::unique_ptr<IActor>>& actors)
     {
+        tinyxml2::XMLDocument doc;
+        CMResource r(CmGetApp()->VGetConfig()->VGetString("sActorPath") + resource);
+        std::shared_ptr<IResHandle> handle = CmGetApp()->VGetCache()->VGetHandle(r);
+        doc.Parse(handle->VBuffer());
+        tinyxml2::XMLNode* pData = doc.FirstChild();
 
-        std::shared_ptr<chimera::ActorComponent> pComponent;
+        if(!pData)
+        {
+            LOG_CRITICAL_ERROR_A("Failed to load XML file: %s, %s", doc.GetErrorStr1(), doc.GetErrorStr2());
+        }
+
+        return VCreateActor((ICMStream*)pData, actors);
+    }
+
+    std::unique_ptr<IActorComponent> ActorFactory::VCreateComponent(ICMStream* stream) 
+    {
+        tinyxml2::XMLElement* pData = (tinyxml2::XMLElement*)stream;
+        IActorComponent* pComponent;
         std::string name(pData->Value());
         auto it = m_creators.find(name);
         if(it != m_creators.end())
         {
             ActorComponentCreator creator = it->second;
-            pComponent.reset(creator());
+            pComponent = creator();
         }
         else
         {
             LOG_CRITICAL_ERROR_A("Could not find actor component: %s", name.c_str());
         }
-
-        if(pComponent)
-        {
-            if(!pComponent->VInit(pData))
-            {
-                LOG_CRITICAL_ERROR_A("Failed to init actor component: %s", name.c_str());
-            }
-        }
-        return pComponent;
+        return std::unique_ptr<IActorComponent>(pComponent);
     }
 
+    /*
     VOID ActorFactory::VReplaceComponent(std::shared_ptr<chimera::Actor> actor, tinyxml2::XMLElement* pData) 
     {
         std::shared_ptr<chimera::ActorComponent> pComponent(CreateComponent(pData));

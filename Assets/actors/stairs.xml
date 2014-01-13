@@ -1,8 +1,0 @@
-<Actor>
-    <RenderComponent>
-		<MeshFile>treppe.obj</MeshFile>
-    </RenderComponent>
-    <TransformComponent>
-        <Position x="0.0" y="0.0" z="10.0" />
-    </TransformComponent>
-</Actor>

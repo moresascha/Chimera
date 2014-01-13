@@ -254,6 +254,8 @@ namespace chimera
         IResourceDecompressor* decomp = NULL;
         std::shared_ptr<IResHandle> handle = NULL;
 
+        DEBUG_OUT_A("Loading '%s' ... \n", r.m_name.c_str());
+
         std::vector<std::string> elems = util::split(r.m_name, '.');
 
         if(elems.size() < 2)
@@ -460,6 +462,7 @@ namespace chimera
         if(!file.is_open())
         {
             LOG_CRITICAL_ERROR_A("File not found: %s", r.m_name.c_str());
+            return 0;
         }
 
         struct stat status;
@@ -474,6 +477,14 @@ namespace chimera
         *buffer = tmp;
 
         return status.st_size;
+    }
+
+    BOOL ResourceFolder::VHasFile(CONST CMResource& r)
+    {
+        std::string fileName(m_folder + "/" + r.m_name);
+        std::ifstream file(fileName, std::ios::in | std::ios::binary);
+        BOOL open = file.is_open();
+        return open;
     }
 
     INT ResourceFolder::VGetNumFiles(VOID) 

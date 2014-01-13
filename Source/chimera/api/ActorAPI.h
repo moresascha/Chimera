@@ -10,10 +10,6 @@ namespace chimera
 
         virtual VOID VCreateResources(VOID) = 0;
 
-        virtual VOID VSerialize(IStream* stream) CONST = 0;
-        
-        virtual BOOL VInitialize(IStream* stream) = 0;
-
         virtual ComponentId VGetComponentId(VOID) CONST = 0;
         
         virtual IActor* VGetActor(VOID) = 0;
@@ -49,6 +45,8 @@ namespace chimera
 
         virtual IActorComponent* VGetComponent(ComponentId id) = 0;
 
+        virtual VOID VQueryComponent(ComponentId id, IActorComponent** cmp) = 0;
+
         virtual BOOL VHasComponent(ComponentId id) = 0;
 
         virtual CONST std::map<ComponentId, std::unique_ptr<IActorComponent>>& VGetComponents(VOID) = 0;
@@ -70,9 +68,11 @@ namespace chimera
     class IActorFactory
     {
     public:
-        virtual std::unique_ptr<IActor> VCreateActor(CONST CMResource& resource, std::vector<std::unique_ptr<IActor>>&) = 0;
+        virtual IActor* VCreateActor(CONST CMResource& resource, std::vector<std::unique_ptr<IActor>>& actors) = 0;
 
         virtual std::unique_ptr<IActor> VCreateActor(std::unique_ptr<ActorDescription> actorDesc) = 0;
+
+        virtual IActor* VCreateActor(ICMStream* stream, std::vector<std::unique_ptr<IActor>>& actors) = 0;
 
         virtual std::unique_ptr<ActorDescription> VCreateActorDescription(VOID) = 0;
 
@@ -80,7 +80,13 @@ namespace chimera
 
         virtual std::unique_ptr<IActorComponent> VCreateComponent(ComponentId id) = 0;
 
+        virtual std::unique_ptr<IActorComponent> VCreateComponent(ICMStream* stream) = 0;
+
         virtual VOID VAddComponentCreator(ActorComponentCreator creator, LPCSTR name, ComponentId id) = 0;
+
+        virtual VOID VAddComponentSerializer(ActorComponentSerializer serializer, LPCSTR name, ComponentId id) = 0;
+
+        virtual VOID VAddComponentInitializer(ActorComponentInitializer initializer, LPCSTR name, ComponentId id) = 0;
 
         virtual ~IActorFactory(VOID) {}
     };

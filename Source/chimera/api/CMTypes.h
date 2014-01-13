@@ -66,6 +66,7 @@ namespace chimera
     class IEffectFactory;
     class IEffectFactoryFactory;
     class IEnvironmentLighting;
+    class ICMStream;
 
     namespace util
     {
@@ -104,6 +105,8 @@ namespace chimera
     typedef fastdelegate::FastDelegate0<> OnFileChangedCallback;
     typedef fastdelegate::FastDelegate1<ULONG> _FDelegate;
     typedef IActorComponent* (*ActorComponentCreator)(VOID);
+    typedef VOID (*ActorComponentSerializer)(ICMStream*);
+    typedef BOOL (*ActorComponentInitializer)(IActorComponent*, ICMStream*);
     typedef ULONG EventType;
     typedef std::shared_ptr<IEvent> IEventPtr;
     typedef fastdelegate::FastDelegate1<IEventPtr> EventListener;
@@ -631,6 +634,16 @@ namespace chimera
         BOOL CMResource::operator==(CONST CMResource& res)
         {
             return m_name == res.m_name;
+        }
+
+        friend CMResource operator+(CONST CMResource& res0, CONST CMResource& res1)
+        {
+            return CMResource(res0.m_name + res1.m_name);
+        }
+
+        friend CMResource operator+(CONST CMResource& res0, CONST std::string& res1)
+        {
+            return CMResource(res0.m_name + res1);
         }
 
         ~CMResource(VOID) { }

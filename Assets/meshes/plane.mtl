@@ -2,19 +2,15 @@
 # Material Count: 1
 newmtl Material.001
 Ns 96.078431
-Ka 0.850000 0.850000 0.850000
-Kd 0.300000 0.300000 0.3000
+Ka 0.250000 0.250000 0.250000
+Kd 0.700000 0.700000 0.7000
 Ks 0.000000 0.000000 0.00000
 Ni 1.000000
 d 1.000000
 illum 0
-#scale 2560
-scale 500
+scale 6000
 
-#map_Kd default64x64White.png
-#map_Kn normal/liquidN.jpg
-
-map_Kd default.png
-map_Kn normal/up.png
+map_Kd floor0.jpg
+map_Kn normal/floor0N.jpg
 
 

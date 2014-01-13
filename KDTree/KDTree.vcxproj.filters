@@ -27,9 +27,6 @@
     <CudaCompile Include="animation_n_stuff.cu">
       <Filter>Source Files</Filter>
     </CudaCompile>
-    <CudaCompile Include="kd_kernel.cu">
-      <Filter>Source Files</Filter>
-    </CudaCompile>
     <CudaCompile Include="rtracer\tracer.cu">
       <Filter>Source Files\rt</Filter>
     </CudaCompile>
@@ -39,6 +36,9 @@
     <CudaCompile Include="MemoryPool.cu">
       <Filter>Source Files</Filter>
     </CudaCompile>
+    <CudaCompile Include="kd_kernel.cu">
+      <Filter>Source Files</Filter>
+    </CudaCompile>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="main.cpp">
@@ -46,9 +46,6 @@
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <None Include="kd_kernel.cuh">
-      <Filter>Header Files</Filter>
-    </None>
     <None Include="kdtree.cuh">
       <Filter>Header Files</Filter>
     </None>
@@ -67,6 +64,12 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="SoA.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="kd_kernel.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="veb.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

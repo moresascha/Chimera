@@ -127,9 +127,9 @@ namespace chimera
         ss >> f[0];
         ss >> f[1];
         ss >> f[2];
-        triple.position = f[0].GetInt() - 1;
-        triple.texCoord = f[1].GetInt() - 1;
-        triple.normal = f[2].GetInt() - 1;
+        triple.position = max(0, f[0].GetInt() - 1);
+        triple.texCoord = max(0, f[1].GetInt() - 1);
+        triple.normal = max(0, f[2].GetInt() - 1);
         return 3;
     }
 
@@ -482,16 +482,23 @@ namespace chimera
             {
                 std::string val;
                 streamLine >> val;
-                current->m_textureDiffuse = chimera::CMResource(val);
-                materials->VGetResourceCache()->VGetHandle(current->m_textureDiffuse); //preload texture
+                if(materials->VGetResourceCache()->VGetFile().VHasFile("textures/"+val))
+                {
+                    current->m_textureDiffuse = chimera::CMResource(val);
+                    materials->VGetResourceCache()->VGetHandle(current->m_textureDiffuse); //preload texture
+                }
             }
             else if(prefix == "map_Kn")
             {
                 std::string val;
                 streamLine >> val;
-                current->m_hasNormal = TRUE;
-                current->m_textureNormal = chimera::CMResource(val);
-                materials->VGetResourceCache()->VGetHandle(current->m_textureNormal); //preload texture
+
+                if(materials->VGetResourceCache()->VGetFile().VHasFile("textures/"+val))
+                {
+                    current->m_hasNormal = TRUE;
+                    current->m_textureNormal = chimera::CMResource(val);
+                    materials->VGetResourceCache()->VGetHandle(current->m_textureNormal); //preload texture
+                }
             }
             else if(prefix == "illum")
             {

@@ -58,6 +58,11 @@ namespace chimera
         m_root->VAddChild(std::move(node));
     }
 
+    std::unique_ptr<ISceneNode> SceneGraph::VReleaseNode(ActorId id)
+    {
+        return m_root->VRemoveChild(id);
+    }
+
     VOID SceneGraph::VRemoveChild(ActorId actorid) {
 
         ISceneNode* node = m_root->VFindActor(actorid);

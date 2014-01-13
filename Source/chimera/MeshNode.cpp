@@ -62,10 +62,11 @@ namespace chimera
         m_diffuseTexturesCount = 0;
 
         VOnActorMoved();
-
-        for(auto it = m_mesh->VGetIndexBufferIntervals().begin(); it != m_mesh->VGetIndexBufferIntervals().end(); ++it)
+        
+        std::vector<IndexBufferInterval>& ivals = m_mesh->VGetIndexBufferIntervals();
+        for(UINT i = 0; i < ivals.size(); ++i)
         {
-            IMaterial* mat = m_materials->GetMaterial(it->material).get();
+            IMaterial* mat = m_materials->GetMaterial(ivals[i].material).get();
             std::shared_ptr<IVRamHandle> handle = CmGetApp()->VGetHumanView()->VGetVRamManager()->VGetHandle(mat->VGetTextureDiffuse());
             m_diffuseTextures[m_diffuseTexturesCount] = std::static_pointer_cast<IDeviceTexture>(handle);
 

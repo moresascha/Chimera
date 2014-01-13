@@ -14,9 +14,13 @@
 #undef min
 #endif
 
-#include <cutil_math.h>
+#undef DYNAMIC_PARALLELISM
 
-#define DYNAMIC_PARALLELISM
+#ifdef DYNAMIC_PARALLELISM
+#pragma comment(lib, "cudadevrt.lib")
+#endif
+
+#include <cutil_math.h>
 
 #define GlobalId (blockDim.x * blockIdx.x + threadIdx.x)
 
@@ -160,6 +164,37 @@ struct Node
     uint* contentCount;
     uint* contentStart;
     uint* content;
+    uint* above;
+    uint* below;
+};
+
+struct EdgeSort
+{
+    __device__ char operator()(IndexedEdge t0, IndexedEdge t1)
+    {
+        return t0.v > t1.v;
+    }
+};
+
+struct ReduceIndexedSplit
+{
+    __device__ __host__ IndexedSplit operator()(IndexedSplit t0, IndexedSplit t1)
+    {
+        return t0.sah <= t1.sah ? t0 : t1;
+    }
+};
+
+struct ReadOnlyNode
+{
+    const BBox* __restrict aabb;
+    const byte* __restrict isLeaf;
+    const float* __restrict split;
+    const byte* __restrict splitAxis;
+    const uint* __restrict contentCount;
+    const uint* __restrict contentStart;
+    const uint* __restrict content;
+    const uint* __restrict above;
+    const uint* __restrict below;
 };
 
 template<typename T>
@@ -186,12 +221,18 @@ __device__ __host__ void getSplit(T mmax, T mmin, float* split, byte* axis)
     }
 }
 
+enum PrimType
+{
+    eSphere,
+    eTriangle
+};
+
 class IKDTree
 {
 public:
     virtual void Generate(void) = 0;
 
-    virtual void Init(void* mappedPtr, uint elements) = 0;
+    virtual void Init(void* mappedPtr, uint elements, PrimType type, float sphereRadius) = 0;
 
     virtual void SetDepth(uint d) = 0;
 
@@ -205,19 +246,11 @@ public:
 
     virtual Node GetNodes(void) = 0;
 
+    virtual uint GetNodesCount(void) = 0;
+
     virtual nutty::DeviceBuffer<BBox>* GetAABBs(void) = 0;
 
-    virtual nutty::cuStream& GetDefaultStream(void) = 0;
-};
+    virtual nutty::DeviceBuffer<BBox>* GetPrimAABBs(void) = 0;
 
-struct SphereBBox
-{
-    __device__ BBox operator()(float3 pos)
-    {
-        BBox bbox;
-        float bhe = 1;//sqrtf(1);
-        bbox.min = pos - make_float3(bhe, bhe, bhe);
-        bbox.max = pos + make_float3(bhe, bhe, bhe);
-        return bbox;
-    }
+    virtual nutty::cuStream& GetDefaultStream(void) = 0;
 };

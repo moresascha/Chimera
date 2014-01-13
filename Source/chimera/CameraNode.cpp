@@ -6,19 +6,17 @@ namespace chimera
 {
     CameraNode::CameraNode(ActorId id) : SceneNode(id)
     {
-        m_pCamera = m_actor->GetComponent<chimera::CameraComponent>(chimera::CameraComponent::COMPONENT_ID).lock().get()->GetCamera();
+        CameraComponent* cmp;
+        m_actor->VQueryComponent(CM_CMP_CAMERA, (IActorComponent**)(&cmp));
+        m_pCamera = cmp->m_camera;
+        VSetRenderPaths(0);
     }
 
-    VOID CameraNode::_VRender(chimera::SceneGraph* graph, chimera::RenderPath& path)
+    VOID CameraNode::_VRender(ISceneGraph* graph, RenderPath& path)
     {
-        if(m_pCamera != graph->GetCamera())
+        /*if(m_pCamera != graph->GetCamera())
         {
-            DrawFrustum(m_pCamera->GetFrustum());
-        }
-    }
-
-    UINT CameraNode::VGetRenderPaths(VOID)
-    {
-        return chimera::eRenderPath_NoDraw;
+            VDrawFrustum(m_pCamera->GetFrustum());
+        }*/
     }
 }

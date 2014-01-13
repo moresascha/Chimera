@@ -52,6 +52,7 @@ cbuffer LightSettingsBuffer : register(b5)
     float4 g_lightColorRadius;
     float4 g_lightPos;
     float4 g_lightViewDirAngel;
+    int4 g_castShadow;
 }
 
 cbuffer FontBuffer : register(b6)

@@ -100,6 +100,18 @@
     <Filter Include="Source Files\unused">
       <UniqueIdentifier>{b56b1440-b8b1-4c87-bcde-8b212c918bd8}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Source Files\test">
+      <UniqueIdentifier>{502228ce-b5ae-4687-a7a8-b8c165d5aa26}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\logic\actor">
+      <UniqueIdentifier>{203a8c14-cd5a-403a-b9f7-3b650ab46859}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\view\nodes">
+      <UniqueIdentifier>{2253c3c7-19db-4e8a-b080-f3863cc985bc}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\view\nodes">
+      <UniqueIdentifier>{bf1334a4-cc77-48ac-9fd9-fe8011ae9775}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\Assets\shader\ShaderGlobals.h">
@@ -309,11 +321,23 @@
     <ClInclude Include="chimera\GeometryFactory.h">
       <Filter>Header Files\resource</Filter>
     </ClInclude>
+    <ClInclude Include="chimera\tinyxml2.h">
+      <Filter>Header Files\util</Filter>
+    </ClInclude>
+    <ClInclude Include="chimera\api\CMStream.h">
+      <Filter>Header Files\api</Filter>
+    </ClInclude>
+    <ClInclude Include="chimera\PointLightNode.h">
+      <Filter>Header Files\view\nodes</Filter>
+    </ClInclude>
+    <ClInclude Include="chimera\Level.h">
+      <Filter>Header Files\logic</Filter>
+    </ClInclude>
+    <ClInclude Include="chimera\SpotlightNode.h">
+      <Filter>Header Files\view\nodes</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="chimera\Main.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="chimera\tinyxml2.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -349,9 +373,6 @@
     </ClCompile>
     <ClCompile Include="chimera\Input.cpp">
       <Filter>Source Files\input</Filter>
-    </ClCompile>
-    <ClCompile Include="chimera\Components.cpp">
-      <Filter>Source Files\logic</Filter>
     </ClCompile>
     <ClCompile Include="chimera\Event.cpp">
       <Filter>Source Files\logic</Filter>
@@ -416,12 +437,6 @@
     <ClCompile Include="chimera\SceneGraph.cpp">
       <Filter>Source Files\view</Filter>
     </ClCompile>
-    <ClCompile Include="chimera\ActorFactory.cpp">
-      <Filter>Source Files\logic</Filter>
-    </ClCompile>
-    <ClCompile Include="chimera\Actor.cpp">
-      <Filter>Source Files\logic</Filter>
-    </ClCompile>
     <ClCompile Include="chimera\Camera.cpp">
       <Filter>Source Files\view</Filter>
     </ClCompile>
@@ -443,9 +458,6 @@
     <ClCompile Include="chimera\CascadedShadowMapper.cpp">
       <Filter>Source Files\d3d</Filter>
     </ClCompile>
-    <ClCompile Include="chimera\SkyDomeNode.cpp">
-      <Filter>Source Files\view</Filter>
-    </ClCompile>
     <ClCompile Include="chimera\tbdFont.cpp">
       <Filter>Source Files\font</Filter>
     </ClCompile>
@@ -456,9 +468,6 @@
       <Filter>Source Files\resource</Filter>
     </ClCompile>
     <ClCompile Include="chimera\GeometryNode.cpp">
-      <Filter>Source Files\view</Filter>
-    </ClCompile>
-    <ClCompile Include="chimera\InstancedMeshNode.cpp">
       <Filter>Source Files\view</Filter>
     </ClCompile>
     <ClCompile Include="chimera\Maze.cpp">
@@ -485,9 +494,6 @@
     <ClCompile Include="chimera\Picker.cpp">
       <Filter>Source Files\unused</Filter>
     </ClCompile>
-    <ClCompile Include="chimera\PointlightNode.cpp">
-      <Filter>Source Files\unused</Filter>
-    </ClCompile>
     <ClCompile Include="chimera\Profiling.cpp">
       <Filter>Source Files\unused</Filter>
     </ClCompile>
@@ -509,9 +515,6 @@
     <ClCompile Include="chimera\Spline.cpp">
       <Filter>Source Files\unused</Filter>
     </ClCompile>
-    <ClCompile Include="chimera\SpotlightNode.cpp">
-      <Filter>Source Files\unused</Filter>
-    </ClCompile>
     <ClCompile Include="chimera\tbdStack.cpp">
       <Filter>Source Files\unused</Filter>
     </ClCompile>
@@ -530,9 +533,6 @@
     <ClCompile Include="chimera\ByteStream.cpp">
       <Filter>Source Files\unused</Filter>
     </ClCompile>
-    <ClCompile Include="chimera\CameraNode.cpp">
-      <Filter>Source Files\unused</Filter>
-    </ClCompile>
     <ClCompile Include="chimera\CameraTracking.cpp">
       <Filter>Source Files\unused</Filter>
     </ClCompile>
@@ -548,11 +548,41 @@
     <ClCompile Include="chimera\GameInputActions.cpp">
       <Filter>Source Files\unused</Filter>
     </ClCompile>
-    <ClCompile Include="chimera\LevelManager.cpp">
-      <Filter>Source Files\unused</Filter>
-    </ClCompile>
     <ClCompile Include="chimera\LuaHelper.cpp">
       <Filter>Source Files\unused</Filter>
+    </ClCompile>
+    <ClCompile Include="Main.cpp">
+      <Filter>Source Files\test</Filter>
+    </ClCompile>
+    <ClCompile Include="chimera\Actor.cpp">
+      <Filter>Source Files\logic\actor</Filter>
+    </ClCompile>
+    <ClCompile Include="chimera\ActorFactory.cpp">
+      <Filter>Source Files\logic\actor</Filter>
+    </ClCompile>
+    <ClCompile Include="chimera\Components.cpp">
+      <Filter>Source Files\logic\actor</Filter>
+    </ClCompile>
+    <ClCompile Include="chimera\ComponentInitializer.cpp">
+      <Filter>Source Files\logic\actor</Filter>
+    </ClCompile>
+    <ClCompile Include="chimera\SkyDomeNode.cpp">
+      <Filter>Source Files\view\nodes</Filter>
+    </ClCompile>
+    <ClCompile Include="chimera\InstancedMeshNode.cpp">
+      <Filter>Source Files\view\nodes</Filter>
+    </ClCompile>
+    <ClCompile Include="chimera\LightNode.cpp">
+      <Filter>Source Files\view\nodes</Filter>
+    </ClCompile>
+    <ClCompile Include="chimera\LevelManager.cpp">
+      <Filter>Source Files\logic</Filter>
+    </ClCompile>
+    <ClCompile Include="chimera\SpotlightNode.cpp">
+      <Filter>Source Files\view\nodes</Filter>
+    </ClCompile>
+    <ClCompile Include="chimera\CameraNode.cpp">
+      <Filter>Source Files\view\nodes</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

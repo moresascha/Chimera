@@ -294,7 +294,7 @@ namespace chimera
         m_parent = parent;
     }
 
-    BOOL SceneNode::VRemoveChild(ActorId actorId) 
+    std::unique_ptr<ISceneNode> SceneNode::VRemoveChild(ActorId actorId) 
     {
         if(m_actorId == actorId)
         {
@@ -303,16 +303,28 @@ namespace chimera
                 (*it)->VSetParent(m_parent);
                 m_parent->VAddChild(std::move(*it));
             }
-            return TRUE;
+
+            for(auto i = m_parent->VGetChilds().begin(); i != m_parent->VGetChilds().end(); ++i)
+            {
+                if(i->get() == this)
+                {
+                    i->release();
+                    m_parent->VGetChilds().erase(i);
+                    break;
+                }
+            }
+            return std::unique_ptr<ISceneNode>(this);
         }
+
         for(auto it = m_childs.begin(); it != m_childs.end(); ++it)
         {
-            if((*it)->VRemoveChild(actorId))
+            std::unique_ptr<ISceneNode> n = (*it)->VRemoveChild(actorId);
+            if(n)
             {
-                return TRUE;
+                return n;
             }
         }
-        return FALSE;
+        return NULL;
     }
 
     BOOL SceneNode::VIsVisible(ISceneGraph* graph) 
@@ -368,9 +380,9 @@ namespace chimera
         return m_actorId;
     }
 
-    BOOL SceneNode::VRemoveChild(ISceneNode* child) 
+    std::unique_ptr<ISceneNode> SceneNode::VRemoveChild(ISceneNode* child) 
     {
-        return VRemoveChild(child->VGetActorId());
+        return std::move(VRemoveChild(child->VGetActorId()));
     }
 
     VOID SceneNode::VRenderChildren(ISceneGraph* graph, RenderPath& path)
@@ -432,23 +444,20 @@ namespace chimera
 
     ISceneNode* SceneNode::VFindActor(ActorId id)
     {
+        if(id == m_actorId)
+        {
+            return this;
+        }
+
         TBD_FOR(m_childs)
         {
-            ISceneNode* node = it->get();
-            if(node->VGetActorId() == id)
+            ISceneNode* node = (*it)->VFindActor(id);
+            if(node)
             {
                 return node;
             }
         }
-        TBD_FOR(m_childs)
-        {
-            ISceneNode* node = it->get();
-            ISceneNode* pNode = node->VFindActor(id);
-            if(pNode)
-            {
-                pNode;
-            }
-        }
+
         return NULL;
     }
 

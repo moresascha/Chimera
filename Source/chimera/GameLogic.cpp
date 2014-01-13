@@ -55,12 +55,12 @@ namespace chimera
         return TRUE;
     }
 
-    VOID BaseGameLogic::VAttachView(std::unique_ptr<IView> view, ActorId actor) 
+    VOID BaseGameLogic::VAttachView(std::unique_ptr<IView> view, IActor* actor) 
     {
         IView* raw = view.get();
-        m_actorToViewMap[actor] = raw;
+        m_actorToViewMap[actor->GetId()] = raw;
         m_gameViewList.push_back(std::move(view));
-        raw->VOnAttach((UINT)m_gameViewList.size(), VFindActor(actor));
+        raw->VOnAttach((UINT)m_gameViewList.size(), actor);
     }
 
     VOID BaseGameLogic::VOnUpdate(ULONG millis) 
@@ -145,10 +145,7 @@ namespace chimera
         auto it = m_actors.find(id);
         if(it == m_actors.end()) 
         {
-            /*
-            std::stringstream ss;
-            ss << id;
-            LOG_ERROR("Actor does not exist: " + ss.str()); */
+            LOG_CRITICAL_ERROR("no level support atm");
             return m_pLevel->VFindActor(id);
         }
         else
@@ -240,20 +237,26 @@ namespace chimera
         {
             LOG_CRITICAL_ERROR("Ressource cant be NULL");
         }
+        
         std::string path = CmGetApp()->VGetConfig()->VGetString("sActorPath") + resource;
+        
         std::vector<std::unique_ptr<IActor>> actors;
+        
         CMResource res(resource);
-        std::unique_ptr<IActor> parent = m_pActorFactory->VCreateActor(res, actors);
-        TBD_FOR(actors)
-        {
-            //throw actor created event
-            m_actors[(*it)->GetId()] = std::move(*it);
-        }
-        if(!parent)
+
+        IActor* root = std::move(m_pActorFactory->VCreateActor(res, actors));
+
+        if(!root)
         {
             LOG_CRITICAL_ERROR_A("Failed to create actor: %s", resource);
         }
-        return parent.get();
+
+        TBD_FOR(actors)
+        {
+            m_actors[(*it)->GetId()] = std::move(*it);
+        }
+
+        return root;
     }
 
     VOID BaseGameLogic::VRemoveActor(ActorId id) 
@@ -293,7 +296,7 @@ namespace chimera
 
         SAFE_DELETE(m_pLevel);
 
-        //m_pLevel = new XMLLevel(resource, m_pActorFactory); 
+        m_pLevel = new XMLLevel(resource, m_pActorFactory); 
 
         m_pLevel->VLoad(FALSE);
 

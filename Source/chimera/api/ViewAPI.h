@@ -88,6 +88,10 @@ namespace chimera
 
         virtual VOID VOnResize(UINT w, UINT h) = 0;
 
+        virtual VOID VSetFullscreen(BOOL fullscreen) = 0;
+
+        virtual BOOL VIsFullscreen(VOID) = 0;
+
         virtual IEffectFactory* VGetEffectFactory(VOID) = 0;
 
         virtual IVRamManager* VGetVRamManager(VOID) = 0;
@@ -111,6 +115,8 @@ namespace chimera
         virtual VOID VSetCamera(std::shared_ptr<ICamera> camera) = 0;
 
         virtual ISceneNode* VFindActorNode(ActorId actorid) = 0;
+
+        virtual std::unique_ptr<ISceneNode> VReleaseNode(ActorId id) = 0;
 
         virtual CONST Frustum* VGetFrustum(VOID) = 0;
 
@@ -158,9 +164,9 @@ namespace chimera
 
         virtual BOOL VIsVisible(ISceneGraph* graph) = 0;
 
-        virtual BOOL VRemoveChild(ISceneNode* child) = 0;
+        virtual std::unique_ptr<ISceneNode> VRemoveChild(ISceneNode* child) = 0;
 
-        virtual BOOL VRemoveChild(ActorId actorId) = 0;
+        virtual std::unique_ptr<ISceneNode> VRemoveChild(ActorId actorId) = 0;
 
         virtual VOID VSetRenderPaths(RenderPath paths) = 0;
 

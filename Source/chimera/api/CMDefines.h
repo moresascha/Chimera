@@ -39,7 +39,7 @@
 #define SCREENQUAD_SHADER_VS_FUNCTION "Effect_VS"
 #define SCREENQUAD_SHADER_FS_FUNCTION "SampleDiffuseTexture"
 
-#define VIEW_CONTROLLER_NAME "Controller"
+#define VIEW_CONTROLLER_NAME "HumanCameraController"
 #define VIEW_CONSOLE_NAME "Console"
 
 #define CM_KEY_TAB 0x09

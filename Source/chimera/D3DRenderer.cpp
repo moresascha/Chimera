@@ -243,6 +243,11 @@ namespace chimera
             return (VOID*)chimera::d3d::GetDevice();
         }
 
+        VOID Renderer::VSetFullscreen(BOOL fullscreen)
+        {
+            chimera::d3d::SetFullscreenState(fullscreen);
+        }
+
         VOID Renderer::VResize(UINT w, UINT h)
         {
             chimera::d3d::Resize(w, h);
@@ -507,12 +512,12 @@ namespace chimera
             m_constBuffer[eCubeMapViewsBuffer]->VUnmap();
         }
 
-        VOID Renderer::SetLightSettings(CONST util::Vec4& color, CONST util::Vec3& position, FLOAT radius)
+        VOID Renderer::VSetLightSettings(CONST util::Vec4& color, CONST util::Vec3& position, FLOAT radius, BOOL castShadow)
         {
-            SetLightSettings(color, position, position, radius, 0.f, 1.f);
+            VSetLightSettings(color, position, position, radius, 0.f, 1.f, castShadow);
         }
 
-        VOID Renderer::SetLightSettings(CONST util::Vec4& color, CONST util::Vec3& position, CONST util::Vec3& viewDir, FLOAT radius, FLOAT angel, FLOAT intensity)
+        VOID Renderer::VSetLightSettings(CONST util::Vec4& color, CONST util::Vec3& position, CONST util::Vec3& viewDir, FLOAT radius, FLOAT angel, FLOAT intensity, BOOL castShadow)
         {
             _LightSettingsBuffer* plb = (_LightSettingsBuffer*)m_constBuffer[eLightingBuffer]->VMap();
             plb->m_colorNRadiusW.x = color.x;
@@ -527,6 +532,7 @@ namespace chimera
             plb->m_viewDirNAngel.y = viewDir.y;
             plb->m_viewDirNAngel.z = viewDir.z;
             plb->m_viewDirNAngel.w = angel;
+            plb->g_castShadow[0] = plb->g_castShadow[1] = plb->g_castShadow[2] = plb->g_castShadow[3] = castShadow;
             m_constBuffer[eLightingBuffer]->VUnmap();
         }
 

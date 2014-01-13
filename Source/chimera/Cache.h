@@ -126,6 +126,8 @@ namespace chimera
 
         INT VGetNumFiles(VOID);
 
+        BOOL VHasFile(CONST CMResource& r);
+
         std::string& VGetName(VOID) { return m_folder; }
 
         BOOL VIsCompressed(VOID) { return FALSE; }

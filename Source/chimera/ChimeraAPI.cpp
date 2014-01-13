@@ -20,6 +20,9 @@
 #include "Camera.h"
 #include "tbdFont.h"
 #include "GuiComponent.h"
+#include <fstream>
+
+#define INIT_XML "../Assets/Actors/init.xml"
 
 BOOL APIENTRY DllMain (HINSTANCE hInst, DWORD reason, LPVOID lpReserved)
 {
@@ -267,96 +270,50 @@ namespace chimera
             APISetError(eErrorCode_InvalidValue);
             return NULL;
         }
-        
-        //for testing
 
+        //load init scene
+        std::ifstream initXml(INIT_XML);
+        if(initXml)
+        {
+            std::string line;
+            while(initXml)
+            {
+                std::getline(initXml, line);
+                app->VGetLogic()->VCreateActor(line.c_str(), 0);
+            }
+        }
+
+        //defualt gfx settings
         std::unique_ptr<IGraphicsSettings> settings(new DefaultGraphicsSettings());
         IRenderScreen* screen = new RenderScreen(std::move(settings));
         screen->VSetName("main");
         app->VGetHumanView()->VAddScene(std::move(std::unique_ptr<IRenderScreen>(screen)));
-
-        CMDimension dim;
-/*        IScreenElement* normalScreen = new RenderTargetScreen(app->VGetHumanView()->VGetRenderer()->VGetAlbedoBuffer()->VGetRenderTarget(eDiff_DiffuseColorSpecBTarget));
-        dim.x = 0;
-        dim.y = 0;
-        dim.w = 200;
-        dim.h = 150;
-        normalScreen->VSetDimension(dim);
-        normalScreen->VSetName("diffuse_color");
-        app->VGetHumanView()->VAddScreenElement(std::move(std::unique_ptr<IScreenElement>(normalScreen)));*/ 
 
         //console
         if(desc->args.find("-console") != std::string::npos)
         {
             IScreenElement* rect = new GuiConsole();
             rect->VSetName(VIEW_CONSOLE_NAME);
+            CMDimension dim;
             dim.x = 0; dim.x = 0; dim.w = CmGetApp()->VGetWindowWidth(); dim.h = (UINT)(CmGetApp()->VGetWindowHeight() * 0.45f);
             rect->VSetDimension(dim);
             rect->VSetActive(FALSE);
             app->VGetHumanView()->VAddScreenElement(std::unique_ptr<IScreenElement>(rect));
         }
 
-        std::unique_ptr<ActorDescription> _d = app->VGetLogic()->VGetActorFactory()->VCreateActorDescription();
-        CameraComponent* cmp = _d->AddComponent<CameraComponent>(CM_CMP_CAMERA);
-
-        std::shared_ptr<ICamera> cam(new chimera::util::CharacterCamera(CmGetApp()->VGetWindowWidth(), CmGetApp()->VGetWindowHeight(), 1e-2f, 1e3));
-        cmp->SetCamera(cam);
-
-        TransformComponent* tcmp = _d->AddComponent<TransformComponent>(CM_CMP_TRANSFORM);
-        tcmp->GetTransformation()->SetTranslate(util::Vec3(0,2,-5));
-       
-        IActor* actor = app->VGetLogic()->VCreateActor(std::move(_d));
-
-        CmGetApp()->VGetHumanView()->VSetTarget(actor);
-
-        CharacterController* cc = new CharacterController();
-        cc->SetName("Controller");
-        cc->VSetMinSpeed(12);
-        cc->VSetMaxSpeed(28);
-        std::unique_ptr<ActorController> ac(cc);
-
-        cc->VActivate();
-
-        CmGetApp()->VGetLogic()->VAttachView(std::move(ac), actor->GetId());
-
         CmGetApp()->VGetLogic()->VGetCommandInterpreter()->VLoadCommands("controls.ini");
 
-        //mesh actor
-
-        _d = app->VGetLogic()->VGetActorFactory()->VCreateActorDescription();
-        _d->AddComponent<TransformComponent>(CM_CMP_TRANSFORM);
-        RenderComponent* rcmp = _d->AddComponent<RenderComponent>(CM_CMP_RENDERING);
-        rcmp->m_resource = "plane.obj";
-        PhysicComponent* phxc = _d->AddComponent<PhysicComponent>(CM_CMP_PHX);
-        phxc->m_shapeStyle = "plane";
-        phxc->m_material = "static";
-
-        app->VGetLogic()->VCreateActor(std::move(_d));
-
-
-        /*TBD_FOR_INT(16)
-        {
-            _d = app->VGetLogic()->VGetActorFactory()->VCreateActorDescription();
-            tcmp = _d->AddComponent<TransformComponent>(CM_CMP_TRANSFORM);
-            tcmp->GetTransformation()->Translate(util::Vec3(2.5f * (i % 4), 1, 2.5f * 4 * (i / 4 / 4.0f)));
-            rcmp = _d->AddComponent<RenderComponent>(CM_CMP_RENDERING);
-            rcmp->m_resource = "box.obj";
-            app->VGetLogic()->VCreateActor(std::move(_d));
-        }*/
-        
-        _d = app->VGetLogic()->VGetActorFactory()->VCreateActorDescription();
-        _d->AddComponent<TransformComponent>(CM_CMP_TRANSFORM);
-        rcmp = _d->AddComponent<RenderComponent>(CM_CMP_RENDERING);
-        rcmp->m_resource = "skydome3.jpg";
-        rcmp->m_type = "skydome";
-        app->VGetLogic()->VCreateActor(std::move(_d));
-        
         if(!app->VGetInputHandler()->VInit(desc->hInstance, app->VGetHumanView()->VGetRenderer()->VGetWindowHandle(), app->VGetWindowWidth(), app->VGetWindowHeight()))
         {
             APISetError(eErrorCode_InvalidValue);
         }
 
-        BOOL fullscreen = FALSE;
+        BOOL fullscreen = app->VGetConfig()->VGetBool("bFullscreen");
+
+        if(fullscreen)
+        {
+            //app->VGetHumanView()->
+        }
         app->VGetInputHandler()->VSetCurserOffsets(fullscreen ? 0 : 8 , fullscreen ? 0 : 30); //todo, get systemmetrics
 
         return app;

@@ -23,7 +23,7 @@ namespace chimera
 
     }
 
-    BOOL TransformComponent::VInitialize(IStream* stream)
+    BOOL asddasdaw2(IStream* stream)
     {
         /*
         tinyxml2::XMLElement* trans = pData->FirstChildElement("Position");
@@ -63,7 +63,7 @@ namespace chimera
         return TRUE;
     }
 
-    VOID TransformComponent::VSerialize(IStream* stream) CONST
+    VOID asdasd(IStream* stream) 
     {
         /*
         tinyxml2::XMLDocument* doc = pData->GetDocument();
@@ -97,7 +97,7 @@ namespace chimera
         pData->LinkEndChild(transform); */
     }
 
-    BOOL CameraComponent::VInitialize(IStream* stream)
+    BOOL asdVInitialize(IStream* stream)
     {
         /*
         tinyxml2::XMLElement* settings = pData->FirstChildElement("Settings");
@@ -189,7 +189,7 @@ namespace chimera
         m_sceneNode = NULL;
     }
 
-    BOOL RenderComponent::VInitialize(IStream* stream)
+    BOOL sa234312(IStream* stream)
     {
         /*
         tinyxml2::XMLElement* source = pData->FirstChildElement("MeshFile");
@@ -216,7 +216,7 @@ namespace chimera
         return TRUE;
     }
 
-    VOID RenderComponent::VSerialize(IStream* stream) CONST
+    VOID hthfgVSerialize(IStream* stream)
     {
         /*
         tinyxml2::XMLDocument* doc = pData->GetDocument();
@@ -256,7 +256,7 @@ namespace chimera
         }*/
     }
 
-    BOOL PhysicComponent::VInitialize(IStream* stream)
+    BOOL VI213nitialize(ICMStream* stream)
     {
         /*
          tinyxml2::XMLElement* shape = pData->FirstChildElement("Shape");
@@ -300,7 +300,7 @@ namespace chimera
          return TRUE;
     }
 
-    VOID PhysicComponent::VSerialize(IStream* stream) CONST
+    VOID asdVSerialize(IStream* stream)
     {
         /*
         tinyxml2::XMLDocument* doc = pData->GetDocument();
@@ -342,9 +342,8 @@ namespace chimera
         }
     }
 
-    BOOL LightComponent::VInitialize(IStream* stream)
+    BOOL asd23VInitialize(IStream* stream)
     {
-        m_activated = TRUE;
         /*
         tinyxml2::XMLElement* file = pData->FirstChildElement("Type");
         RETURN_IF_FAILED(file);
@@ -370,7 +369,7 @@ namespace chimera
         return TRUE;
     }
 
-    VOID LightComponent::VSerialize(IStream* stream) CONST
+    VOID VasdSerialize(IStream* stream)
     {
         /*
         tinyxml2::XMLDocument* doc = pData->GetDocument();
@@ -405,7 +404,7 @@ namespace chimera
         pData->LinkEndChild(cmp);*/
     }
 
-    VOID PickableComponent::VSerialize(IStream* stream) CONST
+    VOID w412412(IStream* stream)
     {
         /*tinyxml2::XMLDocument* doc = pData->GetDocument();
         tinyxml2::XMLElement* elem = doc->NewElement("PickableComponent");
@@ -422,7 +421,7 @@ namespace chimera
         CmGetApp()->VGetCache()->VGetHandle(CMResource(m_soundFile));
     }
 
-    BOOL SoundComponent::VInitialize(IStream* stream)
+    BOOL aaa21323(ICMStream* stream)
     {
         /*
         tinyxml2::XMLElement* file = pData->FirstChildElement("SoundFile");
@@ -447,11 +446,6 @@ namespace chimera
         m_emitter = !strcmp(emit->GetText(), "true");*/
 
         return TRUE;
-    }
-
-    VOID SoundComponent::VSerialize(IStream* stream) CONST
-    {
-
     }
 
     class SetParentWaitProcess : public IProcess

@@ -5,7 +5,6 @@
 
 namespace chimera 
 {
-
     //--manager--//
     VRamManager::VRamManager(UINT mb) : m_bytes(1024 * 1024 * mb), m_currentByteSize(0), m_updateFrequency(0.05f) /*every 20 seconds*/, m_time(0) 
     {

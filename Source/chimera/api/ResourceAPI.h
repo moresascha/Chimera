@@ -128,6 +128,8 @@ namespace chimera
 
         virtual BOOL VIsCompressed(VOID) = 0;
 
+        virtual BOOL VHasFile(CONST CMResource& r) = 0;
+
         virtual ~IResourceFile() {}
     };
 
