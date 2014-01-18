@@ -1,30 +1,30 @@
-﻿Build started 18.01.2014 14:44:36.
+﻿Build started 18.01.2014 14:55:23.
      1>Project "E:\Dropbox\VisualStudio\Chimera\Source\Chimera.vcxproj" on node 2 (Build target(s)).
      1>InitializeBuildStatus:
-         Creating "E:\Dropbox\VisualStudio\Chimera\Source\..\Tmp\Chimerax64Debug\Chimera.unsuccessfulbuild" because "AlwaysCreate" was specified.
+         Touching "E:\Dropbox\VisualStudio\Chimera\Source\..\Tmp\Chimerax64Debug\Chimera.unsuccessfulbuild".
        AddCudaCompileDeps:
-         C:\Program Files (x86)\Microsoft Visual Studio 11.0\VC\bin\x86_amd64\cl.exe /E /nologo /showIncludes /TP /D__CUDACC__ /D__COMPILING_DLL /D_WINDLL /D_UNICODE /DUNICODE /I../Include /I"C:\Program Files\NVIDIA GPU Computing Toolkit\CUDA\v5.5\bin" /I"C:\Program Files\NVIDIA GPU Computing Toolkit\CUDA\v5.5\include" /I. /FIcuda_runtime.h /c E:\Dropbox\VisualStudio\Chimera\Source\chimera\Particles.cu 
+       Skipping target "AddCudaCompileDeps" because all output files are up-to-date with respect to the input files.
        AddCudaCompilePropsDeps:
        Skipping target "AddCudaCompilePropsDeps" because all output files are up-to-date with respect to the input files.
        CudaBuild:
-         Compiling CUDA source file chimera\Particles.cu...
-         cmd.exe /C "C:\Users\Sascha\AppData\Local\Temp\tmp872aa5ea78ad4a7f98b4e5046fe16aaa.cmd"
-         "C:\Program Files\NVIDIA GPU Computing Toolkit\CUDA\v5.5\bin\nvcc.exe" -gencode=arch=compute_20,code=\"sm_20,compute_20\" --use-local-env --cl-version 2012 -ccbin "C:\Program Files (x86)\Microsoft Visual Studio 11.0\VC\bin\x86_amd64"  -I../Include -I"C:\Program Files\NVIDIA GPU Computing Toolkit\CUDA\v5.5\include"  -G  --keep --keep-dir E:\Dropbox\VisualStudio\Chimera\Source\..\Tmp\Chimerax64Debug\ -maxrregcount=0  --machine 64 -ptx -cudart static  -o .\chimera\ptx\Particles.ptx "E:\Dropbox\VisualStudio\Chimera\Source\chimera\Particles.cu"
-         
-         E:\Dropbox\VisualStudio\Chimera\Source>"C:\Program Files\NVIDIA GPU Computing Toolkit\CUDA\v5.5\bin\nvcc.exe" -gencode=arch=compute_20,code=\"sm_20,compute_20\" --use-local-env --cl-version 2012 -ccbin "C:\Program Files (x86)\Microsoft Visual Studio 11.0\VC\bin\x86_amd64"  -I../Include -I"C:\Program Files\NVIDIA GPU Computing Toolkit\CUDA\v5.5\include"  -G  --keep --keep-dir E:\Dropbox\VisualStudio\Chimera\Source\..\Tmp\Chimerax64Debug\ -maxrregcount=0  --machine 64 -ptx -cudart static  -o .\chimera\ptx\Particles.ptx "E:\Dropbox\VisualStudio\Chimera\Source\chimera\Particles.cu" 
-     1>E:/Dropbox/VisualStudio/Chimera/Source/chimera/Particles.cu(225): warning : variable "range" was declared but never referenced
-         
-     1>E:/Dropbox/VisualStudio/Chimera/Source/chimera/Particles.cu(234): warning : variable "t" was declared but never referenced
-         
+       Skipping target "CudaBuild" because all output files are up-to-date with respect to the input files.
        ClCompile:
          C:\Program Files (x86)\Microsoft Visual Studio 11.0\VC\bin\x86_amd64\CL.exe /c /I../Cudah/Source /I../Include /I./Source/Chimera /I../Include/physx/foundation /I../Include/physx/Source/foundation/include /I../Include/physx/physxprofilesdk /I../Include/physx/physxvisualdebuggersdk /I../Include/physx/common /I../Include/physx/geometry /I../Include/physx/pvd /I../Include/physx/particles /I../Include/physx/cooking /I../Include/physx/extensions /I../Include/physx/characterdynamic /I../Include/physx/vehicle /I../Include/physx/RepX /I../Include/physx/RepXUpgrader /I../Include/physx/Source/GeomUtils/headers /I"C:\Program Files\NVIDIA GPU Computing Toolkit\CUDA\v5.5\include" /Zi /nologo /W3 /WX- /MP /Od /D __COMPILING_DLL /D _WINDLL /D _UNICODE /D UNICODE /Gm /EHsc /RTC1 /MDd /GS /fp:precise /Zc:wchar_t /Zc:forScope /Fo"E:\Dropbox\VisualStudio\Chimera\Source\..\Tmp\Chimerax64Debug\\" /Fd"E:\Dropbox\VisualStudio\Chimera\Source\..\Tmp\Chimerax64Debug\vc110.pdb" /Gd /TP /errorReport:prompt /MP chimera\Actor.cpp chimera\ActorFactory.cpp chimera\AxisAlignedBB.cpp chimera\Camera.cpp chimera\CameraNode.cpp chimera\CascadedShadowMapper.cpp chimera\ChimeraAPI.cpp chimera\Commands.cpp chimera\Components.cpp chimera\Config.cpp chimera\Controller.cpp chimera\Effect.cpp chimera\Event.cpp chimera\EventManager.cpp chimera\Frustum.cpp chimera\GameLogic.cpp chimera\GameView.cpp chimera\GeometryFactory.cpp chimera\GeometryNode.cpp chimera\GraphicsSettings.cpp chimera\GuiComponent.cpp chimera\Input.cpp chimera\InstancedMeshNode.cpp chimera\LevelManager.cpp chimera\Logger.cpp chimera\MeshNode.cpp chimera\PhysicsSystem.cpp chimera\Process.cpp chimera\ProcessManager.cpp chimera\SceneGraph.cpp chimera\SceneNode.cpp chimera\Scheduler.cpp chimera\SkyDomeNode.cpp chimera\SpotlightNode.cpp chimera\tbdFont.cpp chimera\Timer.cpp chimera\util.cpp chimera\VRamManager.cpp
      1>cl : Command line warning D9030: '/Gm' is incompatible with multiprocessing; ignoring /MP switch
-         VRamManager.cpp
          util.cpp
-         Timer.cpp
          tbdFont.cpp
-     1>chimera\tbdFont.cpp(51): warning C4800: 'int' : forcing value to bool 'true' or 'false' (performance warning)
      1>chimera\tbdFont.cpp(52): warning C4800: 'int' : forcing value to bool 'true' or 'false' (performance warning)
+         Logger.cpp
+         LevelManager.cpp
+         GuiComponent.cpp
+         GameLogic.cpp
+         Commands.cpp
+     1>chimera\Commands.cpp(488): warning C4800: 'DWORD' : forcing value to bool 'true' or 'false' (performance warning)
+         ChimeraAPI.cpp
+         Generating Code...
+         Compiling...
+         VRamManager.cpp
+         Timer.cpp
          SpotlightNode.cpp
          SkyDomeNode.cpp
          Scheduler.cpp
@@ -34,53 +34,10 @@
          Process.cpp
          PhysicsSystem.cpp
          MeshNode.cpp
-         Logger.cpp
-     1>e:\dropbox\visualstudio\chimera\source\chimera\Logger.h(19): error C4430: missing type specifier - int assumed. Note: C++ does not support default-int
-     1>e:\dropbox\visualstudio\chimera\source\chimera\Logger.h(19): error C2146: syntax error : missing ',' before identifier 'line'
-     1>e:\dropbox\visualstudio\chimera\source\chimera\Logger.h(28): error C4430: missing type specifier - int assumed. Note: C++ does not support default-int
-     1>e:\dropbox\visualstudio\chimera\source\chimera\Logger.h(28): error C2146: syntax error : missing ',' before identifier 'line'
-     1>e:\dropbox\visualstudio\chimera\source\chimera\Logger.h(29): error C4430: missing type specifier - int assumed. Note: C++ does not support default-int
-     1>e:\dropbox\visualstudio\chimera\source\chimera\Logger.h(29): error C2146: syntax error : missing ',' before identifier 'line'
-     1>e:\dropbox\visualstudio\chimera\source\chimera\Logger.h(52): error C4430: missing type specifier - int assumed. Note: C++ does not support default-int
-     1>e:\dropbox\visualstudio\chimera\source\chimera\Logger.h(52): error C2146: syntax error : missing ',' before identifier 'line'
-     1>chimera\Logger.cpp(69): error C2511: 'void Logger::LogManager::Log(const std::string &,const std::string &,const CHAR *,const CHAR *,const uint)' : overloaded member function not found in 'Logger::LogManager'
-                 e:\dropbox\visualstudio\chimera\source\chimera\Logger.h(15) : see declaration of 'Logger::LogManager'
-     1>chimera\Logger.cpp(76): error C2511: 'void Logger::LogManager::CriticalError(const std::string &,const std::string &,const CHAR *,const CHAR *,const uint)' : overloaded member function not found in 'Logger::LogManager'
-                 e:\dropbox\visualstudio\chimera\source\chimera\Logger.h(15) : see declaration of 'Logger::LogManager'
-     1>chimera\Logger.cpp(95): error C2511: 'void Logger::LogManager::GetString(std::string &,const std::string &,const std::string &,const CHAR *,const CHAR *,const uint)' : overloaded member function not found in 'Logger::LogManager'
-                 e:\dropbox\visualstudio\chimera\source\chimera\Logger.h(15) : see declaration of 'Logger::LogManager'
-         LevelManager.cpp
-     1>chimera\LevelManager.cpp(76): warning C4800: 'tinyxml2::XMLError' : forcing value to bool 'true' or 'false' (performance warning)
          InstancedMeshNode.cpp
          Input.cpp
-         GuiComponent.cpp
          GraphicsSettings.cpp
          GeometryNode.cpp
-         Generating Code...
-         Compiling...
          GeometryFactory.cpp
          GameView.cpp
-         GameLogic.cpp
          Frustum.cpp
-         EventManager.cpp
-         Event.cpp
-         Effect.cpp
-         Controller.cpp
-     1>chimera\Controller.cpp(319): warning C4800: 'int' : forcing value to bool 'true' or 'false' (performance warning)
-         Config.cpp
-         Components.cpp
-         Commands.cpp
-     1>chimera\Commands.cpp(488): warning C4800: 'DWORD' : forcing value to bool 'true' or 'false' (performance warning)
-         ChimeraAPI.cpp
-         CascadedShadowMapper.cpp
-         CameraNode.cpp
-         Camera.cpp
-         AxisAlignedBB.cpp
-         ActorFactory.cpp
-         Actor.cpp
-         Generating Code...
-     1>Done Building Project "E:\Dropbox\VisualStudio\Chimera\Source\Chimera.vcxproj" (Build target(s)) -- FAILED.
-
-Build FAILED.
-
-Time Elapsed 00:04:15.76
