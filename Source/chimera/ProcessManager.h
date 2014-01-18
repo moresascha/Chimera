@@ -14,22 +14,22 @@ namespace chimera
         util::Locker m_lock;
 
     protected:
-        VOID SchedulerAdd(std::shared_ptr<IProcess> process);
+        void SchedulerAdd(std::shared_ptr<IProcess> process);
 
     public:
-        ProcessManager(VOID);
+        ProcessManager(void);
 
-        UINT VUpdate(ULONG delatMillis);
+        uint VUpdate(ulong delatMillis);
 
         IProcess* VAttach(std::shared_ptr<IProcess> process);
 
         IProcess* VAttachWithScheduler(std::shared_ptr<IProcess> process);
 
-        VOID VAbortAll(BOOL immediate);
+        void VAbortAll(bool immediate);
 
-        UINT VGetProcessCount(VOID) CONST { return (UINT)m_processes.size(); }
+        uint VGetProcessCount(void) const { return (uint)m_processes.size(); }
 
-        ~ProcessManager(VOID);
+        ~ProcessManager(void);
     };
 };
 

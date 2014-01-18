@@ -19,38 +19,38 @@ namespace chimera
     public:
         IRenderTarget* m_texture;
 
-        ShadowMapHandle(VOID) : m_texture(NULL)
+        ShadowMapHandle(void) : m_texture(NULL)
         {
             VSetResource(CMResource("SpotLightShadowMap"));
         }
 
-        BOOL VCreate(VOID) 
+        bool VCreate(void) 
         {
             if(!m_texture)
             {
                 m_texture = CmGetApp()->VGetHumanView()->VGetGraphicsFactory()->VCreateRenderTarget().release();
             }
 
-            UINT shadowMapSize = CmGetApp()->VGetConfig()->VGetInteger("iSpotLightSMSize");
+            uint shadowMapSize = CmGetApp()->VGetConfig()->VGetInteger("iSpotLightSMSize");
 
-            if(!m_texture->VOnRestore(shadowMapSize, shadowMapSize, eFormat_R32_FLOAT, TRUE))
+            if(!m_texture->VOnRestore(shadowMapSize, shadowMapSize, eFormat_R32_FLOAT, true))
             {
                 LOG_CRITICAL_ERROR("Failed to create render target");
-                return FALSE;
+                return false;
             }
 
-            return TRUE;
+            return true;
         }
 
-        VOID VDestroy(VOID)
+        void VDestroy(void)
         {
             SAFE_DELETE(m_texture);
         }
 
-        UINT VGetByteCount(VOID) CONST
+        uint VGetByteCount(void) const
         {
-            UINT size = CmGetApp()->VGetConfig()->VGetInteger("iSpotLightSMSize");
-            return size * size * sizeof(FLOAT);
+            uint size = CmGetApp()->VGetConfig()->VGetInteger("iSpotLightSMSize");
+            return size * size * sizeof(float);
         }
     };
 
@@ -71,19 +71,19 @@ namespace chimera
             desc.vs.function = "SpotLightShadow_VS";
             desc.vs.layoutCount = 3;
 
-            desc.vs.inputLayout[0].instanced = FALSE;
+            desc.vs.inputLayout[0].instanced = false;
             desc.vs.inputLayout[0].name = "POSITION";
             desc.vs.inputLayout[0].position = 0;
             desc.vs.inputLayout[0].slot = 0;
             desc.vs.inputLayout[0].format = eFormat_R32G32B32_FLOAT;
 
-            desc.vs.inputLayout[1].instanced = FALSE;
+            desc.vs.inputLayout[1].instanced = false;
             desc.vs.inputLayout[1].name = "NORMAL";
             desc.vs.inputLayout[1].position = 1;
             desc.vs.inputLayout[1].slot = 0;
             desc.vs.inputLayout[1].format = eFormat_R32G32B32_FLOAT;
 
-            desc.vs.inputLayout[2].instanced = FALSE;
+            desc.vs.inputLayout[2].instanced = false;
             desc.vs.inputLayout[2].name = "TEXCOORD";
             desc.vs.inputLayout[2].position = 2;
             desc.vs.inputLayout[2].slot = 0;
@@ -98,25 +98,25 @@ namespace chimera
             desc.vs.function = "SpotLightShadowInstanced_VS";
             desc.vs.layoutCount = 4;
 
-            desc.vs.inputLayout[0].instanced = FALSE;
+            desc.vs.inputLayout[0].instanced = false;
             desc.vs.inputLayout[0].name = "POSITION";
             desc.vs.inputLayout[0].position = 0;
             desc.vs.inputLayout[0].slot = 0;
             desc.vs.inputLayout[0].format = eFormat_R32G32B32_FLOAT;
 
-            desc.vs.inputLayout[1].instanced = FALSE;
+            desc.vs.inputLayout[1].instanced = false;
             desc.vs.inputLayout[1].name = "NORMAL";
             desc.vs.inputLayout[1].position = 1;
             desc.vs.inputLayout[1].slot = 0;
             desc.vs.inputLayout[1].format = eFormat_R32G32B32_FLOAT;
 
-            desc.vs.inputLayout[2].instanced = FALSE;
+            desc.vs.inputLayout[2].instanced = false;
             desc.vs.inputLayout[2].name = "TEXCOORD";
             desc.vs.inputLayout[2].position = 2;
             desc.vs.inputLayout[2].slot = 0;
             desc.vs.inputLayout[2].format = eFormat_R32G32_FLOAT;
 
-            desc.vs.inputLayout[3].instanced = TRUE;
+            desc.vs.inputLayout[3].instanced = true;
             desc.vs.inputLayout[3].name = "TANGENT";
             desc.vs.inputLayout[3].position = 3;
             desc.vs.inputLayout[3].slot = 1;
@@ -131,13 +131,13 @@ namespace chimera
             desc.vs.function = "Lighting_VS";
             desc.vs.layoutCount = 2;
 
-            desc.vs.inputLayout[0].instanced = FALSE;
+            desc.vs.inputLayout[0].instanced = false;
             desc.vs.inputLayout[0].name = "POSITION";
             desc.vs.inputLayout[0].position = 0;
             desc.vs.inputLayout[0].slot = 0;
             desc.vs.inputLayout[0].format = eFormat_R32G32B32_FLOAT;
 
-            desc.vs.inputLayout[1].instanced = FALSE;
+            desc.vs.inputLayout[1].instanced = false;
             desc.vs.inputLayout[1].name = "TEXCOORD";
             desc.vs.inputLayout[1].position = 1;
             desc.vs.inputLayout[1].slot = 0;
@@ -150,7 +150,7 @@ namespace chimera
         m_drawShadowInstanced = CmGetApp()->VGetHumanView()->VGetRenderer()->VGetShaderCache()->VGetShaderProgram("SpotLightShadowMapInstanced");
         m_drawLighting = CmGetApp()->VGetHumanView()->VGetRenderer()->VGetShaderCache()->VGetShaderProgram("SpotLight");
 
-        UINT wh = CmGetApp()->VGetConfig()->VGetInteger("iSpotLightSMSize");
+        uint wh = CmGetApp()->VGetConfig()->VGetInteger("iSpotLightSMSize");
 
         m_pCamera = new util::Camera(wh, wh, 1e-2f, VGetTransformation()->GetScale().x);
         
@@ -159,7 +159,7 @@ namespace chimera
         VSetRenderPaths(CM_RENDERPATH_LIGHTING);
     }
 
-    VOID SpotlightNode::VOnActorMoved(VOID)
+    void SpotlightNode::VOnActorMoved(void)
     {
         SceneNode::VOnActorMoved();
         m_pCamera->SetPerspectiveProjection(1.0f, DEGREE_TO_RAD(m_lightComponent->m_angle), 0.01f, VGetTransformation()->GetScale().x);
@@ -177,13 +177,13 @@ namespace chimera
         //m_pCamera->SetRotation(GetTransformation()->GetPYR().y, GetTransformation()->GetPYR().x);
         
         m_middle = VGetTransformation()->GetTranslation();
-        FLOAT c = cos(m_pCamera->GetFoV() / 2.0f); //Todo: need a tighter bb here
-        FLOAT h = VGetTransformation()->GetScale().x / c;
+        float c = cos(m_pCamera->GetFoV() / 2.0f); //Todo: need a tighter bb here
+        float h = VGetTransformation()->GetScale().x / c;
         m_distance = h / 2.0f;
         m_middle = m_middle + (m_pCamera->GetViewDir() * m_distance);
     }
 
-    VOID SpotlightNode::VOnRestore(ISceneGraph* graph)
+    void SpotlightNode::VOnRestore(ISceneGraph* graph)
     {
         std::unique_ptr<IGraphicsStateFactroy> factroy = CmGetApp()->VGetHumanView()->VGetGraphicsFactory()->VCreateStateFactory();
         SAFE_DELETE(m_alphaBlendingState);
@@ -192,7 +192,7 @@ namespace chimera
 
         for(int i = 0; i < 8; ++i)
         {
-            blendDesc.RenderTarget[i].BlendEnable = TRUE;
+            blendDesc.RenderTarget[i].BlendEnable = true;
             blendDesc.RenderTarget[i].RenderTargetWriteMask = eColorWriteAll;
 
             blendDesc.RenderTarget[i].BlendOp = eBlendOP_Add;
@@ -210,20 +210,20 @@ namespace chimera
         SAFE_DELETE(m_depthState);
         DepthStencilStateDesc depthDesc;
         ZeroMemory(&depthDesc, sizeof(DepthStencilStateDesc));
-        depthDesc.DepthEnable = FALSE;
-        depthDesc.StencilEnable = FALSE;
+        depthDesc.DepthEnable = false;
+        depthDesc.StencilEnable = false;
 
         m_depthState = factroy->VCreateDepthStencilState(&depthDesc);
 
         SceneNode::VOnRestore(graph);
     }
 
-    BOOL SpotlightNode::VIsVisible(ISceneGraph* graph)
+    bool SpotlightNode::VIsVisible(ISceneGraph* graph)
     {
         return graph->VGetFrustum()->IsInside(m_middle, m_distance);
     }
 
-    VOID SpotlightNode::_VRender(ISceneGraph* graph, RenderPath& path)
+    void SpotlightNode::_VRender(ISceneGraph* graph, RenderPath& path)
     {
         switch(path)
         {
@@ -336,7 +336,7 @@ namespace chimera
         }
     }
 
-    SpotlightNode::~SpotlightNode(VOID)
+    SpotlightNode::~SpotlightNode(void)
     {
         SAFE_DELETE(m_pCamera);
         SAFE_DELETE(m_alphaBlendingState);

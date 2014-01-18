@@ -1,7 +1,76 @@
-# Blender MTL File: 'CITY.blend'
-# Material Count: 29
+# Blender MTL File: 'BlenderGuru+-+City.blend'
+# Material Count: 43
 
-newmtl (null)
+newmtl BlackUte
+Ns 96.078431
+Ka 0.000000 0.000000 0.000000
+Kd 0.017583 0.017583 0.017583
+Ks 0.500000 0.500000 0.500000
+Ni 1.000000
+d 1.000000
+illum 2
+
+newmtl BlueCar
+Ns 21.568627
+Ka 0.000000 0.000000 0.000000
+Kd 0.110277 0.256477 0.429840
+Ks 0.045000 0.045000 0.045000
+Ni 1.000000
+d 0.000000
+illum 2
+map_Kd C:\Users\Andrew\Downloads\Obj_jazz\tex\Jazz_diffuse.jpg
+map_Ka C:\\Users\\Andrew\\Downloads\\Obj_jazz\\tex\\Jazz_diffuse.jpg
+map_d C:\\Users\\Andrew\\Downloads\\Obj_jazz\\tex\\Jazz_opacity.jpg
+
+newmtl Building_Balcony
+Ns 96.078431
+Ka 0.000000 0.000000 0.000000
+Kd 0.640000 0.640000 0.640000
+Ks 0.500000 0.500000 0.500000
+Ni 1.000000
+d 1.000000
+illum 2
+map_Kd C:\Users\Andrew\Pictures\Pictures\Textures\BuildingsHighRise0411_9_S.jpg
+
+newmtl Building_Balcony2
+Ns 96.078431
+Ka 0.000000 0.000000 0.000000
+Kd 0.147580 0.083693 0.062550
+Ks 0.500000 0.500000 0.500000
+Ni 1.000000
+d 1.000000
+illum 2
+map_Kd C:\Users\Andrew\Pictures\Pictures\Textures\BuildingsHighRise0411_9_S.jpg
+
+newmtl Building_Balcony2_NONE
+Ns 96.078431
+Ka 0.000000 0.000000 0.000000
+Kd 0.147580 0.083693 0.062550
+Ks 0.500000 0.500000 0.500000
+Ni 1.000000
+d 1.000000
+illum 2
+
+newmtl Building_Balcony4
+Ns 96.078431
+Ka 0.000000 0.000000 0.000000
+Kd 0.336014 0.302519 0.275906
+Ks 0.500000 0.500000 0.500000
+Ni 1.000000
+d 1.000000
+illum 2
+map_Kd C:\Users\Andrew\Pictures\Pictures\Textures\BuildingsHighRise0411_9_S.jpg
+
+newmtl Building_Balcony4_NONE
+Ns 96.078431
+Ka 0.000000 0.000000 0.000000
+Kd 0.336014 0.302519 0.275906
+Ks 0.500000 0.500000 0.500000
+Ni 1.000000
+d 1.000000
+illum 2
+
+newmtl Building_Balcony_NONE
 Ns 96.078431
 Ka 0.000000 0.000000 0.000000
 Kd 0.640000 0.640000 0.640000
@@ -10,7 +79,206 @@ Ni 1.000000
 d 1.000000
 illum 2
 
-newmtl Material
+newmtl Building_Ground
+Ns 96.078431
+Ka 0.000000 0.000000 0.000000
+Kd 0.640000 0.640000 0.640000
+Ks 0.500000 0.500000 0.500000
+Ni 1.000000
+d 1.000000
+illum 2
+map_Kd C:\Users\Andrew\Pictures\Pictures\Textures\BuildingsHighRise0411_9_S.jpg
+
+newmtl Building_Roof
+Ns 96.078431
+Ka 0.000000 0.000000 0.000000
+Kd 0.265961 0.247575 0.240435
+Ks 0.500000 0.500000 0.500000
+Ni 1.000000
+d 1.000000
+illum 2
+map_Kd C:\Users\Andrew\Pictures\Pictures\Textures\BuildingsHighRise0411_9_S.jpg
+
+newmtl Building_Roof2
+Ns 96.078431
+Ka 0.000000 0.000000 0.000000
+Kd 0.265961 0.247575 0.240435
+Ks 0.500000 0.500000 0.500000
+Ni 1.000000
+d 1.000000
+illum 2
+map_Kd C:\Users\Andrew\Pictures\Pictures\Textures\BuildingsHighRise0411_9_S.jpg
+
+newmtl Building_Roof3
+Ns 96.078431
+Ka 0.000000 0.000000 0.000000
+Kd 0.265961 0.247575 0.240435
+Ks 0.500000 0.500000 0.500000
+Ni 1.000000
+d 1.000000
+illum 2
+map_Kd C:\Users\Andrew\Pictures\Pictures\Textures\BuildingsHighRise0411_9_S.jpg
+
+newmtl Building_Roof5
+Ns 96.078431
+Ka 0.000000 0.000000 0.000000
+Kd 0.265961 0.247575 0.240435
+Ks 0.500000 0.500000 0.500000
+Ni 1.000000
+d 1.000000
+illum 2
+map_Kd C:\Users\Andrew\Pictures\Pictures\Textures\BuildingsHighRise0411_9_S.jpg
+
+newmtl Building_Sides
+Ns 96.078431
+Ka 0.000000 0.000000 0.000000
+Kd 0.640000 0.640000 0.640000
+Ks 0.500000 0.500000 0.500000
+Ni 1.000000
+d 1.000000
+illum 2
+map_Kd C:\Users\Andrew\Pictures\Pictures\Textures\BuildingsHighRise0411_9_S.jpg
+
+newmtl Building_Sides10
+Ns 96.078431
+Ka 0.000000 0.000000 0.000000
+Kd 0.640000 0.640000 0.640000
+Ks 0.500000 0.500000 0.500000
+Ni 1.000000
+d 1.000000
+illum 2
+map_Kd C:\Users\Andrew\Pictures\Pictures\Textures\BuildingsHighRise0411_9_S.jpg
+
+newmtl Building_Sides11
+Ns 96.078431
+Ka 0.000000 0.000000 0.000000
+Kd 0.640000 0.640000 0.640000
+Ks 0.500000 0.500000 0.500000
+Ni 1.000000
+d 1.000000
+illum 2
+map_Kd C:\Users\Andrew\Pictures\Pictures\Textures\BuildingsHighRise0411_9_S.jpg
+
+newmtl Building_Sides2
+Ns 96.078431
+Ka 0.000000 0.000000 0.000000
+Kd 0.640000 0.640000 0.640000
+Ks 0.500000 0.500000 0.500000
+Ni 1.000000
+d 1.000000
+illum 2
+map_Kd C:\Users\Andrew\Pictures\Pictures\Textures\BuildingsHighRise0411_9_S.jpg
+
+newmtl Building_Sides3
+Ns 96.078431
+Ka 0.000000 0.000000 0.000000
+Kd 0.640000 0.640000 0.640000
+Ks 0.500000 0.500000 0.500000
+Ni 1.000000
+d 1.000000
+illum 2
+map_Kd C:\Users\Andrew\Pictures\Pictures\Textures\BuildingsHighRise0411_9_S.jpg
+
+newmtl Building_Sides4
+Ns 96.078431
+Ka 0.000000 0.000000 0.000000
+Kd 0.640000 0.640000 0.640000
+Ks 0.500000 0.500000 0.500000
+Ni 1.000000
+d 1.000000
+illum 2
+map_Kd C:\Users\Andrew\Pictures\Pictures\Textures\BuildingsHighRise0411_9_S.jpg
+
+newmtl Building_Sides5
+Ns 96.078431
+Ka 0.000000 0.000000 0.000000
+Kd 0.640000 0.640000 0.640000
+Ks 0.500000 0.500000 0.500000
+Ni 1.000000
+d 1.000000
+illum 2
+map_Kd C:\Users\Andrew\Pictures\Pictures\Textures\BuildingsHighRise0411_9_S.jpg
+
+newmtl Building_Sides6
+Ns 96.078431
+Ka 0.000000 0.000000 0.000000
+Kd 0.640000 0.640000 0.640000
+Ks 0.500000 0.500000 0.500000
+Ni 1.000000
+d 1.000000
+illum 2
+map_Kd C:\Users\Andrew\Pictures\Pictures\Textures\BuildingsHighRise0411_9_S.jpg
+
+newmtl Building_Sides7
+Ns 96.078431
+Ka 0.000000 0.000000 0.000000
+Kd 0.640000 0.640000 0.640000
+Ks 0.500000 0.500000 0.500000
+Ni 1.000000
+d 1.000000
+illum 2
+map_Kd C:\Users\Andrew\Pictures\Pictures\Textures\BuildingsHighRise0411_9_S.jpg
+
+newmtl Building_Sides9
+Ns 96.078431
+Ka 0.000000 0.000000 0.000000
+Kd 0.640000 0.640000 0.640000
+Ks 0.500000 0.500000 0.500000
+Ni 1.000000
+d 1.000000
+illum 2
+map_Kd C:\Users\Andrew\Pictures\Pictures\Textures\BuildingsHighRise0411_9_S.jpg
+
+newmtl Door
+Ns 96.078431
+Ka 0.000000 0.000000 0.000000
+Kd 0.099817 0.060948 0.037332
+Ks 0.500000 0.500000 0.500000
+Ni 1.000000
+d 1.000000
+illum 2
+
+newmtl Floor_Roof_black
+Ns 96.078431
+Ka 0.000000 0.000000 0.000000
+Kd 0.069200 0.069200 0.069200
+Ks 0.500000 0.500000 0.500000
+Ni 1.000000
+d 1.000000
+illum 2
+
+newmtl Floor_Roof_brown
+Ns 96.078431
+Ka 0.000000 0.000000 0.000000
+Kd 0.196961 0.152961 0.117622
+Ks 0.500000 0.500000 0.500000
+Ni 1.000000
+d 1.000000
+illum 2
+
+newmtl GreenCar
+Ns 21.568627
+Ka 0.000000 0.000000 0.000000
+Kd 0.029271 0.429840 0.055424
+Ks 0.045000 0.045000 0.045000
+Ni 1.000000
+d 0.000000
+illum 2
+map_Kd C:\Users\Andrew\Downloads\Obj_jazz\tex\Jazz_diffuse.jpg
+map_Ka C:\\Users\\Andrew\\Downloads\\Obj_jazz\\tex\\Jazz_diffuse.jpg
+map_d C:\\Users\\Andrew\\Downloads\\Obj_jazz\\tex\\Jazz_opacity.jpg
+
+newmtl Headlights
+Ns 96.078431
+Ka 0.000000 0.000000 0.000000
+Kd 0.640000 0.640000 0.640000
+Ks 0.500000 0.500000 0.500000
+Ni 1.000000
+d 1.000000
+illum 2
+map_Kd C:\Users\Andrew\Downloads\Obj_jazz\tex\Jazz_diffuse.jpg
+
+newmtl Headlights_ute
 Ns 96.078431
 Ka 0.000000 0.000000 0.000000
 Kd 0.640000 0.640000 0.640000
@@ -19,7 +287,113 @@ Ni 1.000000
 d 1.000000
 illum 2
 
-newmtl Material.001
+newmtl Material__1
+Ns 21.568627
+Ka 0.000000 0.000000 0.000000
+Kd 0.110277 0.256477 0.429840
+Ks 0.045000 0.045000 0.045000
+Ni 1.000000
+d 0.000000
+illum 2
+map_Kd C:\Users\Andrew\Downloads\Obj_jazz\tex\Jazz_diffuse.jpg
+map_Ka C:\\Users\\Andrew\\Downloads\\Obj_jazz\\tex\\Jazz_diffuse.jpg
+map_d C:\\Users\\Andrew\\Downloads\\Obj_jazz\\tex\\Jazz_opacity.jpg
+
+newmtl None
+Ns 0
+Ka 0.000000 0.000000 0.000000
+Kd 0.8 0.8 0.8
+Ks 0.8 0.8 0.8
+d 1
+illum 2
+
+newmtl Rear_Lights
+Ns 96.078431
+Ka 0.000000 0.000000 0.000000
+Kd 0.639282 0.046244 0.000000
+Ks 0.500000 0.500000 0.500000
+Ni 1.000000
+d 1.000000
+illum 2
+
+newmtl Rear_Lights_Jazz_diffuse.jpg
+Ns 96.078431
+Ka 0.000000 0.000000 0.000000
+Kd 0.639282 0.046244 0.000000
+Ks 0.500000 0.500000 0.500000
+Ni 1.000000
+d 1.000000
+illum 2
+map_Kd C:\Users\Andrew\Downloads\Obj_jazz\tex\Jazz_diffuse.jpg
+
+newmtl RedCar
+Ns 21.568627
+Ka 0.000000 0.000000 0.000000
+Kd 0.429840 0.038460 0.016557
+Ks 0.045000 0.045000 0.045000
+Ni 1.000000
+d 0.000000
+illum 2
+map_Kd C:\Users\Andrew\Downloads\Obj_jazz\tex\Jazz_diffuse.jpg
+map_Ka C:\\Users\\Andrew\\Downloads\\Obj_jazz\\tex\\Jazz_diffuse.jpg
+map_d C:\\Users\\Andrew\\Downloads\\Obj_jazz\\tex\\Jazz_opacity.jpg
+
+newmtl RedUte
+Ns 96.078431
+Ka 0.000000 0.000000 0.000000
+Kd 0.640000 0.032136 0.000000
+Ks 0.500000 0.500000 0.500000
+Ni 1.000000
+d 1.000000
+illum 2
+
+newmtl Roads
+Ns 96.078431
+Ka 0.000000 0.000000 0.000000
+Kd 0.005583 0.005754 0.005678
+Ks 0.500000 0.500000 0.500000
+Ni 1.000000
+d 1.000000
+illum 2
+
+newmtl Roof_painted
+Ns 96.078431
+Ka 0.000000 0.000000 0.000000
+Kd 0.124741 0.106295 0.081793
+Ks 0.500000 0.500000 0.500000
+Ni 1.000000
+d 1.000000
+illum 2
+
+newmtl Rubbish
+Ns 96.078431
+Ka 0.000000 0.000000 0.000000
+Kd 0.037332 0.091548 0.016975
+Ks 0.500000 0.500000 0.500000
+Ni 1.000000
+d 1.000000
+illum 2
+
+newmtl Steel
+Ns 96.078431
+Ka 0.000000 0.000000 0.000000
+Kd 0.353148 0.531231 0.640000
+Ks 0.500000 0.500000 0.500000
+Ni 1.000000
+d 1.000000
+illum 2
+
+newmtl WhiteUte
+Ns 96.078431
+Ka 0.000000 0.000000 0.000000
+Kd 0.640000 0.640000 0.640000
+Ks 0.500000 0.500000 0.500000
+Ni 1.000000
+d 1.000000
+illum 2
+map_Kd C:\Users\Andrew\Downloads\Obj_jazz\tex\Jazz_diffuse.jpg
+
+newmtl WhiteUte_NONE
 Ns 96.078431
 Ka 0.000000 0.000000 0.000000
 Kd 0.640000 0.640000 0.640000
@@ -28,235 +402,22 @@ Ni 1.000000
 d 1.000000
 illum 2
 
-newmtl Material.002
+newmtl White_Car
+Ns 21.568627
+Ka 0.000000 0.000000 0.000000
+Kd 0.417758 0.417025 0.429840
+Ks 0.045000 0.045000 0.045000
+Ni 1.000000
+d 0.000000
+illum 2
+map_Kd C:\Users\Andrew\Downloads\Obj_jazz\tex\Jazz_diffuse.jpg
+map_Ka C:\\Users\\Andrew\\Downloads\\Obj_jazz\\tex\\Jazz_diffuse.jpg
+map_d C:\\Users\\Andrew\\Downloads\\Obj_jazz\\tex\\Jazz_opacity.jpg
+
+newmtl YellowUte
 Ns 96.078431
 Ka 0.000000 0.000000 0.000000
-Kd 0.640000 0.640000 0.640000
-Ks 0.500000 0.500000 0.500000
-Ni 1.000000
-d 1.000000
-illum 2
-
-newmtl Material.003
-Ns 96.078431
-Ka 0.000000 0.000000 0.000000
-Kd 0.640000 0.640000 0.640000
-Ks 0.500000 0.500000 0.500000
-Ni 1.000000
-d 1.000000
-illum 2
-
-newmtl Material.004
-Ns 96.078431
-Ka 0.000000 0.000000 0.000000
-Kd 0.640000 0.640000 0.640000
-Ks 0.500000 0.500000 0.500000
-Ni 1.000000
-d 1.000000
-illum 2
-
-newmtl Material.005
-Ns 96.078431
-Ka 0.000000 0.000000 0.000000
-Kd 0.640000 0.640000 0.640000
-Ks 0.500000 0.500000 0.500000
-Ni 1.000000
-d 1.000000
-illum 2
-
-newmtl Material.006
-Ns 96.078431
-Ka 0.000000 0.000000 0.000000
-Kd 0.640000 0.640000 0.640000
-Ks 0.500000 0.500000 0.500000
-Ni 1.000000
-d 1.000000
-illum 2
-
-newmtl Material.007
-Ns 96.078431
-Ka 0.000000 0.000000 0.000000
-Kd 0.640000 0.640000 0.640000
-Ks 0.500000 0.500000 0.500000
-Ni 1.000000
-d 1.000000
-illum 2
-
-newmtl Material.009
-Ns 96.078431
-Ka 0.000000 0.000000 0.000000
-Kd 0.640000 0.640000 0.640000
-Ks 0.500000 0.500000 0.500000
-Ni 1.000000
-d 1.000000
-illum 2
-
-newmtl Material.010
-Ns 96.078431
-Ka 0.000000 0.000000 0.000000
-Kd 0.640000 0.640000 0.640000
-Ks 0.500000 0.500000 0.500000
-Ni 1.000000
-d 1.000000
-illum 2
-
-newmtl Material.011
-Ns 96.078431
-Ka 0.000000 0.000000 0.000000
-Kd 0.640000 0.640000 0.640000
-Ks 0.500000 0.500000 0.500000
-Ni 1.000000
-d 1.000000
-illum 2
-
-newmtl Material.012
-Ns 96.078431
-Ka 0.000000 0.000000 0.000000
-Kd 0.640000 0.640000 0.640000
-Ks 0.500000 0.500000 0.500000
-Ni 1.000000
-d 1.000000
-illum 2
-
-newmtl Material.013
-Ns 96.078431
-Ka 0.000000 0.000000 0.000000
-Kd 0.640000 0.640000 0.640000
-Ks 0.500000 0.500000 0.500000
-Ni 1.000000
-d 1.000000
-illum 2
-
-newmtl Material.014
-Ns 96.078431
-Ka 0.000000 0.000000 0.000000
-Kd 0.640000 0.640000 0.640000
-Ks 0.500000 0.500000 0.500000
-Ni 1.000000
-d 1.000000
-illum 2
-
-newmtl Material.017
-Ns 92.156863
-Ka 0.000000 0.000000 0.000000
-Kd 0.512000 0.512000 0.512000
-Ks 0.500000 0.500000 0.500000
-Ni 1.000000
-d 1.000000
-illum 2
-
-newmtl Material.018
-Ns 92.156863
-Ka 0.000000 0.000000 0.000000
-Kd 0.512000 0.512000 0.512000
-Ks 0.500000 0.500000 0.500000
-Ni 1.000000
-d 1.000000
-illum 2
-
-newmtl Material.019
-Ns 92.156863
-Ka 0.000000 0.000000 0.000000
-Kd 0.512000 0.512000 0.512000
-Ks 0.500000 0.500000 0.500000
-Ni 1.000000
-d 1.000000
-illum 2
-
-newmtl Material.020
-Ns 92.156863
-Ka 0.000000 0.000000 0.000000
-Kd 0.512000 0.512000 0.512000
-Ks 0.500000 0.500000 0.500000
-Ni 1.000000
-d 1.000000
-illum 2
-
-newmtl Material.021
-Ns 92.156863
-Ka 0.000000 0.000000 0.000000
-Kd 0.512000 0.512000 0.512000
-Ks 0.500000 0.500000 0.500000
-Ni 1.000000
-d 1.000000
-illum 2
-
-newmtl Material.022
-Ns 92.156863
-Ka 0.000000 0.000000 0.000000
-Kd 0.512000 0.512000 0.512000
-Ks 0.500000 0.500000 0.500000
-Ni 1.000000
-d 1.000000
-illum 2
-
-newmtl Material.023
-Ns 92.156863
-Ka 0.000000 0.000000 0.000000
-Kd 0.512000 0.512000 0.512000
-Ks 0.500000 0.500000 0.500000
-Ni 1.000000
-d 1.000000
-illum 2
-
-newmtl Material.024
-Ns 92.156863
-Ka 0.000000 0.000000 0.000000
-Kd 0.512000 0.512000 0.512000
-Ks 0.500000 0.500000 0.500000
-Ni 1.000000
-d 1.000000
-illum 2
-
-newmtl Material.025
-Ns 92.156863
-Ka 0.000000 0.000000 0.000000
-Kd 0.512000 0.512000 0.512000
-Ks 0.500000 0.500000 0.500000
-Ni 1.000000
-d 1.000000
-illum 2
-
-newmtl Material.026
-Ns 92.156863
-Ka 0.000000 0.000000 0.000000
-Kd 0.512000 0.512000 0.512000
-Ks 0.500000 0.500000 0.500000
-Ni 1.000000
-d 1.000000
-illum 2
-
-newmtl Material.028
-Ns 92.156863
-Ka 0.000000 0.000000 0.000000
-Kd 0.512000 0.512000 0.512000
-Ks 0.500000 0.500000 0.500000
-Ni 1.000000
-d 1.000000
-illum 2
-
-newmtl Material.029
-Ns 92.156863
-Ka 0.000000 0.000000 0.000000
-Kd 0.512000 0.512000 0.512000
-Ks 0.500000 0.500000 0.500000
-Ni 1.000000
-d 1.000000
-illum 2
-
-newmtl Material.030
-Ns 92.156863
-Ka 0.000000 0.000000 0.000000
-Kd 0.512000 0.512000 0.512000
-Ks 0.500000 0.500000 0.500000
-Ni 1.000000
-d 1.000000
-illum 2
-
-newmtl Material.031
-Ns 92.156863
-Ka 0.000000 0.000000 0.000000
-Kd 0.512000 0.512000 0.512000
+Kd 0.328746 0.180091 0.000000
 Ks 0.500000 0.500000 0.500000
 Ni 1.000000
 d 1.000000

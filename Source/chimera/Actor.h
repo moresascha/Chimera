@@ -10,7 +10,7 @@ namespace chimera
   public:
       Actor(ActorId id);
 
-      virtual ~Actor(VOID) 
+      virtual ~Actor(void) 
       {
           TBD_FOR(m_components)
           {
@@ -18,7 +18,7 @@ namespace chimera
           }
       }
 
-      CONST std::map<ComponentId, std::unique_ptr<IActorComponent>>& VGetComponents(VOID) { return m_components; }
+      const std::map<ComponentId, std::unique_ptr<IActorComponent>>& VGetComponents(void) { return m_components; }
 
       template <typename T>
       T* VGetComponent(ComponentId id) 
@@ -37,12 +37,12 @@ namespace chimera
           return NULL;
       }
 
-      VOID VQueryComponent(ComponentId id, IActorComponent** cmp)
+      void VQueryComponent(ComponentId id, IActorComponent** cmp)
       {
           *cmp = VGetComponent(id);
       }
 
-      VOID VAddComponent(std::unique_ptr<IActorComponent> pComponent)
+      void VAddComponent(std::unique_ptr<IActorComponent> pComponent)
       {
           if(m_components.find(pComponent->VGetComponentId()) != m_components.end())
           {
@@ -51,7 +51,7 @@ namespace chimera
           m_components.insert(std::pair<ComponentId, std::unique_ptr<IActorComponent>>(pComponent->VGetComponentId(), std::move(pComponent)));
       }
 
-      BOOL VHasComponent(ComponentId id)
+      bool VHasComponent(ComponentId id)
       {
           return VGetComponent(id) != NULL;
       }

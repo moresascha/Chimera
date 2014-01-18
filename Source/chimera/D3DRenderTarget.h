@@ -20,51 +20,51 @@ namespace chimera
 
             D3D11_TEXTURE2D_DESC m_textureDesc;
 
-            BOOL m_initialized;
-            BOOL m_depthOnly;
+            bool m_initialized;
+            bool m_depthOnly;
 
-            UINT m_samples;
-            UINT m_quality;
+            uint m_samples;
+            uint m_quality;
 
-            FLOAT m_clearColor[4];
+            float m_clearColor[4];
 
-            UINT m_w, m_h;
+            uint m_w, m_h;
 
             IDeviceTexture* m_pDevTexture;
             IDeviceTexture* m_pDevDepthStencilTexture;
 
-            VOID Delete(VOID);
+            void Delete(void);
 
         public:
-            RenderTarget(BOOL depthOnly = FALSE);
+            RenderTarget(bool depthOnly = false);
 
-            BOOL VOnRestore(UINT width, UINT height, GraphicsFormat format, BOOL depthBuffer = TRUE, BOOL cubeMap = FALSE, UINT arraySize = 1);
+            bool VOnRestore(uint width, uint height, GraphicsFormat format, bool depthBuffer = true, bool cubeMap = false, uint arraySize = 1);
 
-            VOID VClear(VOID);
+            void VClear(void);
 
-            VOID VBind(VOID);
+            void VBind(void);
 
-            VOID VSetClearColor(FLOAT r, FLOAT g, FLOAT b, FLOAT a);
+            void VSetClearColor(float r, float g, float b, float a);
 
-            UINT VGetWidth(VOID) { return m_w; }
+            uint VGetWidth(void) { return m_w; }
 
-            UINT VGetHeight(VOID) { return m_h; }
+            uint VGetHeight(void) { return m_h; }
 
-            IDeviceTexture* VGetTexture(VOID);
+            IDeviceTexture* VGetTexture(void);
 
-            IDeviceTexture* VGetDepthStencilTexture(VOID);
+            IDeviceTexture* VGetDepthStencilTexture(void);
 
-            ID3D11ShaderResourceView* GetShaderRessourceView(VOID) CONST;
+            ID3D11ShaderResourceView* GetShaderRessourceView(void) const;
 
-            ID3D11ShaderResourceView* GetShaderRessourceViewDepth(VOID) CONST;
+            ID3D11ShaderResourceView* GetShaderRessourceViewDepth(void) const;
 
-            ID3D11RenderTargetView* GetRenderTargetView(VOID) CONST;
+            ID3D11RenderTargetView* GetRenderTargetView(void) const;
 
-            ID3D11DepthStencilView* GetDepthStencilView(VOID) CONST;
+            ID3D11DepthStencilView* GetDepthStencilView(void) const;
 
-            ID3D11Texture2D* GetTexture(VOID) CONST;
+            ID3D11Texture2D* GetTexture(void) const;
 
-            ~RenderTarget(VOID);
+            ~RenderTarget(void);
         };
     }
 }

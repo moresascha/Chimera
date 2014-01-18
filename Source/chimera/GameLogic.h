@@ -23,7 +23,7 @@ namespace chimera
 
         std::vector<ActorId> m_levelActors;
 
-        UINT m_levelActorsCount;
+        uint m_levelActorsCount;
 
         ILevel* m_pLevel;
 
@@ -32,11 +32,11 @@ namespace chimera
         GameState m_gameState;
 
     public:
-        BaseGameLogic(VOID);
+        BaseGameLogic(void);
 
-        BOOL VInitialise(FactoryPtr* facts);
+        bool VInitialise(FactoryPtr* facts);
 
-        VOID VAttachView(std::unique_ptr<IView> view, IActor* actor);
+        void VAttachView(std::unique_ptr<IView> view, IActor* actor);
 
         IActor* VFindActor(ActorId id);
 
@@ -46,54 +46,54 @@ namespace chimera
 
         IView* VFindView(LPCSTR name);
 
-        IHumanView* VGetHumanView(VOID) { return m_pHumanView; }
+        IHumanView* VGetHumanView(void) { return m_pHumanView; }
 
-        VOID VOnUpdate(ULONG millis);
+        void VOnUpdate(ulong millis);
 
-        IActor* VCreateActor(LPCSTR resource, BOOL appendToLevel = FALSE);
+        IActor* VCreateActor(LPCSTR resource, bool appendToLevel = false);
 
-        IActor* VCreateActor(std::unique_ptr<ActorDescription> desc, BOOL appendToLevel = FALSE);
+        IActor* VCreateActor(std::unique_ptr<ActorDescription> desc, bool appendToLevel = false);
    
-        VOID VRemoveActor(ActorId id);
+        void VRemoveActor(ActorId id);
 
-        VOID VOnRender(VOID);
+        void VOnRender(void);
 
-        ICommandInterpreter* VGetCommandInterpreter(VOID) { return m_pCmdInterpreter; }
+        ICommandInterpreter* VGetCommandInterpreter(void) { return m_pCmdInterpreter; }
 
-        GameState VGetGameState(VOID) { return m_gameState; }
+        GameState VGetGameState(void) { return m_gameState; }
 
-        VOID VSetGameState(GameState state) { m_gameState = state; }
+        void VSetGameState(GameState state) { m_gameState = state; }
 
-        BOOL VLoadLevel(CONST CHAR* ressource);
+        bool VLoadLevel(const char* ressource);
 
-        BOOL VLoadLevel(ILevel* level);
+        bool VLoadLevel(ILevel* level);
 
-        ILevel* VGetlevel(VOID) { return m_pLevel;}
+        ILevel* VGetlevel(void) { return m_pLevel;}
 
-        FLOAT GetLevelLoadProgress(VOID) CONST;
+        float GetLevelLoadProgress(void) const;
 
-        UINT GetLevelActorCount(VOID) CONST;
+        uint GetLevelActorCount(void) const;
 
-        IPhysicsSystem* VGetPhysics(VOID) { return m_pPhysics; }
+        IPhysicsSystem* VGetPhysics(void) { return m_pPhysics; }
 
-        VOID MoveActorDelegate(IEventPtr eventData);
+        void MoveActorDelegate(IEventPtr eventData);
 
-        VOID CreateActorDelegate(IEventPtr eventData);
+        void CreateActorDelegate(IEventPtr eventData);
 
-        VOID DeleteActorDelegate(IEventPtr eventData);
+        void DeleteActorDelegate(IEventPtr eventData);
 
-        VOID ActorCreatedDelegate(IEventPtr eventData);
+        void ActorCreatedDelegate(IEventPtr eventData);
 
-        VOID LoadLevelDelegate(IEventPtr eventData);
+        void LoadLevelDelegate(IEventPtr eventData);
 
-        VOID CreateProcessDelegate(IEventPtr eventData);
+        void CreateProcessDelegate(IEventPtr eventData);
 
-        VOID LevelLoadedDelegate(IEventPtr eventData);
+        void LevelLoadedDelegate(IEventPtr eventData);
 
-        IActorFactory* VGetActorFactory(VOID) { return m_pActorFactory; }
+        IActorFactory* VGetActorFactory(void) { return m_pActorFactory; }
 
-        IProcessManager* VGetProcessManager(VOID) { return m_pProcessManager; }
+        IProcessManager* VGetProcessManager(void) { return m_pProcessManager; }
 
-        virtual ~BaseGameLogic(VOID);
+        virtual ~BaseGameLogic(void);
     };
 }

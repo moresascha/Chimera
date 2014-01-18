@@ -8,12 +8,12 @@ namespace chimera
 {
     namespace util 
     {
-        Timer::Timer(VOID) 
+        Timer::Timer(void) 
         {
             this->VReset();
         }
 
-        VOID Timer::VTick(VOID) 
+        void Timer::VTick(void) 
         {
             m_lastCounter = m_currentCounter;
             m_currentCounter = timeGetTime();
@@ -28,9 +28,9 @@ namespace chimera
             }
         }
 
-        ULONG Timer::VGetTime(VOID) CONST
+        ulong Timer::VGetTime(void) const
         {
-            return (ULONG)(m_currentCounter - m_start);// / m_frequ);
+            return (ulong)(m_currentCounter - m_start);// / m_frequ);
         }
 
         /*
@@ -54,7 +54,7 @@ namespace chimera
             this->m_tickTock = !this->m_tickTock;
         }
          */
-        VOID Timer::VReset(VOID) 
+        void Timer::VReset(void) 
         {
             m_framesCount = 0;
             m_start = timeGetTime();
@@ -63,22 +63,22 @@ namespace chimera
             m_lastFramesStart = m_currentCounter = m_lastCounter = m_start;
         }
 
-        FLOAT Timer::VGetFPS(VOID) CONST
+        float Timer::VGetFPS(void) const
         {
-            return (FLOAT)m_lastFramesCount;
+            return (float)m_lastFramesCount;
         }
 
-        ULONG Timer::VGetLastMillis() CONST
+        ulong Timer::VGetLastMillis() const
         {
             return (m_currentCounter - m_lastCounter);//(ULONG)((1e3 * (m_currentCounter - m_lastCounter)) / m_frequ);
         }
 
-        ULONG Timer::VGetLastMicros() CONST
+        ulong Timer::VGetLastMicros() const
         {
-            return (ULONG)(1e3 * (m_currentCounter - m_lastCounter));// / m_frequ);
+            return (ulong)(1e3 * (m_currentCounter - m_lastCounter));// / m_frequ);
         }
 
-        Timer::~Timer(VOID) 
+        Timer::~Timer(void) 
         {
 
         }

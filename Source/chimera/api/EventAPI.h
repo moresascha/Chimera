@@ -6,37 +6,37 @@ namespace chimera
     class IEvent
     {
     public:
-        IEvent(VOID) {}
-        virtual EventType VGetEventType(VOID) CONST = 0;
-        virtual CONST CHAR* VGetName(VOID) CONST = 0;
-        virtual ~IEvent(VOID) {}
+        IEvent(void) {}
+        virtual EventType VGetEventType(void) const = 0;
+        virtual const char* VGetName(void) const = 0;
+        virtual ~IEvent(void) {}
     };
 
     class IEventManager
     {
     public:
-        virtual BOOL VAddEventListener(CONST EventListener& listener, CONST EventType& type) = 0;
+        virtual bool VAddEventListener(const EventListener& listener, const EventType& type) = 0;
 
-        virtual BOOL VRemoveEventListener(CONST EventListener& listener, CONST EventType& type) = 0;
+        virtual bool VRemoveEventListener(const EventListener& listener, const EventType& type) = 0;
 
-        virtual BOOL VQueueEvent(CONST IEventPtr& event) = 0;
+        virtual bool VQueueEvent(const IEventPtr& event) = 0;
 
-        virtual BOOL VQueueEventTest(CONST IEventPtr& event) = 0;
+        virtual bool VQueueEventTest(const IEventPtr& event) = 0;
 
-        virtual BOOL VQueueEventThreadSave(CONST IEventPtr& event) = 0;
+        virtual bool VQueueEventThreadSave(const IEventPtr& event) = 0;
 
-        virtual BOOL VTriggetEvent(CONST IEventPtr& event) = 0;
+        virtual bool VTriggetEvent(const IEventPtr& event) = 0;
 
-        virtual BOOL VAbortEvent(CONST EventType& type, BOOL all = FALSE) = 0;
+        virtual bool VAbortEvent(const EventType& type, bool all = false) = 0;
 
-        virtual BOOL VUpdate(CONST ULONG maxMillis = (ULONG)-1) = 0;
+        virtual bool VUpdate(const ulong maxMillis = (ulong)-1) = 0;
 
-        virtual ~IEventManager(VOID) {}
+        virtual ~IEventManager(void) {}
     };
 
     class IEventFactory
     {
     public:
-        virtual IEventManager* VCreateEventManager(VOID) = 0;
+        virtual IEventManager* VCreateEventManager(void) = 0;
     };
 }

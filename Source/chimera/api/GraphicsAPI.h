@@ -8,281 +8,281 @@ namespace chimera
     class IDeviceTexture : public VRamHandle
     {
     public:
-        virtual VOID* VGetDevicePtr(VOID) = 0;
+        virtual void* VGetDevicePtr(void) = 0;
 
-        virtual VOID* VGetViewDevicePtr(VOID) = 0;
+        virtual void* VGetViewDevicePtr(void) = 0;
 
-        virtual ~IDeviceTexture(VOID) {}
+        virtual ~IDeviceTexture(void) {}
     };
 
     class IDeviceBuffer
     {
     public:
-        virtual VOID VSetData(CONST VOID* v, UINT bytes) = 0;
+        virtual void VSetData(const void* v, uint bytes) = 0;
 
-        virtual VOID VCreate(VOID) = 0;
+        virtual void VCreate(void) = 0;
 
-        virtual VOID VBind(VOID) = 0;
+        virtual void VBind(void) = 0;
 
-        virtual UINT VGetByteCount(VOID) CONST = 0;
+        virtual uint VGetByteCount(void) const = 0;
 
-        virtual UINT VGetElementCount(VOID) CONST = 0;
+        virtual uint VGetElementCount(void) const = 0;
 
-        virtual VOID* VGetDevicePtr(VOID) = 0;
+        virtual void* VGetDevicePtr(void) = 0;
 
-        virtual ~IDeviceBuffer(VOID) {}
+        virtual ~IDeviceBuffer(void) {}
     };
 
     class IVertexBuffer : public virtual IDeviceBuffer
     {
     public:
-        virtual UINT VGetStride(VOID) CONST = 0;
+        virtual uint VGetStride(void) const = 0;
 
-        virtual VOID VInitParamater(UINT vertexCount, UINT stride, CONST VOID* data = NULL, BOOL cpuAccessFlags = FALSE) = 0;
+        virtual void VInitParamater(uint vertexCount, uint stride, const void* data = NULL, bool cpuAccessFlags = false) = 0;
 
-        virtual UINT VGetOffset(VOID) CONST = 0;
+        virtual uint VGetOffset(void) const = 0;
 
-        virtual ~IVertexBuffer(VOID) {}
+        virtual ~IVertexBuffer(void) {}
     };
 
     class IGeometry : public VRamHandle
     {
     public:
-        virtual VOID VBind(VOID) = 0;
+        virtual void VBind(void) = 0;
         
-        virtual VOID VDraw(VOID) = 0;
+        virtual void VDraw(void) = 0;
         
-        virtual VOID VDraw(UINT start, UINT count) = 0;
+        virtual void VDraw(uint start, uint count) = 0;
 
-        virtual VOID VSetTopology(GeometryTopology topo) = 0;
+        virtual void VSetTopology(GeometryTopology topo) = 0;
 
-        virtual VOID VSetVertexBuffer(CONST FLOAT* vertices, UINT count, UINT byteStride, BOOL cpuWrite = FALSE) = 0;
+        virtual void VSetVertexBuffer(const float* vertices, uint count, uint byteStride, bool cpuWrite = false) = 0;
 
-        virtual VOID VSetIndexBuffer(CONST UINT* indices, UINT size) = 0;
+        virtual void VSetIndexBuffer(const uint* indices, uint size) = 0;
 
         //virtual VOID VAddInstanceBuffer(FLOAT* vertices, UINT count, UINT byteStride) = 0;
 
-        virtual VOID VSetInstanceBuffer(IVertexBuffer* instanceBuffer) = 0;
+        virtual void VSetInstanceBuffer(IVertexBuffer* instanceBuffer) = 0;
 
-        virtual IVertexBuffer* VGetVertexBuffer(VOID) = 0;
+        virtual IVertexBuffer* VGetVertexBuffer(void) = 0;
 
-        virtual IVertexBuffer* VGetInstanceBuffer(VOID) = 0;
+        virtual IVertexBuffer* VGetInstanceBuffer(void) = 0;
 
-        virtual IDeviceBuffer* VGetIndexBuffer(VOID) = 0;
+        virtual IDeviceBuffer* VGetIndexBuffer(void) = 0;
 
-        virtual ~IGeometry(VOID) {}
+        virtual ~IGeometry(void) {}
     };
 
     class IBlendState
     {
     public:
-        virtual VOID* VGetDevicePtr(VOID) = 0;
+        virtual void* VGetDevicePtr(void) = 0;
         
-        virtual ~IBlendState(VOID) {}
+        virtual ~IBlendState(void) {}
     };
 
     class IRasterState
     {
     public:
-        virtual VOID* VGetDevicePtr(VOID) = 0;
+        virtual void* VGetDevicePtr(void) = 0;
 
-        virtual ~IRasterState(VOID) {}
+        virtual ~IRasterState(void) {}
     };
 
     class IDepthStencilState
     {
     public:
-        virtual VOID* VGetDevicePtr(VOID) = 0;
+        virtual void* VGetDevicePtr(void) = 0;
         
-        virtual ~IDepthStencilState(VOID) {}
+        virtual ~IDepthStencilState(void) {}
     };
 
     class IGraphicsStateFactroy
     {
     public:
-        virtual IBlendState* VCreateBlendState(CONST BlendStateDesc* desc) = 0;
+        virtual IBlendState* VCreateBlendState(const BlendStateDesc* desc) = 0;
 
-        virtual IRasterState* VCreateRasterState(CONST RasterStateDesc* desc) = 0;
+        virtual IRasterState* VCreateRasterState(const RasterStateDesc* desc) = 0;
 
-        virtual IDepthStencilState* VCreateDepthStencilState(CONST DepthStencilStateDesc* desc) = 0;
+        virtual IDepthStencilState* VCreateDepthStencilState(const DepthStencilStateDesc* desc) = 0;
 
-        virtual ~IGraphicsStateFactroy(VOID) { }
+        virtual ~IGraphicsStateFactroy(void) { }
     };
 
     class IRenderTarget
     {
     public:
-        virtual BOOL VOnRestore(UINT width, UINT height, GraphicsFormat format, BOOL depthBuffer = TRUE, BOOL cubeMap = FALSE, UINT arraySize = 1) = 0;
+        virtual bool VOnRestore(uint width, uint height, GraphicsFormat format, bool depthBuffer = true, bool cubeMap = false, uint arraySize = 1) = 0;
 
-        virtual VOID VClear(VOID) = 0;
+        virtual void VClear(void) = 0;
 
-        virtual VOID VBind(VOID) = 0;
+        virtual void VBind(void) = 0;
 
-        virtual VOID VSetClearColor(FLOAT r, FLOAT g, FLOAT b, FLOAT a) = 0;
+        virtual void VSetClearColor(float r, float g, float b, float a) = 0;
 
-        virtual UINT VGetWidth(VOID) = 0;
+        virtual uint VGetWidth(void) = 0;
 
-        virtual UINT VGetHeight(VOID) = 0;
+        virtual uint VGetHeight(void) = 0;
 
-        virtual IDeviceTexture* VGetTexture(VOID) = 0;
+        virtual IDeviceTexture* VGetTexture(void) = 0;
 
-        virtual IDeviceTexture* VGetDepthStencilTexture(VOID) = 0;
+        virtual IDeviceTexture* VGetDepthStencilTexture(void) = 0;
 
-        virtual ~IRenderTarget(VOID) {}
+        virtual ~IRenderTarget(void) {}
     };
 
     class IAlbedoBuffer
     {
     public:
-        virtual VOID VClearAndBindRenderTargets(VOID) = 0;
+        virtual void VClearAndBindRenderTargets(void) = 0;
 
-        virtual VOID VUnbindRenderTargets(VOID) = 0;
+        virtual void VUnbindRenderTargets(void) = 0;
         
-        virtual VOID VOnRestore(UINT w, UINT h) = 0;
+        virtual void VOnRestore(uint w, uint h) = 0;
 
         virtual IRenderTarget* VGetRenderTarget(Diff_RenderTarget target) = 0;
 
-        virtual IRenderTarget* VGetDepthStencilTarget(VOID) = 0;
+        virtual IRenderTarget* VGetDepthStencilTarget(void) = 0;
 
-        virtual ~IAlbedoBuffer(VOID) {}
+        virtual ~IAlbedoBuffer(void) {}
     };
 
     class IConstShaderBuffer
     {
     public:
-        virtual VOID VInit(UINT byteSize, VOID* data = NULL) = 0;
+        virtual void VInit(uint byteSize, void* data = NULL) = 0;
 
-        virtual VOID* VMap(VOID) = 0;
+        virtual void* VMap(void) = 0;
 
-        virtual VOID VUnmap(VOID) = 0;
+        virtual void VUnmap(void) = 0;
 
-        virtual VOID VSetData(VOID* data) = 0;
+        virtual void VSetData(void* data) = 0;
 
-        virtual VOID VSetFromMatrix(CONST util::Mat4& mat) = 0;
+        virtual void VSetFromMatrix(const util::Mat4& mat) = 0;
 
-        virtual VOID VActivate(ConstShaderBufferSlot slot, UINT shader = ACTIVATE_ALL) = 0;
+        virtual void VActivate(ConstShaderBufferSlot slot, uint shader = ACTIVATE_ALL) = 0;
 
-        virtual VOID* VGetDevicePtr(VOID) = 0;
+        virtual void* VGetDevicePtr(void) = 0;
 
-        virtual ~IConstShaderBuffer(VOID) {}
+        virtual ~IConstShaderBuffer(void) {}
     };
 
     class IRenderer 
     {
     public:
-        virtual BOOL VCreate(CM_WINDOW_CALLBACK cb, CM_INSTANCE instance, LPCWSTR wndTitle, UINT width, UINT height) = 0;
-        virtual VOID VDestroy(VOID) = 0;
+        virtual bool VCreate(CM_WINDOW_CALLBACK cb, CM_INSTANCE instance, LPCWSTR wndTitle, uint width, uint height) = 0;
+        virtual void VDestroy(void) = 0;
 
-        virtual UINT VGetWidth(VOID) = 0;
-        virtual UINT VGetHeight(VOID) = 0;
+        virtual uint VGetWidth(void) = 0;
+        virtual uint VGetHeight(void) = 0;
 
-        virtual VOID VSetBackground(FLOAT r, FLOAT g, FLOAT b, FLOAT a) = 0;
+        virtual void VSetBackground(float r, float g, float b, float a) = 0;
 
-        virtual BOOL VOnRestore(VOID) = 0;
+        virtual bool VOnRestore(void) = 0;
 
-        virtual VOID VResize(UINT w, UINT h) = 0;
+        virtual void VResize(uint w, uint h) = 0;
 
-        virtual VOID VPreRender(VOID) = 0;
-        virtual VOID VPostRender(VOID) = 0;
-        virtual VOID VPresent(VOID) = 0;
+        virtual void VPreRender(void) = 0;
+        virtual void VPostRender(void) = 0;
+        virtual void VPresent(void) = 0;
 
-        virtual VOID VSetViewTransform(CONST util::Mat4& mat, CONST util::Mat4& invMat, CONST util::Vec3& eyePos) = 0;
-        virtual VOID VSetProjectionTransform(CONST util::Mat4& mat, FLOAT distance) = 0;
-        virtual VOID VSetWorldTransform(CONST util::Mat4& mat) = 0;
+        virtual void VSetViewTransform(const util::Mat4& mat, const util::Mat4& invMat, const util::Vec3& eyePos) = 0;
+        virtual void VSetProjectionTransform(const util::Mat4& mat, float distance) = 0;
+        virtual void VSetWorldTransform(const util::Mat4& mat) = 0;
 
-        virtual VOID VPushViewTransform(CONST util::Mat4& mat, CONST util::Mat4& invMat, CONST util::Vec3& eyePos) = 0;
-        virtual VOID VPopViewTransform(VOID) = 0;
+        virtual void VPushViewTransform(const util::Mat4& mat, const util::Mat4& invMat, const util::Vec3& eyePos) = 0;
+        virtual void VPopViewTransform(void) = 0;
 
-        virtual VOID VPushProjectionTransform(CONST util::Mat4& mat, FLOAT distance) = 0;
-        virtual VOID VPopProjectionTransform(VOID) = 0;
+        virtual void VPushProjectionTransform(const util::Mat4& mat, float distance) = 0;
+        virtual void VPopProjectionTransform(void) = 0;
 
-        virtual VOID VPushWorldTransform(CONST util::Mat4& mat) = 0;
-        virtual VOID VPopWorldTransform(VOID) = 0;
+        virtual void VPushWorldTransform(const util::Mat4& mat) = 0;
+        virtual void VPopWorldTransform(void) = 0;
 
-        virtual VOID VPushMaterial(IMaterial& mat) = 0;
-        virtual VOID VPopMaterial(VOID) = 0;
+        virtual void VPushMaterial(IMaterial& mat) = 0;
+        virtual void VPopMaterial(void) = 0;
 
-        virtual VOID VSetViewPort(UINT w, UINT h) = 0;
+        virtual void VSetViewPort(uint w, uint h) = 0;
 
-        virtual VOID VPushBlendState(IBlendState* state) = 0;
-        virtual VOID VPopBlendState(VOID) = 0;
+        virtual void VPushBlendState(IBlendState* state) = 0;
+        virtual void VPopBlendState(void) = 0;
 
-        virtual VOID VSetDefaultMaterial(VOID) = 0;
-        virtual VOID VSetDefaultTexture(VOID) = 0;
+        virtual void VSetDefaultMaterial(void) = 0;
+        virtual void VSetDefaultTexture(void) = 0;
 
-        virtual IAlbedoBuffer* VGetAlbedoBuffer(VOID) = 0;
+        virtual IAlbedoBuffer* VGetAlbedoBuffer(void) = 0;
 
-        virtual VOID VPushAlphaBlendState(VOID) = 0;
+        virtual void VPushAlphaBlendState(void) = 0;
 
-        virtual VOID VClearAndBindBackBuffer(VOID) = 0;
-        virtual VOID VBindBackBuffer(VOID) = 0;
+        virtual void VClearAndBindBackBuffer(void) = 0;
+        virtual void VBindBackBuffer(void) = 0;
 
-        virtual VOID VPushCurrentRenderTarget(IRenderTarget* target) = 0;
-        virtual VOID VPopCurrentRenderTarget(VOID) = 0;
-        virtual IRenderTarget* VGetCurrentRenderTarget(VOID) = 0;
+        virtual void VPushCurrentRenderTarget(IRenderTarget* target) = 0;
+        virtual void VPopCurrentRenderTarget(void) = 0;
+        virtual IRenderTarget* VGetCurrentRenderTarget(void) = 0;
 
-        virtual VOID VPushRasterState(IRasterState* rstate) = 0;
-        virtual VOID VPopRasterState(VOID) = 0;
+        virtual void VPushRasterState(IRasterState* rstate) = 0;
+        virtual void VPopRasterState(void) = 0;
 
-        virtual VOID VPushDepthStencilState(IDepthStencilState* rstate, UINT stencilRef = 0) = 0;
-        virtual VOID VPopDepthStencilState(VOID) = 0;
+        virtual void VPushDepthStencilState(IDepthStencilState* rstate, uint stencilRef = 0) = 0;
+        virtual void VPopDepthStencilState(void) = 0;
 
-        virtual VOID VSetTexture(TextureSlot slot, IDeviceTexture* texture) = 0;
-        virtual VOID VSetTextures(TextureSlot startSlot, IDeviceTexture** texture, UINT count) = 0;
+        virtual void VSetTexture(TextureSlot slot, IDeviceTexture* texture) = 0;
+        virtual void VSetTextures(TextureSlot startSlot, IDeviceTexture** texture, uint count) = 0;
 
-        virtual VOID VSetDiffuseTexture(IDeviceTexture* texture) = 0;
+        virtual void VSetDiffuseTexture(IDeviceTexture* texture) = 0;
 
-        virtual VOID VSetNormalMapping(BOOL enable) = 0;
+        virtual void VSetNormalMapping(bool enable) = 0;
 
         virtual IConstShaderBuffer* VGetConstShaderBuffer(ConstShaderBufferSlot slot) = 0;
 
-        virtual IShaderCache* VGetShaderCache(VOID) = 0;
+        virtual IShaderCache* VGetShaderCache(void) = 0;
 
-        virtual CM_HWND VGetWindowHandle(VOID) = 0;
+        virtual CM_HWND VGetWindowHandle(void) = 0;
 
-        virtual VOID VDrawScreenQuad(INT x, INT y, INT w, INT h) = 0;
+        virtual void VDrawScreenQuad(int x, int y, int w, int h) = 0;
 
-        virtual VOID VDrawScreenQuad(VOID) = 0;
+        virtual void VDrawScreenQuad(void) = 0;
 
-        virtual VOID VDrawLine(INT x, INT y, INT w, INT h) = 0;
+        virtual void VDrawLine(int x, int y, int w, int h) = 0;
 
-        virtual VOID* VGetDevice(VOID) = 0;
+        virtual void* VGetDevice(void) = 0;
 
-        virtual VOID VSetFullscreen(BOOL fullscreen) = 0;
+        virtual void VSetFullscreen(bool fullscreen) = 0;
 
-        virtual VOID VSetLightSettings(CONST util::Vec4& color, CONST util::Vec3& position, CONST util::Vec3& viewDir, FLOAT radius, FLOAT angel, FLOAT intensity, BOOL castShadow) = 0;
+        virtual void VSetLightSettings(const util::Vec4& color, const util::Vec3& position, const util::Vec3& viewDir, float radius, float angel, float intensity, bool castShadow) = 0;
 
-        virtual VOID VSetLightSettings(CONST util::Vec4& color, CONST util::Vec3& position, FLOAT radius, BOOL castShadow) = 0;
+        virtual void VSetLightSettings(const util::Vec4& color, const util::Vec3& position, float radius, bool castShadow) = 0;
 
-        virtual ~IRenderer(VOID) {}
+        virtual ~IRenderer(void) {}
     };
 
     class IShader
     {
     public:
-        virtual BOOL VCompile(ErrorLog* log = NULL) = 0;
+        virtual bool VCompile(ErrorLog* log = NULL) = 0;
 
-        virtual VOID VBind(VOID) = 0;
+        virtual void VBind(void) = 0;
 
-        virtual VOID VUnbind(VOID) = 0;
+        virtual void VUnbind(void) = 0;
 
-        virtual ShaderType VGetType(VOID) = 0;
+        virtual ShaderType VGetType(void) = 0;
 
-        virtual ~IShader(VOID) {}
+        virtual ~IShader(void) {}
     };
 
     class IShaderProgram
     {
     public:
-        virtual VOID VBind(VOID) = 0;
+        virtual void VBind(void) = 0;
 
-        virtual VOID VUnbind(VOID) = 0;
+        virtual void VUnbind(void) = 0;
 
-        virtual VOID VAddShader(IShader* shader) = 0;
+        virtual void VAddShader(IShader* shader) = 0;
 
-        virtual BOOL VCompile(ErrorLog* log = NULL) = 0;
+        virtual bool VCompile(ErrorLog* log = NULL) = 0;
 
-        virtual ~IShaderProgram(VOID) {}
+        virtual ~IShaderProgram(void) {}
     };
 
     class IShaderCache
@@ -296,27 +296,27 @@ namespace chimera
 
         virtual IShaderProgram* VGetShaderProgram(LPCSTR name) = 0;
 
-        virtual IShader* VCreateShader(LPCSTR name, CONST CMShaderDescription* desc, ShaderType t) = 0;
+        virtual IShader* VCreateShader(LPCSTR name, const CMShaderDescription* desc, ShaderType t) = 0;
 
-        virtual IShaderProgram* VCreateShaderProgram(LPCSTR name, CONST CMShaderProgramDescription* desc) = 0;
+        virtual IShaderProgram* VCreateShaderProgram(LPCSTR name, const CMShaderProgramDescription* desc) = 0;
 
-        virtual ~IShaderCache(VOID) {}
+        virtual ~IShaderCache(void) {}
     };
 
     class IPicker
     {
     public:
-        virtual BOOL VCreate(VOID) = 0;
+        virtual bool VCreate(void) = 0;
 
-        virtual VOID VPostRender(VOID) = 0;
+        virtual void VPostRender(void) = 0;
 
-        virtual VOID VRender(VOID) = 0;
+        virtual void VRender(void) = 0;
 
-        virtual BOOL VHasPicked(VOID) CONST  = 0;
+        virtual bool VHasPicked(void) const  = 0;
 
-        virtual ActorId VPick(VOID) CONST = 0;
+        virtual ActorId VPick(void) const = 0;
 
-        virtual ~IPicker(VOID) {}
+        virtual ~IPicker(void) {}
     };
 
     //factory
@@ -324,9 +324,9 @@ namespace chimera
     class IShaderFactory
     {
     public:
-        virtual IShaderProgram* VCreateShaderProgram(VOID) = 0;
+        virtual IShaderProgram* VCreateShaderProgram(void) = 0;
 
-        virtual IShaderProgram* VCreateShaderProgram(CONST CMShaderProgramDescription* desc)
+        virtual IShaderProgram* VCreateShaderProgram(const CMShaderProgramDescription* desc)
         {
             IShaderProgram* p = VCreateShaderProgram();
 
@@ -347,39 +347,39 @@ namespace chimera
             return p;
         }
 
-        virtual IShader* VCreateVertexShader(CONST CMVertexShaderDescription* desc) = 0;
+        virtual IShader* VCreateVertexShader(const CMVertexShaderDescription* desc) = 0;
 
-        virtual IShader* VCreateFragmentShader(CONST CMShaderDescription* desc) = 0;
+        virtual IShader* VCreateFragmentShader(const CMShaderDescription* desc) = 0;
 
-        virtual IShader* VCreateGeometryShader(CONST CMShaderDescription* desc) = 0;
+        virtual IShader* VCreateGeometryShader(const CMShaderDescription* desc) = 0;
 
-        virtual ~IShaderFactory(VOID) {}
+        virtual ~IShaderFactory(void) {}
         //TODO: tessellation
     };
 
     class IGraphicsFactory
     {
     public:
-        virtual std::unique_ptr<IRenderer> VCreateRenderer(VOID) = 0;
+        virtual std::unique_ptr<IRenderer> VCreateRenderer(void) = 0;
 
-        virtual std::unique_ptr<IRenderScreen> VCreateRenderScreen(VOID) = 0;
+        virtual std::unique_ptr<IRenderScreen> VCreateRenderScreen(void) = 0;
 
-        virtual std::unique_ptr<IRenderTarget> VCreateRenderTarget(VOID) = 0;
+        virtual std::unique_ptr<IRenderTarget> VCreateRenderTarget(void) = 0;
 
-        virtual std::unique_ptr<IGeometry> VCreateGeoemtry(VOID) = 0;
+        virtual std::unique_ptr<IGeometry> VCreateGeoemtry(void) = 0;
 
-        virtual std::unique_ptr<IVertexBuffer> VCreateVertexBuffer(VOID) = 0;
+        virtual std::unique_ptr<IVertexBuffer> VCreateVertexBuffer(void) = 0;
 
-        virtual std::unique_ptr<IDeviceBuffer> VCreateIndexBuffer(VOID) = 0;
+        virtual std::unique_ptr<IDeviceBuffer> VCreateIndexBuffer(void) = 0;
 
-        virtual std::unique_ptr<IDeviceTexture> VCreateTexture(CONST CMTextureDescription* desc) = 0;
+        virtual std::unique_ptr<IDeviceTexture> VCreateTexture(const CMTextureDescription* desc) = 0;
 
-        virtual std::unique_ptr<IConstShaderBuffer> VCreateConstShaderBuffer(VOID) = 0;
+        virtual std::unique_ptr<IConstShaderBuffer> VCreateConstShaderBuffer(void) = 0;
 
-        virtual std::unique_ptr<IGraphicsStateFactroy> VCreateStateFactory(VOID) = 0;
+        virtual std::unique_ptr<IGraphicsStateFactroy> VCreateStateFactory(void) = 0;
 
-        virtual std::unique_ptr<IShaderFactory> VCreateShaderFactory(VOID)  = 0;
+        virtual std::unique_ptr<IShaderFactory> VCreateShaderFactory(void)  = 0;
 
-        virtual ~IGraphicsFactory(VOID) {}
+        virtual ~IGraphicsFactory(void) {}
     };
 }

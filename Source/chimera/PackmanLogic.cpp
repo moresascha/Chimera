@@ -4,14 +4,14 @@
 #include "AIView.h"
 namespace packman
 {
-    BOOL PackmanLogic::VInit(VOID)
+    bool PackmanLogic::VInit(void)
     {
         ADD_EVENT_LISTENER(this, &PackmanLogic::ComponentCreatedDelegate, chimera::NewComponentCreatedEvent::TYPE);
 
         return chimera::BaseGameLogic::VInit();
     }
 
-    VOID PackmanLogic::ComponentCreatedDelegate(chimera::IEventPtr data)
+    void PackmanLogic::ComponentCreatedDelegate(chimera::IEventPtr data)
     {
         std::shared_ptr<chimera::NewComponentCreatedEvent> pCastEventData = std::static_pointer_cast<chimera::NewComponentCreatedEvent>(data);
         if(pCastEventData->m_id == packman::AIComponent::COMPONENT_ID)
@@ -21,7 +21,7 @@ namespace packman
         }
     }
 
-    PackmanLogic::~PackmanLogic(VOID)
+    PackmanLogic::~PackmanLogic(void)
     {
         REMOVE_EVENT_LISTENER(this, &PackmanLogic::ComponentCreatedDelegate, chimera::NewComponentCreatedEvent::TYPE);
     }

@@ -8,7 +8,7 @@ namespace chimera
         class _Value
         {
         public:
-            virtual ~_Value(VOID) { }
+            virtual ~_Value(void) { }
         };
 
         template<class T>
@@ -24,12 +24,12 @@ namespace chimera
 
             }
 
-            Value(CONST Value<T>& value)
+            Value(const Value<T>& value)
             {
                 m_value = value.GetValue();
             }
 
-            T GetValue(VOID)
+            T GetValue(void)
             {
                 return m_value;
             }
@@ -41,9 +41,9 @@ namespace chimera
             std::map<std::string, _Value*> m_values;
 
         public:
-            Config(VOID) { }
+            Config(void) { }
 
-            BOOL VLoadConfigFile(LPCSTR file);
+            bool VLoadConfigFile(LPCSTR file);
 
             template<class T>
             T GetValue(LPCSTR value)
@@ -59,9 +59,9 @@ namespace chimera
                 return v->GetValue();
             }
 
-            BOOL VGetBool(LPCSTR value)
+            bool VGetBool(LPCSTR value)
             {
-                return GetValue<BOOL>(value);
+                return GetValue<bool>(value);
             }
 
             std::string VGetString(LPCSTR value)
@@ -69,22 +69,22 @@ namespace chimera
                 return GetValue<std::string>(value);
             }
 
-            INT VGetInteger(LPCSTR value)
+            int VGetInteger(LPCSTR value)
             {
-                return GetValue<INT>(value);
+                return GetValue<int>(value);
             }
 
-            FLOAT VGetFloat(LPCSTR value)
+            float VGetFloat(LPCSTR value)
             {
-                return GetValue<FLOAT>(value);
+                return GetValue<float>(value);
             }
 
             DOUBLE VGetDouble(LPCSTR value)
             {
-                return GetValue<BOOL>(value);
+                return GetValue<bool>(value);
             }
 
-            ~Config(VOID);
+            ~Config(void);
         };
     }
 }

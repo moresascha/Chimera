@@ -7,38 +7,38 @@ namespace chimera
 
         class RTDevTexture : public IDeviceTexture
         {
-            VOID* m_pView;
-            VOID* m_pTexture;
+            void* m_pView;
+            void* m_pTexture;
         public:
-            RTDevTexture(VOID* view, VOID* texture) : m_pView(view), m_pTexture(texture)
+            RTDevTexture(void* view, void* texture) : m_pView(view), m_pTexture(texture)
             {
 
             }
 
-            VOID* VGetDevicePtr()
+            void* VGetDevicePtr()
             {
                 return m_pTexture;
             }
 
-            VOID* VGetViewDevicePtr(VOID)
+            void* VGetViewDevicePtr(void)
             {
                 return m_pView;
             }
 
-            BOOL VCreate(VOID) { return TRUE; }
+            bool VCreate(void) { return true; }
 
-            VOID VDestroy() {}
+            void VDestroy() {}
             
-            UINT VGetByteCount(VOID) CONST { return 0; }
+            uint VGetByteCount(void) const { return 0; }
         };
 
-        RenderTarget::RenderTarget(BOOL depthOnly) : 
+        RenderTarget::RenderTarget(bool depthOnly) : 
             m_pShaderRessourceView(NULL), 
             m_pTexture(NULL), 
             m_pDepthStencilTexture(NULL), 
             m_pRenderTargetView(NULL),
             m_pDepthStencilView(NULL),
-            m_initialized(FALSE), 
+            m_initialized(false), 
             m_depthOnly(depthOnly),
             m_quality(0), 
             m_samples(1),
@@ -50,32 +50,32 @@ namespace chimera
             VSetClearColor(0,0,0,0);
         }
 
-        ID3D11ShaderResourceView* RenderTarget::GetShaderRessourceView(VOID) CONST
+        ID3D11ShaderResourceView* RenderTarget::GetShaderRessourceView(void) const
         {
             return m_pShaderRessourceView;
         }
 
-        ID3D11ShaderResourceView* RenderTarget::GetShaderRessourceViewDepth(VOID) CONST
+        ID3D11ShaderResourceView* RenderTarget::GetShaderRessourceViewDepth(void) const
         {
             return m_pShaderRessourceViewDepth;
         }
 
-        ID3D11RenderTargetView* RenderTarget::GetRenderTargetView(VOID) CONST
+        ID3D11RenderTargetView* RenderTarget::GetRenderTargetView(void) const
         {
             return m_pRenderTargetView;
         }
 
-        ID3D11DepthStencilView* RenderTarget::GetDepthStencilView(VOID) CONST
+        ID3D11DepthStencilView* RenderTarget::GetDepthStencilView(void) const
         {
             return m_pDepthStencilView;
         }
 
-        ID3D11Texture2D* RenderTarget::GetTexture(VOID) CONST
+        ID3D11Texture2D* RenderTarget::GetTexture(void) const
         {
             return m_pTexture;
         }
 
-        VOID RenderTarget::VSetClearColor(FLOAT r, FLOAT g, FLOAT b, FLOAT a)
+        void RenderTarget::VSetClearColor(float r, float g, float b, float a)
         {
             m_clearColor[0] = r;
             m_clearColor[1] = g;
@@ -83,14 +83,14 @@ namespace chimera
             m_clearColor[3] = a;
         }
 
-        BOOL RenderTarget::VOnRestore(UINT width, UINT height, GraphicsFormat format, BOOL depthBuffer, BOOL cubeMap, UINT arraySize) 
+        bool RenderTarget::VOnRestore(uint width, uint height, GraphicsFormat format, bool depthBuffer, bool cubeMap, uint arraySize) 
         {
             if(m_initialized)
             {
                 Delete();
             }
 
-            m_initialized = TRUE;
+            m_initialized = true;
 
             m_w = width;
 
@@ -102,7 +102,7 @@ namespace chimera
                 m_quality = 0;
             }
 
-            BOOL mipmap = (GetMiscflags() & D3D11_RESOURCE_MISC_GENERATE_MIPS) == D3D11_RESOURCE_MISC_GENERATE_MIPS;
+            bool mipmap = (GetMiscflags() & D3D11_RESOURCE_MISC_GENERATE_MIPS) == D3D11_RESOURCE_MISC_GENERATE_MIPS;
 
             ZeroMemory(&m_textureDesc, sizeof(D3D11_TEXTURE2D_DESC));
             m_textureDesc.ArraySize = arraySize;
@@ -185,20 +185,20 @@ namespace chimera
             m_pDevTexture = new RTDevTexture(m_pShaderRessourceView, m_pTexture);
             m_pDevDepthStencilTexture = new RTDevTexture(m_pDepthStencilView, m_pDevTexture);
 
-            return TRUE;
+            return true;
         }
 
-        IDeviceTexture* RenderTarget::VGetTexture(VOID)
+        IDeviceTexture* RenderTarget::VGetTexture(void)
         {
             return m_pDevTexture;
         }
 
-        IDeviceTexture* RenderTarget::VGetDepthStencilTexture(VOID)
+        IDeviceTexture* RenderTarget::VGetDepthStencilTexture(void)
         {
             return m_pDevDepthStencilTexture;
         }
 
-        VOID RenderTarget::VClear(VOID) 
+        void RenderTarget::VClear(void) 
         {
             if(m_pRenderTargetView)
             {
@@ -211,21 +211,21 @@ namespace chimera
             }
         }
 
-        VOID RenderTarget::VBind(VOID) 
+        void RenderTarget::VBind(void) 
         {
             D3D11_VIEWPORT port;
             port.MinDepth = 0;
             port.MaxDepth = 1;
             port.TopLeftX = 0;
             port.TopLeftY = 0;
-            port.Width = (FLOAT)m_textureDesc.Width;
-            port.Height = (FLOAT)m_textureDesc.Height;
+            port.Width = (float)m_textureDesc.Width;
+            port.Height = (float)m_textureDesc.Height;
             chimera::d3d::GetContext()->RSSetViewports(1, &port);
 
             chimera::d3d::GetContext()->OMSetRenderTargets(1, &m_pRenderTargetView, m_pDepthStencilView);
         }
 
-        VOID RenderTarget::Delete(VOID)
+        void RenderTarget::Delete(void)
         {
             SAFE_DELETE(m_pDevDepthStencilTexture);
             SAFE_DELETE(m_pDevTexture);
@@ -237,7 +237,7 @@ namespace chimera
             SAFE_RELEASE(m_pShaderRessourceViewDepth);
         }
 
-        RenderTarget::~RenderTarget(VOID) 
+        RenderTarget::~RenderTarget(void) 
         {
             Delete();
         }

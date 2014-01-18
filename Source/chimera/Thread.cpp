@@ -16,18 +16,18 @@ DWORD WINAPI Thread::Run(Thread* thread) {
     return result;
 }
 
-VOID Thread::Start(VOID) {
+void Thread::Start(void) {
     CreateThread(NULL, 0, (LPTHREAD_START_ROUTINE)(this->Run), this, 0, NULL);
 }
 
-VOID Thread::OnDone(VOID) {
+void Thread::OnDone(void) {
     if(this->m_pfCallBack)
     {
         this->m_pfCallBack(this->m_param);
     }
 }
 
-Thread::~Thread(VOID) {
+Thread::~Thread(void) {
 }
 
 }

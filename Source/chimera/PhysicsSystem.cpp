@@ -54,7 +54,7 @@ namespace chimera
 
     namespace px
     {
-        Material::Material(FLOAT staticFriction, FLOAT dynamicFriction, FLOAT restitution, FLOAT mass, FLOAT angularDamping, physx::PxPhysics* physx) : 
+        Material::Material(float staticFriction, float dynamicFriction, float restitution, float mass, float angularDamping, physx::PxPhysics* physx) : 
         m_staticFriction(staticFriction), m_dynamicFriction(dynamicFriction), m_restitution(restitution), m_mass(mass), m_angulardamping(angularDamping) {
             m_material = physx->createMaterial(staticFriction, dynamicFriction, restitution);
         }
@@ -63,8 +63,8 @@ namespace chimera
     class ErrorCallback : public physx::PxErrorCallback
     {
     public:
-        ErrorCallback(VOID) {}
-        VOID reportError(physx::PxErrorCode::Enum code, const char* message, const char* file, int line) {
+        ErrorCallback(void) {}
+        void reportError(physx::PxErrorCode::Enum code, const char* message, const char* file, int line) {
             char* error = NULL;
             switch(code) {
             case physx::PxErrorCode::eNO_ERROR : { return; } break;
@@ -110,20 +110,20 @@ namespace chimera
             OutputDebugStringA(errorMessage.c_str());
             //std::cout << buffer << std::endl;
         }
-        ~ErrorCallback(VOID) {}
+        ~ErrorCallback(void) {}
     };
 
     class Allocator : public physx::PxAllocatorCallback
     {
     public:
-        Allocator(VOID) {}
+        Allocator(void) {}
         void* allocate(size_t size, const char* typeName, const char* filename, int line) {
             return _aligned_malloc(size, 16);
         }
-        VOID deallocate(VOID* ptr) {
+        void deallocate(void* ptr) {
             _aligned_free(ptr);
         }
-        ~Allocator(VOID) {}
+        ~Allocator(void) {}
     };
 
     PxFilterFlags DefaultFilterShader(
@@ -161,19 +161,19 @@ namespace chimera
         {
 
         }
-        VOID onConstraintBreak(PxConstraintInfo* constraints, PxU32 count)
+        void onConstraintBreak(PxConstraintInfo* constraints, PxU32 count)
         {
 
         }
-        VOID onWake(PxActor** actors, PxU32 count)
+        void onWake(PxActor** actors, PxU32 count)
         {
 
         }
-        VOID onSleep(PxActor** actors, PxU32 count)
+        void onSleep(PxActor** actors, PxU32 count)
         {
 
         }
-        VOID onContact(const PxContactPairHeader& pairHeader, const PxContactPair* pairs, PxU32 nbPairs)
+        void onContact(const PxContactPairHeader& pairHeader, const PxContactPair* pairs, PxU32 nbPairs)
         {
             for(PxU32 i = 0; i < nbPairs; ++i)
             {
@@ -196,7 +196,7 @@ namespace chimera
             }
         }
 
-        VOID onTrigger(PxTriggerPair* pairs, PxU32 count)
+        void onTrigger(PxTriggerPair* pairs, PxU32 count)
         {
             for(PxU32 i = 0; i < count; i++)
             {
@@ -218,7 +218,7 @@ namespace chimera
     };
 
 
-    PhysX::PhysX(VOID) : m_pCooking(NULL), m_pDesc(NULL), m_pFoundation(NULL), m_pPhysx(NULL), m_pProfileManager(NULL), m_pScene(NULL), m_pControllerManager(NULL), m_pDebugConnection(NULL)
+    PhysX::PhysX(void) : m_pCooking(NULL), m_pDesc(NULL), m_pFoundation(NULL), m_pPhysx(NULL), m_pProfileManager(NULL), m_pScene(NULL), m_pControllerManager(NULL), m_pDebugConnection(NULL)
     {
         m_pDefaultFilterCallback = new DefaultFilterCallback(this);
     }
@@ -226,30 +226,30 @@ namespace chimera
     Allocator m_allocator;
     ErrorCallback m_errorCallback;
 
-    BOOL PhysX::VInit(VOID) 
+    bool PhysX::VInit(void) 
     {
         m_pFoundation = PxCreateFoundation(PX_PHYSICS_VERSION, m_allocator, m_errorCallback);
         if(!m_pFoundation)
         {
-            return FALSE;
+            return false;
         }
 
         m_pProfileManager = &physx::PxProfileZoneManager::createProfileZoneManager(m_pFoundation);
         if(!m_pProfileManager)
         {
-            return FALSE;
+            return false;
         }
 
-        bool recordMemoryAllocations = FALSE;
+        bool recordMemoryAllocations = false;
     
     #ifdef _DEBUG
-        recordMemoryAllocations = TRUE;
+        recordMemoryAllocations = true;
     #endif
 
         m_pPhysx = PxCreatePhysics(PX_PHYSICS_VERSION, *m_pFoundation, physx::PxTolerancesScale(), recordMemoryAllocations, m_pProfileManager);
         if(!m_pPhysx)
         {
-            return FALSE;
+            return false;
         }
 
         m_pControllerManager = PxCreateControllerManager(*m_pFoundation);
@@ -258,7 +258,7 @@ namespace chimera
         m_pCooking = PxCreateCooking(PX_PHYSICS_VERSION, *m_pFoundation, physx::PxCookingParams());
         if(!m_pCooking)
         {
-            return FALSE;
+            return false;
         }
 
         m_pDesc = new physx::PxSceneDesc(this->m_pPhysx->getTolerancesScale());
@@ -274,7 +274,7 @@ namespace chimera
 
         if(!m_pScene)
         {
-            return FALSE;
+            return false;
         }
 
         m_pScene->setSimulationEventCallback(m_pDefaultFilterCallback);
@@ -318,10 +318,10 @@ namespace chimera
         // remember to release the connection by manual in the end
 
 
-        return TRUE;
+        return true;
     }
 
-    VOID PhysX::VCreateStaticPlane(CONST util::Vec3& dimension, IActor* actor, std::string& material) 
+    void PhysX::VCreateStaticPlane(const util::Vec3& dimension, IActor* actor, std::string& material) 
     {
         physx::PxMaterial* mat = m_materials[material].m_material;
         if(!mat)
@@ -338,28 +338,28 @@ namespace chimera
         m_pxActorToActorId[plane] = actor->GetId();
     }
 
-    VOID PhysX::VCreateSphere(FLOAT radius, IActor* actor, CONST util::Vec3& offsetPosition, std::string& material) 
+    void PhysX::VCreateSphere(float radius, IActor* actor, const util::Vec3& offsetPosition, std::string& material) 
     {
         physx::PxSphereGeometry geo(radius);
         this->AddActor(geo, actor, offsetPosition, material, physx::PxPi * 4.0f/3.0f * radius * radius * radius);
     }
 
-    VOID PhysX::VCreateCube(CONST util::Vec3& dimension, IActor* actor, CONST util::Vec3& offsetPosition, std::string& material) 
+    void PhysX::VCreateCube(const util::Vec3& dimension, IActor* actor, const util::Vec3& offsetPosition, std::string& material) 
     {
         physx::PxBoxGeometry geo(dimension.x * 0.5f, dimension.y * 0.5f, dimension.z * 0.5f);
         this->AddActor(geo, actor, offsetPosition, material, dimension.x * dimension.y * dimension.z);
     }
 
-    VOID PhysX::CreateTriangleConcaveMesh(IActor* actor, CONST IMesh* mesh, CONST util::Vec3& offsetPosition, std::string& material)
+    void PhysX::CreateTriangleConcaveMesh(IActor* actor, const IMesh* mesh, const util::Vec3& offsetPosition, std::string& material)
     {
         physx::PxTriangleMeshDesc meshDesc;
 
-        UINT stride = mesh->VGetVertexStride() / sizeof(UINT);
-        UINT count = mesh->VGetVertexCount();
+        uint stride = mesh->VGetVertexStride() / sizeof(uint);
+        uint count = mesh->VGetVertexCount();
 
         physx::PxVec3* verts = new physx::PxVec3[mesh->VGetVertexCount()];
 
-        for(UINT i = 0; i < mesh->VGetVertexCount(); ++i)
+        for(uint i = 0; i < mesh->VGetVertexCount(); ++i)
         {
             physx::PxVec3 v;
             v.x = mesh->VGetVertices()[i * stride + 0];
@@ -372,12 +372,12 @@ namespace chimera
         meshDesc.points.data = verts;
 
         physx::PxU32* indices32 = new physx::PxU32[mesh->VGetIndexCount()];
-        UINT index = 0;
-        for(UINT i = 0; i < mesh->VGetIndexCount() / 3; ++i)
+        uint index = 0;
+        for(uint i = 0; i < mesh->VGetIndexCount() / 3; ++i)
         {
-            UINT i0 = mesh->VGetIndices()[3 * i + 0];
-            UINT i1 = mesh->VGetIndices()[3 * i + 1];
-            UINT i2 = mesh->VGetIndices()[3 * i + 2];
+            uint i0 = mesh->VGetIndices()[3 * i + 0];
+            uint i1 = mesh->VGetIndices()[3 * i + 1];
+            uint i2 = mesh->VGetIndices()[3 * i + 2];
             indices32[3 * i + 0] = i0;
             indices32[3 * i + 1] = i2;
             indices32[3 * i + 2] = i1;
@@ -405,16 +405,16 @@ namespace chimera
         SAFE_ARRAY_DELETE(verts);
     }
 
-    VOID PhysX::CreateTriangleConvexMesh(IActor* actor, CONST IMesh* mesh, CONST util::Vec3& offsetPosition, std::string& material)
+    void PhysX::CreateTriangleConvexMesh(IActor* actor, const IMesh* mesh, const util::Vec3& offsetPosition, std::string& material)
     {
         physx::PxConvexMeshDesc meshDesc;
 
-        UINT stride = mesh->VGetVertexStride() / sizeof(UINT);
-        UINT count = mesh->VGetVertexCount();
+        uint stride = mesh->VGetVertexStride() / sizeof(uint);
+        uint count = mesh->VGetVertexCount();
 
         physx::PxVec3* verts = new physx::PxVec3[mesh->VGetVertexCount()];
 
-        for(UINT i = 0; i < mesh->VGetVertexCount(); ++i)
+        for(uint i = 0; i < mesh->VGetVertexCount(); ++i)
         {
             physx::PxVec3 v;
             v.x = mesh->VGetVertices()[i * stride + 0];
@@ -428,12 +428,12 @@ namespace chimera
         meshDesc.flags = physx::PxConvexFlag::eCOMPUTE_CONVEX;
 
         physx::PxU32* indices32 = new physx::PxU32[mesh->VGetIndexCount()];
-        UINT index = 0;
-        for(UINT i = 0; i < mesh->VGetIndexCount() / 3; ++i)
+        uint index = 0;
+        for(uint i = 0; i < mesh->VGetIndexCount() / 3; ++i)
         {
-            UINT i0 = mesh->VGetIndices()[3 * i + 0];
-            UINT i1 = mesh->VGetIndices()[3 * i + 1];
-            UINT i2 = mesh->VGetIndices()[3 * i + 2];
+            uint i0 = mesh->VGetIndices()[3 * i + 0];
+            uint i1 = mesh->VGetIndices()[3 * i + 1];
+            uint i2 = mesh->VGetIndices()[3 * i + 2];
             indices32[3 * i + 0] = i0;
             indices32[3 * i + 1] = i2;
             indices32[3 * i + 2] = i1;
@@ -461,7 +461,7 @@ namespace chimera
         SAFE_ARRAY_DELETE(verts);
     }
 
-    VOID PhysX::VCreateTriangleMesh(IActor*actor, CONST IMesh* mesh, CONST util::Vec3& offsetPosition, std::string& material, std::string& shapeType)
+    void PhysX::VCreateTriangleMesh(IActor*actor, const IMesh* mesh, const util::Vec3& offsetPosition, std::string& material, std::string& shapeType)
     {
         if(shapeType == "convex")
         {
@@ -477,17 +477,17 @@ namespace chimera
         }
     }
 
-    VOID PhysX::VCreateTrigger(FLOAT radius, IActor* actor) 
+    void PhysX::VCreateTrigger(float radius, IActor* actor) 
     {
         physx::PxSphereGeometry geo(radius);
         std::string m("static");
         physx::PxActor* a = AddActor(geo, actor, util::Vec3(0,0,0), m, physx::PxPi * 4.0f/3.0f * radius * radius * radius);
         physx::PxShape* shape;
         ((physx::PxRigidStatic*)a)->getShapes(&shape, 1);
-        shape->setFlag(PxShapeFlag::eTRIGGER_SHAPE, TRUE);
+        shape->setFlag(PxShapeFlag::eTRIGGER_SHAPE, true);
     }
 
-    VOID PhysX::VRemoveActor(ActorId id) 
+    void PhysX::VRemoveActor(ActorId id) 
     {
         auto it = m_actorIdToPxActorMap.find(id);
         if(it != m_actorIdToPxActorMap.end())
@@ -502,7 +502,7 @@ namespace chimera
         }
     }
 
-    VOID PhysX::VApplyForce(CONST util::Vec3& dir, FLOAT newtons, IActor* actor) 
+    void PhysX::VApplyForce(const util::Vec3& dir, float newtons, IActor* actor) 
     {
         auto iit = m_actorIdToPxActorMap.find(actor->GetId());
         if(iit != m_actorIdToPxActorMap.end())
@@ -519,7 +519,7 @@ namespace chimera
         }
     }
 
-    VOID PhysX::VApplyTorque(CONST util::Vec3& dir, FLOAT newtons, IActor* actor) 
+    void PhysX::VApplyTorque(const util::Vec3& dir, float newtons, IActor* actor) 
     {
         auto iit = m_actorIdToPxActorMap.find(actor->GetId());
         if(iit != m_actorIdToPxActorMap.end())
@@ -536,7 +536,7 @@ namespace chimera
         }
     }
 
-    VOID PhysX::VCreateCharacterController(ActorId id, CONST util::Vec3& pos, FLOAT radius, FLOAT height)
+    void PhysX::VCreateCharacterController(ActorId id, const util::Vec3& pos, float radius, float height)
     {
         physx::PxCapsuleControllerDesc desc;
         desc.setToDefault();
@@ -559,7 +559,7 @@ namespace chimera
         m_controller[id] = c;
     }
 
-    VOID ScaleGeometry(FLOAT scale,  physx::PxShape* shape)
+    void ScaleGeometry(float scale,  physx::PxShape* shape)
     {
         switch(shape->getGeometryType())
         {
@@ -588,7 +588,7 @@ namespace chimera
         }
     }
 
-    VOID PhysX::VMoveKinematic(IActor* actor, CONST util::Vec3* pos, CONST util::Vec3* axis, FLOAT angle, FLOAT deltaMillis, BOOL isDeltaMove, BOOL isJump) 
+    void PhysX::VMoveKinematic(IActor* actor, const util::Vec3* pos, const util::Vec3* axis, float angle, float deltaMillis, bool isDeltaMove, bool isJump) 
     {
         XMVECTOR quat = XMQuaternionRotationNormal(XMLoadFloat3(&axis->m_v), angle);
         util::Vec4 q;
@@ -596,7 +596,7 @@ namespace chimera
         VMoveKinematic(actor, pos, &q, deltaMillis, isDeltaMove, isJump);
     }
 
-    VOID PhysX::VMoveKinematic(IActor* actor, CONST util::Vec3* pos, CONST util::Vec4* quat, FLOAT deltaMillis, BOOL isDeltaMove, BOOL isJump)
+    void PhysX::VMoveKinematic(IActor* actor, const util::Vec3* pos, const util::Vec4* quat, float deltaMillis, bool isDeltaMove, bool isJump)
     {
         auto it = m_controller.find(actor->GetId());
         if(it != m_controller.end() && pos)
@@ -666,11 +666,11 @@ namespace chimera
                         ad->setLinearVelocity(physx::PxVec3(0,0,0));
                     }
 
-                    FLOAT scale = GetActorCompnent<TransformComponent>(actor, CM_CMP_TRANSFORM)->GetTransformation()->GetScale().x;
-                    UINT shapeCount = ad->getNbShapes();
+                    float scale = GetActorCompnent<TransformComponent>(actor, CM_CMP_TRANSFORM)->GetTransformation()->GetScale().x;
+                    uint shapeCount = ad->getNbShapes();
                     physx::PxShape** shapes = new physx::PxShape*[shapeCount];
                     ad->getShapes(shapes, shapeCount, 0);
-                    for(UINT i = 0; i < shapeCount; ++i)
+                    for(uint i = 0; i < shapeCount; ++i)
                     {
                         physx::PxShape* shape = shapes[i];
                         ScaleGeometry(scale, shape);
@@ -681,12 +681,12 @@ namespace chimera
         }
     }
 
-    VOID PhysX::VDebugRender(VOID)
+    void PhysX::VDebugRender(void)
     {
 
     }
 
-    physx::PxActor* PhysX::AddActor(physx::PxGeometry& geo, IActor* actor, CONST util::Vec3& offsetPosition, std::string& mat, FLOAT density)
+    physx::PxActor* PhysX::AddActor(physx::PxGeometry& geo, IActor* actor, const util::Vec3& offsetPosition, std::string& mat, float density)
     {
         px::Material& material = CheckMaterial(mat);
 
@@ -696,7 +696,7 @@ namespace chimera
         physx::PxShape* shape;
         physx::PxActor* pxActor;
 
-        CONST util::Vec4 rot = comp->GetTransformation()->GetRotation();
+        const util::Vec4 rot = comp->GetTransformation()->GetRotation();
         physx::PxQuat quat = physx::PxQuat(rot.x, rot.y, rot.z, rot.w);
         quat.normalize();
         physx::PxTransform transform(physx::PxVec3(trans.x, trans.y, trans.z), quat);
@@ -730,7 +730,7 @@ namespace chimera
         return pxActor;
     }
 
-    VOID PhysX::VSyncScene(VOID) 
+    void PhysX::VSyncScene(void) 
     {
     
         this->m_pScene->fetchResults(true);
@@ -779,11 +779,11 @@ namespace chimera
         }
     }
 
-    VOID PhysX::VUpdate(FLOAT deltaMillis)
+    void PhysX::VUpdate(float deltaMillis)
     {
         static float time = 0;
         time += deltaMillis;
-        if(time < (FLOAT)(1.0 / 60.0))
+        if(time < (float)(1.0 / 60.0))
         {
             return;
         }
@@ -792,7 +792,7 @@ namespace chimera
         time = 0;
     }
 
-    VOID PhysX::ApplyForceTorqueDelegate(IEventPtr data)
+    void PhysX::ApplyForceTorqueDelegate(IEventPtr data)
     {
         if(data->VGetEventType() == CM_EVENT_APPLY_FORCE)
         {
@@ -808,7 +808,7 @@ namespace chimera
         }
     }
 
-    VOID PhysX::CreateFromActor(IActor* actor)
+    void PhysX::CreateFromActor(IActor* actor)
     {
         PhysicComponent* physComp = GetActorCompnent<PhysicComponent>(actor, CM_CMP_PHX);
         if(!actor)
@@ -844,7 +844,7 @@ namespace chimera
                 }
                 else
                 {
-                    LOG_CRITICAL_ERROR("ShapeType not implemented");
+                    LOG_CRITICAL_ERROR("ShapeStyle not implemented");
                 }
             }
         }
@@ -864,14 +864,15 @@ namespace chimera
             }
             else if(physComp->m_shapeStyle == "character")
             {
-                CONST util::Vec3& pos = transComp->GetTransformation()->GetTranslation();
+                const util::Vec3& pos = transComp->GetTransformation()->GetTranslation();
                 this->VCreateCharacterController(actor->GetId(), pos, 0.5f, 1.85f);
             }
             else if(physComp->m_shapeStyle == "mesh")
             {
-                std::shared_ptr<Mesh> mesh = std::static_pointer_cast<Mesh>(CmGetApp()->VGetCache()->VGetHandle(physComp->m_meshFile));
-                VCreateTriangleMesh(actor, mesh.get(), util::Vec3(), physComp->m_material, physComp->m_shapeType);
-                m_resourceToActor[mesh->VGetResource().m_name] = actor->GetId();
+                std::shared_ptr<IMeshSet> meshSet = std::static_pointer_cast<IMeshSet>(CmGetApp()->VGetCache()->VGetHandle(physComp->m_meshFile));
+                IMesh* mesh = meshSet->VGetMesh(0);
+                VCreateTriangleMesh(actor, mesh, util::Vec3(), physComp->m_material, physComp->m_shapeType);
+                m_resourceToActor[meshSet->VGetResource().m_name] = actor->GetId();
             }
             else if(physComp->m_shapeStyle == "trigger")
             {
@@ -879,12 +880,12 @@ namespace chimera
             }
             else
             {
-                LOG_CRITICAL_ERROR("ShapeType not implemented");
+                LOG_CRITICAL_ERROR("ShapeStyle not implemented");
             }
         }
     }
 
-    VOID PhysX::NewComponentDelegate(chimera::IEventPtr pEventData) 
+    void PhysX::NewComponentDelegate(chimera::IEventPtr pEventData) 
     {
 
         std::shared_ptr<chimera::NewComponentCreatedEvent> pCastEventData = std::static_pointer_cast<chimera::NewComponentCreatedEvent>(pEventData);
@@ -896,7 +897,7 @@ namespace chimera
         }
     }
 
-    VOID PhysX::OnResourceChanged(IEventPtr data)
+    void PhysX::OnResourceChanged(IEventPtr data)
     {
         std::shared_ptr<ResourceChangedEvent> event = std::static_pointer_cast<ResourceChangedEvent>(data);
 
@@ -909,7 +910,7 @@ namespace chimera
         }
     }
 
-    PhysX::~PhysX(VOID)
+    PhysX::~PhysX(void)
     {
         REMOVE_EVENT_LISTENER(this, &PhysX::NewComponentDelegate, CM_EVENT_COMPONENT_CREATED);
         REMOVE_EVENT_LISTENER(this, &PhysX::ApplyForceTorqueDelegate, CM_EVENT_APPLY_FORCE);
@@ -982,49 +983,49 @@ namespace chimera
         } 
     }
 
-    PhysX::Controller_::Controller_(VOID) : m_controller(NULL), m_time(0), m_jumpDy(1), m_jumpVelo(0), m_a(-9.81f), m_p0(0), m_p1(0), m_maxJumpvalueFunc(1)
+    PhysX::Controller_::Controller_(void) : m_controller(NULL), m_time(0), m_jumpDy(1), m_jumpVelo(0), m_a(-9.81f), m_p0(0), m_p1(0), m_maxJumpvalueFunc(1)
     {
         SetJumpSettings(2.0f);
         m_time = 0.55f;
     }
 
-    VOID PhysX::Controller_::Move(FLOAT dx, FLOAT dz, FLOAT deltaMillis)
+    void PhysX::Controller_::Move(float dx, float dz, float deltaMillis)
     {
         physx::PxVec3 dm(dx, 0, dz);
         m_controller->move(dm, 0.0f, deltaMillis, physx::PxControllerFilters(), NULL);
     }
 
-    BOOL PhysX::Controller_::IsOnGround(VOID)
+    bool PhysX::Controller_::IsOnGround(void)
     {
         physx::PxControllerState state;
         m_controller->getState(state);
         return (state.collisionFlags & physx::PxControllerFlag::eCOLLISION_DOWN) == physx::PxControllerFlag::eCOLLISION_DOWN;
     }
 
-    VOID PhysX::Controller_::Jump(FLOAT dy)
+    void PhysX::Controller_::Jump(float dy)
     {
         if(IsOnGround())
         {
             m_jumpDy = dy;
             m_time = 0;
-            FLOAT th = m_duration * 0.5f;
+            float th = m_duration * 0.5f;
             m_jumpVelo = -th * m_a;
             m_maxJumpvalueFunc = m_jumpVelo * th + 0.5f * m_a * th * th;
         }
     }
 
-    VOID PhysX::Controller_::SetJumpSettings(FLOAT duration)
+    void PhysX::Controller_::SetJumpSettings(float duration)
     {
         m_duration = duration;
     }
 
-    VOID PhysX::Controller_::Update(FLOAT deltaMillis)
+    void PhysX::Controller_::Update(float deltaMillis)
     {
         if(!IsOnGround())
         {
             m_time += deltaMillis;
             //todo: find time bug
-            FLOAT p = m_jumpVelo * m_time + 0.5f * m_a * m_time * m_time;
+            float p = m_jumpVelo * m_time + 0.5f * m_a * m_time * m_time;
             p = p / m_maxJumpvalueFunc * m_jumpDy;
 
             m_p0 = m_p1;

@@ -13,10 +13,10 @@ namespace chimera
         std::string m_programName;
     public:
         ShaderPathSetting(RenderPath path, LPCSTR programName, LPCSTR settingName);
-        virtual VOID VRender(VOID);
-        virtual BOOL VOnRestore(UINT w, UINT h);
-        CMShaderProgramDescription* VGetProgramDescription(VOID) { return &m_desc; }
-        virtual ~ShaderPathSetting(VOID) { }
+        virtual void VRender(void);
+        virtual bool VOnRestore(uint w, uint h);
+        CMShaderProgramDescription* VGetProgramDescription(void) { return &m_desc; }
+        virtual ~ShaderPathSetting(void) { }
     };
 
     class AlbedoSetting : public ShaderPathSetting
@@ -24,10 +24,10 @@ namespace chimera
     private:
         ShaderPathSetting* m_pInstanced;
     public:
-        AlbedoSetting(VOID);
-        VOID VRender(VOID);
-        BOOL VOnRestore(UINT w, UINT h);
-        ~AlbedoSetting(VOID);
+        AlbedoSetting(void);
+        void VRender(void);
+        bool VOnRestore(uint w, uint h);
+        ~AlbedoSetting(void);
     };
 
 	class WireFrameSettings : public ShaderPathSetting
@@ -35,26 +35,26 @@ namespace chimera
 	private:
 		std::unique_ptr<IRasterState> m_pWireFrameState;
 	public:
-		WireFrameSettings(VOID);
-		VOID VRender(VOID);
-		BOOL VOnRestore(UINT w, UINT h);
+		WireFrameSettings(void);
+		void VRender(void);
+		bool VOnRestore(uint w, uint h);
 	};
 
     class GloablLightingSetting : public ShaderPathSetting
     {
     public:
-        GloablLightingSetting(VOID);
-        BOOL VOnRestore(UINT w, UINT h);
-        VOID VRender(VOID);
+        GloablLightingSetting(void);
+        bool VOnRestore(uint w, uint h);
+        void VRender(void);
     };
     //todo settings for all lightsources?
     class LightingSetting : public IGraphicSetting
     {   
     public:
-        LightingSetting(VOID);
-        VOID VRender(VOID);
-        BOOL VOnRestore(UINT w, UINT h);
-        CMShaderProgramDescription* VGetProgramDescription(VOID) { return NULL; }
+        LightingSetting(void);
+        void VRender(void);
+        bool VOnRestore(uint w, uint h);
+        CMShaderProgramDescription* VGetProgramDescription(void) { return NULL; }
     };
 
     class CSMSetting : public IGraphicSetting
@@ -62,11 +62,11 @@ namespace chimera
     private:
         IEnvironmentLighting* m_pCSM;
     public:
-        CSMSetting(VOID) : IGraphicSetting("CSM"), m_pCSM(NULL) {}
-        VOID VRender(VOID);
-        BOOL VOnRestore(UINT w, UINT h);
-        CMShaderProgramDescription* VGetProgramDescription(VOID) { return NULL; }
-        ~CSMSetting(VOID);
+        CSMSetting(void) : IGraphicSetting("CSM"), m_pCSM(NULL) {}
+        void VRender(void);
+        bool VOnRestore(uint w, uint h);
+        CMShaderProgramDescription* VGetProgramDescription(void) { return NULL; }
+        ~CSMSetting(void);
     };
 
     class PostFXSetting : public IPostFXSetting
@@ -76,35 +76,35 @@ namespace chimera
         IRenderTarget* m_pSource;
         IRenderTarget* m_pTarget;
     public:
-        PostFXSetting(VOID) : IPostFXSetting("PostFX"),
+        PostFXSetting(void) : IPostFXSetting("PostFX"),
             m_pEffectChain(NULL), m_pTarget(NULL), m_pSource(NULL) {}
         
-        VOID VRender(VOID);
+        void VRender(void);
         
-        VOID VSetTarget(IRenderTarget* target);
+        void VSetTarget(IRenderTarget* target);
         
-        VOID VSetSource(IRenderTarget* src);
+        void VSetSource(IRenderTarget* src);
 
-        BOOL VOnRestore(UINT w, UINT h);
+        bool VOnRestore(uint w, uint h);
 
-        CMShaderProgramDescription* VGetProgramDescription(VOID) { return NULL; }
+        CMShaderProgramDescription* VGetProgramDescription(void) { return NULL; }
 
-        ~PostFXSetting(VOID);
+        ~PostFXSetting(void);
     };
 
     class BoundingGeoSetting : public ShaderPathSetting
     {
     public:
-        BoundingGeoSetting(VOID);
-        VOID VRender(VOID);
+        BoundingGeoSetting(void);
+        void VRender(void);
     };
 
     class EditModeSetting : public IGraphicSetting
     {
     public:
-        EditModeSetting(VOID);
-        VOID VRender(VOID);
-        BOOL VOnRestore(UINT w, UINT h) { return TRUE; }
+        EditModeSetting(void);
+        void VRender(void);
+        bool VOnRestore(uint w, uint h) { return true; }
     };
 
     /*
@@ -137,29 +137,29 @@ namespace chimera
         std::unique_ptr<IDepthStencilState> m_pDepthNoStencilState;
         std::unique_ptr<IRasterState> m_pRasterizerStateFrontFaceSolid;
 
-        UINT m_lastW, m_lastH;
+        uint m_lastW, m_lastH;
     public:
-        GraphicsSettings(VOID);
+        GraphicsSettings(void);
 
-        VOID VAddSetting(std::unique_ptr<IGraphicSetting> settings, GraphicsSettingType type);
+        void VAddSetting(std::unique_ptr<IGraphicSetting> settings, GraphicsSettingType type);
 
-        VOID VSetPostFX(std::unique_ptr<IPostFXSetting> settings);
+        void VSetPostFX(std::unique_ptr<IPostFXSetting> settings);
 
-        VOID VOnActivate(VOID);
+        void VOnActivate(void);
 
-        virtual VOID VRender(VOID);
+        virtual void VRender(void);
 
-        virtual BOOL VOnRestore(UINT w, UINT h);
+        virtual bool VOnRestore(uint w, uint h);
 
-        virtual IRenderTarget* VGetResult(VOID);
+        virtual IRenderTarget* VGetResult(void);
 
-        virtual ~GraphicsSettings(VOID);
+        virtual ~GraphicsSettings(void);
     };
 
     class DefaultGraphicsSettings : public GraphicsSettings
     {
     public:
-        DefaultGraphicsSettings(VOID);
+        DefaultGraphicsSettings(void);
     };
 
     class ProfileGraphicsSettings : public GraphicsSettings
@@ -168,22 +168,22 @@ namespace chimera
         /*chimera::gui::GuiTextComponent* m_pText;
         chimera::gui::D3D_GUI* m_pGui; */
     public:
-        ProfileGraphicsSettings(VOID);
-        VOID VRender(VOID);
-        ~ProfileGraphicsSettings(VOID);
+        ProfileGraphicsSettings(void);
+        void VRender(void);
+        ~ProfileGraphicsSettings(void);
     };
 
     class EditorGraphicsSettings : public DefaultGraphicsSettings
     {
     public:
-        EditorGraphicsSettings(VOID);
-        VOID VRender(VOID);
+        EditorGraphicsSettings(void);
+        void VRender(void);
     };
 
     class BoundingGeoDebugSettings : public GraphicsSettings
     {
     public:
-        BoundingGeoDebugSettings(VOID);
+        BoundingGeoDebugSettings(void);
     };
 
     /*
@@ -224,7 +224,7 @@ namespace chimera
     class AlbedoSettings : public GraphicsSettings
     {
     public:
-        AlbedoSettings(VOID);
-        VOID VRender(VOID);
+        AlbedoSettings(void);
+        void VRender(void);
     };
 }

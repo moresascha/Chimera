@@ -49,7 +49,7 @@ namespace chimera
 //         }
 //     };
 
-    InstancedMeshNode::InstancedMeshNode(ActorId actorid, std::shared_ptr<IVertexBuffer> instances, CMResource ressource) : MeshNode(actorid, ressource), m_pInstances(instances)
+    InstancedMeshNode::InstancedMeshNode(ActorId actorid, std::shared_ptr<IVertexBuffer> instances, CMResource ressource) : MeshNode(actorid, ressource, ""), m_pInstances(instances)
     {
         RenderPath p = VGetRenderPaths();
         p ^= CM_RENDERPATH_ALBEDO;
@@ -59,7 +59,7 @@ namespace chimera
         VSetRenderPaths(p);
     }
 
-    VOID InstancedMeshNode::_VRender(ISceneGraph* graph, RenderPath& path)
+    void InstancedMeshNode::_VRender(ISceneGraph* graph, RenderPath& path)
     {
         switch(path)
         {
@@ -81,18 +81,18 @@ namespace chimera
         }
     }
 
-    BOOL InstancedMeshNode::VIsVisible(ISceneGraph* graph)
+    bool InstancedMeshNode::VIsVisible(ISceneGraph* graph)
     {
-        BOOL in = graph->VGetFrustum()->IsInside(m_transformedBBPoint, m_aabb.GetRadius());
-        return TRUE;
+        bool in = graph->VGetFrustum()->IsInside(m_transformedBBPoint, m_aabb.GetRadius());
+        return true;
     }
 
-    VOID InstancedMeshNode::VOnActorMoved(VOID)
+    void InstancedMeshNode::VOnActorMoved(void)
     {
         m_transformedBBPoint = util::Mat4::Transform(*VGetTransformation(), m_aabb.GetMiddle());
     }
 
-    VOID InstancedMeshNode::VOnRestore(ISceneGraph* graph)
+    void InstancedMeshNode::VOnRestore(ISceneGraph* graph)
     {
         MeshNode::VOnRestore(graph);
 
@@ -121,7 +121,7 @@ namespace chimera
 //         }
     }
 
-    InstancedMeshNode::~InstancedMeshNode(VOID)
+    InstancedMeshNode::~InstancedMeshNode(void)
     {
 
     } 

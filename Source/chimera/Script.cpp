@@ -22,19 +22,19 @@ namespace chimera
 
 #define CHECK_LUA_ERROR(error) CheckError(error)
 
-        BOOL LuaScript::VInit(VOID)
+        bool LuaScript::VInit(void)
         {
-            m_pState = LuaPlus::LuaState::Create(TRUE);
+            m_pState = LuaPlus::LuaState::Create(true);
 
             RETURN_IF_FAILED(m_pState);
 
             ResgisterMemberFunction("RunFile", this, &LuaScript::VRunFile);
             ResgisterMemberFunction("Run", this, &LuaScript::VRunString);
 
-            return TRUE;
+            return true;
         }
 
-        VOID LuaScript::CheckError(INT error)
+        void LuaScript::CheckError(int error)
         {
             if(error != 0)
             {
@@ -48,24 +48,24 @@ namespace chimera
             }
         }
 
-        VOID LuaScript::VRunFile(LPCSTR file)
+        void LuaScript::VRunFile(LPCSTR file)
         {
             CHECK_LUA_ERROR(m_pState->DoFile(file));
         }
 
-        VOID LuaScript::VRunString(LPCSTR str)
+        void LuaScript::VRunString(LPCSTR str)
         {
             CHECK_LUA_ERROR(m_pState->DoString(str));
         }
 
-        LuaScript::~LuaScript(VOID)
+        LuaScript::~LuaScript(void)
         {
             LuaPlus::LuaState::Destroy(m_pState);
         }
 
         namespace internalexports
         {
-            VOID CreateActor(LPCSTR xmlFile, LuaPlus::LuaObject luaPosition, LuaPlus::LuaObject luaRotation)
+            void CreateActor(LPCSTR xmlFile, LuaPlus::LuaObject luaPosition, LuaPlus::LuaObject luaRotation)
             {
                 if(!luaPosition.IsTable() || !luaRotation.IsTable())
                 {
@@ -84,11 +84,11 @@ namespace chimera
                 }
 
                 std::shared_ptr<chimera::Actor> actor = chimera::g_pApp->GetLogic()->VCreateActor(xmlFile);
-                std::shared_ptr<chimera::MoveActorEvent> move = std::shared_ptr<chimera::MoveActorEvent>(new chimera::MoveActorEvent(actor->GetId(), position, rotation, FALSE));
+                std::shared_ptr<chimera::MoveActorEvent> move = std::shared_ptr<chimera::MoveActorEvent>(new chimera::MoveActorEvent(actor->GetId(), position, rotation, false));
                 chimera::IEventManager::Get()->VQueueEvent(move);
             }
 
-            VOID MoveActor(LuaPlus::LuaObject luaid, LuaPlus::LuaObject luaPosition, LuaPlus::LuaObject luaRotation, LuaPlus::LuaObject luadelta)
+            void MoveActor(LuaPlus::LuaObject luaid, LuaPlus::LuaObject luaPosition, LuaPlus::LuaObject luaRotation, LuaPlus::LuaObject luadelta)
             {
                 if(!luaPosition.IsTable() || !luaRotation.IsTable())
                 {
@@ -112,7 +112,7 @@ namespace chimera
                     id = luaid.GetInteger();
                 }
 
-                BOOL isDelta = FALSE;
+                bool isDelta = false;
                 if(luadelta.IsBoolean())
                 {
                     isDelta = luadelta.GetBoolean();
@@ -121,12 +121,12 @@ namespace chimera
                 //QUEUE_EVENT(new event::MoveActorEvent(id, position, rotation, isDelta));
             }
 
-            VOID RegisterEventListener(EventType type, LuaPlus::LuaObject funciton)
+            void RegisterEventListener(EventType type, LuaPlus::LuaObject funciton)
             {
                 chimera::g_pApp->GetScriptEventManager()->AddListener(funciton, type);
             }
 
-            VOID Print(LuaPlus::LuaObject text)
+            void Print(LuaPlus::LuaObject text)
             {
                 if(text.IsBoolean())
                 {
@@ -149,7 +149,7 @@ namespace chimera
                 }
             }
             
-            VOID Register(VOID)
+            void Register(void)
             {
                 LuaScript* script = chimera::g_pApp->GetScript();
                 script->ResgisterFunction("CreateActor", &internalexports::CreateActor);

@@ -11,25 +11,25 @@ namespace chimera
         HANDLE m_event;
         util::Locker m_locker;
         std::queue<std::shared_ptr<IProcess>> m_processQueue;
-        UINT m_systemCores;
+        uint m_systemCores;
         ProcessManager* m_manager;
         std::shared_ptr<IProcess>* m_currentRunning;
-        UINT m_currentRunningSize;
+        uint m_currentRunningSize;
 
-        INT CreateFreeSlot(VOID);
+        int CreateFreeSlot(void);
         
-        VOID FreeSlot(UCHAR slot);
+        void FreeSlot(UCHAR slot);
 
-        BOOL HasFreeSlot(VOID);
+        bool HasFreeSlot(void);
 
     public:
-        Scheduler(UINT cores, ProcessManager* manager);
+        Scheduler(uint cores, ProcessManager* manager);
 
         IProcess* VAddProcess(std::shared_ptr<IProcess> proc);
 
-        VOID VThreadProc(VOID);
+        void VThreadProc(void);
 
-        ~Scheduler(VOID);
+        ~Scheduler(void);
     };
 }
 

@@ -13,26 +13,26 @@ namespace chimera
         DEBUG_OUT(ss.str().c_str());
     } */
 
-    BMFont::BMFont(VOID) : m_initialized(FALSE), m_pFontTexture(NULL)
+    BMFont::BMFont(void) : m_initialized(false), m_pFontTexture(NULL)
     {
 
     }
 
-    BOOL BMFont::VCreate(CONST std::string& file)
+    bool BMFont::VCreate(const std::string& file)
     {
         if(m_initialized)
         {
-            return TRUE;
+            return true;
         }
 
         m_style.metricFile = file;
 
-        m_initialized = TRUE;
+        m_initialized = true;
 
         std::ifstream metricsStream(file);
         if(!metricsStream.good())
         {
-            return FALSE;
+            return false;
         }
         //UINT pos = 0;
         while(metricsStream.good())
@@ -48,7 +48,7 @@ namespace chimera
             {
                 m_style.size = atoi((util::split(ss[2], '=')[1]).c_str());
                 m_style.name = util::split(ss[1], '=')[1];
-                m_style.bold = atoi((util::split(ss[3], '=')[1]).c_str());
+                m_style.bold = atoi((util::split(ss[3], '=')[1]).c_str()) != 0;
                 m_style.italic = atoi((util::split(ss[4], '=')[1]).c_str());
             }
             else if(ss[0].compare("common") == 0)
@@ -69,7 +69,7 @@ namespace chimera
             else if(ss[0].compare("char") == 0)
             {
                 std::vector<std::string> tokens;
-                for(UINT i  = 1; i < ss.size(); ++i)
+                for(uint i  = 1; i < ss.size(); ++i)
                 {
                     if(ss[i].compare(""))
                     {
@@ -92,9 +92,9 @@ namespace chimera
         Gdiplus::Bitmap* map = util::GetBitmapFromFile(util::string2wstring(VGetStyle().textureFile).c_str());
         if(map->GetLastStatus())
         {
-            return FALSE;
+            return false;
         }
-        CHAR* data = util::GetTextureData(map);
+        char* data = util::GetTextureData(map);
 
         CMTextureDescription desc;
         ZeroMemory(&desc, sizeof(CMTextureDescription));
@@ -110,30 +110,30 @@ namespace chimera
 
         SAFE_DELETE(map);
         SAFE_DELETE(data);
-        return TRUE;
+        return true;
     }
 
-    CONST CMFontStyle& BMFont::VGetStyle(VOID) CONST
+    const CMFontStyle& BMFont::VGetStyle(void) const
     {
         return m_style;
     }
 
-    BOOL BMFont::VIsBold(VOID) CONST
+    bool BMFont::VIsBold(void) const
     {
         return m_style.bold;
     }
 
-    BOOL BMFont::VIsItalic(VOID) CONST
+    bool BMFont::VIsItalic(void) const
     {
         return m_style.italic;
     }
 
-    UINT BMFont::VGetSize(VOID) CONST
+    uint BMFont::VGetSize(void) const
     {
         return m_style.size;
     }
 
-    CONST CMCharMetric* BMFont::VGetCharMetric(UCHAR c) CONST
+    const CMCharMetric* BMFont::VGetCharMetric(UCHAR c) const
     {
         auto it = m_metrics.find(c);
 //#ifdef _DEBUG
@@ -147,48 +147,51 @@ namespace chimera
         return &it->second;
     }
 
-    UINT BMFont::VGetLineHeight(VOID) CONST
+    uint BMFont::VGetLineHeight(void) const
     {
         return m_style.lineHeight;
     }
 
-    LPCSTR BMFont::VGetFileName(VOID) CONST
+    LPCSTR BMFont::VGetFileName(void) const
     {
         return m_style.metricFile.c_str();
     }
 
-    UINT BMFont::VGetCharCount(VOID) CONST
+    uint BMFont::VGetCharCount(void) const
     {
         return m_style.charCount;
     }
 
-    UINT BMFont::VGetTextureWidth(VOID) CONST
+    uint BMFont::VGetTextureWidth(void) const
     {
         return m_style.texWidth;
     }
 
-    UINT BMFont::VGetTextureHeight(VOID) CONST
+    uint BMFont::VGetTextureHeight(void) const
     {
         return m_style.texHeight;
     }
 
-    UINT BMFont::VGetBase(VOID) CONST
+    uint BMFont::VGetBase(void) const
     {
         return m_style.base;
     }
 
-    VOID BMFont::VActivate(VOID)
+    void BMFont::VActivate(void)
     {
        CmGetApp()->VGetHumanView()->VGetRenderer()->VSetTexture(chimera::eGuiSampler, m_pFontTexture);
     }
 
-    BMFont::~BMFont(VOID)
+    BMFont::~BMFont(void)
     {
-        m_pFontTexture->VDestroy();
+        if(m_pFontTexture)
+        {
+            m_pFontTexture->VDestroy();
+        }
         SAFE_DELETE(m_pFontTexture);
     }
 
-    VOID FontManager::VAddFont(CONST std::string& name, IFont* font)
+    void FontManager::VAddFont(const std::string& name, IFont* font)
     {
 
 #ifdef _DEBUG
@@ -209,12 +212,12 @@ namespace chimera
         }
     }
 
-    FontManager::FontManager(VOID) : m_pCurrentFont(NULL)
+    FontManager::FontManager(void) : m_pCurrentFont(NULL)
     {
 
     }
 
-    IFont* FontManager::VGetFont(CONST std::string& name) CONST
+    IFont* FontManager::VGetFont(const std::string& name) const
     {
         auto it = m_fonts.find(name);
 #ifdef _DEBUG
@@ -226,42 +229,42 @@ namespace chimera
         return it->second;
     }
 
-    VOID FontManager::VRemoveFont(CONST std::string& name)
+    void FontManager::VRemoveFont(const std::string& name)
     {
         m_fonts.erase(name);
     }
 
-    VOID FontManager::VRenderText(std::string& text, FLOAT x, FLOAT y, chimera::Color* color)
+    void FontManager::VRenderText(std::string& text, float x, float y, chimera::Color* color)
     {
         VRenderText(text.c_str(), x, y, color);
     }
 
-    VOID FontManager::VRenderText(LPCSTR text, FLOAT x, FLOAT y, chimera::Color* color)
+    void FontManager::VRenderText(LPCSTR text, float x, float y, chimera::Color* color)
     {
         m_pCurrentRenderer->VRenderText(text, m_pCurrentFont, x, y, color);
     }
 
-    VOID FontManager::VActivateFont(CONST std::string& name)
+    void FontManager::VActivateFont(const std::string& name)
     {
         VGetFont(name)->VActivate();
     }
 
-    BOOL FontManager::VOnRestore(VOID)
+    bool FontManager::VOnRestore(void)
     {
         return m_pCurrentRenderer->VOnRestore();
     }
 
-    VOID FontManager::VSetFontRenderer(IFontRenderer* renderer)
+    void FontManager::VSetFontRenderer(IFontRenderer* renderer)
     {
         m_pCurrentRenderer = renderer;
     }
 
-    IFont* FontManager::VGetCurrentFont(VOID)
+    IFont* FontManager::VGetCurrentFont(void)
     {
         return m_pCurrentFont;
     }
 
-    FontManager::~FontManager(VOID)
+    FontManager::~FontManager(void)
     {
         for(auto it = m_fonts.begin(); it != m_fonts.end(); ++it)
         {
@@ -270,12 +273,12 @@ namespace chimera
         SAFE_DELETE(m_pCurrentRenderer);
     }
 
-    FontRenderer::FontRenderer(VOID) : m_quad(NULL), m_program(NULL)
+    FontRenderer::FontRenderer(void) : m_quad(NULL), m_program(NULL)
     {
  
     }
 
-    BOOL FontRenderer::VOnRestore(VOID)
+    bool FontRenderer::VOnRestore(void)
     {
         Destroy();
 
@@ -285,13 +288,13 @@ namespace chimera
 
         shaderDesc.vs.layoutCount = 2;
 
-        shaderDesc.vs.inputLayout[0].instanced = FALSE;
+        shaderDesc.vs.inputLayout[0].instanced = false;
         shaderDesc.vs.inputLayout[0].name = "POSITION";
         shaderDesc.vs.inputLayout[0].position = 0;
         shaderDesc.vs.inputLayout[0].slot = 0;
         shaderDesc.vs.inputLayout[0].format = eFormat_R32G32B32_FLOAT;
 
-        shaderDesc.vs.inputLayout[1].instanced = FALSE;
+        shaderDesc.vs.inputLayout[1].instanced = false;
         shaderDesc.vs.inputLayout[1].name = "TEXCOORD";
         shaderDesc.vs.inputLayout[1].position = 1;
         shaderDesc.vs.inputLayout[1].slot = 0;
@@ -302,7 +305,7 @@ namespace chimera
 
         m_program = CmGetApp()->VGetHumanView()->VGetRenderer()->VGetShaderCache()->VCreateShaderProgram("Font", &shaderDesc);
 
-        m_quad = geometryfactroy::CreateScreenQuad(TRUE);//CmGetApp()->VGetHumanView()->VGetGraphicsFactory()->VCreateGeoemtry().release();
+        m_quad = geometryfactroy::CreateScreenQuad(true);//CmGetApp()->VGetHumanView()->VGetGraphicsFactory()->VCreateGeoemtry().release();
 
 /*
         FLOAT vertices[20] = {0,0,0,0,0, 0,0,0,0,0, 0,0,0,0,0, 0,0,0,0,0};
@@ -313,10 +316,10 @@ namespace chimera
         m_quad->VSetVertexBuffer(vertices, 20, 5 * sizeof(FLOAT), TRUE);
         m_quad->VCreate();*/
 
-        return TRUE;
+        return true;
     }
 
-    VOID FontRenderer::Destroy(VOID)
+    void FontRenderer::Destroy(void)
     {
         if(m_quad)
         {
@@ -325,13 +328,13 @@ namespace chimera
         SAFE_DELETE(m_quad);
     }
 
-    FontRenderer::~FontRenderer(VOID)    
+    FontRenderer::~FontRenderer(void)    
     {
         Destroy();
     }
 
     //TODO: refactoring in terms of performance
-    VOID FontRenderer::VRenderText(CONST std::string& text, IFont* font, FLOAT x, FLOAT y, chimera::Color* color)
+    void FontRenderer::VRenderText(const std::string& text, IFont* font, float x, float y, chimera::Color* color)
     {
         if(x < 0 || x > 1 || y < 0 || y > 1)
         {
@@ -349,24 +352,24 @@ namespace chimera
         c->w = 0;
         buffer->VUnmap();
 
-        CONST CHAR* str = text.c_str();
+        const char* str = text.c_str();
         m_program->VBind();
 
-        UINT curserX = 0;
-        UINT curserY = 0;
+        uint curserX = 0;
+        uint curserY = 0;
         
         //chimera::GetContext()->OMSetBlendState(chimera::g_pBlendStateBlendAlpha, NULL, 0xffffff);
         CmGetApp()->VGetRenderer()->VPushAlphaBlendState();
 
-        FLOAT w = (FLOAT) CmGetApp()->VGetWindowWidth();
-        FLOAT h = (FLOAT) CmGetApp()->VGetWindowHeight();
+        float w = (float) CmGetApp()->VGetWindowWidth();
+        float h = (float) CmGetApp()->VGetWindowHeight();
 
-        for(UINT i = 0; i < text.size(); ++i)
+        for(uint i = 0; i < text.size(); ++i)
         {
-            CHAR c = str[i];
+            char c = str[i];
 
             //assert (c < (s_charCount+32) && c > 31);
-            CONST CMCharMetric* metric = font->VGetCharMetric(c);
+            const CMCharMetric* metric = font->VGetCharMetric(c);
             if(metric != NULL || c == '\n')
             {
                 if(c == '\n')
@@ -376,27 +379,27 @@ namespace chimera
                     continue;
                 }
 
-                FLOAT u0 = metric->x / (FLOAT)font->VGetTextureWidth();
-                FLOAT v0 = 1 - metric->y/ (FLOAT)font->VGetTextureHeight();
-                FLOAT u1 = (metric->x + metric->width ) / (FLOAT)font->VGetTextureWidth();
-                FLOAT v1 = 1 - (metric->y + metric->height) / (FLOAT)font->VGetTextureHeight();
+                float u0 = metric->x / (float)font->VGetTextureWidth();
+                float v0 = 1 - metric->y/ (float)font->VGetTextureHeight();
+                float u1 = (metric->x + metric->width ) / (float)font->VGetTextureWidth();
+                float v1 = 1 - (metric->y + metric->height) / (float)font->VGetTextureHeight();
 
-                UINT quadPosX = (UINT)(x * w);
-                UINT quadPosY = (UINT)((1-y) * h);
+                uint quadPosX = (uint)(x * w);
+                uint quadPosY = (uint)((1-y) * h);
 
                 quadPosX += curserX + metric->xoffset;
                 quadPosY -= metric->yoffset - curserY;
                 
-                FLOAT nposx = 2.0f * quadPosX / w - 1.0f;
-                FLOAT nposy = 2.0f * quadPosY / h - 1.0f;
+                float nposx = 2.0f * quadPosX / w - 1.0f;
+                float nposy = 2.0f * quadPosY / h - 1.0f;
 
-                FLOAT nposx1 = 2.0f * (quadPosX + metric->width) / w - 1.0f;
-                FLOAT nposy1 = 2.0f * (quadPosY - metric->height) / h - 1.0f;
+                float nposx1 = 2.0f * (quadPosX + metric->width) / w - 1.0f;
+                float nposy1 = 2.0f * (quadPosY - metric->height) / h - 1.0f;
 
                 //DEBUG_OUT(c);
                 //DEBUG_OUT_A("%d, %d,", metric->xoffset, metric->yoffset);
 
-                FLOAT localVertices[20] = 
+                float localVertices[20] = 
                 {
                     nposx,  nposy1, 0, u0, v1,
                     nposx1, nposy1, 0, u1, v1,
@@ -415,7 +418,7 @@ namespace chimera
 
                 curserX += metric->xadvance;
 
-                m_quad->VGetVertexBuffer()->VSetData(localVertices, 20 * sizeof(FLOAT));
+                m_quad->VGetVertexBuffer()->VSetData(localVertices, 20 * sizeof(float));
                 m_quad->VBind();
                 m_quad->VDraw();
             }

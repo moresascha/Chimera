@@ -26,7 +26,7 @@ namespace chimera
         private:
             ID3D11BlendState* m_pState;
         public:
-            D3DBlendState(CONST BlendStateDesc& dd) : m_pState(NULL)
+            D3DBlendState(const BlendStateDesc& dd) : m_pState(NULL)
             {
                 D3D11_BLEND_DESC desc;
                 memcpy(&desc, &dd, sizeof(D3D11_BLEND_DESC));
@@ -34,12 +34,12 @@ namespace chimera
                 D3D_SAVE_CALL(chimera::d3d::GetDevice()->CreateBlendState(&desc, &m_pState));
             }
 
-            VOID* VGetDevicePtr(VOID)
+            void* VGetDevicePtr(void)
             {
                 return m_pState;
             }
 
-            ~D3DBlendState(VOID)
+            ~D3DBlendState(void)
             {
                SAFE_RELEASE(m_pState);
             }
@@ -50,7 +50,7 @@ namespace chimera
         private:
             ID3D11RasterizerState* m_pState;
         public:
-            D3DRasterState(CONST RasterStateDesc& dd) : m_pState(NULL)
+            D3DRasterState(const RasterStateDesc& dd) : m_pState(NULL)
             {
                 D3D11_RASTERIZER_DESC desc;
                 desc.AntialiasedLineEnable = dd.AntialiasedLineEnable;
@@ -67,12 +67,12 @@ namespace chimera
                 D3D_SAVE_CALL(chimera::d3d::GetDevice()->CreateRasterizerState(&desc, &m_pState));
             }
 
-            VOID* VGetDevicePtr(VOID)
+            void* VGetDevicePtr(void)
             {
                 return m_pState;
             }
 
-            ~D3DRasterState(VOID)
+            ~D3DRasterState(void)
             {
                 SAFE_RELEASE(m_pState);
             }
@@ -83,7 +83,7 @@ namespace chimera
         private:
             ID3D11DepthStencilState* m_pState;
         public:
-            D3DDepthStencilState(CONST DepthStencilStateDesc& dd) : m_pState(NULL)
+            D3DDepthStencilState(const DepthStencilStateDesc& dd) : m_pState(NULL)
             {
                 D3D11_DEPTH_STENCIL_DESC desc;
                 memcpy(&desc, &dd, sizeof(D3D11_DEPTH_STENCIL_DESC));
@@ -91,12 +91,12 @@ namespace chimera
                 D3D_SAVE_CALL(chimera::d3d::GetDevice()->CreateDepthStencilState(&desc, &m_pState));
             }
 
-            VOID* VGetDevicePtr(VOID)
+            void* VGetDevicePtr(void)
             {
                 return m_pState;
             }
 
-            ~D3DDepthStencilState(VOID)
+            ~D3DDepthStencilState(void)
             {
                 SAFE_RELEASE(m_pState);
             }
@@ -105,17 +105,17 @@ namespace chimera
         class D3DStateFactory : public IGraphicsStateFactroy
         {
         public:
-            IBlendState* VCreateBlendState(CONST BlendStateDesc* desc) 
+            IBlendState* VCreateBlendState(const BlendStateDesc* desc) 
             {
                 return new D3DBlendState(*desc);
             }
 
-            IRasterState* VCreateRasterState(CONST RasterStateDesc* desc) 
+            IRasterState* VCreateRasterState(const RasterStateDesc* desc) 
             {
                 return new D3DRasterState(*desc);
             }
 
-            IDepthStencilState* VCreateDepthStencilState(CONST DepthStencilStateDesc* desc) 
+            IDepthStencilState* VCreateDepthStencilState(const DepthStencilStateDesc* desc) 
             {
                 return new D3DDepthStencilState(*desc);
             }
@@ -140,12 +140,12 @@ namespace chimera
         class D3DShaderFactory : public IShaderFactory
         {
         public:
-            IShaderProgram* VCreateShaderProgram(VOID)
+            IShaderProgram* VCreateShaderProgram(void)
             {
                 return new chimera::d3d::ShaderProgram();
             }
 
-            IShader* VCreateFragmentShader(CONST CMShaderDescription* desc)
+            IShader* VCreateFragmentShader(const CMShaderDescription* desc)
             {
                 IShader* s = CreateShader<PixelShader>(desc->file, desc->function);
 
@@ -154,12 +154,12 @@ namespace chimera
                 return s;
             }
 
-            IShader* VCreateVertexShader(CONST CMVertexShaderDescription* desc)
+            IShader* VCreateVertexShader(const CMVertexShaderDescription* desc)
             {
                 VertexShader* s = CreateShader<VertexShader>(desc->file, desc->function);
                 TBD_FOR_INT(desc->layoutCount)
                 {
-                    CONST CMVertexInputLayout& layout = desc->inputLayout[i];
+                    const CMVertexInputLayout& layout = desc->inputLayout[i];
                     if(layout.instanced)
                     {
                         s->SetInputAttrInstanced(layout.name, layout.position, layout.slot, GetD3DFormatFromCMFormat(layout.format));
@@ -176,7 +176,7 @@ namespace chimera
                 return s;
             }
 
-            IShader* VCreateGeometryShader(CONST CMShaderDescription* desc)
+            IShader* VCreateGeometryShader(const CMShaderDescription* desc)
             {
                 IShader* s = CreateShader<GeometryShader>(desc->file, desc->function);
 
@@ -186,21 +186,21 @@ namespace chimera
             }
         };
 
-        std::unique_ptr<IRenderTarget> D3DGraphicsFactory::VCreateRenderTarget(VOID) { return std::unique_ptr<IRenderTarget>(new chimera::d3d::RenderTarget()); }
+        std::unique_ptr<IRenderTarget> D3DGraphicsFactory::VCreateRenderTarget(void) { return std::unique_ptr<IRenderTarget>(new chimera::d3d::RenderTarget()); }
 
-        std::unique_ptr<IGeometry> D3DGraphicsFactory::VCreateGeoemtry(VOID) { return std::unique_ptr<IGeometry>(new chimera::d3d::Geometry()); }
+        std::unique_ptr<IGeometry> D3DGraphicsFactory::VCreateGeoemtry(void) { return std::unique_ptr<IGeometry>(new chimera::d3d::Geometry()); }
 
-        std::unique_ptr<IRenderer> D3DGraphicsFactory::VCreateRenderer(VOID) { return std::unique_ptr<IRenderer>(new chimera::d3d::Renderer()); }
+        std::unique_ptr<IRenderer> D3DGraphicsFactory::VCreateRenderer(void) { return std::unique_ptr<IRenderer>(new chimera::d3d::Renderer()); }
 
-        std::unique_ptr<IShaderFactory> D3DGraphicsFactory::VCreateShaderFactory(VOID) { return std::unique_ptr<IShaderFactory>(new D3DShaderFactory()); }
+        std::unique_ptr<IShaderFactory> D3DGraphicsFactory::VCreateShaderFactory(void) { return std::unique_ptr<IShaderFactory>(new D3DShaderFactory()); }
 
-        std::unique_ptr<IConstShaderBuffer> D3DGraphicsFactory::VCreateConstShaderBuffer(VOID) { return std::unique_ptr<IConstShaderBuffer>(new ConstBuffer()); }
+        std::unique_ptr<IConstShaderBuffer> D3DGraphicsFactory::VCreateConstShaderBuffer(void) { return std::unique_ptr<IConstShaderBuffer>(new ConstBuffer()); }
 
-        std::unique_ptr<IVertexBuffer> D3DGraphicsFactory::VCreateVertexBuffer(VOID) { return std::unique_ptr<IVertexBuffer>(new VertexBuffer()); }
+        std::unique_ptr<IVertexBuffer> D3DGraphicsFactory::VCreateVertexBuffer(void) { return std::unique_ptr<IVertexBuffer>(new VertexBuffer()); }
         
-        std::unique_ptr<IDeviceBuffer> D3DGraphicsFactory::VCreateIndexBuffer(VOID) { return std::unique_ptr<IDeviceBuffer>(new IndexBuffer()); }
+        std::unique_ptr<IDeviceBuffer> D3DGraphicsFactory::VCreateIndexBuffer(void) { return std::unique_ptr<IDeviceBuffer>(new IndexBuffer()); }
 
-        std::unique_ptr<IDeviceTexture> D3DGraphicsFactory::VCreateTexture(CONST CMTextureDescription* desc)
+        std::unique_ptr<IDeviceTexture> D3DGraphicsFactory::VCreateTexture(const CMTextureDescription* desc)
         {
             chimera::d3d::Texture2D* texture = new chimera::d3d::Texture2D();
 
@@ -227,7 +227,7 @@ namespace chimera
             return std::unique_ptr<IDeviceTexture>(texture);
         }
 
-        std::unique_ptr<IGraphicsStateFactroy> D3DGraphicsFactory::VCreateStateFactory(VOID)
+        std::unique_ptr<IGraphicsStateFactroy> D3DGraphicsFactory::VCreateStateFactory(void)
         {
             return std::unique_ptr<IGraphicsStateFactroy>(new D3DStateFactory());
         }

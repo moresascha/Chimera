@@ -3,7 +3,7 @@
 
 namespace chimera 
 {
-    extern "C" LRESULT CALLBACK WndProc(HWND, UINT, WPARAM, LPARAM);
+    extern "C" LRESULT CALLBACK WndProc(HWND, uint, WPARAM, LPARAM);
 
     class Application : public IApplication
     {
@@ -18,62 +18,62 @@ namespace chimera
         IScript* m_pScript;
         IScriptEventManager* m_pScriptEventManager;
         IConfig* m_pConfig;
-        BOOL m_running;
-        ULONG m_updateInterval; //freq per second
+        bool m_running;
+        ulong m_updateInterval; //freq per second
         DOUBLE m_updateFreqMillis;
         IFileSystem* m_pFileSystem;
 
         static HINSTANCE g_hInstance;
 
-        Application(VOID);
+        Application(void);
 
-        virtual BOOL VInitialise(FactoryPtr* facts);
+        virtual bool VInitialise(FactoryPtr* facts);
         
-        VOID VClose(VOID);
+        void VClose(void);
 
-        VOID Update(VOID);
+        void Update(void);
 
-        VOID VRun(VOID);
+        void VRun(void);
 
-        VOID Render(VOID);
+        void Render(void);
 
-        BOOL VIsRunning(VOID) { return m_running; }
+        bool VIsRunning(void) { return m_running; }
 
-        VOID VStopRunning(VOID) { m_running = FALSE; }
+        void VStopRunning(void) { m_running = false; }
 
-        IHumanView* VGetHumanView(VOID);
+        IHumanView* VGetHumanView(void);
 
-        IEventManager* VGetEventManager(VOID) { return m_pEventMgr; }
+        IEventManager* VGetEventManager(void) { return m_pEventMgr; }
 
-        IFileSystem* VGetFileSystem(VOID) { return m_pFileSystem; }
+        IFileSystem* VGetFileSystem(void) { return m_pFileSystem; }
 
-        IResourceCache* VGetCache(VOID) { return m_pCache; }
+        IResourceCache* VGetCache(void) { return m_pCache; }
 
-        IScript* VGetScript(VOID) { return m_pScript; }
+        IScript* VGetScript(void) { return m_pScript; }
 
-        IScriptEventManager* VGetScriptEventManager(VOID) { return m_pScriptEventManager; }
+        IScriptEventManager* VGetScriptEventManager(void) { return m_pScriptEventManager; }
 
-        ILogic* VGetLogic(VOID) { return m_pLogic; }
+        ILogic* VGetLogic(void) { return m_pLogic; }
 
-        IRenderer* VGetRenderer(VOID) { return VGetHumanView()->VGetRenderer(); } //we keep it here to show loading modules, todo: move to gameview
+        IRenderer* VGetRenderer(void) { return VGetHumanView()->VGetRenderer(); } //we keep it here to show loading modules, todo: move to gameview
 
-        ITimer* VGetUpdateTimer(VOID) { return m_pUpdateTimer; }
+        ITimer* VGetUpdateTimer(void) { return m_pUpdateTimer; }
 
-        ITimer* VGetRenderingTimer(VOID) { return m_pRenderingTimer; }
+        ITimer* VGetRenderingTimer(void) { return m_pRenderingTimer; }
 
-        IInputHandler* VGetInputHandler(VOID) { return m_pInput; }
+        IInputHandler* VGetInputHandler(void) { return m_pInput; }
 
-        IConfig* VGetConfig(VOID) { return m_pConfig; }
+        IConfig* VGetConfig(void) { return m_pConfig; }
 
-        HWND VGetWindowHandle(VOID);
+        HWND VGetWindowHandle(void);
 
-        UINT VGetWindowWidth(VOID) CONST;
+        uint VGetWindowWidth(void) const;
 
-        UINT VGetWindowHeight(VOID) CONST;
+        uint VGetWindowHeight(void) const;
 
-        BOOL VIsRunning(VOID) CONST;
+        bool VIsRunning(void) const;
 
-        virtual ~Application(VOID);
+        virtual ~Application(void);
     };
 
     extern Application* g_pApp;

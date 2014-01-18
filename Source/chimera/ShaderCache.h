@@ -65,7 +65,7 @@ namespace chimera
             return NULL;
         }
 
-        IShader* VCreateShader(LPCSTR name, CONST CMShaderDescription* desc, ShaderType t)
+        IShader* VCreateShader(LPCSTR name, const CMShaderDescription* desc, ShaderType t)
         {
             auto it = m_shaderMap.find(name);
 
@@ -96,7 +96,7 @@ namespace chimera
             return shader;
         }
 
-        IShaderProgram* VCreateShaderProgram(LPCSTR name, CONST CMShaderProgramDescription* desc)
+        IShaderProgram* VCreateShaderProgram(LPCSTR name, const CMShaderProgramDescription* desc)
         {
             auto it = m_programMap.find(name);
 
@@ -118,7 +118,7 @@ namespace chimera
             return p;
         }
 
-        ~ShaderCache(VOID)
+        ~ShaderCache(void)
         {
             TBD_FOR(m_programMap)
             {

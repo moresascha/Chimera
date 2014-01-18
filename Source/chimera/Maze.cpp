@@ -8,21 +8,21 @@
 
 namespace packman
 {
-    FLOAT rrand()
+    float rrand()
     {
-        return rand() / (FLOAT) RAND_MAX;
+        return rand() / (float) RAND_MAX;
     }
 
     struct Vec2
     {
-        INT x;
-        INT z;
-        Vec2(VOID) : x(0), z(0)
+        int x;
+        int z;
+        Vec2(void) : x(0), z(0)
         {
 
         }
 
-        Vec2(INT x, INT z) : x(x), z(z)
+        Vec2(int x, int z) : x(x), z(z)
         {
 
         }
@@ -39,13 +39,13 @@ namespace packman
 
         }
 
-        Wall(CONST Wall& wall)
+        Wall(const Wall& wall)
         {
             this->start = wall.start;
             this->end = wall.end;
         }
 
-        Wall(VOID)
+        Wall(void)
         {
 
         }
@@ -57,7 +57,7 @@ namespace packman
         Wall wx;
         Wall wz;
 
-        WallSet(VOID)
+        WallSet(void)
         {
 
         }
@@ -70,25 +70,25 @@ namespace packman
             doors[3] = Vec2(wz.start.x, 1 + wx.start.z + (int)(rrand() * (wz.end.z - wx.start.z)));
         }
 
-        BOOL IsDoor(INT x, INT z)
+        bool IsDoor(int x, int z)
         {
-            for(INT i = 0; i < 4; ++i)
+            for(int i = 0; i < 4; ++i)
             {
                 if(doors[i].x == x && doors[i].z == z)
                 {
-                    return TRUE;
+                    return true;
                 }
             }
-            return FALSE;
+            return false;
         }
 
-        BOOL IsWall(INT x, INT z)
+        bool IsWall(int x, int z)
         {
-            BOOL b0 = wx.start.z == z && wx.end.z == z;
-            BOOL b1 = (wx.start.x <= x && wx.end.x >= x);
+            bool b0 = wx.start.z == z && wx.end.z == z;
+            bool b1 = (wx.start.x <= x && wx.end.x >= x);
 
-            BOOL b2 = (wz.start.x == x && wz.end.x == x);
-            BOOL b3 = (wz.start.z <= z && wz.end.z >= z);
+            bool b2 = (wz.start.x == x && wz.end.x == x);
+            bool b3 = (wz.start.z <= z && wz.end.z >= z);
 
             return !IsDoor(x, z) && (b0 && b1 || b2 && b3);
         }
@@ -100,7 +100,7 @@ namespace packman
         Vec2 m_max;
         WallSet ws;
 
-        Chamber(VOID)
+        Chamber(void)
         {
 
         }
@@ -118,7 +118,7 @@ namespace packman
             ws = WallSet(wx, wz);
         }
 
-        Chamber GetChild(INT index)
+        Chamber GetChild(int index)
         {
             switch(index)
             {
@@ -143,16 +143,16 @@ namespace packman
             }
         }
 
-        BOOL IsValid(VOID)
+        bool IsValid(void)
         {
-            INT x = m_max.x - m_min.x;
-            INT z = m_max.z - m_min.z;
+            int x = m_max.x - m_min.x;
+            int z = m_max.z - m_min.z;
             return (x > 3 && z > 3);
         }
 
     };
 
-    std::shared_ptr<chimera::Actor> CreateEnemy(CONST util::Vec3& pos,  Maze* level)
+    std::shared_ptr<chimera::Actor> CreateEnemy(const util::Vec3& pos,  Maze* level)
     {
         chimera::ActorDescription desc = chimera::g_pApp->GetLogic()->GetActorFactory()->CreateActorDescription();
 
@@ -173,7 +173,7 @@ namespace packman
         return level->VAddActor(desc);
     }
 
-    VOID CreateMaze(Chamber& c, std::list<Chamber>& chambers, INT* step)
+    void CreateMaze(Chamber& c, std::list<Chamber>& chambers, int* step)
     {
         (*step)++;
         if(!c.IsValid())
@@ -181,47 +181,47 @@ namespace packman
             return;
         }
         chambers.push_back(c);
-        for(INT i = 0; i < 4; ++i)
+        for(int i = 0; i < 4; ++i)
         {
             CreateMaze(c.GetChild(i), chambers, step);
         }
     }
 
-    Maze::Maze(INT size, INT enemies, chimera::ActorFactory* factory) : BaseLevel("test", factory), m_size(size), m_step(0), m_enemies(enemies)
+    Maze::Maze(int size, int enemies, chimera::ActorFactory* factory) : BaseLevel("test", factory), m_size(size), m_step(0), m_enemies(enemies)
     {
     }
 
-    BOOL Maze::VLoad(BOOL block)
+    bool Maze::VLoad(bool block)
     {
 
         chimera::CreateStaticPlane(this);
 
         srand(100);
         std::list<Chamber> list;
-        CONST INT size = (INT)m_size;
+        const int size = (int)m_size;
         Chamber c(Vec2(0, 0), Vec2(size, size));
         CreateMaze(c, list, &m_step);
 
-        m_vals = new INT*[size+1];
+        m_vals = new int*[size+1];
 
-        for(INT i = 0; i < size + 1; ++i)
+        for(int i = 0; i < size + 1; ++i)
         {
-            m_vals[i] = new INT[size + 1];
+            m_vals[i] = new int[size + 1];
         }
 
-        for(INT i = 0; i < size+1; ++i)
+        for(int i = 0; i < size+1; ++i)
         {
-            for(INT j = 0; j < size+1; ++j)
+            for(int j = 0; j < size+1; ++j)
             {
-                m_vals[i][j] = FALSE;
+                m_vals[i][j] = false;
             }
         }
 
         TBD_FOR(list)
         {
-            for(INT i = 0; i < size+1; ++i)
+            for(int i = 0; i < size+1; ++i)
             {
-                for(INT j = 0; j < size+1; ++j)
+                for(int j = 0; j < size+1; ++j)
                 {
                     m_vals[i][j] |= it->ws.IsWall(i, j);
                 }
@@ -246,7 +246,7 @@ namespace packman
 
         //renderComp->m_instances.push_back(util::Vec3(0,1,0));
 
-        FLOAT s = 2;
+        float s = 2;
         for(int i = 0; i < size + 1; ++i)
         {
             //std::stringstream ss;
@@ -269,17 +269,17 @@ namespace packman
 
         VAddActor(desc);
 
-        for(INT i = 0; i < m_enemies; ++i)
+        for(int i = 0; i < m_enemies; ++i)
         {
-            INT x;
-            INT z;
+            int x;
+            int z;
             do 
             {
-                x = -m_size + 2 * (INT)(rrand() * m_size);
-                z = -m_size + 2 * (INT)(rrand() * m_size);
-            } while (IsWall((FLOAT)x, (FLOAT)z));
+                x = -m_size + 2 * (int)(rrand() * m_size);
+                z = -m_size + 2 * (int)(rrand() * m_size);
+            } while (IsWall((float)x, (float)z));
 
-            std::shared_ptr<chimera::Actor> actor = CreateEnemy(util::Vec3((FLOAT)x, 1, (FLOAT)z), this);
+            std::shared_ptr<chimera::Actor> actor = CreateEnemy(util::Vec3((float)x, 1, (float)z), this);
         }
 
         desc = m_pActorFactory->CreateActorDescription();
@@ -291,34 +291,34 @@ namespace packman
         renderComp->m_info = "skydome3.jpg";
         VAddActor(desc);
 
-        return TRUE;
+        return true;
     }
 
-    BOOL Maze::VSave(LPCSTR file /* = NULL */)
+    bool Maze::VSave(LPCSTR file /* = NULL */)
     {
-        return TRUE;
+        return true;
     }
 
-    FLOAT Maze::VGetLoadingProgress(VOID)
+    float Maze::VGetLoadingProgress(void)
     {
         //INT i = log(m_size / 3.0) / log(2.0);
         return BaseLevel::VGetLoadingProgress();// * 0.5f + 0.5f * (m_step / (2 << i));
     }
 
-    BOOL Maze::IsWall(FLOAT x, FLOAT z)
+    bool Maze::IsWall(float x, float z)
     {
-        INT ix = (INT)(((x + (FLOAT)m_size) / 2.0f));
-        INT iy = (INT)(((z + (FLOAT)m_size) / 2.0f));
+        int ix = (int)(((x + (float)m_size) / 2.0f));
+        int iy = (int)(((z + (float)m_size) / 2.0f));
         if(ix < 0 || ix > m_size || iy < 0 || iy > m_size)
         {
-            return FALSE;
+            return false;
         }
         return m_vals[ix][iy];
     }
 
-    Maze::~Maze(VOID)
+    Maze::~Maze(void)
     {
-        for(INT i = 0; i < m_size + 1; ++i)
+        for(int i = 0; i < m_size + 1; ++i)
         {
             SAFE_ARRAY_DELETE(m_vals[i]);
         }

@@ -15,7 +15,7 @@
 
 namespace chimera
 {
-    BOOL UniformBSplineNode::drawCP_CP = FALSE;
+    bool UniformBSplineNode::drawCP_CP = false;
 
     class TransformCudaHandle : public VRamHandle
     {
@@ -32,12 +32,12 @@ namespace chimera
         util::AxisAlignedBB m_aabb;
 
     public:
-        TransformCudaHandle(VOID) : m_pCuda(NULL), m_pGeo(NULL)
+        TransformCudaHandle(void) : m_pCuda(NULL), m_pGeo(NULL)
         {
 
         }
 
-        virtual BOOL VCreate(VOID)
+        virtual bool VCreate(void)
         {
             SAFE_DELETE(m_pCuda);
 
@@ -49,17 +49,17 @@ namespace chimera
 
             m_d3dbuffer = m_pCuda->RegisterD3D11Buffer(std::string("vertices"), m_pGeo->GetVertexBuffer()->GetBuffer(), cudaGraphicsMapFlagsNone);
 
-            UINT elementCnt = m_pGeo->GetVertexBuffer()->GetElementCount();
+            uint elementCnt = m_pGeo->GetVertexBuffer()->GetElementCount();
         
             float3* normals = new float3[elementCnt];
             float3* pos = new float3[elementCnt];
 
-            CONST VertexData* vertices = (VertexData*)m_pGeo->GetVertexBuffer()->GetRawData();
+            const VertexData* vertices = (VertexData*)m_pGeo->GetVertexBuffer()->GetRawData();
 
             TBD_FOR_INT(elementCnt)
             {
-                UINT stride = 8;
-                CONST VertexData& d = vertices[i];
+                uint stride = 8;
+                const VertexData& d = vertices[i];
                 pos[i] = d.position;
                 util::Vec3 v(d.position.x, d.position.y, d.position.z);
                 m_aabb.AddPoint(v);
@@ -68,7 +68,7 @@ namespace chimera
             m_aabb.Construct();
             m_normals = m_pCuda->CreateBuffer(std::string("normals"), elementCnt * sizeof(float3), normals, sizeof(float3));
             m_positions = m_pCuda->CreateBuffer(std::string("positions"), elementCnt * sizeof(float3), pos, sizeof(float3));
-            m_indices = m_pCuda->CreateBuffer(std::string("indices"), elementCnt * sizeof(INT), sizeof(INT));
+            m_indices = m_pCuda->CreateBuffer(std::string("indices"), elementCnt * sizeof(int), sizeof(int));
 
             //computeIndices((int*)m_indices->ptr,  )
 
@@ -77,10 +77,10 @@ namespace chimera
             SAFE_DELETE(normals);
             SAFE_DELETE(pos);
 
-            return TRUE;
+            return true;
         }
 
-        virtual VOID VDestroy()
+        virtual void VDestroy()
         {
             SAFE_DELETE(m_pCuda);
             if(m_pGeo)
@@ -90,7 +90,7 @@ namespace chimera
             SAFE_DELETE(m_pGeo);
         }
 
-        virtual UINT VGetByteCount(VOID) CONST
+        virtual uint VGetByteCount(void) const
         {
             return m_pGeo->VGetByteCount() + m_normals->VGetByteCount() + m_positions->VGetByteCount() + m_indices->VGetByteCount();
         }
@@ -102,16 +102,16 @@ namespace chimera
     private:
         chimera::Geometry* m_pControlGeo;
         cudah::cuda_buffer m_controlPoints;
-        FLOAT* m_pControlPoints;
-        UINT m_controlPointsCnt;
-        BOOL m_useRawControlPointBuffer;
+        float* m_pControlPoints;
+        uint m_controlPointsCnt;
+        bool m_useRawControlPointBuffer;
 
-        BSplinesTransformHandle(BOOL useRawControlPointBuffer = FALSE) : m_pControlPoints(NULL), m_controlPointsCnt(0), m_pControlGeo(NULL), m_useRawControlPointBuffer(useRawControlPointBuffer)
+        BSplinesTransformHandle(bool useRawControlPointBuffer = false) : m_pControlPoints(NULL), m_controlPointsCnt(0), m_pControlGeo(NULL), m_useRawControlPointBuffer(useRawControlPointBuffer)
         {
 
         }
 
-        BOOL VCreate(VOID)
+        bool VCreate(void)
         {
             TransformCudaHandle::VCreate();
 
@@ -134,15 +134,15 @@ namespace chimera
 
             SAFE_ARRAY_DELETE(m_pControlPoints);
 
-            return TRUE;
+            return true;
         }
 
-        UINT VGetByteCount(VOID) CONST
+        uint VGetByteCount(void) const
         {
             return TransformCudaHandle::VGetByteCount() + m_pControlGeo->VGetByteCount();
         }
 
-        VOID VDestroy(VOID)
+        void VDestroy(void)
         {
             TransformCudaHandle::VDestroy();
             if(m_pControlGeo)
@@ -163,7 +163,7 @@ namespace chimera
         m_material.m_reflectance = 1;
     }
 
-    VOID CudaTransformationNode::VOnUpdate(ULONG millis, SceneGraph* graph)
+    void CudaTransformationNode::VOnUpdate(ulong millis, SceneGraph* graph)
     {
         if(VIsVisible(graph) && m_pHandle->VIsReady())
         {
@@ -179,24 +179,24 @@ namespace chimera
         return m_pHandle->m_pCuda->GetBuffer(name);
     }
 
-    cudah::cudah* CudaTransformationNode::GetCuda(VOID)
+    cudah::cudah* CudaTransformationNode::GetCuda(void)
     {
         return m_pHandle->m_pCuda;
     }
 
-    BOOL CudaTransformationNode::VIsVisible(chimera::SceneGraph* graph)
+    bool CudaTransformationNode::VIsVisible(chimera::SceneGraph* graph)
     {
         util::Vec3 middle = util::Mat4::Transform(*GetTransformation(), m_aabb.GetMiddle());
-        BOOL in = graph->GetFrustum()->IsInside(middle, m_aabb.GetRadius());
+        bool in = graph->GetFrustum()->IsInside(middle, m_aabb.GetRadius());
         return in;
     }
 
-    UINT CudaTransformationNode::VGetRenderPaths(VOID)
+    uint CudaTransformationNode::VGetRenderPaths(void)
     {
         return eRenderPath_DrawToAlbedo | eRenderPath_DrawToShadowMap | eRenderPath_DrawBounding;
     }
 
-    VOID CudaTransformationNode::_VRender(chimera::SceneGraph* graph, chimera::RenderPath& path)
+    void CudaTransformationNode::_VRender(chimera::SceneGraph* graph, chimera::RenderPath& path)
     {
         if(m_pHandle->VIsReady())
         {
@@ -223,11 +223,11 @@ namespace chimera
                     if(m_pNormalTextureHandle)
                     {
                         chimera::g_pApp->GetHumanView()->GetRenderer()->SetSampler(chimera::eNormalColorSampler, m_pNormalTextureHandle->GetShaderResourceView());
-                        chimera::g_pApp->GetHumanView()->GetRenderer()->SetNormalMapping(TRUE);
+                        chimera::g_pApp->GetHumanView()->GetRenderer()->SetNormalMapping(true);
                     }
                     else
                     {
-                        chimera::g_pApp->GetHumanView()->GetRenderer()->SetNormalMapping(FALSE);
+                        chimera::g_pApp->GetHumanView()->GetRenderer()->SetNormalMapping(false);
                     }
                     m_pHandle->m_pGeo->Bind();
                     m_pHandle->m_pGeo->Draw();
@@ -252,7 +252,7 @@ namespace chimera
         }
     }
 
-    VOID CudaTransformationNode::VOnRestore(chimera::SceneGraph* graph)
+    void CudaTransformationNode::VOnRestore(chimera::SceneGraph* graph)
     {
         std::stringstream ss;
         ss << "CudaTransformationNode";
@@ -279,42 +279,42 @@ namespace chimera
         m_aabb.Construct(); */
     }
 
-    chimera::Material& CudaTransformationNode::GetMaterial(VOID)
+    chimera::Material& CudaTransformationNode::GetMaterial(void)
     {
         return m_material;
     }
 
-    VOID CudaTransformationNode::SetTexture(chimera::CMResource res)
+    void CudaTransformationNode::SetTexture(chimera::CMResource res)
     {
         m_diffTextureRes = res;
         m_pDiffuseTextureHandle = std::static_pointer_cast<chimera::D3DTexture2D>(chimera::g_pApp->GetHumanView()->GetVRamManager()->GetHandle(m_diffTextureRes));
     }
 
-    VOID CudaTransformationNode::SetNormaleTexture(chimera::CMResource res)
+    void CudaTransformationNode::SetNormaleTexture(chimera::CMResource res)
     {
         m_normalTexRes = res;
         m_pNormalTextureHandle = std::static_pointer_cast<chimera::D3DTexture2D>(chimera::g_pApp->GetHumanView()->GetVRamManager()->GetHandle(m_normalTexRes));
     }
 
-    CudaTransformationNode::~CudaTransformationNode(VOID)
+    CudaTransformationNode::~CudaTransformationNode(void)
     {
 
     }
 
     //bsplines
 
-    UniformBSplineNode::UniformBSplineNode(GeometryCreatorCallBack geoCreator, CudaFuncCallBack func, UINT vertexStride, UINT controlPntsStride, BOOL b) : CudaTransformationNode(func, geoCreator), 
+    UniformBSplineNode::UniformBSplineNode(GeometryCreatorCallBack geoCreator, CudaFuncCallBack func, uint vertexStride, uint controlPntsStride, bool b) : CudaTransformationNode(func, geoCreator), 
         m_vertexStride(vertexStride), m_cntpStride(controlPntsStride), m_useRawControlPointBuffer(b)
     {
 
     }
 
-    util::UniformBSpline& UniformBSplineNode::GetSpline(VOID)
+    util::UniformBSpline& UniformBSplineNode::GetSpline(void)
     {
         return m_bspline;
     }
 
-    VOID UniformBSplineNode::VOnRestore(chimera::SceneGraph* graph)
+    void UniformBSplineNode::VOnRestore(chimera::SceneGraph* graph)
     {
         std::stringstream ss;
         ss << "UniformBSplineNode";
@@ -327,8 +327,8 @@ namespace chimera
 
         SetNormaleTexture(m_normalTexRes);
 
-        UINT index = 0;
-        FLOAT* controlPoints = new FLOAT[3 * m_bspline.GetControlPoints().size()];
+        uint index = 0;
+        float* controlPoints = new float[3 * m_bspline.GetControlPoints().size()];
         TBD_FOR(m_bspline.GetControlPoints())
         {
             controlPoints[index++] = it->x;
@@ -336,7 +336,7 @@ namespace chimera
             controlPoints[index++] = it->z;
         }
         handle->m_pControlPoints = controlPoints;
-        handle->m_controlPointsCnt = (UINT)m_bspline.GetControlPoints().size();
+        handle->m_controlPointsCnt = (uint)m_bspline.GetControlPoints().size();
 
         chimera::g_pApp->GetHumanView()->GetVRamManager()->AppendAndCreateHandle(ss.str(), m_pHandle);
 
@@ -346,7 +346,7 @@ namespace chimera
         m_aabb = m_pHandle->m_aabb;
     }
 
-    VOID UniformBSplineNode::VOnUpdate(ULONG millis, SceneGraph* graph)
+    void UniformBSplineNode::VOnUpdate(ulong millis, SceneGraph* graph)
     {
         if(VIsVisible(graph) && m_pHandle->VIsReady())
         {
@@ -376,12 +376,12 @@ namespace chimera
         }   
     }
 
-    UINT UniformBSplineNode::VGetRenderPaths(VOID)
+    uint UniformBSplineNode::VGetRenderPaths(void)
     {
         return eRenderPath_DrawToAlbedoInstanced | CudaTransformationNode::VGetRenderPaths();
     }
 
-    VOID UniformBSplineNode::_VRender(chimera::SceneGraph* graph, chimera::RenderPath& path)
+    void UniformBSplineNode::_VRender(chimera::SceneGraph* graph, chimera::RenderPath& path)
     {
         CudaTransformationNode::_VRender(graph, path);
         if(drawCP_CP)

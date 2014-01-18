@@ -25,6 +25,26 @@ void createSpheres(void)
     }
 }
 
+void callback(std::shared_ptr<chimera::IResHandle>& handle)
+{
+    std::shared_ptr<chimera::IMeshSet> meshes = std::static_pointer_cast<chimera::IMeshSet>(handle);
+    for(auto it = meshes->VBegin(); it != meshes->VEnd(); ++it) 
+    {
+        std::string subMesh = it->first;
+
+        std::unique_ptr<chimera::ActorDescription> desc = chimera::CmGetApp()->VGetLogic()->VGetActorFactory()->VCreateActorDescription();
+
+        desc->AddComponent<chimera::TransformComponent>(CM_CMP_TRANSFORM);
+
+        chimera::RenderComponent* renderCmp = desc->AddComponent<chimera::RenderComponent>(CM_CMP_RENDERING);
+
+        renderCmp->m_meshId = subMesh;
+        renderCmp->m_resource = meshes->VGetResource();
+
+        chimera::CmGetApp()->VGetLogic()->VCreateActor(std::move(desc));
+    }
+}
+
 void createLights(void)
 {
     int c = 2;
@@ -60,9 +80,13 @@ void run(HINSTANCE hInstance)
 
     //createSpheres();
     //createLights()
-    //chimera::CmGetApp()->VGetLogic()->VLoadLevel("testlevel.xml");
-    chimera::CmGetApp()->VGetLogic()->VCreateActor("ruin.xml");
-    //chimera::CmGetApp()->VGetLogic()->VCreateActor("spotlight.xml");
+    chimera::CmGetApp()->VGetLogic()->VLoadLevel("testlevel.xml");
+    //chimera::CmGetApp()->VGetLogic()->VCreateActor("ruin.xml");
+    //chimera::CmGetApp()->VGetLogic()->VCreateActor("ton.xml");
+
+    chimera::CmGetApp()->VGetLogic()->VGetCommandInterpreter()->VCallCommand("bind t spawnactor ton.xml");
+
+    //chimera::CmGetApp()->VGetCache()->VGetHandleAsync(chimera::CMResource("twoObjTest.obj"), callback);
 
     chimera::CmGetApp()->VRun();
 

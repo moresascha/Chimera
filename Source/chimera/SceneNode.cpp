@@ -6,7 +6,7 @@ namespace chimera
 {
     struct uint4
     {
-        UINT x, y, z, w;
+        uint x, y, z, w;
     };
 
     /*
@@ -204,23 +204,23 @@ namespace chimera
         chimera::g_pApp->GetHumanView()->GetRenderer()->PopRasterizerState();
     } */
 
-    SceneNode::SceneNode(ActorId actorId) : m_actorId(actorId), m_wasVisibleOnLastTraverse(FALSE), m_forceVisibleCheck(FALSE), m_parent(NULL), m_paths(0)
+    SceneNode::SceneNode(ActorId actorId) : m_actorId(actorId), m_wasVisibleOnLastTraverse(false), m_forceVisibleCheck(false), m_parent(NULL), m_paths(0)
     {
         VSetActor(actorId);
         m_wParentTransformation = std::unique_ptr<TransformComponent>(new TransformComponent());
     }
 
-    SceneNode::SceneNode(VOID) : m_parent(NULL)
+    SceneNode::SceneNode(void) : m_parent(NULL)
     {
 
     }
 
-    VOID SceneNode::VQueryGeometry(IGeometry** geo)
+    void SceneNode::VQueryGeometry(IGeometry** geo)
     {
         *geo = m_pGeometry.get();
     }
 
-    VOID SceneNode::VSetActor(ActorId id)
+    void SceneNode::VSetActor(ActorId id)
     {
         if(id != CM_INVALID_ACTOR_ID)
         {
@@ -235,16 +235,16 @@ namespace chimera
         }
     }
 
-    VOID SceneNode::VAddChild(std::unique_ptr<ISceneNode> child)
+    void SceneNode::VAddChild(std::unique_ptr<ISceneNode> child)
     {
         child->VSetParent(this);
         child->VOnParentChanged();
         m_childs.push_back(std::move(child));
     }
 
-    UINT SceneNode::VGetRenderPaths(VOID)
+    uint SceneNode::VGetRenderPaths(void)
     {
-        UINT paths = 0;
+        uint paths = 0;
         for(auto it = m_childs.begin(); it != m_childs.end(); ++it)
         {
             paths |= (*it)->VGetRenderPaths();
@@ -252,12 +252,12 @@ namespace chimera
         return paths | m_paths;
     }
 
-    VOID SceneNode::VSetRenderPaths(RenderPath paths)
+    void SceneNode::VSetRenderPaths(RenderPath paths)
     {
         m_paths = paths;
     }
 
-    VOID SceneNode::VOnRestore(ISceneGraph* graph) 
+    void SceneNode::VOnRestore(ISceneGraph* graph) 
     {
         for(auto it = m_childs.begin(); it != m_childs.end(); ++it)
         {
@@ -265,7 +265,7 @@ namespace chimera
         }
     }
 
-    VOID SceneNode::VPostRender(ISceneGraph* graph)
+    void SceneNode::VPostRender(ISceneGraph* graph)
     {
         for(auto it = m_childs.begin(); it != m_childs.end(); ++it)
         {
@@ -273,7 +273,7 @@ namespace chimera
         }
     }
 
-    VOID SceneNode::VPreRender(ISceneGraph* graph) 
+    void SceneNode::VPreRender(ISceneGraph* graph) 
     {
         for(auto it = m_childs.begin(); it != m_childs.end(); ++it)
         {
@@ -281,7 +281,7 @@ namespace chimera
         }
     }
 
-    VOID SceneNode::VOnUpdate(ULONG millis, ISceneGraph* graph)
+    void SceneNode::VOnUpdate(ulong millis, ISceneGraph* graph)
     {
         for(auto it = m_childs.begin(); it != m_childs.end(); ++it)
         {
@@ -289,7 +289,7 @@ namespace chimera
         }
     }
 
-    VOID SceneNode::VSetParent(ISceneNode* parent)
+    void SceneNode::VSetParent(ISceneNode* parent)
     {
         m_parent = parent;
     }
@@ -327,22 +327,22 @@ namespace chimera
         return NULL;
     }
 
-    BOOL SceneNode::VIsVisible(ISceneGraph* graph) 
+    bool SceneNode::VIsVisible(ISceneGraph* graph) 
     {
-        return TRUE;
+        return true;
     }
 
-    VOID SceneNode::VForceVisibilityCheck(VOID)
+    void SceneNode::VForceVisibilityCheck(void)
     {
-        m_forceVisibleCheck = TRUE;
+        m_forceVisibleCheck = true;
     }
 
-    VOID SceneNode::VRender(ISceneGraph* graph, RenderPath& path) 
+    void SceneNode::VRender(ISceneGraph* graph, RenderPath& path) 
     {
         if(graph->VIsVisibilityReset() || m_forceVisibleCheck)
         {
             VSetVisibilityOnLastTraverse(VIsVisible(graph));
-            m_forceVisibleCheck = FALSE;
+            m_forceVisibleCheck = false;
         }
 
         if(VWasVisibleOnLastTraverse())
@@ -355,27 +355,27 @@ namespace chimera
         }
     }
 
-    BOOL SceneNode::VWasVisibleOnLastTraverse(VOID)
+    bool SceneNode::VWasVisibleOnLastTraverse(void)
     {
         return m_wasVisibleOnLastTraverse;
     }
 
-    BOOL SceneNode::HasParent(VOID)
+    bool SceneNode::HasParent(void)
     {
         return m_parent != NULL && m_parent->VGetActorId() != CM_INVALID_ACTOR_ID;
     }
 
-    std::vector<std::unique_ptr<ISceneNode>>& SceneNode::VGetChilds(VOID)
+    std::vector<std::unique_ptr<ISceneNode>>& SceneNode::VGetChilds(void)
     {
         return m_childs;
     }
 
-    VOID SceneNode::VSetVisibilityOnLastTraverse(BOOL visible)
+    void SceneNode::VSetVisibilityOnLastTraverse(bool visible)
     {
         m_wasVisibleOnLastTraverse = visible;
     }
 
-    ActorId SceneNode::VGetActorId(VOID)
+    ActorId SceneNode::VGetActorId(void)
     {
         return m_actorId;
     }
@@ -385,7 +385,7 @@ namespace chimera
         return std::move(VRemoveChild(child->VGetActorId()));
     }
 
-    VOID SceneNode::VRenderChildren(ISceneGraph* graph, RenderPath& path)
+    void SceneNode::VRenderChildren(ISceneGraph* graph, RenderPath& path)
     {
         for(auto it = m_childs.begin(); it != m_childs.end(); ++it)
         {
@@ -393,7 +393,7 @@ namespace chimera
         } 
     }
 
-    VOID SceneNode::ActorMovedDelegate(chimera::IEventPtr pEventData)
+    void SceneNode::ActorMovedDelegate(chimera::IEventPtr pEventData)
     {
         std::shared_ptr<ActorMovedEvent> movedEvent = std::static_pointer_cast<ActorMovedEvent>(pEventData);
         if(movedEvent->m_actor->GetId() == m_actor->GetId())
@@ -408,7 +408,7 @@ namespace chimera
         }
     }
 
-    util::Mat4* SceneNode::VGetTransformation(VOID)
+    util::Mat4* SceneNode::VGetTransformation(void)
     {
         if(HasParent())
         {
@@ -417,7 +417,7 @@ namespace chimera
         return m_transformation->GetTransformation();
     }
 
-    VOID SceneNode::VOnParentChanged(VOID)
+    void SceneNode::VOnParentChanged(void)
     {
         if(HasParent())
         {
@@ -461,7 +461,7 @@ namespace chimera
         return NULL;
     }
 
-    SceneNode::~SceneNode(VOID)
+    SceneNode::~SceneNode(void)
     {
         REMOVE_EVENT_LISTENER(this, &SceneNode::ActorMovedDelegate, CM_EVENT_ACTOR_MOVED);
     }

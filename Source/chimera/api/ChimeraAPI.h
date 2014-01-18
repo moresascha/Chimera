@@ -10,7 +10,7 @@
 
 extern "C"
 {
-    BOOL APIENTRY DllMain(HINSTANCE hInst, DWORD reason, LPVOID lpReserved);
+    bool APIENTRY DllMain(HINSTANCE hInst, DWORD reason, LPVOID lpReserved);
 
     namespace chimera
     {
@@ -26,17 +26,17 @@ extern "C"
         };
 
         CM_DLL_API 
-        CONST CM_APP_DESCRIPTION* 
+        const CM_APP_DESCRIPTION* 
         CM_API 
         CmGetDescription(
-            VOID
+            void
             );
 
         CM_DLL_API 
         ErrorCode 
         CM_API 
         CmGetError(
-            VOID
+            void
             );
 
         CM_DLL_API 
@@ -47,39 +47,39 @@ extern "C"
             );
 
         CM_DLL_API 
-        VOID 
+        void 
         CM_API 
         CmReleaseApplication(
-        VOID
+        void
         );
 
         CM_DLL_API 
         IApplication* 
         CM_API 
         CmGetApp(
-            VOID
+            void
             );
 
         CM_DLL_API 
-        VOID 
+        void 
         CM_API 
         CmLog(
-            CONST std::string& tag, 
-            CONST std::string& message, 
-            CONST CHAR* funcName, 
-            CONST CHAR* file, 
-            CONST UINT line
+            const std::string& tag, 
+            const std::string& message, 
+            const char* funcName, 
+            const char* file, 
+            const uint line
             );
 
         CM_DLL_API
-        VOID 
+        void 
         CM_API 
         CmCriticalError(
-            CONST std::string& tag, 
-            CONST std::string& message, 
-            CONST CHAR* funcName,
-            CONST CHAR* file, 
-            CONST UINT line
+            const std::string& tag, 
+            const std::string& message, 
+            const char* funcName,
+            const char* file, 
+            const uint line
             );
     }
 };
@@ -98,4 +98,5 @@ extern "C"
 #include "ActorAPI.h"
 #include "ScreenAPI.h"
 #include "GuiAPI.h"
+#include "ParticleSystemAPI.h"
 

@@ -6,7 +6,7 @@ namespace Logger
     LogManager* s_pLogMgr = NULL;
     std::string* s_fileName = NULL;
 
-    VOID Init(std::string fileName) 
+    void Init(std::string fileName) 
     {
         if(!s_pLogMgr)
         {
@@ -28,23 +28,23 @@ namespace Logger
         }
     }
 
-    VOID Destroy(VOID) 
+    void Destroy(void) 
     {
         SAFE_DELETE(s_pLogMgr);
         SAFE_DELETE(s_fileName);
     }
 
-    VOID Log(CONST std::string& tag, CONST std::string& message, CONST CHAR* funcName, CONST CHAR* file, CONST UINT line) 
+    void Log(const std::string& tag, const std::string& message, const char* funcName, const char* file, const uint line) 
     {
         s_pLogMgr->Log(tag, message, funcName, file, line);
     }
 
-    VOID Error(CONST std::string& message, CONST CHAR* funcName, CONST CHAR* file, CONST UINT line) 
+    void Error(const std::string& message, const char* funcName, const char* file, const uint line) 
     {
         s_pLogMgr->Log("Error", message, funcName, file, line);
     }
 
-    VOID LogManager::WriteTo(std::string& message) 
+    void LogManager::WriteTo(std::string& message) 
     {
         EnterCriticalSection(&m_critSection);
         if(m_writeCallBack)
@@ -65,14 +65,14 @@ namespace Logger
         LeaveCriticalSection(&this->m_critSection);
     }
 
-    VOID LogManager::Log(CONST std::string& tag, CONST std::string& message, CONST CHAR* funcName, CONST CHAR* file, CONST UINT line) 
+    void LogManager::Log(const std::string& tag, const std::string& message, const char* funcName, const char* file, const uint line) 
     {
         std::string data;
         GetString(data, tag, message, funcName, file, line);
         WriteTo(data);
     }
 
-    VOID LogManager::CriticalError(CONST std::string& tag, CONST std::string& message, CONST CHAR* funcName, CONST CHAR* file, CONST UINT line) 
+    void LogManager::CriticalError(const std::string& tag, const std::string& message, const char* funcName, const char* file, const uint line) 
     {
         std::string data;
         GetString(data, tag, message, funcName, file, line);
@@ -91,11 +91,11 @@ namespace Logger
         }
     }
 
-    VOID LogManager::GetString(std::string& dest, CONST std::string& tag, CONST std::string& message, CONST CHAR* funcName, CONST CHAR* file, CONST UINT line) 
+    void LogManager::GetString(std::string& dest, const std::string& tag, const std::string& message, const char* funcName, const char* file, const uint line) 
     {
         std::string t = "["+tag+"] ";
         std::string inLine = "\n";
-        for(UINT i = 0; i < t.length(); ++i)
+        for(uint i = 0; i < t.length(); ++i)
         {
             inLine += " ";
         }

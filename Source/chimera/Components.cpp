@@ -4,26 +4,26 @@
 
 namespace chimera 
 {
-    ActorComponent::ActorComponent(VOID)
+    ActorComponent::ActorComponent(void)
     {
 
     }
 
-    VOID ActorComponent::VPostInit(VOID)
+    void ActorComponent::VPostInit(void)
     {
 
     }
 
-    ActorComponent::~ActorComponent(VOID)
+    ActorComponent::~ActorComponent(void)
     {
     }
 
-    TransformComponent::TransformComponent(VOID) : m_phi(0), m_theta(0)
+    TransformComponent::TransformComponent(void) : m_phi(0), m_theta(0)
     {
 
     }
 
-    BOOL asddasdaw2(IStream* stream)
+    bool asddasdaw2(IStream* stream)
     {
         /*
         tinyxml2::XMLElement* trans = pData->FirstChildElement("Position");
@@ -60,10 +60,10 @@ namespace chimera
             m_transformation.SetScale(x, y, z);
         }
         */
-        return TRUE;
+        return true;
     }
 
-    VOID asdasd(IStream* stream) 
+    void asdasd(IStream* stream) 
     {
         /*
         tinyxml2::XMLDocument* doc = pData->GetDocument();
@@ -97,7 +97,7 @@ namespace chimera
         pData->LinkEndChild(transform); */
     }
 
-    BOOL asdVInitialize(IStream* stream)
+    bool asdVInitialize(IStream* stream)
     {
         /*
         tinyxml2::XMLElement* settings = pData->FirstChildElement("Settings");
@@ -176,10 +176,10 @@ namespace chimera
             return FALSE;
         }
         */
-        return TRUE;
+        return true;
     }
 
-    RenderComponent::RenderComponent(VOID)
+    RenderComponent::RenderComponent(void)
     {
         m_type = "mesh";
         m_anchorType = "sphere";
@@ -189,7 +189,7 @@ namespace chimera
         m_sceneNode = NULL;
     }
 
-    BOOL sa234312(IStream* stream)
+    bool sa234312(IStream* stream)
     {
         /*
         tinyxml2::XMLElement* source = pData->FirstChildElement("MeshFile");
@@ -213,10 +213,10 @@ namespace chimera
             m_info = info->GetText();
         }
         */
-        return TRUE;
+        return true;
     }
 
-    VOID hthfgVSerialize(IStream* stream)
+    void hthfgVSerialize(IStream* stream)
     {
         /*
         tinyxml2::XMLDocument* doc = pData->GetDocument();
@@ -242,7 +242,7 @@ namespace chimera
         pData->LinkEndChild(cmp); */
     }
 
-    VOID RenderComponent::VCreateResources(VOID)
+    void RenderComponent::VCreateResources(void)
     {
         CMResource c;
         if(m_resource != c)
@@ -256,7 +256,7 @@ namespace chimera
         }*/
     }
 
-    BOOL VI213nitialize(ICMStream* stream)
+    bool VI213nitialize(ICMStream* stream)
     {
         /*
          tinyxml2::XMLElement* shape = pData->FirstChildElement("Shape");
@@ -297,10 +297,10 @@ namespace chimera
              m_meshFile = chimera::CMResource(file->GetText());
          }
          */
-         return TRUE;
+         return true;
     }
 
-    VOID asdVSerialize(IStream* stream)
+    void asdVSerialize(IStream* stream)
     {
         /*
         tinyxml2::XMLDocument* doc = pData->GetDocument();
@@ -333,7 +333,7 @@ namespace chimera
         pData->LinkEndChild(cmp); */
     }
 
-    VOID PhysicComponent::VCreateResources(VOID)
+    void PhysicComponent::VCreateResources(void)
     {
         CMResource c;
         if(m_meshFile != c)
@@ -342,7 +342,7 @@ namespace chimera
         }
     }
 
-    BOOL asd23VInitialize(IStream* stream)
+    bool asd23VInitialize(IStream* stream)
     {
         /*
         tinyxml2::XMLElement* file = pData->FirstChildElement("Type");
@@ -366,10 +366,10 @@ namespace chimera
         a = pData->FirstChildElement("Intensity");
         m_intensity = (FLOAT)atof(a->GetText());
         */
-        return TRUE;
+        return true;
     }
 
-    VOID VasdSerialize(IStream* stream)
+    void VasdSerialize(IStream* stream)
     {
         /*
         tinyxml2::XMLDocument* doc = pData->GetDocument();
@@ -404,24 +404,24 @@ namespace chimera
         pData->LinkEndChild(cmp);*/
     }
 
-    VOID w412412(IStream* stream)
+    void w412412(IStream* stream)
     {
         /*tinyxml2::XMLDocument* doc = pData->GetDocument();
         tinyxml2::XMLElement* elem = doc->NewElement("PickableComponent");
         pData->LinkEndChild(elem); */
     }
 
-    SoundComponent::SoundComponent(VOID) : m_loop(FALSE), m_soundFile("Unknown"), m_emitter(FALSE)
+    SoundComponent::SoundComponent(void) : m_loop(false), m_soundFile("Unknown"), m_emitter(false)
     {
 
     }
 
-    VOID SoundComponent::VCreateResources(VOID)
+    void SoundComponent::VCreateResources(void)
     {
         CmGetApp()->VGetCache()->VGetHandle(CMResource(m_soundFile));
     }
 
-    BOOL aaa21323(ICMStream* stream)
+    bool aaa21323(ICMStream* stream)
     {
         /*
         tinyxml2::XMLElement* file = pData->FirstChildElement("SoundFile");
@@ -445,7 +445,7 @@ namespace chimera
         tinyxml2::XMLElement* emit = pData->FirstChildElement("Emitter");
         m_emitter = !strcmp(emit->GetText(), "true");*/
 
-        return TRUE;
+        return true;
     }
 
     class SetParentWaitProcess : public IProcess
@@ -453,10 +453,10 @@ namespace chimera
     private:
         ActorId m_actor;
         ActorId m_parent;
-        BOOL m_gotActor;
-        BOOL m_gotParent;
+        bool m_gotActor;
+        bool m_gotParent;
 
-        VOID EventListener(IEventPtr event)
+        void EventListener(IEventPtr event)
         {
             if(event->VGetEventType() == CM_EVENT_ACTOR_CREATED)
             {
@@ -473,29 +473,29 @@ namespace chimera
         }
 
     public:
-        SetParentWaitProcess(ActorId actor, ActorId parent) : m_actor(actor), m_parent(parent), m_gotActor(FALSE), m_gotParent(FALSE)
+        SetParentWaitProcess(ActorId actor, ActorId parent) : m_actor(actor), m_parent(parent), m_gotActor(false), m_gotParent(false)
         {
 
         }
 
-        VOID VOnInit(VOID)
+        void VOnInit(void)
         {
             ADD_EVENT_LISTENER(this, &SetParentWaitProcess::EventListener, CM_EVENT_ACTOR_CREATED);
         }
-        VOID VOnAbort(VOID)
+        void VOnAbort(void)
         {
             REMOVE_EVENT_LISTENER(this, &SetParentWaitProcess::EventListener, CM_EVENT_ACTOR_CREATED);
         }
-        VOID VOnFail(VOID)
+        void VOnFail(void)
         {
             REMOVE_EVENT_LISTENER(this, &SetParentWaitProcess::EventListener, CM_EVENT_ACTOR_CREATED);
         }
-        VOID VOnSuccess(VOID)
+        void VOnSuccess(void)
         {
             REMOVE_EVENT_LISTENER(this, &SetParentWaitProcess::EventListener, CM_EVENT_ACTOR_CREATED);
         }
 
-        VOID VOnUpdate(ULONG deltaMillis)
+        void VOnUpdate(ulong deltaMillis)
         {
             if(m_gotActor && m_gotParent || 
                 (CmGetApp()->VGetHumanView()->VGetSceneGraph()->VFindActorNode(m_actor) && 
@@ -510,7 +510,7 @@ namespace chimera
         }
     };
 
-    VOID ParentComponent::VPostInit(VOID)
+    void ParentComponent::VPostInit(void)
     {
         CmGetApp()->VGetLogic()->VGetProcessManager()->VAttach(std::unique_ptr<SetParentWaitProcess>(new SetParentWaitProcess(m_owner->GetId(), m_parentId)));
     }

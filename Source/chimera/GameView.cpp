@@ -56,7 +56,7 @@ namespace chimera
             {
                 LOG_CRITICAL_ERROR("no meshfile specified!");
             }
-			mn = new MeshNode(actor->GetId(), comp->m_resource);
+            mn = new MeshNode(actor->GetId(), comp->m_resource, comp->m_meshId);
         }
 
         if(comp->m_drawType == "wire")
@@ -78,15 +78,9 @@ namespace chimera
         return mn;
     }
 
-    ISceneNode* CreateInstancedMeshNode(IHumanView* gw, IActor* actor)
-    {
-        RenderComponent* comp = GetActorCompnent<RenderComponent>(actor, CM_CMP_RENDERING);
-        return new MeshNode(actor->GetId(), comp->m_resource);
-    }
-
     //default creator end
 
-    HumanGameView::HumanGameView(VOID)
+    HumanGameView::HumanGameView(void)
     {
         m_loadingDots = NULL;
         m_picker = NULL; 
@@ -98,15 +92,15 @@ namespace chimera
         m_pEffectFactory = NULL;
         m_pFontManager = NULL;
         m_pGuiFactroy = NULL;
-        m_isFullscreen = FALSE;
+        m_isFullscreen = false;
     }
 
-    BOOL HumanGameView::VInitialise(FactoryPtr* facts)
+    bool HumanGameView::VInitialise(FactoryPtr* facts)
     {
         m_pGraphicsFactory = FindAndCopyFactory<IGraphicsFactory>(facts, CM_FACTORY_GFX);
         if(m_pGraphicsFactory == NULL)
         {
-            return FALSE;
+            return false;
         }
 
         m_pRenderer = m_pGraphicsFactory->VCreateRenderer();
@@ -145,10 +139,10 @@ namespace chimera
         VAddSceneNodeCreator(CreateLightNode, CM_CMP_LIGHT);
         VAddSceneNodeCreator(CreateCameraNode, CM_CMP_CAMERA);
 
-        return TRUE;
+        return true;
     }
 
-    BOOL HumanGameView::VOnRestore()
+    bool HumanGameView::VOnRestore()
     {
         VGetRenderer()->VOnRestore();
 
@@ -164,7 +158,10 @@ namespace chimera
         std::string fontFile = CmGetApp()->VGetConfig()->VGetString("sFontPath") + std::string("font_16.fnt");
         VGetFontManager()->VGetCurrentFont()->VCreate(fontFile);
 
-        VGetFontManager()->VOnRestore();
+        if(!VGetFontManager()->VOnRestore())
+        {
+            return false;
+        }
 
         TBD_FOR(m_scenes)
         {
@@ -181,26 +178,26 @@ namespace chimera
             m_pGui->VOnRestore();
         } */
 
-        return TRUE;
+        return true;
     }
 
-    IRenderer* HumanGameView::VGetRenderer(VOID)
+    IRenderer* HumanGameView::VGetRenderer(void)
     {
         return m_pRenderer.get();
     }
 
-    VOID HumanGameView::VSetFullscreen(BOOL fullscreen)
+    void HumanGameView::VSetFullscreen(bool fullscreen)
     {
         m_isFullscreen = fullscreen;
         m_pRenderer->VSetFullscreen(m_isFullscreen);
     }
 
-    BOOL HumanGameView::VIsFullscreen(VOID)
+    bool HumanGameView::VIsFullscreen(void)
     {
         return m_isFullscreen;
     }
 
-    VOID HumanGameView::VOnResize(UINT w, UINT h)
+    void HumanGameView::VOnResize(uint w, uint h)
     {
         m_pRenderer->VResize(w, h);
 
@@ -210,14 +207,14 @@ namespace chimera
         ActorMovedDelegate(movedEvent);
     }
 
-    VOID HumanGameView::ActorMovedDelegate(IEventPtr eventData)  
+    void HumanGameView::ActorMovedDelegate(IEventPtr eventData)  
     {
         std::shared_ptr<ActorMovedEvent> movedEvent = std::static_pointer_cast<ActorMovedEvent>(eventData);
 
         if(movedEvent->m_actor->GetId() == m_actor->GetId())
         {
             TransformComponent* comp = GetActorCompnent<TransformComponent>(m_actor, CM_CMP_TRANSFORM);
-            CONST util::Vec3& trans = comp->GetTransformation()->GetTranslation();
+            const util::Vec3& trans = comp->GetTransformation()->GetTranslation();
 
             m_pSceneGraph->VGetCamera()->SetRotation(comp->m_phi, comp->m_theta);
 
@@ -227,7 +224,7 @@ namespace chimera
         }
     }
 
-    VOID HumanGameView::NewComponentDelegate(IEventPtr pEventData) 
+    void HumanGameView::NewComponentDelegate(IEventPtr pEventData) 
     {
         std::shared_ptr<NewComponentCreatedEvent> pCastEventData = std::static_pointer_cast<NewComponentCreatedEvent>(pEventData);
         IActor* actor = chimera::CmGetApp()->VGetLogic()->VFindActor(pCastEventData->m_actorId);
@@ -333,7 +330,7 @@ namespace chimera
         */
     }
 
-    VOID HumanGameView::VAddSceneNodeCreator(SceneNodeCreator nc, ComponentId cmpid)
+    void HumanGameView::VAddSceneNodeCreator(SceneNodeCreator nc, ComponentId cmpid)
     {
          auto f = m_nodeCreators.find(cmpid);
          if(f == m_nodeCreators.end())
@@ -346,7 +343,7 @@ namespace chimera
          }
     }
 
-    VOID HumanGameView::VRemoveSceneNodeCreator(ComponentId cmpid)
+    void HumanGameView::VRemoveSceneNodeCreator(ComponentId cmpid)
     {
         auto f = m_nodeCreators.find(cmpid);
         if(f != m_nodeCreators.end())
@@ -355,7 +352,7 @@ namespace chimera
         }
     }
 
-    VOID HumanGameView::VAddScreenElement(std::unique_ptr<IScreenElement> element)
+    void HumanGameView::VAddScreenElement(std::unique_ptr<IScreenElement> element)
     {
         element->VOnRestore();
         m_screenElements.push_back(std::move(element));
@@ -373,24 +370,24 @@ namespace chimera
         return NULL;
     }
 
-    VOID HumanGameView::DeleteActorDelegate(IEventPtr pEventData)
+    void HumanGameView::DeleteActorDelegate(IEventPtr pEventData)
     {
         std::shared_ptr<ActorDeletedEvent> pCastEventData = std::static_pointer_cast<ActorDeletedEvent>(pEventData);
 
         m_pSceneGraph->VRemoveChild(pCastEventData->m_id);
     }
 
-    VOID HumanGameView::LevelLoadedDelegate(IEventPtr pEventData)
+    void HumanGameView::LevelLoadedDelegate(IEventPtr pEventData)
     {
 
     }
 
-    VOID HumanGameView::LoadingLevelDelegate(IEventPtr pEventData)
+    void HumanGameView::LoadingLevelDelegate(IEventPtr pEventData)
     {
         
     }
 
-    VOID HumanGameView::SetParentDelegate(IEventPtr pEventData)
+    void HumanGameView::SetParentDelegate(IEventPtr pEventData)
     {
         //if(pEventData->VGetEventType() == event::SetParentActorEvent::TYPE) needed?
         {
@@ -422,7 +419,7 @@ namespace chimera
         return (chimera::gui::GuiConsole*)m_pGui->GetComponent("console");
     } */
 
-    VOID HumanGameView::VOnUpdate(ULONG deltaMillis)
+    void HumanGameView::VOnUpdate(ulong deltaMillis)
     {
         switch(CmGetApp()->VGetLogic()->VGetGameState())
         {
@@ -449,7 +446,7 @@ namespace chimera
         }
     }
 
-    VOID HumanGameView::VAddScene(std::unique_ptr<IRenderScreen> screen)
+    void HumanGameView::VAddScene(std::unique_ptr<IRenderScreen> screen)
     {
         screen->VOnRestore();
         std::string name(screen->VGetName());
@@ -472,7 +469,7 @@ namespace chimera
         return NULL;
     }
 
-    VOID HumanGameView::VActivateScene(LPCSTR name)
+    void HumanGameView::VActivateScene(LPCSTR name)
     {
         TBD_FOR(m_scenes)
         {
@@ -484,17 +481,17 @@ namespace chimera
         }
     }
 
-    VOID HumanGameView::VOnAttach(UINT viewId, IActor* actor) 
+    void HumanGameView::VOnAttach(uint viewId, IActor* actor) 
     {
         IView::VOnAttach(viewId, actor);
     }
 
-    VOID HumanGameView::VPostRender(VOID)
+    void HumanGameView::VPostRender(void)
     {
         //m_picker->VPostRender();
     }
 
-    VOID HumanGameView::VOnRender(VOID) 
+    void HumanGameView::VOnRender(void) 
     {        
         m_pCurrentScene->VDraw();
         TBD_FOR(m_screenElements)
@@ -537,7 +534,7 @@ namespace chimera
         VGetRenderer()->VPresent();  
     }
 
-    VOID HumanGameView::VSetTarget(IActor* actor) 
+    void HumanGameView::VSetTarget(IActor* actor) 
     {
         if(actor)
         {
@@ -573,7 +570,7 @@ namespace chimera
         }
     }
 
-    HumanGameView::~HumanGameView(VOID) 
+    HumanGameView::~HumanGameView(void) 
     {
         REMOVE_EVENT_LISTENER(this, &HumanGameView::ActorMovedDelegate, CM_EVENT_ACTOR_MOVED);
 

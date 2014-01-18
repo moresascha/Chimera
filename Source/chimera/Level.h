@@ -11,13 +11,13 @@ namespace chimera
     class ISaveXLevel
     {
     public:
-        virtual BOOL VSaveLevel(ILevel* level, LPCSTR file) = 0;
+        virtual bool VSaveLevel(ILevel* level, LPCSTR file) = 0;
     };
 
     class SaveXMLLevel : public ISaveXLevel
     {
     public:
-        BOOL VSaveLevel(ILevel* level, LPCSTR file);
+        bool VSaveLevel(ILevel* level, LPCSTR file);
     };
 
     class LevelManager
@@ -25,8 +25,8 @@ namespace chimera
     private:
         ISaveXLevel* m_formatSaver[eCNT];
     public:
-        LevelManager(VOID);
-        ~LevelManager(VOID);
+        LevelManager(void);
+        ~LevelManager(void);
     };
 
     class BaseLevel : public ILevel
@@ -42,48 +42,48 @@ namespace chimera
 
     public:
 
-        BaseLevel::BaseLevel(CONST std::string& file, IActorFactory* factory);
+        BaseLevel::BaseLevel(const std::string& file, IActorFactory* factory);
 
-        CONST std::string& VGetName(VOID)
+        const std::string& VGetName(void)
         {
             return m_name;
         }
 
-        CONST std::string& VGetFile(VOID)
+        const std::string& VGetFile(void)
         {
             return m_file;
         }
 
-        VOID SetFile(CONST std::string& file)
+        void SetFile(const std::string& file)
         {
             m_file = file;
         }
 
-        VOID SetName(CONST std::string& name)
+        void SetName(const std::string& name)
         {
             m_name = name;
         }
 
-        CONST std::map<ActorId, std::unique_ptr<IActor>>& VGetActors(VOID)
+        const std::map<ActorId, std::unique_ptr<IActor>>& VGetActors(void)
         {
             return m_actors;
         }
 
-        UINT VGetActorsCount(VOID);
+        uint VGetActorsCount(void);
 
         IActor* VFindActor(ActorId id);
 
-        VOID VRemoveActor(ActorId id);
+        void VRemoveActor(ActorId id);
 
-        VOID ActorCreatedDelegate(IEventPtr eventData);
+        void ActorCreatedDelegate(IEventPtr eventData);
 
-        FLOAT VGetLoadingProgress(VOID);
+        float VGetLoadingProgress(void);
 
-        VOID VUnload(VOID);
+        void VUnload(void);
 
         IActor* VAddActor(std::unique_ptr<ActorDescription> desc);
 
-        virtual ~BaseLevel(VOID);
+        virtual ~BaseLevel(void);
     };
 
     class XMLLevel : public BaseLevel
@@ -91,11 +91,11 @@ namespace chimera
     private:
 
     public:
-        XMLLevel(CONST std::string& file, IActorFactory* factory);
+        XMLLevel(const std::string& file, IActorFactory* factory);
         
-        BOOL VLoad(BOOL block);
+        bool VLoad(bool block);
         
-        BOOL VSave(LPCSTR file = NULL);
+        bool VSave(LPCSTR file = NULL);
                 
         IActor* VAddActor(tinyxml2::XMLNode* pNode);
     };
@@ -103,29 +103,29 @@ namespace chimera
     class RandomLevel : public BaseLevel
     {
     public:
-        RandomLevel(CONST std::string& file, IActorFactory* factory);
+        RandomLevel(const std::string& file, IActorFactory* factory);
 
-        BOOL VLoad(BOOL block);
+        bool VLoad(bool block);
 
-        BOOL VSave(LPCSTR file = NULL);
+        bool VSave(LPCSTR file = NULL);
     };
 
     class GroupedObjLevel : public BaseLevel
     {
     public:
         GroupedObjLevel(LPCSTR file, IActorFactory* factory);
-        BOOL VLoad(BOOL block);
-        BOOL VSave(LPCSTR file = NULL);
+        bool VLoad(bool block);
+        bool VSave(LPCSTR file = NULL);
     };
 
     class TransformShowRoom : public BaseLevel
     {
     public:
-        TransformShowRoom(CONST std::string& file, IActorFactory* factory);
+        TransformShowRoom(const std::string& file, IActorFactory* factory);
 
-        BOOL VLoad(BOOL block);
+        bool VLoad(bool block);
 
-        BOOL VSave(LPCSTR file = NULL);
+        bool VSave(LPCSTR file = NULL);
     };
 
     class CudaTransformationNode;
@@ -137,15 +137,15 @@ namespace chimera
         chimera::CudaTransformationNode* m_node;
 
     public:
-        BSplinePatchLevel(CONST std::string& file, IActorFactory* factory);
+        BSplinePatchLevel(const std::string& file, IActorFactory* factory);
 
-        BOOL VLoad(BOOL block);
+        bool VLoad(bool block);
 
-        BOOL VSave(LPCSTR file = NULL);
+        bool VSave(LPCSTR file = NULL);
 
-        VOID OnControlPointMove(chimera::IEventPtr data);
+        void OnControlPointMove(chimera::IEventPtr data);
 
-        ~BSplinePatchLevel(VOID);
+        ~BSplinePatchLevel(void);
     };
 
     //std::shared_ptr<IActor> CreateSphere(CONST util::Vec3& pos, BaseLevel* level);

@@ -3,11 +3,11 @@
 namespace chimera {
 class ByteStream : public IStream
 {
-    CHAR* m_bytes;
-    UINT m_size;
+    char* m_bytes;
+    uint m_size;
     LONG m_currentPos;
 public:
-    ByteStream(CHAR* bytes, UINT size) : m_bytes(bytes), m_size(size),  m_currentPos(0) {}
+    ByteStream(char* bytes, uint size) : m_bytes(bytes), m_size(size),  m_currentPos(0) {}
 
     HRESULT ByteStream::Seek(
         LARGE_INTEGER dlibMove,
@@ -23,16 +23,16 @@ public:
     /* [local] */ HRESULT STDMETHODCALLTYPE Read( 
         /* [annotation] */ 
         __out_bcount_part(cb, *pcbRead)  void *pv,
-        /* [in] */ ULONG cb,
+        /* [in] */ ulong cb,
         /* [annotation] */ 
-        __out_opt  ULONG *pcbRead);
+        __out_opt  ulong *pcbRead);
 
     /* [local] */ HRESULT STDMETHODCALLTYPE Write( 
         /* [annotation] */ 
         __in_bcount(cb)  const void *pv,
-        /* [in] */ ULONG cb,
+        /* [in] */ ulong cb,
         /* [annotation] */ 
-        __out_opt  ULONG *pcbWritten) { return S_OK; }
+        __out_opt  ulong *pcbWritten) { return S_OK; }
 
     HRESULT STDMETHODCALLTYPE SetSize( 
         /* [in] */ ULARGE_INTEGER libNewSize) { return S_OK; }
@@ -67,10 +67,10 @@ public:
         /* [in] */ REFIID riid,
         /* [iid_is][out] */ __RPC__deref_out void __RPC_FAR *__RPC_FAR *ppvObject) { return S_OK; }
 
-    ULONG STDMETHODCALLTYPE AddRef(void)  { return S_OK; }
+    ulong STDMETHODCALLTYPE AddRef(void)  { return S_OK; }
 
-    ULONG STDMETHODCALLTYPE Release(void) { return S_OK; }
+    ulong STDMETHODCALLTYPE Release(void) { return S_OK; }
 
-    ~ByteStream(VOID) {}
+    ~ByteStream(void) {}
 };
 };

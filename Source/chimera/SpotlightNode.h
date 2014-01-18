@@ -13,7 +13,7 @@ namespace chimera
         chimera::ICamera* m_pCamera;
         std::shared_ptr<LightComponent> m_lightComponent;
         util::Vec3 m_middle;
-        FLOAT m_distance;
+        float m_distance;
         IBlendState* m_alphaBlendingState;
         IDepthStencilState* m_depthState;
         std::shared_ptr<IDeviceTexture> m_projectedTextureHandle;
@@ -26,14 +26,14 @@ namespace chimera
     public:
         SpotlightNode(ActorId actorid);
 
-        VOID _VRender(ISceneGraph* graph, RenderPath& path);
+        void _VRender(ISceneGraph* graph, RenderPath& path);
 
-        BOOL VIsVisible(ISceneGraph* graph);
+        bool VIsVisible(ISceneGraph* graph);
 
-        VOID VOnRestore(ISceneGraph* graph);
+        void VOnRestore(ISceneGraph* graph);
 
-        VOID VOnActorMoved(VOID);
+        void VOnActorMoved(void);
 
-        ~SpotlightNode(VOID);
+        ~SpotlightNode(void);
     };
 }

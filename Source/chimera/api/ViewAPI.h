@@ -10,23 +10,23 @@ namespace chimera
         IActor* m_actor;
         std::string m_name;
     public:
-        IView(VOID) : m_id((ViewId)-1), m_actor(NULL), m_name("undefined")
+        IView(void) : m_id((ViewId)-1), m_actor(NULL), m_name("undefined")
         {
 
         }
 
-        IActor* VGetTarget(VOID)
+        IActor* VGetTarget(void)
         {
             return m_actor;
         }
 
-        virtual VOID VOnAttach(UINT viewId, IActor* actor) 
+        virtual void VOnAttach(uint viewId, IActor* actor) 
         {
             m_id = viewId;
             VSetTarget(actor);
         }
 
-        virtual VOID VSetTarget(IActor* actor)
+        virtual void VSetTarget(IActor* actor)
         {
             if(actor)
             {
@@ -34,352 +34,340 @@ namespace chimera
             }
         }
 
-        ViewId GetId(VOID) CONST { return m_id; }
+        ViewId GetId(void) const { return m_id; }
 
-        CONST std::string& GetName(VOID) CONST { return m_name; }
+        const std::string& GetName(void) const { return m_name; }
 
-        VOID SetName(CONST std::string& name) { m_name = name; }
+        void SetName(const std::string& name) { m_name = name; }
 
-        virtual BOOL VOnRestore(VOID) { return TRUE; };
+        virtual bool VOnRestore(void) { return true; };
 
-        virtual BOOL VInitialise(FactoryPtr* facts) = 0;
+        virtual bool VInitialise(FactoryPtr* facts) = 0;
 
-        virtual VOID VOnUpdate(ULONG deltaMillis) = 0;
+        virtual void VOnUpdate(ulong deltaMillis) = 0;
 
-        virtual ViewType VGetType(VOID) CONST = 0;
+        virtual ViewType VGetType(void) const = 0;
 
-        virtual ~IView(VOID) {}
+        virtual ~IView(void) {}
     };
 
     class IHumanView : public IView
     {
     public:
-        virtual IRenderer* VGetRenderer(VOID) = 0;
+        virtual IRenderer* VGetRenderer(void) = 0;
 
-        virtual IPicker* VGetPicker(VOID) = 0;
+        virtual IPicker* VGetPicker(void) = 0;
 
-        virtual IFontManager* VGetFontManager(VOID) = 0;
+        virtual IFontManager* VGetFontManager(void) = 0;
 
-        virtual ISoundEngine* VGetSoundEngine(VOID) = 0;
+        virtual ISoundEngine* VGetSoundEngine(void) = 0;
 
-        virtual ISoundSystem* VGetSoundSystem(VOID) = 0;
+        virtual ISoundSystem* VGetSoundSystem(void) = 0;
 
-        virtual VOID VAddScreenElement(std::unique_ptr<IScreenElement> element) = 0;
+        virtual void VAddScreenElement(std::unique_ptr<IScreenElement> element) = 0;
 
-        virtual IGuiFactory* VGetGuiFactory(VOID) = 0;
+        virtual IGuiFactory* VGetGuiFactory(void) = 0;
 
-        virtual ISceneGraph* VGetSceneGraph(VOID) = 0;
+        virtual ISceneGraph* VGetSceneGraph(void) = 0;
 
-        virtual VOID VOnRender(VOID) = 0;
+        virtual void VOnRender(void) = 0;
 
-        virtual IGraphicsFactory* VGetGraphicsFactory(VOID) = 0;
+        virtual IGraphicsFactory* VGetGraphicsFactory(void) = 0;
 
-        virtual VOID VAddScene(std::unique_ptr<IRenderScreen> screen) = 0;
+        virtual void VAddScene(std::unique_ptr<IRenderScreen> screen) = 0;
 
-        virtual VOID VAddSceneNodeCreator(SceneNodeCreator nc, ComponentId cmpid) = 0;
+        virtual void VAddSceneNodeCreator(SceneNodeCreator nc, ComponentId cmpid) = 0;
 
-        virtual VOID VRemoveSceneNodeCreator(ComponentId cmpid) = 0;
+        virtual void VRemoveSceneNodeCreator(ComponentId cmpid) = 0;
 
-        virtual VOID VActivateScene(LPCSTR name) = 0;
+        virtual void VActivateScene(LPCSTR name) = 0;
 
         virtual IRenderScreen* VGetSceneByName(LPCSTR name) = 0;
 
         virtual IScreenElement* VGetScreenElementByName(LPCSTR name) = 0;
 
-        virtual VOID VOnResize(UINT w, UINT h) = 0;
+        virtual void VOnResize(uint w, uint h) = 0;
 
-        virtual VOID VSetFullscreen(BOOL fullscreen) = 0;
+        virtual void VSetFullscreen(bool fullscreen) = 0;
 
-        virtual BOOL VIsFullscreen(VOID) = 0;
+        virtual bool VIsFullscreen(void) = 0;
 
-        virtual IEffectFactory* VGetEffectFactory(VOID) = 0;
+        virtual IEffectFactory* VGetEffectFactory(void) = 0;
 
-        virtual IVRamManager* VGetVRamManager(VOID) = 0;
+        virtual IVRamManager* VGetVRamManager(void) = 0;
     };
 
     class ISceneGraph
     {
     public:
-        virtual VOID VAddChild(ActorId actorid, std::unique_ptr<ISceneNode> node) = 0;
+        virtual void VAddChild(ActorId actorid, std::unique_ptr<ISceneNode> node) = 0;
 
-        virtual VOID VRemoveChild(ActorId actorid) = 0;
+        virtual void VRemoveChild(ActorId actorid) = 0;
 
-        virtual BOOL VOnRender(RenderPath path) = 0;
+        virtual bool VOnRender(RenderPath path) = 0;
 
-        virtual BOOL VOnRestore(VOID) = 0;
+        virtual bool VOnRestore(void) = 0;
 
-        virtual BOOL VOnUpdate(ULONG millis) = 0;
+        virtual bool VOnUpdate(ulong millis) = 0;
 
-        virtual std::shared_ptr<ICamera> VGetCamera(VOID) = 0;
+        virtual std::shared_ptr<ICamera> VGetCamera(void) = 0;
 
-        virtual VOID VSetCamera(std::shared_ptr<ICamera> camera) = 0;
+        virtual void VSetCamera(std::shared_ptr<ICamera> camera) = 0;
 
         virtual ISceneNode* VFindActorNode(ActorId actorid) = 0;
 
         virtual std::unique_ptr<ISceneNode> VReleaseNode(ActorId id) = 0;
 
-        virtual CONST Frustum* VGetFrustum(VOID) = 0;
+        virtual const Frustum* VGetFrustum(void) = 0;
 
-        virtual VOID VPushFrustum(Frustum* f) = 0;
+        virtual void VPushFrustum(Frustum* f) = 0;
 
-        virtual VOID VPopFrustum(VOID) = 0;
+        virtual void VPopFrustum(void) = 0;
 
-        virtual VOID VResetVisibility(VOID) = 0;
+        virtual void VResetVisibility(void) = 0;
 
-        virtual BOOL VIsVisibilityReset(VOID) = 0;
+        virtual bool VIsVisibilityReset(void) = 0;
 
-        virtual ~ISceneGraph(VOID) {}
+        virtual ~ISceneGraph(void) {}
     };
 
     class ISceneNode
     {
     public:
-        virtual util::Mat4* VGetTransformation(VOID) = 0;
+        virtual util::Mat4* VGetTransformation(void) = 0;
 
-        virtual VOID VSetVisibilityOnLastTraverse(BOOL visible) = 0;
+        virtual void VSetVisibilityOnLastTraverse(bool visible) = 0;
 
-        virtual VOID VSetActor(ActorId id) = 0;
+        virtual void VSetActor(ActorId id) = 0;
 
-        virtual BOOL VWasVisibleOnLastTraverse(VOID) = 0;
+        virtual bool VWasVisibleOnLastTraverse(void) = 0;
 
-        virtual VOID VForceVisibilityCheck(VOID) = 0;
+        virtual void VForceVisibilityCheck(void) = 0;
 
-        virtual VOID VPreRender(ISceneGraph* graph) = 0;
+        virtual void VPreRender(ISceneGraph* graph) = 0;
 
-        virtual VOID VSetParent(ISceneNode* parent) = 0;
+        virtual void VSetParent(ISceneNode* parent) = 0;
 
-        virtual VOID VRender(ISceneGraph* graph, RenderPath& path) = 0;
+        virtual void VRender(ISceneGraph* graph, RenderPath& path) = 0;
 
-        virtual VOID _VRender(ISceneGraph* graph, RenderPath& path) = 0;
+        virtual void _VRender(ISceneGraph* graph, RenderPath& path) = 0;
 
-        virtual VOID VRenderChildren(ISceneGraph* graph, RenderPath& path) = 0;
+        virtual void VRenderChildren(ISceneGraph* graph, RenderPath& path) = 0;
 
-        virtual VOID VPostRender(ISceneGraph* graph) = 0;
+        virtual void VPostRender(ISceneGraph* graph) = 0;
 
-        virtual VOID VOnRestore(ISceneGraph* graph) = 0;
+        virtual void VOnRestore(ISceneGraph* graph) = 0;
 
-        virtual VOID VAddChild(std::unique_ptr<ISceneNode> child) = 0;
+        virtual void VAddChild(std::unique_ptr<ISceneNode> child) = 0;
 
-        virtual VOID VOnParentChanged(VOID) = 0;
+        virtual void VOnParentChanged(void) = 0;
 
-        virtual BOOL VIsVisible(ISceneGraph* graph) = 0;
+        virtual bool VIsVisible(ISceneGraph* graph) = 0;
 
         virtual std::unique_ptr<ISceneNode> VRemoveChild(ISceneNode* child) = 0;
 
         virtual std::unique_ptr<ISceneNode> VRemoveChild(ActorId actorId) = 0;
 
-        virtual VOID VSetRenderPaths(RenderPath paths) = 0;
+        virtual void VSetRenderPaths(RenderPath paths) = 0;
 
-        virtual UINT VGetRenderPaths(VOID) = 0;
+        virtual uint VGetRenderPaths(void) = 0;
 
-        virtual ActorId VGetActorId(VOID) = 0;
+        virtual ActorId VGetActorId(void) = 0;
 
-        virtual std::vector<std::unique_ptr<ISceneNode>>& VGetChilds(VOID) = 0;
+        virtual std::vector<std::unique_ptr<ISceneNode>>& VGetChilds(void) = 0;
 
-        virtual VOID VOnUpdate(ULONG millis, ISceneGraph* graph) = 0;
+        virtual void VOnUpdate(ulong millis, ISceneGraph* graph) = 0;
 
         virtual ISceneNode* VFindActor(ActorId id) = 0;
 
-        virtual CONST util::AxisAlignedBB& VGetAABB(VOID) CONST = 0;
+        virtual const util::AxisAlignedBB& VGetAABB(void) const = 0;
 
-        virtual VOID VQueryGeometry(IGeometry** geo) = 0;
+        virtual void VQueryGeometry(IGeometry** geo) = 0;
 
-        virtual ~ISceneNode(VOID) {}
+        virtual ~ISceneNode(void) {}
     };
 
     class ICamera 
     {
     public:
-        virtual CONST util::Mat4& GetView(VOID) = 0;
+        virtual const util::Mat4& GetView(void) = 0;
 
-        virtual CONST util::Mat4& GetIView(VOID) = 0;
+        virtual const util::Mat4& GetIView(void) = 0;
 
-        virtual CONST util::Mat4& GetProjection(VOID) = 0;
+        virtual const util::Mat4& GetProjection(void) = 0;
 
-        virtual CONST util::Mat4& GetViewProjection(VOID) = 0;
+        virtual const util::Mat4& GetViewProjection(void) = 0;
 
-        virtual CONST util::Vec3& GetEyePos(VOID) = 0;
+        virtual const util::Vec3& GetEyePos(void) = 0;
 
-        virtual CONST util::Vec3& GetViewDir(VOID) = 0;
+        virtual const util::Vec3& GetViewDir(void) = 0;
 
-        virtual CONST util::Vec3& GetViewDirXZ(VOID) = 0;
+        virtual const util::Vec3& GetViewDirXZ(void) = 0;
 
-        virtual CONST util::Vec3& GetSideDir(VOID) = 0;
+        virtual const util::Vec3& GetSideDir(void) = 0;
 
-        virtual CONST util::Vec3& GetUpDir(VOID) = 0;
+        virtual const util::Vec3& GetUpDir(void) = 0;
 
-        virtual FLOAT GetPhi(VOID) CONST = 0;
+        virtual float GetPhi(void) const = 0;
 
-        virtual FLOAT GetTheta(VOID) CONST = 0;
+        virtual float GetTheta(void) const = 0;
 
-        virtual VOID SetProjectionType(ProjectionType type) = 0;
+        virtual void SetProjectionType(ProjectionType type) = 0;
 
-        virtual VOID LookAt(CONST util::Vec3& eyePos, CONST util::Vec3& at) = 0;
+        virtual void LookAt(const util::Vec3& eyePos, const util::Vec3& at) = 0;
 
-        virtual VOID SetEyePos(CONST util::Vec3& pos) = 0;
+        virtual void SetEyePos(const util::Vec3& pos) = 0;
 
-        virtual VOID Move(FLOAT dx, FLOAT dy, FLOAT dz) {}
+        virtual void Move(float dx, float dy, float dz) {}
 
-        virtual VOID Move(CONST util::Vec3& dt) {}
+        virtual void Move(const util::Vec3& dt) {}
 
-        virtual VOID Rotate(FLOAT dPhi, FLOAT dTheta) {}
+        virtual void Rotate(float dPhi, float dTheta) {}
 
-        virtual VOID SetAspect(UINT width, UINT height) {}
+        virtual void SetAspect(uint width, uint height) {}
 
-        virtual FLOAT GetAspect(VOID) { return 0; }
+        virtual float GetAspect(void) { return 0; }
 
-        virtual VOID SetFoV(FLOAT foV) {}
+        virtual void SetFoV(float foV) {}
 
-        virtual FLOAT GetFoV(VOID) { return 0; }
+        virtual float GetFoV(void) { return 0; }
 
-        virtual VOID SetFar(FLOAT f) {}
+        virtual void SetFar(float f) {}
 
-        virtual FLOAT GetNear(VOID) { return 0; }
+        virtual float GetNear(void) { return 0; }
 
-        virtual VOID SetNear(FLOAT n){}
+        virtual void SetNear(float n){}
 
-        virtual FLOAT GetFar(VOID) { return 0; }
+        virtual float GetFar(void) { return 0; }
 
-        virtual VOID MoveToPosition(CONST util::Vec3& pos) {}
+        virtual void MoveToPosition(const util::Vec3& pos) {}
 
-        virtual VOID SetRotation(FLOAT phi, FLOAT theta) {}
+        virtual void SetRotation(float phi, float theta) {}
 
-        virtual VOID FromViewUp(CONST util::Vec3& up, CONST util::Vec3& dir) {}
+        virtual void FromViewUp(const util::Vec3& up, const util::Vec3& dir) {}
 
-        virtual VOID VSetYOffset(FLOAT offset) { }
+        virtual void VSetYOffset(float offset) { }
 
-        virtual VOID SetPerspectiveProjection(FLOAT aspect, FLOAT fov, FLOAT fnear, FLOAT ffar) {}
+        virtual void SetPerspectiveProjection(float aspect, float fov, float fnear, float ffar) {}
 
-        virtual VOID SetOrthographicProjection(FLOAT width, FLOAT height, FLOAT fnear, FLOAT ffar) {}
+        virtual void SetOrthographicProjection(float width, float height, float fnear, float ffar) {}
 
-        virtual VOID SetPrthographicProjectionOffCenter(FLOAT left, FLOAT right, FLOAT up, FLOAT down, FLOAT fNear, FLOAT fFar) {}
+        virtual void SetPrthographicProjectionOffCenter(float left, float right, float up, float down, float fNear, float fFar) {}
 
-        virtual Frustum& GetFrustum(VOID) = 0;
+        virtual Frustum& GetFrustum(void) = 0;
 
-        virtual ~ICamera(VOID) {}
-    };
-
-    class IParticleModifier
-    {
-    public:
-        virtual VOID VUpdate(ParticleSystem* sys, FLOAT time, FLOAT dt) = 0;
-
-        virtual VOID VOnRestore(ParticleSystem* sys)  = 0;
-
-        virtual UINT VGetByteCount(VOID) = 0;
-
-        virtual VOID VSetAABB(CONST util::AxisAlignedBB& aabb) = 0;
+        virtual ~ICamera(void) {}
     };
 
     class IActorController : public IView, public IKeyListener, public IMouseListener 
     {
     public:
-        virtual VOID VSetMinSpeed(FLOAT minSpeed) = 0;
+        virtual void VSetMinSpeed(float minSpeed) = 0;
 
-        virtual VOID VSetMaxSpeed(FLOAT maxSpeed) = 0;
+        virtual void VSetMaxSpeed(float maxSpeed) = 0;
 
-        virtual VOID VRegisterKeyPressedCommand(UINT key, CONST std::string& command) = 0;
+        virtual void VRegisterKeyPressedCommand(uint key, const std::string& command) = 0;
 
-        virtual VOID VRegisterKeyReleasedCommand(UINT key, CONST std::string& command) = 0;
+        virtual void VRegisterKeyReleasedCommand(uint key, const std::string& command) = 0;
         
-        virtual VOID VRegisterKeyDownCommand(UINT key, CONST std::string& command) = 0;
+        virtual void VRegisterKeyDownCommand(uint key, const std::string& command) = 0;
 
-        virtual VOID VRegisterKeyCommand(UINT key, CONST std::string& command) = 0;
+        virtual void VRegisterKeyCommand(uint key, const std::string& command) = 0;
 
-        virtual VOID VSetMouseScrollAction(MouseScrollAction action) = 0;
+        virtual void VSetMouseScrollAction(MouseScrollAction action) = 0;
 
-        virtual VOID VSetUpdateAction(UpdateAction action) = 0;
+        virtual void VSetUpdateAction(UpdateAction action) = 0;
 
-        virtual VOID VActivate(VOID) = 0;
+        virtual void VActivate(void) = 0;
 
-        virtual VOID VDeactivate(VOID) = 0;
+        virtual void VDeactivate(void) = 0;
 
-        virtual ~IActorController(VOID) {}
+        virtual ~IActorController(void) {}
     };
 
     class IHumanViewFactory
     {
     public:
-         virtual IHumanView* VCreateHumanView(VOID) = 0;
+         virtual IHumanView* VCreateHumanView(void) = 0;
     };
 
     class ISceneFactory
     {
     public:
-        virtual ISceneNode* VCreateSceneNode(VOID) = 0;
+        virtual ISceneNode* VCreateSceneNode(void) = 0;
         
-        virtual ISceneGraph* VCreateSceneGraph(VOID) = 0;
+        virtual ISceneGraph* VCreateSceneGraph(void) = 0;
     };
 
-    typedef VOID (*EffectDrawMethod) (VOID);
+    typedef void (*EffectDrawMethod) (void);
     class IEffectParmaters
     {
     public:
-        virtual VOID VApply(VOID) = 0;
+        virtual void VApply(void) = 0;
     };
 
     class IEffect
     {
     public:
-        virtual VOID VSetParameters(IEffectParmaters* params) = 0;
+        virtual void VSetParameters(IEffectParmaters* params) = 0;
 
-        virtual VOID VCreate(CONST CMShaderDescription& shaderDesc, FLOAT w, FLOAT h) = 0;
+        virtual void VCreate(const CMShaderDescription& shaderDesc, float w, float h) = 0;
 
-        virtual VOID VSetDrawMethod(EffectDrawMethod m) = 0;
+        virtual void VSetDrawMethod(EffectDrawMethod m) = 0;
 
-        virtual VOID VAddRequirement(IEffect* effect) = 0;
+        virtual void VAddRequirement(IEffect* effect) = 0;
 
-        virtual VOID VSetSource(IRenderTarget* src) = 0;
+        virtual void VSetSource(IRenderTarget* src) = 0;
 
-        virtual VOID VProcess(VOID) = 0;
+        virtual void VProcess(void) = 0;
 
-        virtual VOID VReset(VOID) = 0;
+        virtual void VReset(void) = 0;
 
-        virtual FLOAT2 VGetViewPort(VOID) = 0;
+        virtual float2 VGetViewPort(void) = 0;
 
-        virtual VOID VSetTarget(IRenderTarget* target) = 0;
+        virtual void VSetTarget(IRenderTarget* target) = 0;
 
-        virtual VOID VSetTarget(std::unique_ptr<IRenderTarget> target) = 0;
+        virtual void VSetTarget(std::unique_ptr<IRenderTarget> target) = 0;
 
-        virtual IRenderTarget* VGetTarget(VOID) = 0;
+        virtual IRenderTarget* VGetTarget(void) = 0;
 
-        virtual BOOL VOnRestore(UINT w, UINT h, ErrorLog* log = NULL) = 0;
+        virtual bool VOnRestore(uint w, uint h, ErrorLog* log = NULL) = 0;
 
-        virtual ~IEffect(VOID) {}
+        virtual ~IEffect(void) {}
     };
 
     class IEffectChain
     {
     public:
-        virtual VOID VOnRestore(UINT w, UINT h) = 0;
+        virtual void VOnRestore(uint w, uint h) = 0;
 
-        virtual VOID VSetSource(IRenderTarget* src) = 0;
+        virtual void VSetSource(IRenderTarget* src) = 0;
 
-        virtual VOID VSetTarget(IRenderTarget* target) = 0;
+        virtual void VSetTarget(IRenderTarget* target) = 0;
 
-        virtual IEffect* VCreateEffect(CONST CMShaderDescription& shaderDesc, FLOAT percentofw = 1.0f, FLOAT percentofh = 1.0f) = 0;
+        virtual IEffect* VCreateEffect(const CMShaderDescription& shaderDesc, float percentofw = 1.0f, float percentofh = 1.0f) = 0;
 
-        virtual IRenderTarget* VGetResult(VOID) = 0;
+        virtual IRenderTarget* VGetResult(void) = 0;
 
-        virtual VOID VProcess(VOID) = 0;
+        virtual void VProcess(void) = 0;
 
-        virtual ~IEffectChain(VOID) {}
+        virtual ~IEffectChain(void) {}
     };
 
     class IEffectFactory
     {
     public:
-        virtual IEffectChain* VCreateEffectChain(VOID) = 0;
+        virtual IEffectChain* VCreateEffectChain(void) = 0;
 
-        virtual IEffect* VCreateEffect(VOID) = 0;
+        virtual IEffect* VCreateEffect(void) = 0;
 
-        virtual ~IEffectFactory(VOID) {}
+        virtual ~IEffectFactory(void) {}
     };
 
     class IEffectFactoryFactory
     {
     public:
-        virtual IEffectFactory* VCreateEffectFactroy(VOID) = 0;
+        virtual IEffectFactory* VCreateEffectFactroy(void) = 0;
     };
 
     class IGraphicSetting
@@ -389,15 +377,15 @@ namespace chimera
     public:
         IGraphicSetting(LPCSTR settingName) : m_name(settingName) {}
 
-        virtual VOID VRender(VOID) = 0;
+        virtual void VRender(void) = 0;
 
-        virtual BOOL VOnRestore(UINT w, UINT h) = 0;
+        virtual bool VOnRestore(uint w, uint h) = 0;
 
-        LPCSTR GetName(VOID) { return m_name.c_str(); }
+        LPCSTR GetName(void) { return m_name.c_str(); }
 
-        virtual CMShaderProgramDescription* VGetProgramDescription(VOID) = 0;
+        virtual CMShaderProgramDescription* VGetProgramDescription(void) = 0;
 
-        virtual ~IGraphicSetting(VOID) {}
+        virtual ~IGraphicSetting(void) {}
     };
 
     class IPostFXSetting : public IGraphicSetting
@@ -408,43 +396,43 @@ namespace chimera
 
         }
 
-        virtual VOID VSetSource(IRenderTarget* src) = 0;
+        virtual void VSetSource(IRenderTarget* src) = 0;
 
-        virtual VOID VSetTarget(IRenderTarget* target) = 0;
+        virtual void VSetTarget(IRenderTarget* target) = 0;
 
-        virtual ~IPostFXSetting(VOID) {}
+        virtual ~IPostFXSetting(void) {}
     };
 
     class IGraphicsSettings
     {
     public:
-        virtual VOID VAddSetting(std::unique_ptr<IGraphicSetting> setting, GraphicsSettingType type) = 0;
+        virtual void VAddSetting(std::unique_ptr<IGraphicSetting> setting, GraphicsSettingType type) = 0;
 
-        virtual VOID VSetPostFX(std::unique_ptr<IPostFXSetting> setting) = 0;
+        virtual void VSetPostFX(std::unique_ptr<IPostFXSetting> setting) = 0;
 
-        virtual VOID VRender(VOID) = 0;
+        virtual void VRender(void) = 0;
 
-        virtual BOOL VOnRestore(UINT w, UINT h) = 0;
+        virtual bool VOnRestore(uint w, uint h) = 0;
 
-        virtual VOID VOnActivate(VOID) = 0;
+        virtual void VOnActivate(void) = 0;
 
-        virtual IRenderTarget* VGetResult(VOID) = 0;
+        virtual IRenderTarget* VGetResult(void) = 0;
 
-        virtual ~IGraphicsSettings(VOID) {}
+        virtual ~IGraphicsSettings(void) {}
     };
 
     class IEnvironmentLighting
     {
     public:
 
-        virtual BOOL VOnRestore(VOID) = 0;
+        virtual bool VOnRestore(void) = 0;
 
-        virtual VOID VRender(ISceneGraph* graph) = 0;
+        virtual void VRender(ISceneGraph* graph) = 0;
 
-        virtual UCHAR VGetSlices(VOID) = 0;
+        virtual UCHAR VGetSlices(void) = 0;
 
-        virtual IRenderTarget** VGetTargets(VOID) = 0;
+        virtual IRenderTarget** VGetTargets(void) = 0;
 
-        virtual ~IEnvironmentLighting(VOID) {}
+        virtual ~IEnvironmentLighting(void) {}
     };
 }

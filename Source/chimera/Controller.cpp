@@ -4,13 +4,13 @@
 
 namespace chimera
 {
-    ActorController::ActorController(VOID) 
+    ActorController::ActorController(void) 
         : m_lastPosX(-1), m_lastPosY(-1), m_minSpeed(1), m_maxSpeed(3), m_updateAction(NULL), m_scrollAction(NULL)
         , m_leftKey(KEY_A), m_rightKey(KEY_D), m_forwardKey(KEY_W), m_backKey(KEY_S)
     {
     }
 
-    VOID ActorController::VOnUpdate(ULONG millis) 
+    void ActorController::VOnUpdate(ulong millis) 
     {
         if(m_updateAction)
         {
@@ -18,19 +18,19 @@ namespace chimera
         }
     }
 
-    VOID ActorController::VActivate(VOID)
+    void ActorController::VActivate(void)
     {
         CmGetApp()->VGetInputHandler()->VPushKeyListener(this);
         CmGetApp()->VGetInputHandler()->VPushMouseListener(this);
     }
 
-    VOID ActorController::VDeactivate(VOID)
+    void ActorController::VDeactivate(void)
     {
         CmGetApp()->VGetInputHandler()->VRemoveKeyListener(this);
         CmGetApp()->VGetInputHandler()->VRemoveMouseListener(this);
     }
 
-    BOOL ActorController::VOnKeyDown(UINT CONST code) 
+    bool ActorController::VOnKeyDown(uint const code) 
     {
         auto itt = m_keyBoadButtonDownCommand.find(code);
         if(itt != m_keyBoadButtonDownCommand.end())
@@ -38,73 +38,73 @@ namespace chimera
             CmGetApp()->VGetLogic()->VGetCommandInterpreter()->VCallCommand(itt->second.c_str());
         }
 
-        return TRUE;
+        return true;
     }
 
-    BOOL ActorController::VOnKeyRepeat(UINT CONST code) 
+    bool ActorController::VOnKeyRepeat(uint const code) 
     {
-        return TRUE;
+        return true;
     }
 
-    BOOL ActorController::VOnKeyPressed(UINT CONST code) 
+    bool ActorController::VOnKeyPressed(uint const code) 
     {
         auto itt = m_keyBoadButtonPressedCommand.find(code);
         if(itt != m_keyBoadButtonPressedCommand.end())
         {
             CmGetApp()->VGetLogic()->VGetCommandInterpreter()->VCallCommand(itt->second.c_str());
         }
-        return TRUE;
+        return true;
     }
 
-    BOOL ActorController::VOnKeyReleased(UINT CONST code)
+    bool ActorController::VOnKeyReleased(uint const code)
     {
         auto itt = m_keyBoadButtonReleasedCommand.find(code);
         if(itt != m_keyBoadButtonReleasedCommand.end())
         {
             CmGetApp()->VGetLogic()->VGetCommandInterpreter()->VCallCommand(itt->second.c_str());
         }
-        return TRUE;
+        return true;
     }
 
-    BOOL ActorController::VOnMouseButtonDown(INT x, INT y, INT button) 
+    bool ActorController::VOnMouseButtonDown(int x, int y, int button) 
     { 
         this->m_lastPosX = x;
         this->m_lastPosY = y;
-        return TRUE; 
+        return true; 
     };
 
-    BOOL ActorController::VOnMouseButtonReleased(INT x, INT y, INT button) 
+    bool ActorController::VOnMouseButtonReleased(int x, int y, int button) 
     { 
-        return FALSE; 
+        return false; 
     }
 
-    BOOL ActorController::VOnMouseButtonPressed(INT x, INT y, INT button) 
+    bool ActorController::VOnMouseButtonPressed(int x, int y, int button) 
     {
-        return TRUE; 
+        return true; 
     }
 
-    BOOL ActorController::VOnMousePressed(INT x, INT y, INT button) { return FALSE; } //remove?
-    BOOL ActorController::VOnMouseMoved(INT x, INT y, INT dx, INT dy) 
+    bool ActorController::VOnMousePressed(int x, int y, int button) { return false; } //remove?
+    bool ActorController::VOnMouseMoved(int x, int y, int dx, int dy) 
     {
         LOG_CRITICAL_ERROR("this does currently not work");
         QUEUE_EVENT(new MoveActorEvent(this->m_actor->GetId(), util::Vec3(2 * dx * 1e-3f, 2 * dy * 1e-3f, 0)));
         this->m_lastPosX = x;
         this->m_lastPosY = y;
-        return TRUE;
+        return true;
     }
 
-    BOOL ActorController::VOnMouseDragged(INT x, INT y, INT dx, INT dy, INT button) { return FALSE; }
+    bool ActorController::VOnMouseDragged(int x, int y, int dx, int dy, int button) { return false; }
 
-    BOOL ActorController::VOnMouseWheel(INT x, INT y, INT delta) 
+    bool ActorController::VOnMouseWheel(int x, int y, int delta) 
     { 
         if(m_scrollAction)
         {
             m_scrollAction(x, y, delta);
         }
-        return TRUE; 
+        return true; 
     };
 
-    VOID ActorController::VRegisterKeyPressedCommand(UINT key, CONST std::string& command)
+    void ActorController::VRegisterKeyPressedCommand(uint key, const std::string& command)
     {
         auto it = m_keyBoadButtonPressedCommand.find(key);
 
@@ -117,7 +117,7 @@ namespace chimera
         m_keyBoadButtonPressedCommand[key] = command;
     }
 
-    VOID ActorController::VRegisterKeyDownCommand(UINT key, CONST std::string& command)
+    void ActorController::VRegisterKeyDownCommand(uint key, const std::string& command)
     {
         auto it = m_keyBoadButtonDownCommand.find(key);
 
@@ -130,7 +130,7 @@ namespace chimera
         m_keyBoadButtonDownCommand[key] = command;
     }
 
-    VOID ActorController::VRegisterKeyReleasedCommand(UINT key, CONST std::string& command)
+    void ActorController::VRegisterKeyReleasedCommand(uint key, const std::string& command)
     {
         auto it = m_keyBoadButtonReleasedCommand.find(key);
 
@@ -143,7 +143,7 @@ namespace chimera
         m_keyBoadButtonReleasedCommand[key] = command;
     }
 
-    VOID ActorController::VRegisterKeyCommand(UINT key, CONST std::string& command)
+    void ActorController::VRegisterKeyCommand(uint key, const std::string& command)
     {
         if(!command.compare("left"))
         {
@@ -209,33 +209,33 @@ namespace chimera
         m_mouseButtonPressedActions[mouseButton] = action;
     } */
 
-    VOID ActorController::VSetMouseScrollAction(MouseScrollAction action)
+    void ActorController::VSetMouseScrollAction(MouseScrollAction action)
     {
         m_scrollAction = action;
     }
 
-    VOID ActorController::VSetUpdateAction(UpdateAction action)
+    void ActorController::VSetUpdateAction(UpdateAction action)
     {
         m_updateAction = action;
     }
 
-    CharacterController::CharacterController(VOID)
+    CharacterController::CharacterController(void)
     {
 
     }
 
-    BOOL CharacterController::VOnMouseMoved(INT x, INT y, INT dx, INT dy) 
+    bool CharacterController::VOnMouseMoved(int x, int y, int dx, int dy) 
     {
         if(!CmGetApp()->VGetInputHandler()->VIsMouseGrabbed())
         {
-            return FALSE;
+            return false;
         }
         
         TransformComponent* comp = GetActorCompnent<TransformComponent>(m_actor, CM_CMP_TRANSFORM);
         comp->m_phi -= -2 * dx * 1e-3f;
         comp->m_theta += 2 * dy * 1e-3f;
 
-        FLOAT t = CLAMP(comp->m_theta, -XM_PIDIV2, XM_PIDIV2);
+        float t = CLAMP(comp->m_theta, -XM_PIDIV2, XM_PIDIV2);
 
         util::Mat4 m;
         m.SetRotateX(t);
@@ -248,18 +248,18 @@ namespace chimera
 
         QUEUE_EVENT(new ActorMovedEvent(m_actor));
 
-        return TRUE;
+        return true;
     }
 
-    BOOL CharacterController::VOnKeyDown(UINT CONST code)
+    bool CharacterController::VOnKeyDown(uint const code)
     {
         ActorController::VOnKeyDown(code);
 
-        ULONG millis = CmGetApp()->VGetUpdateTimer()->VGetLastMillis();
+        ulong millis = CmGetApp()->VGetUpdateTimer()->VGetLastMillis();
         //DEBUG_OUT(millis);
         util::Vec3 move;
-        FLOAT factor = 1e-3f * millis;
-        FLOAT speed = 1;
+        float factor = 1e-3f * millis;
+        float speed = 1;
 
         if(code == m_forwardKey) 
         {
@@ -299,21 +299,21 @@ namespace chimera
             QUEUE_EVENT(new chimera::MoveActorEvent(this->m_actor->GetId(), deltaX));
         }
 
-        return TRUE;
+        return true;
     }
 
-    VOID CharacterController::VSetTarget(IActor* actor)
+    void CharacterController::VSetTarget(IActor* actor)
     {
         IView::VSetTarget(actor);
         m_cameraComp = GetActorCompnent<CameraComponent>(actor, CM_CMP_CAMERA);
     }
 
-    VOID CharacterController::VOnUpdate(ULONG millis)
+    void CharacterController::VOnUpdate(ulong millis)
     {
         ActorController::VOnUpdate(millis);
     }
 
-    BOOL CharacterController::VOnMouseButtonPressed(INT x, INT y, INT button)
+    bool CharacterController::VOnMouseButtonPressed(int x, int y, int button)
     {
         ActorController::VOnMouseButtonPressed(x, y, button);
         if(!CmGetApp()->VGetInputHandler()->VGrabMouse(button & MOUSE_BTN_RIGHT))
@@ -321,10 +321,10 @@ namespace chimera
             LOG_CRITICAL_ERROR("failed to grab mouse...");
         }
 
-        return TRUE;
+        return true;
     }
 
-    VOID CharacterController::VOnAttach(ViewId viewId, IActor* actor)
+    void CharacterController::VOnAttach(ViewId viewId, IActor* actor)
     {
         IView::VOnAttach(viewId, actor);
 

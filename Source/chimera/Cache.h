@@ -23,60 +23,58 @@ namespace chimera
 
         IResourceFile* m_pFile;
 
-        UINT m_maxCacheSize;
-        UINT m_currentCacheSize;
+        uint m_maxCacheSize;
+        uint m_currentCacheSize;
 
         std::shared_ptr<IResHandle> Find(CMResource& r);
-        VOID Update(std::shared_ptr<IResHandle> handle);
-        std::shared_ptr<IResHandle> Load(CMResource& r, BOOL async);
-        VOID Free(std::shared_ptr<IResHandle> handle);
+        void Update(std::shared_ptr<IResHandle> handle);
+        std::shared_ptr<IResHandle> Load(CMResource& r);
+        void Free(std::shared_ptr<IResHandle> handle);
     
-        std::shared_ptr<IResHandle> _GetHandle(CMResource& r, BOOL async);
-
-        BOOL MakeRoom(UINT size);
-        CHAR* Alloc(UINT size);
-        VOID AllocSilent(UINT size);
-        VOID FreeOneRessource(VOID);
-        VOID MemoryHasBeenFreed(UINT size);
+        bool MakeRoom(uint size);
+        char* Alloc(uint size);
+        void AllocSilent(uint size);
+        void FreeOneRessource(void);
+        void MemoryHasBeenFreed(uint size);
 
     public:
-        ResourceCache(VOID);
+        ResourceCache(void);
 
-        BOOL VInit(UINT mbSize, IResourceFile* resFile);
+        bool VInit(uint mbSize, IResourceFile* resFile);
 
-        FLOAT VGetWorkload(VOID) CONST { return 100.0f * m_currentCacheSize / (FLOAT) m_maxCacheSize; }
+        float VGetWorkload(void) const { return 100.0f * m_currentCacheSize / (float) m_maxCacheSize; }
 
-        size_t VGetNumHandles(VOID) CONST { return this->m_handlesList.size(); }
+        size_t VGetNumHandles(void) const { return this->m_handlesList.size(); }
 
-        IResourceFile& VGetFile(VOID) { return *m_pFile; }
+        IResourceFile& VGetFile(void) { return *m_pFile; }
 
-        VOID VRegisterLoader(std::unique_ptr<IResourceLoader> loader);
+        void VRegisterLoader(std::unique_ptr<IResourceLoader> loader);
 
-        VOID VRegisterDecompressor(std::unique_ptr<IResourceDecompressor> decomp);
+        void VRegisterDecompressor(std::unique_ptr<IResourceDecompressor> decomp);
 
         std::shared_ptr<IResHandle> VGetHandle(CMResource& r);
 
-        BOOL VHasResource(CMResource& r);
+        bool VHasResource(CMResource& r);
 
-        VOID VAppendHandle(std::unique_ptr<IResHandle> handle);
+        void VAppendHandle(std::unique_ptr<IResHandle> handle);
 
-        std::shared_ptr<IResHandle> VGetHandleAsync(CMResource& r);
+        void VGetHandleAsync(CMResource& r, OnResourceLoadedCallback cb = NULL);
 
-        BOOL VIsLoaded(CMResource& r);
+        bool VIsLoaded(CMResource& r);
 
-        VOID VFlush(VOID);
+        void VFlush(void);
 
-        VOID OnResourceChanged(std::shared_ptr<IEvent> data);
+        void OnResourceChanged(std::shared_ptr<IEvent> data);
 
-        ~ResourceCache(VOID);
+        ~ResourceCache(void);
     };
 
     class DefaultRessourceDecompressor : public IResourceDecompressor 
     {
     public:
-        std::string VGetPattern(VOID) { return "*"; }
-        BOOL VUseRawFile(VOID) { return TRUE; }
-        INT VDecompressRessource(CHAR* buffer, INT size, CHAR** dst) { return size; };
+        std::string VGetPattern(void) { return "*"; }
+        bool VUseRawFile(void) { return true; }
+        int VDecompressRessource(char* buffer, int size, char** dst) { return size; };
     };
 
     class DefaultRessourceLoader : public IResourceLoader 
@@ -86,28 +84,28 @@ namespace chimera
         std::string m_subFolder;
 
     public:
-        DefaultRessourceLoader(VOID) 
+        DefaultRessourceLoader(void) 
             : m_pattern("*") , 
             m_subFolder("")
         {
         }
-        DefaultRessourceLoader(CONST std::string& subfolder, CONST std::string& pattern) : m_subFolder(subfolder), m_pattern(pattern) {} 
+        DefaultRessourceLoader(const std::string& subfolder, const std::string& pattern) : m_subFolder(subfolder), m_pattern(pattern) {} 
 
-        virtual CONST std::string& VGetPattern(VOID) { return m_pattern; }
+        virtual const std::string& VGetPattern(void) { return m_pattern; }
 
-        virtual INT VLoadRessource(CHAR* source, UINT size, std::shared_ptr<IResHandle> handle);
+        virtual int VLoadRessource(char* source, uint size, std::shared_ptr<IResHandle>& handle);
 
-        virtual std::unique_ptr<IResHandle> VCreateHandle(VOID) 
+        virtual std::unique_ptr<IResHandle> VCreateHandle(void) 
         { 
             return std::move(std::unique_ptr<IResHandle>(new ResHandle())); 
         }
 
-        CONST std::string& VSubFolder(VOID) 
+        const std::string& VSubFolder(void) 
         {
             return m_subFolder; 
         }
 
-        virtual ~DefaultRessourceLoader(VOID) { }
+        virtual ~DefaultRessourceLoader(void) { }
     };
 
     class ResourceFolder : public IResourceFile 
@@ -118,19 +116,19 @@ namespace chimera
     public:
         ResourceFolder(std::string folder) : m_folder(folder) { }
 
-        BOOL VOpen(VOID);
+        bool VOpen(void);
 
-        INT VGetRawRessource(CONST CMResource&  r, CHAR** buffer);
+        int VGetRawRessource(const CMResource&  r, char** buffer);
 
-        std::string VGetRessourceName(INT num);
+        std::string VGetRessourceName(int num);
 
-        INT VGetNumFiles(VOID);
+        int VGetNumFiles(void);
 
-        BOOL VHasFile(CONST CMResource& r);
+        bool VHasFile(const CMResource& r);
 
-        std::string& VGetName(VOID) { return m_folder; }
+        std::string& VGetName(void) { return m_folder; }
 
-        BOOL VIsCompressed(VOID) { return FALSE; }
+        bool VIsCompressed(void) { return false; }
 
         ~ResourceFolder() { }
     };

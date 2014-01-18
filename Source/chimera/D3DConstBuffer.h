@@ -11,28 +11,28 @@ namespace chimera
         private:
             ID3D11Buffer* m_buffer;
             D3D11_MAPPED_SUBRESOURCE m_ressource;
-            UINT m_byteSize;
+            uint m_byteSize;
 
         public:
-            ConstBuffer(VOID);
+            ConstBuffer(void);
 
-            VOID VInit(UINT byteSize, VOID* data = 0);
+            void VInit(uint byteSize, void* data = 0);
 
-            VOID* VMap(VOID);
+            void* VMap(void);
 
-            VOID VSetData(VOID* data);
+            void VSetData(void* data);
 
-            VOID VSetFromMatrix(CONST util::Mat4& mat);
+            void VSetFromMatrix(const util::Mat4& mat);
 
-            VOID VUnmap(VOID);
+            void VUnmap(void);
 
-            VOID VActivate(ConstShaderBufferSlot slot, UINT shader = ACTIVATE_ALL);
+            void VActivate(ConstShaderBufferSlot slot, uint shader = ACTIVATE_ALL);
 
-            VOID* VGetDevicePtr(VOID);
+            void* VGetDevicePtr(void);
 
-            ID3D11Buffer* GetBuffer(VOID);
+            ID3D11Buffer* GetBuffer(void);
 
-            ~ConstBuffer(VOID);
+            ~ConstBuffer(void);
         };
     }
 }

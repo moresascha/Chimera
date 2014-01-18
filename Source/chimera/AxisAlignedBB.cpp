@@ -4,12 +4,12 @@ namespace chimera
 {
     namespace util 
     {
-        AxisAlignedBB::AxisAlignedBB(VOID)
+        AxisAlignedBB::AxisAlignedBB(void)
         {
             Clear();
         }
 
-        AxisAlignedBB::AxisAlignedBB(CONST AxisAlignedBB& aabb)
+        AxisAlignedBB::AxisAlignedBB(const AxisAlignedBB& aabb)
         {
             Clear();
             for(UCHAR i = 0; i < 12; ++i)
@@ -19,13 +19,13 @@ namespace chimera
             Construct();
         }
 
-        VOID AxisAlignedBB::Clear(VOID)
+        void AxisAlignedBB::Clear(void)
         {
-            m_max.Set(-std::numeric_limits<FLOAT>::infinity(), -std::numeric_limits<FLOAT>::infinity(), -std::numeric_limits<FLOAT>::infinity());
-            m_min.Set(std::numeric_limits<FLOAT>::infinity(), std::numeric_limits<FLOAT>::infinity(), std::numeric_limits<FLOAT>::infinity());
+            m_max.Set(-std::numeric_limits<float>::infinity(), -std::numeric_limits<float>::infinity(), -std::numeric_limits<float>::infinity());
+            m_min.Set(std::numeric_limits<float>::infinity(), std::numeric_limits<float>::infinity(), std::numeric_limits<float>::infinity());
         }
 
-        VOID AxisAlignedBB::AddPoint(CONST util::Vec3& point)
+        void AxisAlignedBB::AddPoint(const util::Vec3& point)
         {
             m_min.x = min(point.x, m_min.x);
             m_min.y = min(point.y, m_min.y);
@@ -36,15 +36,15 @@ namespace chimera
             m_max.z = max(point.z, m_max.z);
         }
 
-        VOID AxisAlignedBB::Construct(VOID)
+        void AxisAlignedBB::Construct(void)
         {
-            for(UINT i = 0; i < 2; ++i)
+            for(uint i = 0; i < 2; ++i)
             {
-                for(UINT j = 0; j < 2; ++j)
+                for(uint j = 0; j < 2; ++j)
                 {
-                    for(UINT k = 0; k < 2; ++k)
+                    for(uint k = 0; k < 2; ++k)
                     {
-                        UINT pos = 4 * i + 2 * j + k;
+                        uint pos = 4 * i + 2 * j + k;
                         util::Vec3& p = m_Tpoints[pos];
                         p.x = GetX(i);
                         p.y = GetY(j);
@@ -84,22 +84,22 @@ namespace chimera
             m_radius = m.Length();
         }
 
-        CONST util::Vec3& AxisAlignedBB::GetMin(VOID) CONST
+        const util::Vec3& AxisAlignedBB::GetMin(void) const
         {
             return m_min;
         }
 
-        CONST util::Vec3& AxisAlignedBB::GetMax(VOID) CONST
+        const util::Vec3& AxisAlignedBB::GetMax(void) const
         {
             return m_max;
         }
 
-        CONST util::Vec3& AxisAlignedBB::GetMiddle(VOID) CONST
+        const util::Vec3& AxisAlignedBB::GetMiddle(void) const
         {
             return m_mid;
         }
 
-        FLOAT AxisAlignedBB::GetMaxAxis(UCHAR axis) CONST
+        float AxisAlignedBB::GetMaxAxis(UCHAR axis) const
         {
             switch(axis)
             {
@@ -110,7 +110,7 @@ namespace chimera
             }
         }
 
-        FLOAT AxisAlignedBB::GetMinAxis(UCHAR axis) CONST
+        float AxisAlignedBB::GetMinAxis(UCHAR axis) const
         {
             switch(axis)
             {
@@ -121,7 +121,7 @@ namespace chimera
             }
         }
 
-        FLOAT AxisAlignedBB::GetX(UCHAR minMax) CONST
+        float AxisAlignedBB::GetX(UCHAR minMax) const
         {
             switch(minMax)
             {
@@ -131,7 +131,7 @@ namespace chimera
             }
         }
 
-        FLOAT AxisAlignedBB::GetY(UCHAR minMax) CONST
+        float AxisAlignedBB::GetY(UCHAR minMax) const
         {
             switch(minMax)
             {
@@ -141,7 +141,7 @@ namespace chimera
             }
         }
 
-        FLOAT AxisAlignedBB::GetZ(UCHAR minMax) CONST
+        float AxisAlignedBB::GetZ(UCHAR minMax) const
         {
             switch(minMax)
             {
@@ -151,31 +151,31 @@ namespace chimera
             }
         }
 
-        FLOAT AxisAlignedBB::GetRadius(VOID) CONST
+        float AxisAlignedBB::GetRadius(void) const
         {
             return m_radius;
         }
 
-        BOOL AxisAlignedBB::IsInside(CONST util::Vec3& pos) CONST
+        bool AxisAlignedBB::IsInside(const util::Vec3& pos) const
         {
             return m_min.x <= pos.x && m_max.x >=pos.x &&
                 m_min.y <= pos.y && m_max.y >=pos.y &&
                 m_min.z <= pos.z && m_max.z >=pos.z;
         }
 
-        CONST util::Vec3& AxisAlignedBB::GetPoint(UCHAR i) CONST
+        const util::Vec3& AxisAlignedBB::GetPoint(UCHAR i) const
         {
             return m_Tpoints[i];
         }
 
-        CONST util::Line& AxisAlignedBB::GetLine(UCHAR pos) CONST
+        const util::Line& AxisAlignedBB::GetLine(UCHAR pos) const
         {
             return m_lines[pos];
         }
 
-        VOID AxisAlignedBB::SetTransform(util::Mat4& mat)
+        void AxisAlignedBB::SetTransform(util::Mat4& mat)
         {
-            for(UINT i = 0; i < 12; ++i)
+            for(uint i = 0; i < 12; ++i)
             {
                 if(i < 8)
                 {
@@ -188,7 +188,7 @@ namespace chimera
             m_mid = m_min + (m_max - m_min) * 0.5;
         }
 
-        AxisAlignedBB::~AxisAlignedBB(VOID)
+        AxisAlignedBB::~AxisAlignedBB(void)
         {
         }
     }

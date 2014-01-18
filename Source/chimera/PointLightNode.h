@@ -24,14 +24,14 @@ namespace chimera
     public:
         PointlightNode(ActorId actorid);
 
-        VOID _VRender(ISceneGraph* graph, RenderPath& path);
+        void _VRender(ISceneGraph* graph, RenderPath& path);
 
-        BOOL VIsVisible(ISceneGraph* graph);
+        bool VIsVisible(ISceneGraph* graph);
 
-        VOID VOnRestore(ISceneGraph* graph);
+        void VOnRestore(ISceneGraph* graph);
 
-        VOID VOnActorMoved(VOID);
+        void VOnActorMoved(void);
 
-        ~PointlightNode(VOID);
+        ~PointlightNode(void);
     };
 };

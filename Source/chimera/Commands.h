@@ -12,24 +12,24 @@ namespace chimera
     class Command : public ICommand
     {
     private:
-        std::list<INT> m_argList;
+        std::list<int> m_argList;
         std::list<std::string> m_values;
-        BOOL m_error;
+        bool m_error;
     public:
         Command(std::list<std::string>& elems);
         
-        BOOL VInitArgumentTypes(INT args, ...);
+        bool VInitArgumentTypes(int args, ...);
         
-        FLOAT VGetNextFloat(VOID);
-        INT VGetNextInt(VOID);
-        CHAR VGetNextChar(VOID);
-        BOOL VGetNextBool(VOID);
-        std::string VGetNextCharStr(VOID);
-        std::string VGetRemainingString(VOID);
-        BOOL VIsError(VOID);
-        BOOL VIsValid(VOID);
+        float VGetNextFloat(void);
+        int VGetNextInt(void);
+        char VGetNextChar(void);
+        bool VGetNextBool(void);
+        std::string VGetNextCharStr(void);
+        std::string VGetRemainingString(void);
+        bool VIsError(void);
+        bool VIsValid(void);
 
-        ~Command(VOID);
+        ~Command(void);
     };
 
     class CommandInterpreter : public ICommandInterpreter
@@ -40,53 +40,53 @@ namespace chimera
         std::map<std::string, std::string> m_nameToUsage;
 
     public:
-        CommandInterpreter(VOID);
+        CommandInterpreter(void);
 
-        VOID VRegisterCommand(LPCSTR name, CommandHandler command, LPCSTR usage = NULL);
+        void VRegisterCommand(LPCSTR name, CommandHandler command, LPCSTR usage = NULL);
 
-        BOOL VCallCommand(LPCSTR command);
+        bool VCallCommand(LPCSTR command);
 
-        std::vector<std::string> VGetCommands(VOID);
+        std::vector<std::string> VGetCommands(void);
 
-        VOID VLoadCommands(LPCSTR file);
+        void VLoadCommands(LPCSTR file);
 
-        ~CommandInterpreter(VOID);
+        ~CommandInterpreter(void);
     };
 
-    VOID TranslateActor(ActorId id, CONST util::Vec3& dTranslation);
+    void TranslateActor(ActorId id, const util::Vec3& dTranslation);
 
-    VOID RotateActor(ActorId id, CONST util::Vec3& dRotation);
+    void RotateActor(ActorId id, const util::Vec3& dRotation);
 
-    VOID TransformActor(ActorId id, CONST util::Vec3& dPostition, CONST util::Vec3& dRrotation);
+    void TransformActor(ActorId id, const util::Vec3& dPostition, const util::Vec3& dRrotation);
 
-    VOID SetActorPosition(ActorId id, CONST util::Vec3& position);
+    void SetActorPosition(ActorId id, const util::Vec3& position);
 
-    VOID SetActorRotation(ActorId id, CONST util::Vec3& position);
+    void SetActorRotation(ActorId id, const util::Vec3& position);
 
-    VOID SetActorTransformation(ActorId id, CONST util::Vec3& position, CONST util::Vec3& rotation);
+    void SetActorTransformation(ActorId id, const util::Vec3& position, const util::Vec3& rotation);
 
-    VOID SetRenderMode(int mode);
+    void SetRenderMode(int mode);
 
     //some usefull commands
     namespace commands
     {
-        BOOL Bind(ICommand& cmd);
+        bool Bind(ICommand& cmd);
 
-        BOOL PlaySound(ICommand& cmd);
+        bool PlaySound(ICommand& cmd);
 
-        BOOL ToogleConsole(ICommand& cmd);
+        bool ToogleConsole(ICommand& cmd);
         
-        BOOL SpawnMeshActor(ICommand& cmd);
+        bool SpawnMeshActor(ICommand& cmd);
 
-        BOOL SetTarget(ICommand& cmd);
+        bool SetTarget(ICommand& cmd);
 
-        BOOL SetTarget(LPCSTR actor);
+        bool SetTarget(LPCSTR actor);
 
-        BOOL Print(ICommand& cmd);
+        bool Print(ICommand& cmd);
 
-        BOOL End(ICommand& cmd);
+        bool End(ICommand& cmd);
 
-        VOID AddCommandsToInterpreter(CommandInterpreter& interpreter);
+        void AddCommandsToInterpreter(CommandInterpreter& interpreter);
     }
 }
 

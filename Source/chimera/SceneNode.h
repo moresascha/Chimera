@@ -23,8 +23,8 @@ namespace chimera
     class SceneNode : public ISceneNode 
     {
     private:
-        BOOL m_wasVisibleOnLastTraverse;
-        BOOL m_forceVisibleCheck;
+        bool m_wasVisibleOnLastTraverse;
+        bool m_forceVisibleCheck;
         TransformComponent* m_transformation;
         std::unique_ptr<TransformComponent> m_wParentTransformation;
 
@@ -37,68 +37,68 @@ namespace chimera
         RenderPath m_paths;
         std::shared_ptr<IGeometry> m_pGeometry;
 
-        BOOL HasParent(VOID);
+        bool HasParent(void);
 
     public:
         SceneNode(ActorId ActorId);
 
-        SceneNode(VOID);
+        SceneNode(void);
 
-        VOID VQueryGeometry(IGeometry** geo);
+        void VQueryGeometry(IGeometry** geo);
 
-        util::Mat4* VGetTransformation(VOID);
+        util::Mat4* VGetTransformation(void);
 
-        VOID VSetActor(ActorId id);
+        void VSetActor(ActorId id);
 
-        VOID VSetParent(ISceneNode* parent);
+        void VSetParent(ISceneNode* parent);
 
-        BOOL VWasVisibleOnLastTraverse(VOID);
+        bool VWasVisibleOnLastTraverse(void);
 
-        VOID VSetVisibilityOnLastTraverse(BOOL visible);
+        void VSetVisibilityOnLastTraverse(bool visible);
 
-        VOID VForceVisibilityCheck(VOID);
+        void VForceVisibilityCheck(void);
 
-        ActorId VGetActorId(VOID);
+        ActorId VGetActorId(void);
 
-        VOID VOnParentChanged(VOID);
+        void VOnParentChanged(void);
 
-        std::vector<std::unique_ptr<ISceneNode>>& VGetChilds(VOID);
+        std::vector<std::unique_ptr<ISceneNode>>& VGetChilds(void);
 
-        virtual VOID VPreRender(ISceneGraph* graph);
+        virtual void VPreRender(ISceneGraph* graph);
 
-        virtual VOID VPostRender(ISceneGraph* graph);
+        virtual void VPostRender(ISceneGraph* graph);
 
-        virtual VOID VOnRestore(ISceneGraph* graph);
+        virtual void VOnRestore(ISceneGraph* graph);
 
-        VOID VRender(ISceneGraph* graph, RenderPath& path);
+        void VRender(ISceneGraph* graph, RenderPath& path);
 
-        virtual VOID _VRender(ISceneGraph* graph, RenderPath& path) {}
+        virtual void _VRender(ISceneGraph* graph, RenderPath& path) {}
 
-        VOID VRenderChildren(ISceneGraph* graph, RenderPath& path);
+        void VRenderChildren(ISceneGraph* graph, RenderPath& path);
 
-        virtual BOOL VIsVisible(ISceneGraph* graph);
+        virtual bool VIsVisible(ISceneGraph* graph);
 
-        VOID VAddChild(std::unique_ptr<ISceneNode> child);
+        void VAddChild(std::unique_ptr<ISceneNode> child);
 
         std::unique_ptr<ISceneNode> VRemoveChild(ActorId actorId);
 
         std::unique_ptr<ISceneNode> VRemoveChild(ISceneNode* child);
 
-        virtual CONST util::AxisAlignedBB& VGetAABB(VOID) CONST { return m_aabb; }
+        virtual const util::AxisAlignedBB& VGetAABB(void) const { return m_aabb; }
 
-        virtual VOID VOnUpdate(ULONG millis, ISceneGraph* graph);
+        virtual void VOnUpdate(ulong millis, ISceneGraph* graph);
 
-        VOID ActorMovedDelegate(chimera::IEventPtr pEventData);
+        void ActorMovedDelegate(chimera::IEventPtr pEventData);
 
-        virtual VOID VOnActorMoved(VOID) {}
+        virtual void VOnActorMoved(void) {}
 
-        UINT VGetRenderPaths(VOID);
+        uint VGetRenderPaths(void);
 
-        VOID VSetRenderPaths(RenderPath paths);
+        void VSetRenderPaths(RenderPath paths);
 
         ISceneNode* VFindActor(ActorId id);
 
-        virtual ~SceneNode(VOID);
+        virtual ~SceneNode(void);
     };
 
    
@@ -109,27 +109,29 @@ namespace chimera
     {
     protected:
         util::Vec3 m_transformedBBPoint;
-        FLOAT m_longestScale;
+        float m_longestScale;
         chimera::CMResource m_ressource;
-        std::shared_ptr<IMesh> m_mesh;
+        std::string m_meshId;
+        std::shared_ptr<IMeshSet> m_meshSet;
+        IMesh* m_mesh;
         std::shared_ptr<MaterialSet> m_materials;
-        std::shared_ptr<IDeviceTexture> m_diffuseTextures[1024];
-        std::shared_ptr<IDeviceTexture> m_normalTextures[1024];
-        UINT m_diffuseTexturesCount;
-        VOID DrawToAlbedo(VOID);
+        std::shared_ptr<IDeviceTexture> m_diffuseTextures[64];
+        std::shared_ptr<IDeviceTexture> m_normalTextures[64];
+        uint m_diffuseTexturesCount;
+        void DrawToAlbedo(void);
 
     public:
-        MeshNode(ActorId actorid, chimera::CMResource ressource);
+        MeshNode(ActorId actorid, CMResource ressource, std::string meshId);
 
-        virtual BOOL VIsVisible(ISceneGraph* graph);
+        virtual bool VIsVisible(ISceneGraph* graph);
 
-        virtual VOID _VRender(ISceneGraph* graph, chimera::RenderPath& path);
+        virtual void _VRender(ISceneGraph* graph, chimera::RenderPath& path);
 
-        virtual VOID VOnActorMoved(VOID);
+        virtual void VOnActorMoved(void);
 
-        virtual VOID VOnRestore(ISceneGraph* graph);
+        virtual void VOnRestore(ISceneGraph* graph);
 
-        virtual ~MeshNode(VOID);
+        virtual ~MeshNode(void);
     };
 
     class SkyDomeNode : public SceneNode
@@ -141,13 +143,13 @@ namespace chimera
     public:
         SkyDomeNode(ActorId id, CMResource texture);
 
-        VOID _VRender(ISceneGraph* graph, RenderPath& path);
+        void _VRender(ISceneGraph* graph, RenderPath& path);
 
-        BOOL VIsVisible(ISceneGraph* graph);
+        bool VIsVisible(ISceneGraph* graph);
 
-        VOID VOnRestore(ISceneGraph* graph);
+        void VOnRestore(ISceneGraph* graph);
 
-        ~SkyDomeNode(VOID);
+        ~SkyDomeNode(void);
     };
 
     class InstancedMeshNode : public MeshNode
@@ -158,15 +160,15 @@ namespace chimera
     public:
         InstancedMeshNode(ActorId actorid, std::shared_ptr<IVertexBuffer> instances, CMResource ressource);
 
-        BOOL VIsVisible(ISceneGraph* graph);
+        bool VIsVisible(ISceneGraph* graph);
 
-        VOID _VRender(ISceneGraph* graph, RenderPath& path);
+        void _VRender(ISceneGraph* graph, RenderPath& path);
 
-        VOID VOnActorMoved(VOID);
+        void VOnActorMoved(void);
 
-        VOID VOnRestore(ISceneGraph* graph);
+        void VOnRestore(ISceneGraph* graph);
 
-        ~InstancedMeshNode(VOID);
+        ~InstancedMeshNode(void);
     };
 
     /*
@@ -206,7 +208,7 @@ namespace chimera
     public:
         CameraNode(ActorId id);
 
-        VOID _VRender(ISceneGraph* graph, RenderPath& path);
+        void _VRender(ISceneGraph* graph, RenderPath& path);
     };
     
     class GeometryNode : public SceneNode
@@ -217,12 +219,12 @@ namespace chimera
     public:
         GeometryNode(ActorId id, std::unique_ptr<IGeometry> geo);
 
-        VOID SetMaterial(CONST IMaterial& mat);
+        void SetMaterial(const IMaterial& mat);
 
-        VOID _VRender(ISceneGraph* graph, RenderPath& path);
+        void _VRender(ISceneGraph* graph, RenderPath& path);
 
-        VOID VOnRestore(ISceneGraph* graph);
+        void VOnRestore(ISceneGraph* graph);
 
-        ~GeometryNode(VOID);
+        ~GeometryNode(void);
     };
 }

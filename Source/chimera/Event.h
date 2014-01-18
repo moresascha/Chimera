@@ -34,7 +34,7 @@ namespace chimera
     {
     public:
         util::Vec3 m_position;
-        CM_INLINE SetSunPositionEvent(FLOAT x, FLOAT y, FLOAT z);
+        CM_INLINE SetSunPositionEvent(float x, float y, float z);
 
         CM_CREATE_EVENT_HEADER(CM_EVENT_SET_SUN_POSITION, SetSunPositionEvent);
     };
@@ -48,27 +48,27 @@ namespace chimera
     {
 
     public:       
-        CM_INLINE MoveActorEvent(ActorId id, util::Vec3 translation, util::Vec4 quat, BOOL isDeltaMove = TRUE);
-        CM_INLINE MoveActorEvent(ActorId id, util::Vec3 translation, util::Vec3 axis, FLOAT angle, BOOL isDeltaMove = TRUE);
-        CM_INLINE MoveActorEvent(ActorId id, util::Vec3 translation, BOOL isDeltaMove = TRUE);
-        CM_INLINE MoveActorEvent(ActorId id, util::Vec4 quat, BOOL isDeltaMove = TRUE);
-        CM_INLINE MoveActorEvent(ActorId id, util::Vec3 axis, FLOAT angel, BOOL isDeltaMove = TRUE);
+        CM_INLINE MoveActorEvent(ActorId id, util::Vec3 translation, util::Vec4 quat, bool isDeltaMove = true);
+        CM_INLINE MoveActorEvent(ActorId id, util::Vec3 translation, util::Vec3 axis, float angle, bool isDeltaMove = true);
+        CM_INLINE MoveActorEvent(ActorId id, util::Vec3 translation, bool isDeltaMove = true);
+        CM_INLINE MoveActorEvent(ActorId id, util::Vec4 quat, bool isDeltaMove = true);
+        CM_INLINE MoveActorEvent(ActorId id, util::Vec3 axis, float angel, bool isDeltaMove = true);
         
         ActorId m_id;
         util::Vec3 m_translation;
         util::Vec4 m_quatRotation;
         util::Vec3 m_axis;
-        FLOAT m_angle;
+        float m_angle;
         
-        BOOL m_isDelta;
-        BOOL m_isJump;
+        bool m_isDelta;
+        bool m_isJump;
 
-        BOOL m_hasRotation;
-        BOOL m_hasQuatRotation;
-        BOOL m_hasAxisRotation;
-        BOOL m_hasTranslation;
+        bool m_hasRotation;
+        bool m_hasQuatRotation;
+        bool m_hasAxisRotation;
+        bool m_hasTranslation;
 
-        CM_INLINE BOOL IsDeltaMove(VOID)
+        CM_INLINE bool IsDeltaMove(void)
         {
             return m_isDelta;
         }
@@ -101,13 +101,13 @@ namespace chimera
     {
 
     public:
-        BOOL m_appendToCurrentLevel;
+        bool m_appendToCurrentLevel;
 
         std::unique_ptr<ActorDescription> m_actorDesc;
 
-        CreateActorEvent(VOID) : m_appendToCurrentLevel(TRUE) { }
+        CreateActorEvent(void) : m_appendToCurrentLevel(true) { }
 
-        CreateActorEvent(std::unique_ptr<ActorDescription> desc) : m_actorDesc(std::move(desc)), m_appendToCurrentLevel(TRUE) {}
+        CreateActorEvent(std::unique_ptr<ActorDescription> desc) : m_actorDesc(std::move(desc)), m_appendToCurrentLevel(true) {}
 
         CM_CREATE_EVENT_HEADER(CM_EVENT_CREATE_ACTOR, CreateActorEvent);
     };
@@ -188,10 +188,10 @@ namespace chimera
     class ApplyForceEvent : public Event
     {
     public:
-        ApplyForceEvent(VOID) : m_newtons(1) {}
+        ApplyForceEvent(void) : m_newtons(1) {}
         IActor* m_actor;
         util::Vec3 m_dir;
-        FLOAT m_newtons;
+        float m_newtons;
 
         CM_CREATE_EVENT_HEADER(CM_EVENT_APPLY_FORCE, ApplyForceEvent);
     };
@@ -199,10 +199,10 @@ namespace chimera
     class ApplyTorqueEvent : public Event
     {
     public:
-        ApplyTorqueEvent(VOID) : m_newtons(1) {}
+        ApplyTorqueEvent(void) : m_newtons(1) {}
         IActor* m_actor;
         util::Vec3 m_torque;
-        FLOAT m_newtons;
+        float m_newtons;
 
         CM_CREATE_EVENT_HEADER(CM_EVENT_APPLY_TORQUE, ApplyTorqueEvent);
     };
@@ -252,80 +252,80 @@ namespace chimera
     };
 
 
-    SetSunPositionEvent::SetSunPositionEvent(FLOAT x, FLOAT y, FLOAT z)
+    SetSunPositionEvent::SetSunPositionEvent(float x, float y, float z)
     {
         m_position.x = x;
         m_position.y = y;
         m_position.z = z;
     }
 
-    MoveActorEvent::MoveActorEvent(ActorId id, util::Vec3 translation, util::Vec4 quat, BOOL isDeltaMove) 
+    MoveActorEvent::MoveActorEvent(ActorId id, util::Vec3 translation, util::Vec4 quat, bool isDeltaMove) 
         : 
         m_id(id),
         m_translation(translation), 
         m_quatRotation(quat),
         m_isDelta(isDeltaMove),
-        m_hasRotation(TRUE),
-        m_isJump(FALSE),
-        m_hasQuatRotation(TRUE),
-        m_hasAxisRotation(FALSE),
-        m_hasTranslation(TRUE)
+        m_hasRotation(true),
+        m_isJump(false),
+        m_hasQuatRotation(true),
+        m_hasAxisRotation(false),
+        m_hasTranslation(true)
     {
 
     }
 
-    MoveActorEvent::MoveActorEvent(ActorId id, util::Vec3 translation, util::Vec3 axis, FLOAT angle, BOOL isDeltaMove)
+    MoveActorEvent::MoveActorEvent(ActorId id, util::Vec3 translation, util::Vec3 axis, float angle, bool isDeltaMove)
         : 
         m_id(id),
         m_translation(translation), 
         m_axis(axis),
         m_angle(angle),
-        m_isJump(FALSE),
+        m_isJump(false),
         m_isDelta(isDeltaMove),
-        m_hasRotation(TRUE),
-        m_hasQuatRotation(FALSE),
-        m_hasAxisRotation(TRUE),
-        m_hasTranslation(TRUE)
+        m_hasRotation(true),
+        m_hasQuatRotation(false),
+        m_hasAxisRotation(true),
+        m_hasTranslation(true)
     {
 
     }
 
-    MoveActorEvent::MoveActorEvent(ActorId id, util::Vec3 translation, BOOL isDeltaMove)
+    MoveActorEvent::MoveActorEvent(ActorId id, util::Vec3 translation, bool isDeltaMove)
         : 
         m_id(id),
         m_translation(translation), 
         m_isDelta(isDeltaMove),
-        m_isJump(FALSE),
-        m_hasRotation(FALSE),
-        m_hasTranslation(TRUE)
+        m_isJump(false),
+        m_hasRotation(false),
+        m_hasTranslation(true)
     {
 
     }
 
-    MoveActorEvent::MoveActorEvent(ActorId id, util::Vec4 quat, BOOL isDeltaMove)
+    MoveActorEvent::MoveActorEvent(ActorId id, util::Vec4 quat, bool isDeltaMove)
         : 
         m_id(id),
         m_quatRotation(quat), 
         m_isDelta(isDeltaMove),
-        m_isJump(FALSE),
-        m_hasQuatRotation(TRUE),
-        m_hasRotation(TRUE),
-        m_hasTranslation(FALSE)
+        m_isJump(false),
+        m_hasQuatRotation(true),
+        m_hasRotation(true),
+        m_hasTranslation(false)
     {
 
     }
 
-    MoveActorEvent::MoveActorEvent(ActorId id, util::Vec3 axis, FLOAT angle, BOOL isDeltaMove)
+    MoveActorEvent::MoveActorEvent(ActorId id, util::Vec3 axis, float angle, bool isDeltaMove)
         : 
         m_id(id),
         m_isDelta(isDeltaMove),
-        m_isJump(FALSE),
+        m_isJump(false),
         m_axis(axis),
         m_angle(angle),
-        m_hasRotation(TRUE),
-        m_hasQuatRotation(FALSE),
-        m_hasAxisRotation(TRUE),
-        m_hasTranslation(FALSE)
+        m_hasRotation(true),
+        m_hasQuatRotation(false),
+        m_hasAxisRotation(true),
+        m_hasTranslation(false)
     {
 
     }

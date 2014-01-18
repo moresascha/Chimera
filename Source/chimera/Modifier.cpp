@@ -120,7 +120,7 @@ namespace chimera
                     {
                         _amp = amplitude;
                         _frequency = 16;
-                        FLOAT v = 0;
+                        float v = 0;
                         for (int o = 0; o < format; o++, _amp *= 0.5, _frequency *= 2) 
                         {
                             incx = 1.0f / ((float)width / _frequency);
@@ -176,22 +176,22 @@ namespace chimera
             return buffer;
         }
 
-        FLOAT* RandomStuff0(UINT w, UINT h, UINT d, FLOAT scale)
+        float* RandomStuff0(uint w, uint h, uint d, float scale)
         {
-            UINT size = 4;
-            FLOAT* data = new FLOAT[w * h * d * size];
-            for(UINT y = 0; y < d; ++y)
+            uint size = 4;
+            float* data = new float[w * h * d * size];
+            for(uint y = 0; y < d; ++y)
             {
-                for(UINT z = 0; z < h; ++z)
+                for(uint z = 0; z < h; ++z)
                 {
-                    for(UINT x = 0; x < w; ++x)
+                    for(uint x = 0; x < w; ++x)
                     {
-                        UINT pos = size * (z * w * h + y * w + x);
+                        uint pos = size * (z * w * h + y * w + x);
                         //if(x * x + z * z <  radius * radius)
                         {
-                            FLOAT sx = cos(XM_PI * z / (FLOAT)h) * sin(XM_PI *  (w-x) / (FLOAT)w);
-                            FLOAT sz = (1 - sin(XM_PI * z / (FLOAT)h)) * cos(XM_PI *  (w-x) / (FLOAT)w);
-                            FLOAT sy = cos(XM_PI * y / (FLOAT)h) * sin(XM_PI *  (w-x) / (FLOAT)w);
+                            float sx = cos(XM_PI * z / (float)h) * sin(XM_PI *  (w-x) / (float)w);
+                            float sz = (1 - sin(XM_PI * z / (float)h)) * cos(XM_PI *  (w-x) / (float)w);
+                            float sy = cos(XM_PI * y / (float)h) * sin(XM_PI *  (w-x) / (float)w);
                             util::Vec3 dir(sx, sy, sz);
                             //dir.Normalize();
                             data[pos + 0] = scale * dir.x;
@@ -205,22 +205,22 @@ namespace chimera
             return data;
         }
 
-        FLOAT* RandomStuff1(UINT w, UINT h, UINT d, FLOAT scale)
+        float* RandomStuff1(uint w, uint h, uint d, float scale)
         {
-            UINT size = 4;
-            FLOAT* data = new FLOAT[w * h * d * size];
-            for(UINT y = 0; y < d; ++y)
+            uint size = 4;
+            float* data = new float[w * h * d * size];
+            for(uint y = 0; y < d; ++y)
             {
-                for(UINT z = 0; z < h; ++z)
+                for(uint z = 0; z < h; ++z)
                 {
-                    for(UINT x = 0; x < w; ++x)
+                    for(uint x = 0; x < w; ++x)
                     {
-                        UINT pos = size * (z * w * h + y * w + x);
+                        uint pos = size * (z * w * h + y * w + x);
                         //if(x * x + z * z <  radius * radius)
                         {
-                            FLOAT sx = cos(x / (FLOAT)w * XM_2PI) * sin(z / (FLOAT)w * XM_2PI);
-                            FLOAT sy = cos((x+z) / (FLOAT)h * XM_2PI) * sin((x+z) / (FLOAT)w * XM_2PI);
-                            FLOAT sz = cos(z / (FLOAT)d * XM_2PI) * sin(x / (FLOAT)w * XM_2PI);
+                            float sx = cos(x / (float)w * XM_2PI) * sin(z / (float)w * XM_2PI);
+                            float sy = cos((x+z) / (float)h * XM_2PI) * sin((x+z) / (float)w * XM_2PI);
+                            float sz = cos(z / (float)d * XM_2PI) * sin(x / (float)w * XM_2PI);
                             util::Vec3 dir(sx, sy, sz);
                             //dir.Normalize();
                             data[pos + 0] = scale * dir.x;
@@ -234,22 +234,22 @@ namespace chimera
             return data;
         }
 
-        FLOAT* RandomStuff2(UINT w, UINT h, UINT d, FLOAT scale)
+        float* RandomStuff2(uint w, uint h, uint d, float scale)
         {
-            UINT size = 4;
-            FLOAT* data = new FLOAT[w * h * d * size];
-            for(UINT y = 0; y < d; ++y)
+            uint size = 4;
+            float* data = new float[w * h * d * size];
+            for(uint y = 0; y < d; ++y)
             {
-                for(UINT z = 0; z < h; ++z)
+                for(uint z = 0; z < h; ++z)
                 {
-                    for(UINT x = 0; x < w; ++x)
+                    for(uint x = 0; x < w; ++x)
                     {
-                        UINT pos = size * (z * w * h + y * w + x);
+                        uint pos = size * (z * w * h + y * w + x);
                         //if(x * x + z * z <  radius * radius)
                         {
-                            FLOAT sx = cos((XM_2PI * x / (FLOAT)w)) + sin((XM_2PI * x / (FLOAT)w));
-                            FLOAT sy = sin((XM_2PI * x / (FLOAT)h)) + cos((XM_2PI * x / (FLOAT)w));
-                            FLOAT sz = cos((XM_2PI * z / (FLOAT)d)) + sin((XM_2PI * z / (FLOAT)w));
+                            float sx = cos((XM_2PI * x / (float)w)) + sin((XM_2PI * x / (float)w));
+                            float sy = sin((XM_2PI * x / (float)h)) + cos((XM_2PI * x / (float)w));
+                            float sz = cos((XM_2PI * z / (float)d)) + sin((XM_2PI * z / (float)w));
                             util::Vec3 dir(sx, sy, sz);
                             data[pos + 0] = scale * dir.x;
                             data[pos + 1] = scale * dir.y;
@@ -262,42 +262,42 @@ namespace chimera
             return data;
         }
 
-        FLOAT fx(FLOAT x, FLOAT y, FLOAT z, FLOAT amp)
+        float fx(float x, float y, float z, float amp)
         {
-            FLOAT a = sin(x);
-            FLOAT b = cos(y);
-            FLOAT c = sin(z);
+            float a = sin(x);
+            float b = cos(y);
+            float c = sin(z);
             return amp * (a * a + b * b + c * c);
         }
 
-        FLOAT* RandomStuff3(UINT w, UINT h, UINT d, FLOAT scale)
+        float* RandomStuff3(uint w, uint h, uint d, float scale)
         {
-            UINT size = 4;
-            FLOAT freq = 1;
-            FLOAT amp = 0.1f;
-            FLOAT* data = new FLOAT[w * h * d * size];
-            FLOAT time = 10;
-            FLOAT delta = 1.0f / (FLOAT)w;
-            for(UINT y = 0; y < d; ++y)
+            uint size = 4;
+            float freq = 1;
+            float amp = 0.1f;
+            float* data = new float[w * h * d * size];
+            float time = 10;
+            float delta = 1.0f / (float)w;
+            for(uint y = 0; y < d; ++y)
             {
-                for(UINT z = 0; z < h; ++z)
+                for(uint z = 0; z < h; ++z)
                 {
-                    for(UINT x = 0; x < w; ++x)
+                    for(uint x = 0; x < w; ++x)
                     {
-                        UINT pos = size * (z * w * h + y * w + x);
+                        uint pos = size * (z * w * h + y * w + x);
                         //if(x * x + z * z <  radius * radius)
                         {
-                            FLOAT r = y / (FLOAT)(d-1);
-                            FLOAT phi = -XM_PI + 2 * x / (FLOAT)(w-1) * XM_PI;
-                            FLOAT theta = z / (FLOAT)(h-1) * XM_PI;
+                            float r = y / (float)(d-1);
+                            float phi = -XM_PI + 2 * x / (float)(w-1) * XM_PI;
+                            float theta = z / (float)(h-1) * XM_PI;
    
-                            FLOAT sx = r * sin(theta) * cos(phi);
-                            FLOAT sy = r * cos(theta);
-                            FLOAT sz = r * sin(theta) * sin(phi);
+                            float sx = r * sin(theta) * cos(phi);
+                            float sy = r * cos(theta);
+                            float sz = r * sin(theta) * sin(phi);
 
-                            FLOAT sx1 = r * sin(theta + r * delta) * cos(phi + r * delta);
-                            FLOAT sy1 = r * cos(theta + r * delta);
-                            FLOAT sz1 = r * sin(theta + r * delta) * sin(phi + r * delta);
+                            float sx1 = r * sin(theta + r * delta) * cos(phi + r * delta);
+                            float sy1 = r * cos(theta + r * delta);
+                            float sz1 = r * sin(theta + r * delta) * sin(phi + r * delta);
 
                             util::Vec3 dir(sx1 - sx, sy1 - sy, sz1 - sz);
                             dir.Normalize();
@@ -313,13 +313,13 @@ namespace chimera
         }
     }
 
-    ActorBasedModifier::ActorBasedModifier(VOID)
+    ActorBasedModifier::ActorBasedModifier(void)
     {
         chimera::EventListener listener = fastdelegate::MakeDelegate(this, &ActorBasedModifier::ActorMovedDelegate);
         chimera::IEventManager::Get()->VAddEventListener(listener, chimera::ActorMovedEvent::TYPE);
     }
 
-    std::shared_ptr<Actor> ActorBasedModifier::CreateModActor(CONST util::Vec3& pos, LPCSTR info, CONST FLOAT scale)
+    std::shared_ptr<Actor> ActorBasedModifier::CreateModActor(const util::Vec3& pos, LPCSTR info, const float scale)
     {
         chimera::ActorDescription desc = chimera::g_pApp->GetLogic()->GetActorFactory()->CreateActorDescription();
         chimera::RenderComponent* cmp = desc->AddComponent<chimera::RenderComponent>(chimera::RenderComponent::COMPONENT_ID);
@@ -341,7 +341,7 @@ namespace chimera
         return actor;
     }
 
-    VOID ActorBasedModifier::ActorMovedDelegate(event::IEventPtr pEventData)
+    void ActorBasedModifier::ActorMovedDelegate(event::IEventPtr pEventData)
     {
         std::shared_ptr<event::ActorMovedEvent> event = std::static_pointer_cast<event::ActorMovedEvent>(pEventData);
         if(event->m_actor->GetId() == m_actorId)
@@ -350,7 +350,7 @@ namespace chimera
         }
     }
 
-    ActorBasedModifier::~ActorBasedModifier(VOID)
+    ActorBasedModifier::~ActorBasedModifier(void)
     {
         event::IEventPtr event(new event::DeleteActorEvent(m_actorId));
         event::IEventManager::Get()->VQueueEvent(event);
@@ -359,13 +359,13 @@ namespace chimera
         event::IEventManager::Get()->VRemoveEventListener(listener, event::ActorMovedEvent::TYPE);
     }
 
-    BaseEmitter::BaseEmitter(CONST util::Vec3& position, UINT count, FLOAT starSpawnTime, FLOAT endSpawnTime) 
+    BaseEmitter::BaseEmitter(const util::Vec3& position, uint count, float starSpawnTime, float endSpawnTime) 
         : m_particleCount(count), m_startSpawnTime(starSpawnTime), m_endSpawnTime(endSpawnTime), m_position(position)
     {
 
     }
 
-    VOID BaseEmitter::VUpdate(ParticleSystem* sys, FLOAT time, FLOAT dt)
+    void BaseEmitter::VUpdate(ParticleSystem* sys, float time, float dt)
     {
         float3 translation;
         translation.x = sys->GetTranslation().x;
@@ -381,11 +381,11 @@ namespace chimera
             (EmitterData*)m_emitterData->ptr,
             translation, (FLOAT)time, (FLOAT)dt, (FLOAT)m_startSpawnTime, (FLOAT)m_endSpawnTime, m_particleCount, sys->GetLocalWorkSize()); */
 
-        INT threads = cudahu::GetThreadCount(sys->GetParticlesCount(), sys->GetLocalWorkSize());
+        int threads = cudahu::GetThreadCount(sys->GetParticlesCount(), sys->GetLocalWorkSize());
         m_kernel->m_blockDim.x = sys->GetLocalWorkSize();
         m_kernel->m_gridDim.x = threads / m_kernel->m_blockDim.x;
 
-        VOID *args[] = 
+        void *args[] = 
         { 
             &sys->GetParticles()->ptr,
             &m_startingPositions->ptr, &sys->GetVelocities()->ptr, &sys->GetAcceleration()->ptr, &m_emitterData->ptr, &translation,
@@ -397,16 +397,16 @@ namespace chimera
 
     }
 
-    VOID BaseEmitter::VOnRestore(ParticleSystem* sys)
+    void BaseEmitter::VOnRestore(ParticleSystem* sys)
     {
         cudah::cudah* cuda = sys->GetCuda();
         m_kernel = cuda->GetKernel("_computeEmitter");
 
         PositiveNormalizedUniformValueGenerator rg(m_particleCount, 10);
 
-        FLOAT* rands = rg.CreateRandomValues();
+        float* rands = rg.CreateRandomValues();
         EmitterData* data = new EmitterData[m_particleCount];
-        for(UINT i = 0; i < m_particleCount; ++i)
+        for(uint i = 0; i < m_particleCount; ++i)
         {
             data[i].rand = rands[i];
             data[i].time = 0;
@@ -424,20 +424,20 @@ namespace chimera
     }
 
 
-    VOID BaseModifier::SetAABB(CONST util::AxisAlignedBB& aabb)
+    void BaseModifier::SetAABB(const util::AxisAlignedBB& aabb)
     {
         m_aabb = aabb;
     }
 
-    PointEmitter::PointEmitter(CONST util::Vec3& position, UINT particleCount, FLOAT start, FLOAT end) : BaseEmitter(position, particleCount, start, end)
+    PointEmitter::PointEmitter(const util::Vec3& position, uint particleCount, float start, float end) : BaseEmitter(position, particleCount, start, end)
     {
 
     }
 
-    ParticlePosition* PointEmitter::CreateParticles(VOID)
+    ParticlePosition* PointEmitter::CreateParticles(void)
     {
         ParticlePosition* positions = new ParticlePosition[m_particleCount];
-        for(UINT i = 0; i < m_particleCount; ++i)
+        for(uint i = 0; i < m_particleCount; ++i)
         {
             positions[i].x = m_position.x;
             positions[i].y = m_position.y;
@@ -447,54 +447,54 @@ namespace chimera
         return positions;
     }
 
-    BoxEmitter::BoxEmitter(CONST util::Vec3& extends, CONST util::Vec3& position, UINT particleCount, FLOAT start, FLOAT end) 
+    BoxEmitter::BoxEmitter(const util::Vec3& extends, const util::Vec3& position, uint particleCount, float start, float end) 
         : BaseEmitter(position, particleCount, start, end), m_extends(extends)
     {
 
     }
 
-    ParticlePosition* BoxEmitter::CreateParticles(VOID)
+    ParticlePosition* BoxEmitter::CreateParticles(void)
     {
         ParticlePosition* positions = new ParticlePosition[m_particleCount];
         srand(2);
-        for(UINT i = 0; i < m_particleCount; ++i)
+        for(uint i = 0; i < m_particleCount; ++i)
         {
-            positions[i].x = m_position.x - m_extends.x + 2 * m_extends.x * rand() / (FLOAT)RAND_MAX;
-            positions[i].y = m_position.y - m_extends.y + 2 * m_extends.y * rand() / (FLOAT)RAND_MAX;;
-            positions[i].z = m_position.z - m_extends.z + 2 * m_extends.z * rand() / (FLOAT)RAND_MAX;;
+            positions[i].x = m_position.x - m_extends.x + 2 * m_extends.x * rand() / (float)RAND_MAX;
+            positions[i].y = m_position.y - m_extends.y + 2 * m_extends.y * rand() / (float)RAND_MAX;;
+            positions[i].z = m_position.z - m_extends.z + 2 * m_extends.z * rand() / (float)RAND_MAX;;
             positions[i].w = 0;
         }
         return positions;
     }
 
-    SurfaceEmitter::SurfaceEmitter(chimera::CMResource meshFile, CONST util::Vec3& position, UINT particleCount, FLOAT start, FLOAT end) 
+    SurfaceEmitter::SurfaceEmitter(chimera::CMResource meshFile, const util::Vec3& position, uint particleCount, float start, float end) 
         : BaseEmitter(position, particleCount, start, end), m_meshFile(meshFile)
     {
 
     }
 
-    util::Vec3 GetVertex(std::shared_ptr<chimera::Mesh> mesh, UINT index)
+    util::Vec3 GetVertex(std::shared_ptr<chimera::Mesh> mesh, uint index)
     {
-        UINT stride = mesh->GetVertexStride() / 4;
-        FLOAT x = mesh->GetVertices()[index * stride + 0];
-        FLOAT y = mesh->GetVertices()[index * stride + 1];
-        FLOAT z = mesh->GetVertices()[index * stride + 2];
+        uint stride = mesh->GetVertexStride() / 4;
+        float x = mesh->GetVertices()[index * stride + 0];
+        float y = mesh->GetVertices()[index * stride + 1];
+        float z = mesh->GetVertices()[index * stride + 2];
         return util::Vec3(x, y, z);
     }
 
-    ParticlePosition* SurfaceEmitter::CreateParticles(VOID)
+    ParticlePosition* SurfaceEmitter::CreateParticles(void)
     {
         std::shared_ptr<chimera::Mesh> mesh = std::static_pointer_cast<chimera::Mesh>(chimera::g_pApp->GetCache()->GetHandle(m_meshFile));
-        CONST std::list<chimera::Face>& faces = mesh->GetFaces();
+        const std::list<chimera::Face>& faces = mesh->GetFaces();
         ParticlePosition* poses = new ParticlePosition[m_particleCount];
         srand(10);
-        for(UINT i = 0; i < m_particleCount; ++i)
+        for(uint i = 0; i < m_particleCount; ++i)
         {
             util::Vec3 v0;
             util::Vec3 v1;
             util::Vec3 v2;
 
-            INT index = (INT)((rand() / (FLOAT)RAND_MAX) * (mesh->GetFaces().size() - 1));
+            int index = (int)((rand() / (float)RAND_MAX) * (mesh->GetFaces().size() - 1));
             //DEBUG_OUT_A("%d, %d", index, mesh->GetFaces().size());
             std::list<Face>::const_iterator it = faces.begin();
             std::advance(it, index);
@@ -502,9 +502,9 @@ namespace chimera
 
             if(f.m_triples.size() == 3)
             {
-                UINT iv0 = f.m_triples[0].position;
-                UINT iv1 = f.m_triples[1].position;
-                UINT iv2 = f.m_triples[2].position;
+                uint iv0 = f.m_triples[0].position;
+                uint iv1 = f.m_triples[1].position;
+                uint iv2 = f.m_triples[2].position;
 
                 v0 = GetVertex(mesh, iv0);
                 v1 = GetVertex(mesh, iv1);
@@ -512,11 +512,11 @@ namespace chimera
             }
             else if(f.m_triples.size() == 4)
             {
-                UINT iv0 = f.m_triples[0].position;
-                UINT iv1 = f.m_triples[1].position;
-                UINT iv2 = f.m_triples[2].position;
-                UINT iv3 = f.m_triples[3].position;
-                if(rand() / (FLOAT) RAND_MAX < 0.5)
+                uint iv0 = f.m_triples[0].position;
+                uint iv1 = f.m_triples[1].position;
+                uint iv2 = f.m_triples[2].position;
+                uint iv3 = f.m_triples[3].position;
+                if(rand() / (float) RAND_MAX < 0.5)
                 {
                     v0 = GetVertex(mesh, iv0);
                     v1 = GetVertex(mesh, iv1);
@@ -534,9 +534,9 @@ namespace chimera
                 LOG_CRITICAL_ERROR("SurfaceEmitter error, unknown triples size");
             }
 
-            FLOAT a = rand() / (FLOAT)RAND_MAX;
-            FLOAT b = (1-a) * rand() / (FLOAT)RAND_MAX;
-            FLOAT c = 1 - a - b;
+            float a = rand() / (float)RAND_MAX;
+            float b = (1-a) * rand() / (float)RAND_MAX;
+            float c = 1 - a - b;
 
             util::Vec3 pos = v0 * a + v1 * b + v2 * c;
             ParticlePosition p(m_position.x + pos.x, m_position.y + pos.y, m_position.z + pos.z, 0);
@@ -546,25 +546,25 @@ namespace chimera
         return poses;
     }
 
-    Gravity::Gravity(FLOAT factor, UCHAR axis) : m_axis(axis) , m_factor(factor)
+    Gravity::Gravity(float factor, UCHAR axis) : m_axis(axis) , m_factor(factor)
     {
 
     }
 
-    VOID Gravity::VOnRestore(ParticleSystem* sys)
+    void Gravity::VOnRestore(ParticleSystem* sys)
     {
         m_kernel = sys->GetCuda()->GetKernel("_computeGravity");
     }
 
-    VOID Gravity::VUpdate(ParticleSystem* sys, FLOAT time, FLOAT dt)
+    void Gravity::VUpdate(ParticleSystem* sys, float time, float dt)
     {
         //computeGravity((float4*)sys->GetParticles()->ptr, (float3*)sys->GetAcceleration()->ptr, m_factor, sys->GetParticlesCount(), sys->GetLocalWorkSize()); 
 
-        INT threads = cudahu::GetThreadCount(sys->GetParticlesCount(), sys->GetLocalWorkSize());
+        int threads = cudahu::GetThreadCount(sys->GetParticlesCount(), sys->GetLocalWorkSize());
         m_kernel->m_blockDim.x = sys->GetLocalWorkSize();
         m_kernel->m_gridDim.x = threads / m_kernel->m_blockDim.x;
 
-        VOID *args[] = 
+        void *args[] = 
         { 
             &sys->GetParticles()->ptr, &sys->GetAcceleration()->ptr, &m_factor
         };
@@ -574,26 +574,26 @@ namespace chimera
         sys->GetCuda()->CallKernel(m_kernel);
     }
 
-    VOID Turbulence::VOnRestore(ParticleSystem* sys)
+    void Turbulence::VOnRestore(ParticleSystem* sys)
     {
-        UINT count = 256 * 3;
+        uint count = 256 * 3;
         NormalizedUniformValueGenerator rg(count, m_seed, m_strength);
-        FLOAT* vs = rg.CreateRandomValues();
-        m_randomDirections = sys->GetCuda()->CreateBuffer(std::string("turbulenceDirs"), 256 * 3 * sizeof(FLOAT), vs, sizeof(FLOAT));
+        float* vs = rg.CreateRandomValues();
+        m_randomDirections = sys->GetCuda()->CreateBuffer(std::string("turbulenceDirs"), 256 * 3 * sizeof(float), vs, sizeof(float));
         m_kernel = sys->GetCuda()->GetKernel("_computeTurbulence");
         SAFE_ARRAY_DELETE(vs);
     }
 
-    VOID Turbulence::VUpdate(ParticleSystem* sys, FLOAT time, FLOAT dt)
+    void Turbulence::VUpdate(ParticleSystem* sys, float time, float dt)
     {
         //computeTurbulence((float4*)sys->GetParticles()->ptr, (float3*)sys->GetAcceleration()->ptr, (float3*)m_randomDirections->ptr, 256, time, sys->GetParticlesCount(), sys->GetLocalWorkSize());
-        INT threads = cudahu::GetThreadCount(sys->GetParticlesCount(), sys->GetLocalWorkSize());
+        int threads = cudahu::GetThreadCount(sys->GetParticlesCount(), sys->GetLocalWorkSize());
         m_kernel->m_blockDim.x = sys->GetLocalWorkSize();
         m_kernel->m_gridDim.x = threads / m_kernel->m_blockDim.x;
         
-        INT rngCnt = 256;
+        int rngCnt = 256;
 
-        VOID *args[] = 
+        void *args[] = 
         { 
             &sys->GetParticles()->ptr, &sys->GetAcceleration()->ptr, &m_randomDirections->ptr, &rngCnt, &time
         };
@@ -603,16 +603,16 @@ namespace chimera
         sys->GetCuda()->CallKernel(m_kernel);
     }
 
-    UINT Turbulence::VGetByteCount(VOID)
+    uint Turbulence::VGetByteCount(void)
     {
-        return 256 * 3 * sizeof(FLOAT);
+        return 256 * 3 * sizeof(float);
     }
 
-    typedef FLOAT* (*PROC)(UINT,UINT,UINT,FLOAT);
+    typedef float* (*PROC)(uint,uint,uint,float);
 
-    GradientField::GradientField(VOID)
+    GradientField::GradientField(void)
     {
-        FLOAT scale = 0.1f;
+        float scale = 0.1f;
 
         m_array = NULL;
 
@@ -621,15 +621,15 @@ namespace chimera
         CreateModActor(util::Vec3(0,0,0), "GradientField", scale);
     }
 
-    VOID GradientField::VOnRestore(ParticleSystem* sys)
+    void GradientField::VOnRestore(ParticleSystem* sys)
     {
-        UINT w = 64;
-        UINT h = 64;
-        UINT d = 64;
-        UINT size = 4;
+        uint w = 64;
+        uint h = 64;
+        uint d = 64;
+        uint size = 4;
 
         chimera::DLL dll("../../ParticleData/ParticleData/x64/Debug/ParticleData.dll");
-        FLOAT* data = dll.GetFunction<PROC>("CreateData")(w,h,d,1);
+        float* data = dll.GetFunction<PROC>("CreateData")(w,h,d,1);
         //FLOAT* data = gradientpremades::RandomStuff2(w, h, d, 0.1f); //2, 16);//
         //FLOAT* data = gradientpremades::GenerateNoiseValues(w, h, d, 2, 16);
 
@@ -666,19 +666,19 @@ namespace chimera
         SAFE_ARRAY_DELETE(data);
     }
 
-    UINT GradientField::VGetByteCount(VOID)
+    uint GradientField::VGetByteCount(void)
     {
         return 64 * 64 * 64 * 16;
     }
 
-    VOID GradientField::VUpdate(ParticleSystem* sys, FLOAT time, FLOAT dt)
+    void GradientField::VUpdate(ParticleSystem* sys, float time, float dt)
     {
         //computeGradientField((float4*)sys->GetParticles()->ptr, (float3*)sys->GetVelocities()->ptr, m_positionNscale, sys->GetParticlesCount(), sys->GetLocalWorkSize());
-        INT threads = cudahu::GetThreadCount(sys->GetParticlesCount(), sys->GetLocalWorkSize());
+        int threads = cudahu::GetThreadCount(sys->GetParticlesCount(), sys->GetLocalWorkSize());
         m_kernel->m_blockDim.x = sys->GetLocalWorkSize();
         m_kernel->m_gridDim.x = threads / m_kernel->m_blockDim.x;
 
-        VOID *args[] = 
+        void *args[] = 
         { 
             &sys->GetParticles()->ptr, &sys->GetVelocities()->ptr, &m_positionNscale
         };
@@ -688,7 +688,7 @@ namespace chimera
         sys->GetCuda()->CallKernel(m_kernel);
     }
 
-    VOID GradientField::VOnActorMoved(std::shared_ptr<chimera::Actor> actor)
+    void GradientField::VOnActorMoved(std::shared_ptr<chimera::Actor> actor)
     {
         std::shared_ptr<chimera::TransformComponent> cmp = actor->GetComponent<chimera::TransformComponent>(chimera::TransformComponent::COMPONENT_ID).lock();
         m_positionNscale.x = cmp->GetTransformation()->GetTranslation().x;
@@ -697,7 +697,7 @@ namespace chimera
         m_positionNscale.w = cmp->GetTransformation()->GetScale().x;
     }
 
-    GravityField::GravityField(CONST util::Vec3& position, CONST FLOAT range, CONST FLOAT scale, GravityPolarization pole)
+    GravityField::GravityField(const util::Vec3& position, const float range, const float scale, GravityPolarization pole)
     {
         m_posistionNrange.x = position.x;
         m_posistionNrange.y = position.y;
@@ -708,21 +708,21 @@ namespace chimera
         CreateModActor(position, "GravityField", range);
     }
 
-    VOID GravityField::VOnRestore(ParticleSystem* sys)
+    void GravityField::VOnRestore(ParticleSystem* sys)
     {
         m_kernel = sys->GetCuda()->GetKernel("_computeGravityField");
     }
 
-    VOID GravityField::VUpdate(ParticleSystem* sys, FLOAT time, FLOAT dt)
+    void GravityField::VUpdate(ParticleSystem* sys, float time, float dt)
     {
         //computeGravityField((float4*)sys->GetParticles()->ptr, (float3*)sys->GetVelocities()->ptr, m_posistionNrange, m_pole == eRepel, m_scale, sys->GetParticlesCount(), sys->GetLocalWorkSize());
-        INT threads = cudahu::GetThreadCount(sys->GetParticlesCount(), sys->GetLocalWorkSize());
+        int threads = cudahu::GetThreadCount(sys->GetParticlesCount(), sys->GetLocalWorkSize());
         m_kernel->m_blockDim.x = sys->GetLocalWorkSize();
         m_kernel->m_gridDim.x = threads / m_kernel->m_blockDim.x;
 
-        INT i = m_pole == eRepel;
+        int i = m_pole == eRepel;
 
-        VOID *args[] = 
+        void *args[] = 
         { 
             &sys->GetParticles()->ptr, &sys->GetVelocities()->ptr, &m_posistionNrange, &i, &m_scale
         };
@@ -732,7 +732,7 @@ namespace chimera
         sys->GetCuda()->CallKernel(m_kernel);
     }
 
-    VOID GravityField::VOnActorMoved(std::shared_ptr<chimera::Actor> actor)
+    void GravityField::VOnActorMoved(std::shared_ptr<chimera::Actor> actor)
     {
         std::shared_ptr<chimera::TransformComponent> cmp = actor->GetComponent<chimera::TransformComponent>(chimera::TransformComponent::COMPONENT_ID).lock();
         m_posistionNrange.x = cmp->GetTransformation()->GetTranslation().x;
@@ -741,19 +741,19 @@ namespace chimera
         m_posistionNrange.w = cmp->GetTransformation()->GetScale().x;
     }
 
-    VOID VelocityDamper::VOnRestore(ParticleSystem* sys)
+    void VelocityDamper::VOnRestore(ParticleSystem* sys)
     {
         m_kernel = sys->GetCuda()->GetKernel("_computeVelocityDamping");
     }
 
-    VOID VelocityDamper::VUpdate(ParticleSystem* sys, FLOAT time, FLOAT dt)
+    void VelocityDamper::VUpdate(ParticleSystem* sys, float time, float dt)
     {
         //computeVelocityDamping((float4*)sys->GetParticles()->ptr, (float3*)sys->GetVelocities()->ptr, m_dampValue,  sys->GetParticlesCount(), sys->GetLocalWorkSize());
-        INT threads = cudahu::GetThreadCount(sys->GetParticlesCount(), sys->GetLocalWorkSize());
+        int threads = cudahu::GetThreadCount(sys->GetParticlesCount(), sys->GetLocalWorkSize());
         m_kernel->m_blockDim.x = sys->GetLocalWorkSize();
         m_kernel->m_gridDim.x = threads / m_kernel->m_blockDim.x;
 
-        VOID *args[] = 
+        void *args[] = 
         { 
             &sys->GetParticles()->ptr, &sys->GetVelocities()->ptr, &m_dampValue
         };
@@ -763,14 +763,14 @@ namespace chimera
         sys->GetCuda()->CallKernel(m_kernel);
     }
 
-    VOID Plane::VOnRestore(ParticleSystem* sys)
+    void Plane::VOnRestore(ParticleSystem* sys)
     {
         m_kernel = sys->GetCuda()->GetKernel("_computePlane");
     }
 
-    VOID Plane::VUpdate(ParticleSystem* sys, FLOAT time, FLOAT dt)
+    void Plane::VUpdate(ParticleSystem* sys, float time, float dt)
     {
-        INT threads = cudahu::GetThreadCount(sys->GetParticlesCount(), sys->GetLocalWorkSize());
+        int threads = cudahu::GetThreadCount(sys->GetParticlesCount(), sys->GetLocalWorkSize());
         m_kernel->m_blockDim.x = sys->GetLocalWorkSize();
         m_kernel->m_gridDim.x = threads / m_kernel->m_blockDim.x;
 
@@ -780,7 +780,7 @@ namespace chimera
         n.z = m_plane.GetNormal().m_v.z;
         n.w = m_plane.GetRadius();
 
-        VOID *args[] = 
+        void *args[] = 
         { 
             &n, &sys->GetVelocities()->ptr, &sys->GetParticles()->ptr,
         };
@@ -790,34 +790,34 @@ namespace chimera
         sys->GetCuda()->CallKernel(m_kernel);
     }
 
-    BoundingBox::BoundingBox(VOID)
+    BoundingBox::BoundingBox(void)
     {
         m_pData[0] = NULL;
         m_pData[1] = NULL;
     }
 
-    BoundingBox::~BoundingBox(VOID)
+    BoundingBox::~BoundingBox(void)
     {
         SAFE_ARRAY_DELETE(m_pData[0]);
         SAFE_ARRAY_DELETE(m_pData[1]);
     }
 
-    VOID BoundingBox::VOnRestore(ParticleSystem* sys)
+    void BoundingBox::VOnRestore(ParticleSystem* sys)
     {
         SAFE_ARRAY_DELETE(m_pData[0]);
         SAFE_ARRAY_DELETE(m_pData[1]);
-        m_pData[0] = new FLOAT[3 * 1024];
-        m_pData[1] = new FLOAT[3 * 1024];
+        m_pData[0] = new float[3 * 1024];
+        m_pData[1] = new float[3 * 1024];
         m_kernel = sys->GetCuda()->GetKernel("_reduce_max4");
         m_second = sys->GetCuda()->GetKernel("_reduce_min4");
-        m_min = sys->GetCuda()->CreateBuffer(std::string("__min"), 1024 * 3 * sizeof(FLOAT), 3 * sizeof(FLOAT));
-        m_max = sys->GetCuda()->CreateBuffer(std::string("__max"), 1024 * 3 * sizeof(FLOAT), 3 * sizeof(FLOAT));
+        m_min = sys->GetCuda()->CreateBuffer(std::string("__min"), 1024 * 3 * sizeof(float), 3 * sizeof(float));
+        m_max = sys->GetCuda()->CreateBuffer(std::string("__max"), 1024 * 3 * sizeof(float), 3 * sizeof(float));
     }
 
-    VOID _GetAABB(float3* data[2], UINT l, util::AxisAlignedBB& aabb)
+    void _GetAABB(float3* data[2], uint l, util::AxisAlignedBB& aabb)
     {
         aabb.Clear();
-        for(UINT i = 0; i < l; ++i)
+        for(uint i = 0; i < l; ++i)
         {
             float3 m0 = data[0][i];
             float3 m1 = data[1][i];
@@ -827,13 +827,13 @@ namespace chimera
         aabb.Construct();
     }
 
-    VOID BoundingBox::VUpdate(ParticleSystem* sys, FLOAT time, FLOAT dt)
+    void BoundingBox::VUpdate(ParticleSystem* sys, float time, float dt)
     {
-        INT threads = cudahu::GetThreadCount(sys->GetParticlesCount(), sys->GetLocalWorkSize());
+        int threads = cudahu::GetThreadCount(sys->GetParticlesCount(), sys->GetLocalWorkSize());
         m_kernel->m_blockDim.x = 512;//sys->GetLocalWorkSize();
         m_kernel->m_gridDim.x = (threads/2) / m_kernel->m_blockDim.x;
-        m_kernel->m_shrdMemBytes = 3 * (m_kernel->m_blockDim.x) * sizeof(FLOAT);
-        VOID *args[] = 
+        m_kernel->m_shrdMemBytes = 3 * (m_kernel->m_blockDim.x) * sizeof(float);
+        void *args[] = 
         { 
             &sys->GetParticles()->ptr, &m_max->ptr
         };
@@ -846,7 +846,7 @@ namespace chimera
         m_second->m_gridDim.x = m_kernel->m_gridDim.x;
         m_second->m_shrdMemBytes = m_kernel->m_shrdMemBytes;
 
-        VOID* args2[] = 
+        void* args2[] = 
         { 
             &sys->GetParticles()->ptr, &m_min->ptr
         };
@@ -864,17 +864,17 @@ namespace chimera
         sys->SetAxisAlignedBB(m_aabb);
     }
 
-    UINT BoundingBox::VGetByteCount(VOID)
+    uint BoundingBox::VGetByteCount(void)
     {
         return m_min->GetByteSize() + m_max->GetByteSize();
     }
 
-    KDTree::KDTree(VOID) : m_pBB(NULL)
+    KDTree::KDTree(void) : m_pBB(NULL)
     {
 
     }
 
-    VOID KDTree::VOnRestore(ParticleSystem* sys)
+    void KDTree::VOnRestore(ParticleSystem* sys)
     {
         if(!m_pBB)
         {
@@ -884,17 +884,17 @@ namespace chimera
 
     }
 
-    VOID KDTree::VUpdate(ParticleSystem* sys, FLOAT time, FLOAT dt)
+    void KDTree::VUpdate(ParticleSystem* sys, float time, float dt)
     {
         m_pBB->VUpdate(sys, time, dt);
     }
 
-    UINT KDTree::VGetByteCount(VOID)
+    uint KDTree::VGetByteCount(void)
     {
         return 0;
     }
 
-    KDTree::~KDTree(VOID)
+    KDTree::~KDTree(void)
     {
         SAFE_DELETE(m_pBB);
     }

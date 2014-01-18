@@ -36,6 +36,7 @@
     <ClInclude Include="chimera\api\GuiAPI.h" />
     <ClInclude Include="chimera\api\InputAPI.h" />
     <ClInclude Include="chimera\api\LogicAPI.h" />
+    <ClInclude Include="chimera\api\ParticleSystemAPI.h" />
     <ClInclude Include="chimera\api\ResourceAPI.h" />
     <ClInclude Include="chimera\api\ScreenAPI.h" />
     <ClInclude Include="chimera\api\ScriptAPI.h" />
@@ -76,6 +77,7 @@
     </ClInclude>
     <ClInclude Include="chimera\Material.h" />
     <ClInclude Include="chimera\Mesh.h" />
+    <ClInclude Include="chimera\ParticleSystem.h" />
     <ClInclude Include="chimera\PhysicsSystem.h" />
     <ClInclude Include="chimera\PointLightNode.h" />
     <ClInclude Include="chimera\Process.h" />
@@ -130,7 +132,7 @@
     </ClCompile>
     <ClCompile Include="chimera\CameraNode.cpp">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">false</ExcludedFromBuild>
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">false</ExcludedFromBuild>
     </ClCompile>
     <ClCompile Include="chimera\CameraTracking.cpp">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
@@ -217,7 +219,7 @@
     </ClCompile>
     <ClCompile Include="chimera\LevelManager.cpp">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">false</ExcludedFromBuild>
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">false</ExcludedFromBuild>
     </ClCompile>
     <ClCompile Include="chimera\LightNode.cpp" />
     <ClCompile Include="chimera\Logger.cpp">
@@ -315,7 +317,7 @@
     </ClCompile>
     <ClCompile Include="chimera\SpotlightNode.cpp">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">false</ExcludedFromBuild>
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">false</ExcludedFromBuild>
     </ClCompile>
     <ClCompile Include="chimera\tbdFont.cpp">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">false</ExcludedFromBuild>
@@ -388,7 +390,7 @@
     <PlatformToolset>v110</PlatformToolset>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="Configuration">
-    <ConfigurationType>Application</ConfigurationType>
+    <ConfigurationType>DynamicLibrary</ConfigurationType>
     <UseDebugLibraries>true</UseDebugLibraries>
     <CharacterSet>Unicode</CharacterSet>
     <PlatformToolset>v110</PlatformToolset>
@@ -433,7 +435,7 @@
     <IntDir>$(SolutionDir)..\Tmp\$(ProjectName)$(PlatformName)$(Configuration)\</IntDir>
     <OutDir>$(SolutionDir)..\Bin\$(PlatformName)$(Configuration)\</OutDir>
     <TargetName>$(ProjectName)$(PlatformName)$(Configuration)</TargetName>
-    <IncludePath>$(CUDA_PATH_V42)include;$(IncludePath)</IncludePath>
+    <IncludePath>../../Nutty/Nutty;$(CUDA_PATH_V42)include;$(IncludePath)</IncludePath>
     <LibraryPath>$(LibraryPath);</LibraryPath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
@@ -462,6 +464,7 @@
       <MinimalRebuild>true</MinimalRebuild>
       <PreprocessorDefinitions>__COMPILING_DLL;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <AdditionalOptions>/MP %(AdditionalOptions)</AdditionalOptions>
+      <AdditionalUsingDirectories>%(AdditionalUsingDirectories)</AdditionalUsingDirectories>
     </ClCompile>
     <Link>
       <GenerateDebugInformation>true</GenerateDebugInformation>

@@ -6,19 +6,19 @@ namespace chimera
     class IActorComponent
     {
     public:
-        virtual VOID VSetOwner(IActor* actor) = 0;
+        virtual void VSetOwner(IActor* actor) = 0;
 
-        virtual VOID VCreateResources(VOID) = 0;
+        virtual void VCreateResources(void) = 0;
 
-        virtual ComponentId VGetComponentId(VOID) CONST = 0;
+        virtual ComponentId VGetComponentId(void) const = 0;
         
-        virtual IActor* VGetActor(VOID) = 0;
+        virtual IActor* VGetActor(void) = 0;
         
-        virtual LPCSTR VGetName(VOID) CONST = 0;
+        virtual LPCSTR VGetName(void) const = 0;
         
-        virtual VOID VPostInit(VOID) = 0;
+        virtual void VPostInit(void) = 0;
 
-        virtual ~IActorComponent(VOID) {}
+        virtual ~IActorComponent(void) {}
     };
 
     class IActor
@@ -29,29 +29,29 @@ namespace chimera
     public:
         IActor(ActorId id) : m_id(id) {}
 
-        ActorId GetId(VOID) { return m_id; }
+        ActorId GetId(void) { return m_id; }
 
-        VOID SetName(CONST std::string& name)
+        void SetName(const std::string& name)
         {
             m_name = name;
         }
 
-        CONST std::string& GetName(VOID)
+        const std::string& GetName(void)
         {
             return m_name;
         }
 
-        virtual VOID VAddComponent(std::unique_ptr<IActorComponent> pComponent) = 0;
+        virtual void VAddComponent(std::unique_ptr<IActorComponent> pComponent) = 0;
 
         virtual IActorComponent* VGetComponent(ComponentId id) = 0;
 
-        virtual VOID VQueryComponent(ComponentId id, IActorComponent** cmp) = 0;
+        virtual void VQueryComponent(ComponentId id, IActorComponent** cmp) = 0;
 
-        virtual BOOL VHasComponent(ComponentId id) = 0;
+        virtual bool VHasComponent(ComponentId id) = 0;
 
-        virtual CONST std::map<ComponentId, std::unique_ptr<IActorComponent>>& VGetComponents(VOID) = 0;
+        virtual const std::map<ComponentId, std::unique_ptr<IActorComponent>>& VGetComponents(void) = 0;
 
-        virtual ~IActor(VOID) {}
+        virtual ~IActor(void) {}
     };
 
     template <typename T>
@@ -68,13 +68,13 @@ namespace chimera
     class IActorFactory
     {
     public:
-        virtual IActor* VCreateActor(CONST CMResource& resource, std::vector<std::unique_ptr<IActor>>& actors) = 0;
+        virtual IActor* VCreateActor(const CMResource& resource, std::vector<std::unique_ptr<IActor>>& actors) = 0;
 
         virtual std::unique_ptr<IActor> VCreateActor(std::unique_ptr<ActorDescription> actorDesc) = 0;
 
         virtual IActor* VCreateActor(ICMStream* stream, std::vector<std::unique_ptr<IActor>>& actors) = 0;
 
-        virtual std::unique_ptr<ActorDescription> VCreateActorDescription(VOID) = 0;
+        virtual std::unique_ptr<ActorDescription> VCreateActorDescription(void) = 0;
 
         virtual std::unique_ptr<IActorComponent> VCreateComponent(LPCSTR name) = 0;
 
@@ -82,13 +82,13 @@ namespace chimera
 
         virtual std::unique_ptr<IActorComponent> VCreateComponent(ICMStream* stream) = 0;
 
-        virtual VOID VAddComponentCreator(ActorComponentCreator creator, LPCSTR name, ComponentId id) = 0;
+        virtual void VAddComponentCreator(ActorComponentCreator creator, LPCSTR name, ComponentId id) = 0;
 
-        virtual VOID VAddComponentSerializer(ActorComponentSerializer serializer, LPCSTR name, ComponentId id) = 0;
+        virtual void VAddComponentSerializer(ActorComponentSerializer serializer, LPCSTR name, ComponentId id) = 0;
 
-        virtual VOID VAddComponentInitializer(ActorComponentInitializer initializer, LPCSTR name, ComponentId id) = 0;
+        virtual void VAddComponentInitializer(ActorComponentInitializer initializer, LPCSTR name, ComponentId id) = 0;
 
-        virtual ~IActorFactory(VOID) {}
+        virtual ~IActorFactory(void) {}
     };
 
     class ActorDescription 
@@ -100,7 +100,7 @@ namespace chimera
         ActorDescription(IActorFactory* factory) : m_pFactory(factory) {}
 
         template<class ComponentType>
-        ComponentType* AddComponent(CONST std::string& comp) 
+        ComponentType* AddComponent(const std::string& comp) 
         {
             std::unique_ptr<IActorComponent> cmp = m_pFactory->VCreateComponent(comp.c_str());
             if(!cmp)
@@ -123,12 +123,12 @@ namespace chimera
             return (ComponentType*)m_components.back().get();
         }
 
-        std::vector<std::unique_ptr<IActorComponent>>& GetComponents(VOID) 
+        std::vector<std::unique_ptr<IActorComponent>>& GetComponents(void) 
         {
             return m_components;
         }
 
-        virtual ~ActorDescription(VOID) 
+        virtual ~ActorDescription(void) 
         {
 
         }
@@ -137,6 +137,6 @@ namespace chimera
     class IActorFactoryFactory
     {
     public:
-        virtual IActorFactory* VCreateActorFactroy(VOID) = 0;
+        virtual IActorFactory* VCreateActorFactroy(void) = 0;
     };
 }

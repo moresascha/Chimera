@@ -9,13 +9,13 @@ namespace chimera
         class IProjectionTypeHandler
         {
         public:
-            virtual VOID VComputeProjection(Camera* camera) = 0;
+            virtual void VComputeProjection(Camera* camera) = 0;
         };
 
         class PerspectiveHandler : public IProjectionTypeHandler
         {
         public:
-            VOID VComputeProjection(Camera* camera)
+            void VComputeProjection(Camera* camera)
             {
                 float invTan = 1.0f / tan(camera->m_FoV * 0.5f);
 
@@ -46,7 +46,7 @@ namespace chimera
         class OrthographicHandler : public IProjectionTypeHandler
         {
         public:
-            VOID VComputeProjection(Camera* camera)
+            void VComputeProjection(Camera* camera)
             {
                 XMMATRIX mat = XMMatrixOrthographicLH(camera->m_width, camera->m_height, camera->GetNear(), camera->GetFar());
                 XMFLOAT4X4 matf;
@@ -59,7 +59,7 @@ namespace chimera
         class OrthographicOffCenterHandler : public IProjectionTypeHandler
         {
         public:
-            VOID VComputeProjection(Camera* camera)
+            void VComputeProjection(Camera* camera)
             {
                 XMMATRIX mat = XMMatrixOrthographicOffCenterLH(camera->m_left, camera->m_right, camera->m_down, camera->m_up, camera->GetNear(), camera->GetFar());
                 XMFLOAT4X4 matf;
@@ -69,11 +69,11 @@ namespace chimera
             }
         };
 
-        Camera::Camera(UINT width, UINT height, FLOAT zNear, FLOAT zFar) 
+        Camera::Camera(uint width, uint height, float zNear, float zFar) 
         {
-            m_height = (FLOAT)height;
-            m_width = (FLOAT)width;
-            this->m_Aspect = width / (FLOAT)height;
+            m_height = (float)height;
+            m_width = (float)width;
+            this->m_Aspect = width / (float)height;
             this->m_FoV = XM_PIDIV2;
             this->m_Far = zFar;
             this->m_Near = zNear;
@@ -89,11 +89,11 @@ namespace chimera
             this->ComputeView();
         }
 
-        VOID Camera::Move(CONST Vec3& dt) {
+        void Camera::Move(const Vec3& dt) {
              this->Move(dt.x, dt.y, dt.z);
         }
 
-        VOID Camera::Move(FLOAT dx, FLOAT dy, FLOAT dz) {
+        void Camera::Move(float dx, float dy, float dz) {
              Vec3 deltaX(this->m_sideDir);
              deltaX.Scale(dx);
 
@@ -111,14 +111,14 @@ namespace chimera
              this->ComputeView();
         }
 
-        VOID Camera::Rotate(FLOAT dPhi, FLOAT dTheta) {
+        void Camera::Rotate(float dPhi, float dTheta) {
              this->m_Phi += dPhi;
              this->m_Theta += dTheta;
 
-             FLOAT sinPhi = sin(this->m_Phi);
-             FLOAT cosPhi = cos(this->m_Phi);
-             FLOAT sinTheta = sin(this->m_Theta);
-             FLOAT cosTheta = cos(this->m_Theta);
+             float sinPhi = sin(this->m_Phi);
+             float cosPhi = cos(this->m_Phi);
+             float sinTheta = sin(this->m_Theta);
+             float cosTheta = cos(this->m_Theta);
         
              this->m_sideDir.Set(cosPhi, 0, -sinPhi);
              this->m_upDir.Set(sinPhi*sinTheta, cosTheta, cosPhi*sinTheta);
@@ -127,21 +127,21 @@ namespace chimera
              this->ComputeView();
         }
 
-        VOID Camera::MoveToPosition(CONST util::Vec3& pos) 
+        void Camera::MoveToPosition(const util::Vec3& pos) 
         {
             Vec3 delta = pos - this->m_lastSetPostition;
             Move(delta);
             this->m_lastSetPostition = pos;
         }
 
-        VOID Camera::SetRotation(FLOAT phi, FLOAT theta) 
+        void Camera::SetRotation(float phi, float theta) 
         {
             this->m_Phi = 0;
             this->m_Theta = 0;
             Rotate(phi, theta);
         }
 
-        VOID Camera::FromViewUp(CONST util::Vec3& viewDir, CONST util::Vec3& viewUp)
+        void Camera::FromViewUp(const util::Vec3& viewDir, const util::Vec3& viewUp)
         {
             m_upDir = viewUp;
             m_viewDir = viewDir;
@@ -149,7 +149,7 @@ namespace chimera
             ComputeView();
         }
 
-        VOID Camera::LookAt(CONST util::Vec3& eyePos, CONST util::Vec3& at)
+        void Camera::LookAt(const util::Vec3& eyePos, const util::Vec3& at)
         {
             /*
             XMVECTOR v = {0,1,0};
@@ -168,23 +168,23 @@ namespace chimera
             dir.Normalize();
             m_eyePos = eyePos;
             //FLOAT xz = sqrt(dir.x * dir.x + dir.z * dir.z);
-            FLOAT phi = atan2(dir.x, dir.z); //-2.0f * XM_PI + (xz < 0.001f ? 0.0f : asin(dir.x / xz));
-            FLOAT theta = -XM_PIDIV2 + acos(dir.y);
+            float phi = atan2(dir.x, dir.z); //-2.0f * XM_PI + (xz < 0.001f ? 0.0f : asin(dir.x / xz));
+            float theta = -XM_PIDIV2 + acos(dir.y);
 
             SetRotation(phi, theta);
         }
 
-        VOID Camera::SetEyePos(CONST util::Vec3& pos)
+        void Camera::SetEyePos(const util::Vec3& pos)
         {
             m_eyePos = pos;
             ComputeView();
         }
 
-        VOID Camera::ComputeProjection(VOID) {
+        void Camera::ComputeProjection(void) {
             m_handler->VComputeProjection(this);
         }
 
-        VOID Camera::ComputeView(VOID) 
+        void Camera::ComputeView(void) 
         {
              Vec3 zAxis = Vec3::GetNormalize(this->m_viewDir);
              Vec3 yAxis(this->m_upDir);
@@ -240,7 +240,7 @@ namespace chimera
              this->m_viewProjection = util::Mat4::Mul(m_projection, m_view);
         }
 
-        VOID Camera::SetProjectionType(ProjectionType type)
+        void Camera::SetProjectionType(ProjectionType type)
         {
             SAFE_DELETE(m_handler);
             switch(type)
@@ -265,12 +265,12 @@ namespace chimera
             }
         }
 
-        chimera::Frustum& Camera::GetFrustum(VOID)
+        chimera::Frustum& Camera::GetFrustum(void)
         {
             return m_frustum;
         }
 
-        VOID Camera::SetPerspectiveProjection(FLOAT aspect, FLOAT fov, FLOAT fnear, FLOAT ffar)
+        void Camera::SetPerspectiveProjection(float aspect, float fov, float fnear, float ffar)
         {
             m_FoV = fov;
             m_Aspect = aspect;
@@ -280,7 +280,7 @@ namespace chimera
             ComputeProjection();
         }
 
-        VOID Camera::SetOrthographicProjection(FLOAT width, FLOAT height, FLOAT fnear, FLOAT ffar)
+        void Camera::SetOrthographicProjection(float width, float height, float fnear, float ffar)
         {
             m_width = width;
             m_height = height;
@@ -290,7 +290,7 @@ namespace chimera
             ComputeProjection();
         }
 
-        VOID Camera::SetOrthographicProjectionOffCenter(FLOAT left, FLOAT right, FLOAT down, FLOAT up, FLOAT fNear, FLOAT fFar)
+        void Camera::SetOrthographicProjectionOffCenter(float left, float right, float down, float up, float fNear, float fFar)
         {
             m_left = left;
             m_right = right;
@@ -302,70 +302,70 @@ namespace chimera
             ComputeProjection();
         }
 
-        Camera::~Camera(VOID) 
+        Camera::~Camera(void) 
         {
             SAFE_DELETE(m_handler);
         }
 
-        FPSCamera::FPSCamera(UINT width, UINT height, FLOAT zNear, FLOAT zFar) :  Camera(width, height, zNear, zFar)
+        FPSCamera::FPSCamera(uint width, uint height, float zNear, float zFar) :  Camera(width, height, zNear, zFar)
         {
 
         }
 
-        VOID FPSCamera::Rotate(FLOAT dPhi, FLOAT dTheta)
+        void FPSCamera::Rotate(float dPhi, float dTheta)
         {
-           FLOAT newPhi = m_Phi + dPhi;
-           FLOAT newTheta = m_Theta + dTheta;
+           float newPhi = m_Phi + dPhi;
+           float newTheta = m_Theta + dTheta;
            newTheta = CLAMP(newTheta, -XM_PIDIV2, XM_PIDIV2);
            m_Phi = 0;
            m_Theta = 0;
            Camera::Rotate(newPhi, newTheta);
         }
 
-        FPSCamera::~FPSCamera(VOID)
+        FPSCamera::~FPSCamera(void)
         {
 
         }
 
-        CharacterCamera::CharacterCamera(UINT width, UINT height, FLOAT zNear, FLOAT zFar) : FPSCamera(width, height, zNear, zFar), m_yOffset(0)
+        CharacterCamera::CharacterCamera(uint width, uint height, float zNear, float zFar) : FPSCamera(width, height, zNear, zFar), m_yOffset(1.75f)
         {
 
         }
 
-        VOID CharacterCamera::SetEyePos(CONST util::Vec3& pos)
+        void CharacterCamera::SetEyePos(const util::Vec3& pos)
         {
             FPSCamera::SetEyePos(pos + util::Vec3(0, m_yOffset, 0));
         }
 
-        VOID CharacterCamera::LookAt(CONST util::Vec3& eyePos, CONST util::Vec3& at)
+        void CharacterCamera::LookAt(const util::Vec3& eyePos, const util::Vec3& at)
         {
             FPSCamera::LookAt(eyePos + util::Vec3(0, m_yOffset, 0), at);
         }
 
-        VOID CharacterCamera::MoveToPosition(CONST util::Vec3& pos)
+        void CharacterCamera::MoveToPosition(const util::Vec3& pos)
         {
             this->m_eyePos.Set(pos.x, pos.y + m_yOffset, pos.z);
             ComputeView();
         }
 
-        CharacterHeadShake::CharacterHeadShake(UINT width, UINT height, FLOAT zNear, FLOAT zFar) : CharacterCamera(width, height, zNear, zFar)
+        CharacterHeadShake::CharacterHeadShake(uint width, uint height, float zNear, float zFar) : CharacterCamera(width, height, zNear, zFar)
         {
 
         }
 
-        VOID CharacterHeadShake::MoveToPosition(CONST util::Vec3& pos)
+        void CharacterHeadShake::MoveToPosition(const util::Vec3& pos)
         {
 
-            INT x = chimera::math::sign(abs(pos.x - m_lastPos.x));
-            INT y = chimera::math::sign(abs(pos.z - m_lastPos.z));
+            int x = chimera::math::sign(abs(pos.x - m_lastPos.x));
+            int y = chimera::math::sign(abs(pos.z - m_lastPos.z));
 
             if(x != 0 || y != 0)
             {
-                FLOAT speed = CmGetApp()->VGetInputHandler()->VIsKeyDown(KEY_LSHIFT) ? 1.75f : 1.0f;
+                float speed = CmGetApp()->VGetInputHandler()->VIsKeyDown(KEY_LSHIFT) ? 1.75f : 1.0f;
                 util::Vec3 headShake;
-                headShake.x = (FLOAT)cos(speed * m_timer.VGetTime() * 1e-2); 
+                headShake.x = (float)cos(speed * m_timer.VGetTime() * 1e-2); 
                 headShake.y = 1 - headShake.x * headShake.x;
-                m_headShake = headShake * 1.5e-1f;
+                m_headShake = headShake * 1.0e-1f;
                 m_lastPos = pos;
                 m_timer.VTick();
             }
@@ -374,42 +374,42 @@ namespace chimera
             FPSCamera::Move(m_headShake);
         }
 
-        VOID CharacterHeadShake::Rotate(FLOAT dPhi, FLOAT dTheta) 
+        void CharacterHeadShake::Rotate(float dPhi, float dTheta) 
         {
             CharacterCamera::Rotate(dPhi, dTheta);
 
-            FLOAT sinPhi = sin(this->m_Phi);
-            FLOAT cosPhi = cos(this->m_Phi);
+            float sinPhi = sin(m_Phi);
+            float cosPhi = cos(m_Phi);
 
             m_modViewDir.Set(sinPhi, 0, cosPhi);
         }
 
-        CONST util::Vec3& CharacterHeadShake::GetViewDirXZ(VOID)
+        const util::Vec3& CharacterHeadShake::GetViewDirXZ(void)
         {
             return m_modViewDir;
         }
 
-        StaticCamera::StaticCamera(UINT width, UINT height, FLOAT zNear, FLOAT zFar) : FPSCamera(width, height, zNear, zFar)
+        StaticCamera::StaticCamera(uint width, uint height, float zNear, float zFar) : FPSCamera(width, height, zNear, zFar)
         {
 
         }
 
-        VOID StaticCamera::Move(FLOAT dx, FLOAT dy, FLOAT dz)
+        void StaticCamera::Move(float dx, float dy, float dz)
         {
 
         }
 
-        VOID StaticCamera::Move(CONST Vec3& dt)
+        void StaticCamera::Move(const Vec3& dt)
         {
 
         }
 
-        VOID StaticCamera::Rotate(FLOAT dPhi, FLOAT dTheta)
+        void StaticCamera::Rotate(float dPhi, float dTheta)
         {
 
         }
 
-        VOID StaticCamera::SetView(CONST util::Mat4& view, CONST util::Mat4& iview)
+        void StaticCamera::SetView(const util::Mat4& view, const util::Mat4& iview)
         {
             m_view = view;
             m_iview = iview;

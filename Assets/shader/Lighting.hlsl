@@ -244,7 +244,7 @@ PixelOutput GlobalLighting_PS(PixelInput input)
         op.color = 0.802*diffuse;//lerp(sky, tex, l);
         //op.color += sun * powa;
     }
-
+    //op.color *= 0.7;
     return op;
 }
 

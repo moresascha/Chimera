@@ -11,54 +11,54 @@ namespace chimera
             ID3D11ShaderResourceView* m_pTextureView;
             ID3D11Texture2D* m_pTexture;
         public:
-            Texture(VOID);
-            VOID* VGetDevicePtr(VOID);
-            VOID* VGetViewDevicePtr(VOID);
-            virtual BOOL VCreate(VOID) = 0;
-            VOID VDestroy();
-            virtual UINT VGetByteCount(VOID) CONST = 0;
-            virtual ~Texture(VOID) {}
+            Texture(void);
+            void* VGetDevicePtr(void);
+            void* VGetViewDevicePtr(void);
+            virtual bool VCreate(void) = 0;
+            void VDestroy();
+            virtual uint VGetByteCount(void) const = 0;
+            virtual ~Texture(void) {}
         };
 
         class Texture2D : public Texture
         {
         private:
             D3D11_TEXTURE2D_DESC m_texDesc;
-            VOID* m_rawData;
-            UINT m_byteSize;
+            void* m_rawData;
+            uint m_byteSize;
 
         public:
             //carefull using these, dont use these for images
-            Texture2D(VOID* data, UINT width, UINT height, DXGI_FORMAT format);
+            Texture2D(void* data, uint width, uint height, DXGI_FORMAT format);
 
-            Texture2D(VOID);
+            Texture2D(void);
 
             //VRamRessource Interface
-            BOOL VCreate(VOID);
+            bool VCreate(void);
 
-            UINT VGetByteCount(VOID) CONST { return m_byteSize; }
+            uint VGetByteCount(void) const { return m_byteSize; }
 
-            VOID SetData(VOID* data) { m_rawData = data; }
+            void SetData(void* data) { m_rawData = data; }
 
-            VOID SetHeight(UINT h);
+            void SetHeight(uint h);
 
-            VOID SetWidth(UINT w);
+            void SetWidth(uint w);
 
-            VOID SetFormat(DXGI_FORMAT format);
+            void SetFormat(DXGI_FORMAT format);
 
-            VOID SetMipMapLevels(UINT levels);
+            void SetMipMapLevels(uint levels);
 
-            VOID SetMicsFlags(UINT flags);
+            void SetMicsFlags(uint flags);
 
-            VOID SetArraySize(UINT size);
+            void SetArraySize(uint size);
 
-            VOID SetSamplerCount(UINT count);
+            void SetSamplerCount(uint count);
 
-            VOID SetSamplerQuality(UINT quality);
+            void SetSamplerQuality(uint quality);
 
-            CONST D3D11_TEXTURE2D_DESC& GetDescription(VOID) CONST { return m_texDesc; }
+            const D3D11_TEXTURE2D_DESC& GetDescription(void) const { return m_texDesc; }
 
-            ~Texture2D(VOID);
+            ~Texture2D(void);
         };
     }
 }

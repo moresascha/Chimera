@@ -7,49 +7,49 @@ namespace chimera
     class IScreenElement
     {
     public:
-        virtual CONST CMDimension& VGetDimension(VOID) = 0;
+        virtual const CMDimension& VGetDimension(void) = 0;
 
-        virtual VOID VSetDimension(CONST CMDimension& dim) = 0;
+        virtual void VSetDimension(const CMDimension& dim) = 0;
 
-        virtual UINT VGetPosX(VOID) CONST = 0;
+        virtual uint VGetPosX(void) const = 0;
 
-        virtual UINT VGetPosY(VOID) CONST = 0;
+        virtual uint VGetPosY(void) const = 0;
 
-        virtual UINT VGetWidth(VOID) CONST = 0;
+        virtual uint VGetWidth(void) const = 0;
 
-        virtual UINT VGetHeight(VOID) CONST = 0;
+        virtual uint VGetHeight(void) const = 0;
 
-        virtual LPCSTR VGetName(VOID) CONST = 0;
+        virtual LPCSTR VGetName(void) const = 0;
 
-        virtual VOID VSetName(LPCSTR name) = 0;
+        virtual void VSetName(LPCSTR name) = 0;
 
-        virtual VOID VDraw(VOID) = 0;
+        virtual void VDraw(void) = 0;
 
-        virtual BOOL VOnRestore(VOID) = 0;
+        virtual bool VOnRestore(void) = 0;
 
-        virtual BOOL VIsIn(UINT x, UINT y) = 0;
+        virtual bool VIsIn(uint x, uint y) = 0;
 
-        virtual BOOL VIsActive(VOID) CONST = 0;
+        virtual bool VIsActive(void) const = 0;
 
-        virtual VOID VSetActive(BOOL active) = 0;
+        virtual void VSetActive(bool active) = 0;
 
-        virtual VOID VUpdate(ULONG millis) = 0;
+        virtual void VUpdate(ulong millis) = 0;
 
-        virtual VOID VSetAlpha(FLOAT alpha) = 0;
+        virtual void VSetAlpha(float alpha) = 0;
 
-        virtual VOID VSetBackgroundColor(FLOAT r, FLOAT g, FLOAT b) = 0;
+        virtual void VSetBackgroundColor(float r, float g, float b) = 0;
 
-        virtual CONST Color& VGetBackgroundColor(VOID) CONST = 0;
+        virtual const Color& VGetBackgroundColor(void) const = 0;
 
-        virtual FLOAT VGetAlpha(VOID) CONST = 0;
+        virtual float VGetAlpha(void) const = 0;
 
-        virtual ~IScreenElement(VOID) {}
+        virtual ~IScreenElement(void) {}
     };
 
     class IScreenElementContainer : virtual public IScreenElement
     {
     public:
-        virtual VOID VAddComponent(IScreenElement* cmp) = 0;
+        virtual void VAddComponent(IScreenElement* cmp) = 0;
 
         virtual IScreenElement* VGetComponent(LPCSTR name) = 0;
     };
@@ -57,13 +57,13 @@ namespace chimera
     class IRenderScreen : virtual public IScreenElement
     {
     public:
-        virtual BOOL VOnRestore(VOID) = 0;
+        virtual bool VOnRestore(void) = 0;
 
-        virtual IGraphicsSettings* VGetSettings(VOID) = 0;
+        virtual IGraphicsSettings* VGetSettings(void) = 0;
 
-        virtual VOID VDraw(VOID) = 0;
+        virtual void VDraw(void) = 0;
 
-        virtual ~IRenderScreen(VOID) {}
+        virtual ~IRenderScreen(void) {}
     };
 
     /*class IScreenElementFactroy

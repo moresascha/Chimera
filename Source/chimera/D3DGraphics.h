@@ -6,7 +6,7 @@ namespace chimera
     namespace d3d
     {
 
-        VOID __CheckError(HRESULT __error);
+        void __CheckError(HRESULT __error);
 #ifdef _DEBUG
 #define D3D_SAVE_CALL(__error) __CheckError(__error);
 #else
@@ -37,44 +37,44 @@ namespace chimera
         extern ID3D11SamplerState* g_pSamplerStates[4];
         extern HWND g_hWnd;
 
-        extern UINT g_width;
-        extern UINT g_height;
+        extern uint g_width;
+        extern uint g_height;
 
-        extern UINT g_samples;
-        extern UINT g_quality;
+        extern uint g_samples;
+        extern uint g_quality;
 
         struct DisplayMode
         {
             DXGI_MODE_DESC mode;
 
-            DisplayMode(VOID)
+            DisplayMode(void)
             {
                 ZeroMemory(&mode, sizeof(DXGI_MODE_DESC));
             }
 
-            DisplayMode(CONST DisplayMode& cpy)
+            DisplayMode(const DisplayMode& cpy)
             {
                 mode = cpy.mode;
             }
 
-            DisplayMode(CONST DXGI_MODE_DESC& cpy)
+            DisplayMode(const DXGI_MODE_DESC& cpy)
             {
                 mode = cpy;
             }
 
-            DisplayMode& operator=(CONST DisplayMode& m)
+            DisplayMode& operator=(const DisplayMode& m)
             {
                 mode = m.mode;
                 return *this;
             }
 
-            DisplayMode& operator=(CONST DXGI_MODE_DESC& m)
+            DisplayMode& operator=(const DXGI_MODE_DESC& m)
             {
                 mode = m;
                 return *this;
             }
 
-            VOID Print(VOID);
+            void Print(void);
         };
 
         struct DisplayModeList
@@ -82,102 +82,102 @@ namespace chimera
             std::vector<DisplayMode> modeList;
         };
 
-        HRESULT Init(WNDPROC wndProc, HINSTANCE hInstance, LPCWSTR title, UINT width, UINT height);
+        HRESULT Init(WNDPROC wndProc, HINSTANCE hInstance, LPCWSTR title, uint width, uint height);
 
-        ID3D11Device* GetDevice(VOID);
+        ID3D11Device* GetDevice(void);
 
-        ID3D11DeviceContext* GetContext(VOID);
+        ID3D11DeviceContext* GetContext(void);
 
         std::string GetShaderError(ID3D10Blob* message);
 
         DXGI_FORMAT GetD3DFormatFromCMFormat(GraphicsFormat Format);
 
-        UINT GetWindowHeight(VOID);
+        uint GetWindowHeight(void);
 
-        UINT GetWindowWidth(VOID);
+        uint GetWindowWidth(void);
 
-        VOID BindBackbuffer(VOID);
+        void BindBackbuffer(void);
 
-        VOID SetDefaultViewPort(VOID);
+        void SetDefaultViewPort(void);
 
-        VOID SetDefaultStates(VOID);
+        void SetDefaultStates(void);
 
-        VOID ClearBackBuffer(CONST FLOAT color[4]);
+        void ClearBackBuffer(const float color[4]);
 
-        VOID Resize(UINT w, UINT h);
+        void Resize(uint w, uint h);
 
-        VOID SetFullscreenState(BOOL fs, UINT width = 0, UINT height = 0);
+        void SetFullscreenState(bool fs, uint width = 0, uint height = 0);
 
-        BOOL GetFullscreenState(VOID);
+        bool GetFullscreenState(void);
 
-        VOID GetFullscreenSize(UINT* width, UINT* height);
+        void GetFullscreenSize(uint* width, uint* height);
 
-        VOID GetDisplayModeList(DisplayModeList& modes);
+        void GetDisplayModeList(DisplayModeList& modes);
 
-        LPCSTR GetAdapterName(VOID);
+        LPCSTR GetAdapterName(void);
 
-        DisplayMode GetClosestDisplayMode(CONST DisplayMode& toMatch);
+        DisplayMode GetClosestDisplayMode(const DisplayMode& toMatch);
 
-        VOID CreateBackbuffer(UINT width, UINT height);
+        void CreateBackbuffer(uint width, uint height);
 
-        VOID ReleaseBackbuffer(VOID);
+        void ReleaseBackbuffer(void);
 
-        BOOL _CreateWindow(WNDPROC wndProc, CONST HINSTANCE hInstance, CONST LPCWSTR title, CONST UINT width, CONST UINT height);
+        bool _CreateWindow(WNDPROC wndProc, const HINSTANCE hInstance, const LPCWSTR title, const uint width, const uint height);
 
-        VOID Release(VOID);
+        void Release(void);
 
         class D3DResource
         {
         private:
-            UINT m_bindFlags;
+            uint m_bindFlags;
             D3D11_RESOURCE_MISC_FLAG  m_miscFlags;
             D3D11_USAGE m_usage;
             D3D11_CPU_ACCESS_FLAG m_cpuAccess;
 
         public:
-            D3DResource(VOID) : m_bindFlags((D3D11_BIND_FLAG)0), m_miscFlags((D3D11_RESOURCE_MISC_FLAG)0), m_usage(D3D11_USAGE_DEFAULT), m_cpuAccess((D3D11_CPU_ACCESS_FLAG)0) {}
+            D3DResource(void) : m_bindFlags((D3D11_BIND_FLAG)0), m_miscFlags((D3D11_RESOURCE_MISC_FLAG)0), m_usage(D3D11_USAGE_DEFAULT), m_cpuAccess((D3D11_CPU_ACCESS_FLAG)0) {}
 
-            virtual UINT GetBindflags(VOID)
+            virtual uint GetBindflags(void)
             {
                 return m_bindFlags;
             }
 
-            virtual D3D11_USAGE GetUsage(VOID)
+            virtual D3D11_USAGE GetUsage(void)
             {
                 return m_usage;
             }
 
-            virtual D3D11_CPU_ACCESS_FLAG GetCPUAccess(VOID)
+            virtual D3D11_CPU_ACCESS_FLAG GetCPUAccess(void)
             {
                 return m_cpuAccess;
             }
 
-            virtual VOID SetBindflags(UINT flags)
+            virtual void SetBindflags(uint flags)
             {
                 m_bindFlags = flags;
             }
 
-            virtual VOID SetUsage(D3D11_USAGE usage)
+            virtual void SetUsage(D3D11_USAGE usage)
             {
                 m_usage = usage;
             }
 
-            virtual VOID SetCPUAccess(D3D11_CPU_ACCESS_FLAG cpua)
+            virtual void SetCPUAccess(D3D11_CPU_ACCESS_FLAG cpua)
             {
                 m_cpuAccess = cpua;
             }
 
-            VOID SetMiscflags(D3D11_RESOURCE_MISC_FLAG flags)
+            void SetMiscflags(D3D11_RESOURCE_MISC_FLAG flags)
             {
                 m_miscFlags = flags;
             }
 
-            D3D11_RESOURCE_MISC_FLAG GetMiscflags(VOID)
+            D3D11_RESOURCE_MISC_FLAG GetMiscflags(void)
             {
                 return m_miscFlags;
             }
 
-            virtual ~D3DResource(VOID) {}
+            virtual ~D3DResource(void) {}
         };
     }
 }

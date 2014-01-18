@@ -5,12 +5,12 @@ namespace chimera
 {
     struct _Percentages
     {
-        FLOAT x;
-        FLOAT y;
-        FLOAT w;
-        FLOAT h;
+        float x;
+        float y;
+        float w;
+        float h;
 
-        _Percentages(VOID)
+        _Percentages(void)
         {
             x = y = 0;
             w = h = 1;
@@ -23,50 +23,50 @@ namespace chimera
         _Percentages m_dimensionPercent;
         CMDimension m_dimension;
         Color m_color;
-        BOOL m_isEnable;
-        BOOL m_isActive;
+        bool m_isEnable;
+        bool m_isActive;
         std::string m_name;
 
     public:
-        ScreenElement(VOID);
+        ScreenElement(void);
 
-        LPCSTR VGetName(VOID) CONST;
+        LPCSTR VGetName(void) const;
 
-        VOID VSetName(LPCSTR name);
+        void VSetName(LPCSTR name);
 
-        virtual VOID VSetDimension(CONST CMDimension& dim);
+        virtual void VSetDimension(const CMDimension& dim);
 
-        virtual BOOL VIsIn(UINT x, UINT y);
+        virtual bool VIsIn(uint x, uint y);
 
-        CONST CMDimension& VGetDimension(VOID);
+        const CMDimension& VGetDimension(void);
 
-        BOOL VIsActive(VOID) CONST;
+        bool VIsActive(void) const;
 
-        virtual VOID VSetActive(BOOL active);
+        virtual void VSetActive(bool active);
 
-        UINT VGetPosX(VOID) CONST;
+        uint VGetPosX(void) const;
 
-        UINT VGetPosY(VOID) CONST;
+        uint VGetPosY(void) const;
 
-        UINT VGetWidth(VOID) CONST;
+        uint VGetWidth(void) const;
 
-        UINT VGetHeight(VOID) CONST;
+        uint VGetHeight(void) const;
 
-        FLOAT VGetAlpha(VOID) CONST;
+        float VGetAlpha(void) const;
 
-        CONST chimera::Color& VGetBackgroundColor(VOID) CONST;
+        const chimera::Color& VGetBackgroundColor(void) const;
 
-        VOID VSetAlpha(FLOAT alpha);
+        void VSetAlpha(float alpha);
 
-        VOID VSetBackgroundColor(FLOAT r, FLOAT g, FLOAT b);
+        void VSetBackgroundColor(float r, float g, float b);
 
-        virtual VOID VUpdate(ULONG millis);
+        virtual void VUpdate(ulong millis);
 
-        virtual BOOL VOnRestore(VOID);
+        virtual bool VOnRestore(void);
 
-        virtual VOID VDraw(VOID) = 0;
+        virtual void VDraw(void) = 0;
 
-        virtual ~ScreenElement(VOID) { }
+        virtual ~ScreenElement(void) { }
     };
 
     class ScreenElementContainer : public virtual IScreenElementContainer, public ScreenElement
@@ -75,45 +75,45 @@ namespace chimera
         std::map<std::string, IScreenElement*> m_components;
 
     public:
-        VOID VAddComponent(IScreenElement* cmp);
+        void VAddComponent(IScreenElement* cmp);
 
         IScreenElement* VGetComponent(LPCSTR name);
 
-        virtual VOID VSetActive(BOOL active);
+        virtual void VSetActive(bool active);
 
-        virtual VOID VDraw(VOID);
+        virtual void VDraw(void);
 
-        virtual VOID VSetBackgroundColor(FLOAT r, FLOAT g, FLOAT b);
+        virtual void VSetBackgroundColor(float r, float g, float b);
 
-        virtual VOID VUpdate(ULONG millis);
+        virtual void VUpdate(ulong millis);
 
-        virtual BOOL VOnRestore(VOID);
+        virtual bool VOnRestore(void);
 
-        virtual ~ScreenElementContainer(VOID);
+        virtual ~ScreenElementContainer(void);
     };
 
-    typedef fastdelegate::FastDelegate0<VOID> DrawMethod;
+    typedef fastdelegate::FastDelegate0<void> DrawMethod;
     class RenderScreen : public ScreenElement, public IRenderScreen
     {
     protected:
         std::unique_ptr<IGraphicsSettings> m_pSettings;
         DrawMethod m_pFDrawMethod;
 
-        VOID _DrawFulscreenQuad(VOID);
-        VOID _DrawQuad(VOID);
+        void _DrawFulscreenQuad(void);
+        void _DrawQuad(void);
 
     public:
         RenderScreen(std::unique_ptr<IGraphicsSettings> settings);
 
-        virtual BOOL VOnRestore(VOID);
+        virtual bool VOnRestore(void);
 
-        IGraphicsSettings* VGetSettings(VOID) { return m_pSettings.get(); }
+        IGraphicsSettings* VGetSettings(void) { return m_pSettings.get(); }
 
-        virtual VOID VDraw(VOID);
+        virtual void VDraw(void);
 
-        VOID VSetDimension(CONST CMDimension& dim);
+        void VSetDimension(const CMDimension& dim);
 
-        ~RenderScreen(VOID);
+        ~RenderScreen(void);
     };
 
    
@@ -124,9 +124,9 @@ namespace chimera
     public:
         RenderTargetScreen(IRenderTarget* target);
 
-        VOID VDraw(VOID);
+        void VDraw(void);
 
-        ~RenderTargetScreen(VOID);
+        ~RenderTargetScreen(void);
     };
      /*
     class TextureSlotScreen : public RenderScreen

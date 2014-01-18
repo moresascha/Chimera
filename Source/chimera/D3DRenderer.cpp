@@ -20,7 +20,7 @@ namespace chimera
 #define PS_Stage 2
 #define GS_Stage 4
 
-        Renderer::Renderer(VOID) 
+        Renderer::Renderer(void) 
             : m_pDefaultRenderTarget(NULL), m_pDefShader(NULL), m_pDefaultRasterState(NULL), m_pDefaultDepthStencilState(NULL), m_pDefaultBlendState(NULL), m_pAlphaBlendState(NULL)
         {
             for(UCHAR i = 0; i < BufferCnt; ++i)
@@ -43,16 +43,16 @@ namespace chimera
             VPushBlendState(chimera::g_pBlendStateNoBlending);*/
         }
 
-        UINT Renderer::VGetHeight(VOID) { return chimera::d3d::g_height; }
+        uint Renderer::VGetHeight(void) { return chimera::d3d::g_height; }
 
-        UINT Renderer::VGetWidth(VOID) { return chimera::d3d::g_width; }
+        uint Renderer::VGetWidth(void) { return chimera::d3d::g_width; }
 
-        VOID Renderer::VPresent(VOID)
+        void Renderer::VPresent(void)
         {
             chimera::d3d::g_pSwapChain->Present(0, 0);
         }
 
-        VOID Renderer::CreateDefaultShader(VOID)
+        void Renderer::CreateDefaultShader(void)
         {
             CMShaderProgramDescription desc;
             desc.fs.file = SCREENQUAD_SHADER_FILE;
@@ -61,13 +61,13 @@ namespace chimera
             desc.vs.layoutCount = 2;
 
             desc.vs.inputLayout[0].format = eFormat_R32G32B32_FLOAT;
-            desc.vs.inputLayout[0].instanced = FALSE;
+            desc.vs.inputLayout[0].instanced = false;
             desc.vs.inputLayout[0].name = "POSITION";
             desc.vs.inputLayout[0].position = 0;
             desc.vs.inputLayout[0].slot = 0;
 
             desc.vs.inputLayout[1].format = eFormat_R32G32_FLOAT;
-            desc.vs.inputLayout[1].instanced = FALSE;
+            desc.vs.inputLayout[1].instanced = false;
             desc.vs.inputLayout[1].name = "TEXCOORD";
             desc.vs.inputLayout[1].position = 1;
             desc.vs.inputLayout[1].slot = 0;
@@ -78,7 +78,7 @@ namespace chimera
             m_screenQuadProgram = VGetShaderCache()->VCreateShaderProgram(SCREENQUAD_SHADER_NAME, &desc);
         }
 
-        BOOL Renderer::VCreate(CM_WINDOW_CALLBACK cb, CM_INSTANCE instance, LPCWSTR wndTitle, UINT width, UINT height)
+        bool Renderer::VCreate(CM_WINDOW_CALLBACK cb, CM_INSTANCE instance, LPCWSTR wndTitle, uint width, uint height)
         {
             chimera::d3d::Init(cb, instance, wndTitle, width, height);
             m_pShaderCache = std::unique_ptr<IShaderCache>(
@@ -90,7 +90,7 @@ namespace chimera
             ZeroMemory(&blendDesc, sizeof(BlendStateDesc));
             TBD_FOR_INT(8)
             {
-                blendDesc.RenderTarget[i].BlendEnable = FALSE;
+                blendDesc.RenderTarget[i].BlendEnable = false;
                 blendDesc.RenderTarget[i].RenderTargetWriteMask = eColorWriteAll;
             }
 
@@ -102,7 +102,7 @@ namespace chimera
             DepthStencilStateDesc depthStencilDesc;
             ZeroMemory(&depthStencilDesc, sizeof(DepthStencilStateDesc));
 
-            depthStencilDesc.StencilEnable = TRUE;
+            depthStencilDesc.StencilEnable = true;
             depthStencilDesc.StencilWriteMask = 0xFF;
             depthStencilDesc.StencilReadMask = 0xFF;
 
@@ -123,10 +123,10 @@ namespace chimera
             ZeroMemory(&rasterDesc, sizeof(RasterStateDesc));
             rasterDesc.CullMode = eCullMode_Back;;
             rasterDesc.FillMode = eFillMode_Solid;
-            rasterDesc.DepthClipEnable = TRUE;
-            rasterDesc.FrontCounterClockwise = TRUE;
-            rasterDesc.MultisampleEnable = FALSE;
-            rasterDesc.AntialiasedLineEnable = FALSE;
+            rasterDesc.DepthClipEnable = true;
+            rasterDesc.FrontCounterClockwise = true;
+            rasterDesc.MultisampleEnable = false;
+            rasterDesc.AntialiasedLineEnable = false;
 
             m_pDefaultRasterState = stateFactory->VCreateRasterState(&rasterDesc);
             VPushRasterState(m_pDefaultRasterState);
@@ -134,7 +134,7 @@ namespace chimera
             ZeroMemory(&blendDesc, sizeof(BlendStateDesc));
             for(int i = 0; i < 8; ++i)
             {
-                blendDesc.RenderTarget[i].BlendEnable = TRUE;
+                blendDesc.RenderTarget[i].BlendEnable = true;
                 blendDesc.RenderTarget[i].RenderTargetWriteMask = eColorWriteAll;
 
                 blendDesc.RenderTarget[i].BlendOp = eBlendOP_Add;
@@ -154,7 +154,7 @@ namespace chimera
             return VOnRestore();
         }
 
-        VOID Renderer::VDestroy(VOID)
+        void Renderer::VDestroy(void)
         {
             SAFE_DELETE(m_pDefaultRasterState);
             SAFE_DELETE(m_pDefaultBlendState);
@@ -168,7 +168,7 @@ namespace chimera
             chimera::d3d::Release();
         }
 
-        BOOL Renderer::VOnRestore(VOID) 
+        bool Renderer::VOnRestore(void) 
         {
             Delete();
             //m_pDefaultTexture = std::static_pointer_cast<D3DTexture2D>(chimera::g_pApp->VGetHumanView()->VGetVRamManager()->VGetHandle(m_defaultMaterial.m_textureDiffuse));
@@ -203,22 +203,22 @@ namespace chimera
             m_constBuffer[eCubeMapViewsBuffer]->VInit(sizeof(_CubeMapViewsBuffer));
 
             m_constBuffer[eFontBuffer] = new ConstBuffer();
-            m_constBuffer[eFontBuffer]->VInit(8 * sizeof(FLOAT));
+            m_constBuffer[eFontBuffer]->VInit(8 * sizeof(float));
 
             m_constBuffer[eBoundingGeoBuffer] = new ConstBuffer();
-            m_constBuffer[eBoundingGeoBuffer]->VInit(4 * sizeof(FLOAT));
+            m_constBuffer[eBoundingGeoBuffer]->VInit(4 * sizeof(float));
 
             m_constBuffer[eActorIdBuffer] = new ConstBuffer();
-            m_constBuffer[eActorIdBuffer]->VInit(4 * sizeof(UINT));
+            m_constBuffer[eActorIdBuffer]->VInit(4 * sizeof(uint));
 
             m_constBuffer[eSelectedActorIdBuffer] = new ConstBuffer();
-            m_constBuffer[eSelectedActorIdBuffer]->VInit(4 * sizeof(UINT));
+            m_constBuffer[eSelectedActorIdBuffer]->VInit(4 * sizeof(uint));
 
             m_constBuffer[eGuiColorBuffer] = new ConstBuffer();
-            m_constBuffer[eGuiColorBuffer]->VInit(4 * sizeof(FLOAT));
+            m_constBuffer[eGuiColorBuffer]->VInit(4 * sizeof(float));
 
             m_constBuffer[eHasNormalMapBuffer] = new ConstBuffer();
-            m_constBuffer[eHasNormalMapBuffer]->VInit(4 * sizeof(UINT));
+            m_constBuffer[eHasNormalMapBuffer]->VInit(4 * sizeof(uint));
 
             m_constBuffer[eEnvLightingBuffer] = new ConstBuffer();
             m_constBuffer[eEnvLightingBuffer]->VInit(sizeof(_LightingBuffer));
@@ -235,25 +235,25 @@ namespace chimera
 
             m_pDefaultTexture = std::static_pointer_cast<IDeviceTexture>(CmGetApp()->VGetHumanView()->VGetVRamManager()->VGetHandle(m_pDefaultMaterial->VGetTextureDiffuse()));
      
-            return TRUE;
+            return true;
         }
 
-        VOID* Renderer::VGetDevice(VOID)
+        void* Renderer::VGetDevice(void)
         {
-            return (VOID*)chimera::d3d::GetDevice();
+            return (void*)chimera::d3d::GetDevice();
         }
 
-        VOID Renderer::VSetFullscreen(BOOL fullscreen)
+        void Renderer::VSetFullscreen(bool fullscreen)
         {
             chimera::d3d::SetFullscreenState(fullscreen);
         }
 
-        VOID Renderer::VResize(UINT w, UINT h)
+        void Renderer::VResize(uint w, uint h)
         {
             chimera::d3d::Resize(w, h);
         }
 
-        VOID Renderer::VSetDefaultTexture(VOID)
+        void Renderer::VSetDefaultTexture(void)
         {
             if(m_pDefaultTexture->VIsReady())
             {
@@ -264,7 +264,7 @@ namespace chimera
                 m_pDefaultTexture = std::static_pointer_cast<IDeviceTexture>(CmGetApp()->VGetHumanView()->VGetVRamManager()->VGetHandle(m_pDefaultMaterial->VGetTextureDiffuse()));
             }
             VSetTexture(eDiffuseColorSampler, m_pDefaultTexture.get());
-            VSetNormalMapping(FALSE);
+            VSetNormalMapping(false);
         }
 
         /*VOID D3DRenderer::SetDefaultRasterizerState(ID3D11RasterizerState* state)
@@ -273,7 +273,7 @@ namespace chimera
             PushRasterizerState(state);
         } */
 
-        VOID Renderer::VSetDefaultMaterial(VOID)
+        void Renderer::VSetDefaultMaterial(void)
         {
             VPushMaterial(*m_pDefaultMaterial);
         }
@@ -297,7 +297,7 @@ namespace chimera
             }
         } */
 
-        VOID Renderer::VPreRender(VOID) 
+        void Renderer::VPreRender(void) 
         {
             m_pDefShader->VUnbindRenderTargets();
             VSetTexture(eAmbientMaterialSpecGSampler, m_pDefShader->VGetRenderTarget(eDiff_AmbientMaterialSpecGTarget)->VGetTexture());
@@ -308,7 +308,7 @@ namespace chimera
             VSetTexture(eNormalColorSampler, m_pDefShader->VGetRenderTarget(eDiff_ReflectionStrTarget)->VGetTexture());
         }
 
-        VOID Renderer::VPostRender(VOID) 
+        void Renderer::VPostRender(void) 
         {
             VSetTexture(eAmbientMaterialSpecGSampler, NULL);
             VSetTexture(eDiffuseColorSpecBSampler, NULL);
@@ -319,10 +319,10 @@ namespace chimera
             m_pDefShader->VClearAndBindRenderTargets();
         }
 
-        VOID Renderer::VSetNormalMapping(BOOL map)
+        void Renderer::VSetNormalMapping(bool map)
         {
             IConstShaderBuffer* buffer = VGetConstShaderBuffer(chimera::eHasNormalMapBuffer);
-            FLOAT* data = (FLOAT*)buffer->VMap();
+            float* data = (float*)buffer->VMap();
             data[0] = map ? 1.0f : 0.0f;
             data[1] = map ? 1.0f : 0.0f;
             data[2] = map ? 1.0f : 0.0f;
@@ -330,49 +330,49 @@ namespace chimera
             buffer->VUnmap();
         }
 
-        VOID Renderer::VPushCurrentRenderTarget(IRenderTarget* rt)
+        void Renderer::VPushCurrentRenderTarget(IRenderTarget* rt)
         {
             m_pDefaultRenderTarget = rt;
         }
 
-        VOID Renderer::VPopCurrentRenderTarget(VOID)
+        void Renderer::VPopCurrentRenderTarget(void)
         {
 
         }
 
-        VOID Renderer::VClearAndBindBackBuffer(VOID)
+        void Renderer::VClearAndBindBackBuffer(void)
         {
             VBindBackBuffer();
             chimera::d3d::ClearBackBuffer(m_backColor);
         }
 
-        VOID Renderer::VBindBackBuffer(VOID)
+        void Renderer::VBindBackBuffer(void)
         {
             chimera::d3d::SetDefaultViewPort();
             chimera::d3d::BindBackbuffer();
         }
 
-        IRenderTarget* Renderer::VGetCurrentRenderTarget(VOID)
+        IRenderTarget* Renderer::VGetCurrentRenderTarget(void)
         {
             return m_pDefaultRenderTarget;
         }
 
-        VOID Renderer::VSetWorldTransform(CONST util::Mat4& mat) 
+        void Renderer::VSetWorldTransform(const util::Mat4& mat) 
         {
             m_constBuffer[eModelBuffer]->VSetFromMatrix(mat);
         }
 
-        VOID Renderer::VPushWorldTransform(CONST util::Mat4& mat) 
+        void Renderer::VPushWorldTransform(const util::Mat4& mat) 
         {
             m_constBuffer[eModelBuffer]->VSetFromMatrix(mat);
         }
 
-        VOID Renderer::VPopWorldTransform(VOID)
+        void Renderer::VPopWorldTransform(void)
         {
 
         }
 
-        VOID Renderer::VSetViewTransform(CONST util::Mat4& mat, CONST util::Mat4& invMat, CONST util::Vec3& eyePos)
+        void Renderer::VSetViewTransform(const util::Mat4& mat, const util::Mat4& invMat, const util::Vec3& eyePos)
         {
             m_viewMatrixStack.Clear();
             _ViewMatrixBuffer buffer;
@@ -391,7 +391,7 @@ namespace chimera
             chimera::CmGetApp()->VGetLogic()->VGetHumanView()->VGetSceneGraph()->VResetVisibility();
         }
 
-        VOID Renderer::VPushViewTransform(CONST util::Mat4& mat, CONST util::Mat4& invMat, CONST util::Vec3& eyePos)
+        void Renderer::VPushViewTransform(const util::Mat4& mat, const util::Mat4& invMat, const util::Vec3& eyePos)
         {
             //VSetViewTransform(mat, invMat, eyePos);
 
@@ -411,7 +411,7 @@ namespace chimera
             chimera::CmGetApp()->VGetHumanView()->VGetSceneGraph()->VResetVisibility();
         }
 
-        VOID Renderer::VPopViewTransform(VOID)
+        void Renderer::VPopViewTransform(void)
         {
             if(m_viewMatrixStack.Size() <= 1) 
             {
@@ -427,7 +427,7 @@ namespace chimera
             chimera::CmGetApp()->VGetHumanView()->VGetSceneGraph()->VResetVisibility();
         }
 
-        VOID Renderer::VPushMaterial(chimera::IMaterial& mat) 
+        void Renderer::VPushMaterial(chimera::IMaterial& mat) 
         {
             _MaterialBuffer* mb = (_MaterialBuffer*)m_constBuffer[eMaterialBuffer]->VMap();
             mb->m_ambient = mat.VGetAmbient().m_v;
@@ -439,12 +439,12 @@ namespace chimera
             m_constBuffer[eMaterialBuffer]->VUnmap();
         }
 
-        VOID Renderer::VPopMaterial(VOID)
+        void Renderer::VPopMaterial(void)
         {
 
         }
 
-        VOID Renderer::VSetProjectionTransform(CONST util::Mat4& mat, FLOAT distance) 
+        void Renderer::VSetProjectionTransform(const util::Mat4& mat, float distance) 
         {
             m_projectionMatrixStack.Clear();
             _ProjectionMatrixBuffer buffer;
@@ -458,7 +458,7 @@ namespace chimera
             chimera::CmGetApp()->VGetHumanView()->VGetSceneGraph()->VResetVisibility();
         }
 
-        VOID Renderer::VPushProjectionTransform(CONST util::Mat4& mat, FLOAT distance) 
+        void Renderer::VPushProjectionTransform(const util::Mat4& mat, float distance) 
         {
             _ProjectionMatrixBuffer buffer;
             buffer.m_projection = mat.m_m;
@@ -471,7 +471,7 @@ namespace chimera
             chimera::CmGetApp()->VGetHumanView()->VGetSceneGraph()->VResetVisibility();
         }
 
-        VOID Renderer::VPopProjectionTransform(VOID)
+        void Renderer::VPopProjectionTransform(void)
         {
             if(m_projectionMatrixStack.Size() <= 1) 
             {
@@ -497,12 +497,12 @@ namespace chimera
             buffer->Unmap();
         } */
 
-        VOID Renderer::SetPointLightShadowCubeMapSampler(ID3D11ShaderResourceView* view)
+        void Renderer::SetPointLightShadowCubeMapSampler(ID3D11ShaderResourceView* view)
         {
             //SetSampler(ePointLightShadowCubeMapSampler, view);
         }
 
-        VOID Renderer::SetCubeMapViews(CONST util::Mat4 mats[6])
+        void Renderer::SetCubeMapViews(const util::Mat4 mats[6])
         {
             _CubeMapViewsBuffer* mb = (_CubeMapViewsBuffer*)m_constBuffer[eCubeMapViewsBuffer]->VMap();
             for(UCHAR i = 0; i < 6; ++i)
@@ -512,12 +512,12 @@ namespace chimera
             m_constBuffer[eCubeMapViewsBuffer]->VUnmap();
         }
 
-        VOID Renderer::VSetLightSettings(CONST util::Vec4& color, CONST util::Vec3& position, FLOAT radius, BOOL castShadow)
+        void Renderer::VSetLightSettings(const util::Vec4& color, const util::Vec3& position, float radius, bool castShadow)
         {
             VSetLightSettings(color, position, position, radius, 0.f, 1.f, castShadow);
         }
 
-        VOID Renderer::VSetLightSettings(CONST util::Vec4& color, CONST util::Vec3& position, CONST util::Vec3& viewDir, FLOAT radius, FLOAT angel, FLOAT intensity, BOOL castShadow)
+        void Renderer::VSetLightSettings(const util::Vec4& color, const util::Vec3& position, const util::Vec3& viewDir, float radius, float angel, float intensity, bool castShadow)
         {
             _LightSettingsBuffer* plb = (_LightSettingsBuffer*)m_constBuffer[eLightingBuffer]->VMap();
             plb->m_colorNRadiusW.x = color.x;
@@ -536,7 +536,7 @@ namespace chimera
             m_constBuffer[eLightingBuffer]->VUnmap();
         }
 
-        VOID Renderer::SetCSMSettings(CONST util::Mat4& view, CONST util::Mat4& iView, CONST util::Mat4 projections[3], CONST util::Vec3& lightPos, CONST FLOAT distances[3])
+        void Renderer::SetCSMSettings(const util::Mat4& view, const util::Mat4& iView, const util::Mat4 projections[3], const util::Vec3& lightPos, const float distances[3])
         {
             _LightingBuffer* lb = (_LightingBuffer*)m_constBuffer[eEnvLightingBuffer]->VMap();
             lb->m_view = view.m_m;
@@ -558,11 +558,11 @@ namespace chimera
             return m_constBuffer[slot];
         }
 
-        VOID Renderer::VSetViewPort(UINT w, UINT h)
+        void Renderer::VSetViewPort(uint w, uint h)
         {
             D3D11_VIEWPORT viewPort;
-            viewPort.Height = (FLOAT)h;
-            viewPort.Width = (FLOAT)w;
+            viewPort.Height = (float)h;
+            viewPort.Width = (float)w;
             viewPort.MinDepth = 0;
             viewPort.MaxDepth = 1;
             viewPort.TopLeftX = 0;
@@ -570,13 +570,13 @@ namespace chimera
             chimera::d3d::GetContext()->RSSetViewports(1, &viewPort);
         }
 
-        VOID Renderer::VPushDepthStencilState(IDepthStencilState* dsState, UINT stencilRef)
+        void Renderer::VPushDepthStencilState(IDepthStencilState* dsState, uint stencilRef)
         {
             m_depthStencilStateStack.Push(dsState);
             chimera::d3d::GetContext()->OMSetDepthStencilState((ID3D11DepthStencilState*)dsState->VGetDevicePtr(), stencilRef);
         }
         
-        VOID Renderer::VPopDepthStencilState(VOID)
+        void Renderer::VPopDepthStencilState(void)
         {
             if(m_depthStencilStateStack.Size() > 1)
             {
@@ -585,13 +585,13 @@ namespace chimera
             }
         }
 
-        VOID Renderer::VPushRasterState(IRasterState* state)
+        void Renderer::VPushRasterState(IRasterState* state)
         {
             m_rasterStateStack.Push(state);
             chimera::d3d::GetContext()->RSSetState((ID3D11RasterizerState*)state->VGetDevicePtr());
         }
 
-        VOID Renderer::VPopRasterState(VOID)
+        void Renderer::VPopRasterState(void)
         {
             if(m_rasterStateStack.Size() > 1)
             {
@@ -600,13 +600,13 @@ namespace chimera
             }
         }
 
-        VOID Renderer::VPushBlendState(IBlendState* state)
+        void Renderer::VPushBlendState(IBlendState* state)
         {
             m_blendStateStack.Push(state);
             chimera::d3d::GetContext()->OMSetBlendState((ID3D11BlendState*)state->VGetDevicePtr(), NULL, -1);
         }
 
-        VOID Renderer::VPopBlendState(VOID)
+        void Renderer::VPopBlendState(void)
         {
             if(m_blendStateStack.Size() > 1)
             {
@@ -615,12 +615,12 @@ namespace chimera
             }
         }
 
-        VOID Renderer::VSetDiffuseTexture(IDeviceTexture* texture)
+        void Renderer::VSetDiffuseTexture(IDeviceTexture* texture)
         {
             VSetTexture(eDiffuseColorSampler, texture);
         }
 
-        VOID Renderer::VSetTexture(TextureSlot slot, IDeviceTexture* texture)
+        void Renderer::VSetTexture(TextureSlot slot, IDeviceTexture* texture)
         {
             ID3D11ShaderResourceView* v = (ID3D11ShaderResourceView*)(texture == NULL ? NULL : texture->VGetViewDevicePtr());
             if(m_currentSetSampler[slot] != v)
@@ -630,7 +630,7 @@ namespace chimera
             }
         }
 
-        VOID Renderer::VSetTextures(TextureSlot slot, IDeviceTexture** texture, UINT count)
+        void Renderer::VSetTextures(TextureSlot slot, IDeviceTexture** texture, uint count)
         {
             static ID3D11ShaderResourceView* v[D3D11_COMMONSHADER_INPUT_RESOURCE_SLOT_COUNT];
             
@@ -640,9 +640,9 @@ namespace chimera
             SetSampler(slot, v, count, PS_Stage);
         }
 
-        VOID Renderer::SetSampler(TextureSlot startSlot, ID3D11ShaderResourceView** view, UINT count, UINT stages)
+        void Renderer::SetSampler(TextureSlot startSlot, ID3D11ShaderResourceView** view, uint count, uint stages)
         {
-            for(UINT i = 0; i < count; ++i)
+            for(uint i = 0; i < count; ++i)
             {
                 if(m_currentSetSampler[startSlot + i] != view[i])
                 {
@@ -666,24 +666,24 @@ namespace chimera
 
         }
 
-        IAlbedoBuffer* Renderer::VGetAlbedoBuffer(VOID)
+        IAlbedoBuffer* Renderer::VGetAlbedoBuffer(void)
         {
             return m_pDefShader;
         }
 
-        CM_HWND Renderer::VGetWindowHandle(VOID)
+        CM_HWND Renderer::VGetWindowHandle(void)
         {
             return (CM_HWND)chimera::d3d::g_hWnd;
         }
 
-        VOID Renderer::VDrawScreenQuad(INT x, INT y, INT w, INT h)
+        void Renderer::VDrawScreenQuad(int x, int y, int w, int h)
         {
             m_screenQuadProgram->VBind();
-            FLOAT _x = -1.0f + 2 * x / (FLOAT)VGetWidth();
-            FLOAT _y = -1.0f + 2 * y / (FLOAT)VGetHeight();
-            FLOAT _w = _x + 2 * w / (FLOAT)VGetWidth();
-            FLOAT _h = _y + 2 * h / (FLOAT)VGetHeight();
-            FLOAT localVertices[20] = 
+            float _x = -1.0f + 2 * x / (float)VGetWidth();
+            float _y = -1.0f + 2 * y / (float)VGetHeight();
+            float _w = _x + 2 * w / (float)VGetWidth();
+            float _h = _y + 2 * h / (float)VGetHeight();
+            float localVertices[20] = 
             {
                 _x, _y, 0, 0, 1,
                 _w, _y, 0, 1, 1,
@@ -692,36 +692,36 @@ namespace chimera
             };
 
             IGeometry* quad = geometryfactroy::GetGlobalScreenQuadCPU();
-            quad->VGetVertexBuffer()->VSetData(localVertices, sizeof(FLOAT) * 20);
+            quad->VGetVertexBuffer()->VSetData(localVertices, sizeof(float) * 20);
             quad->VBind();
             quad->VDraw();
         }
 
-        VOID Renderer::VDrawLine(INT x, INT y, INT w, INT h)
+        void Renderer::VDrawLine(int x, int y, int w, int h)
         {
-            FLOAT _x = -1.0f + 2 * x / (FLOAT)VGetWidth();
-            FLOAT _y = -1.0f + 2 * y / (FLOAT)VGetHeight();
-            FLOAT _w = _x + 2 * w / (FLOAT)VGetWidth();
-            FLOAT _h = _y + 2 * h / (FLOAT)VGetHeight();
-            FLOAT localVertices[10] = 
+            float _x = -1.0f + 2 * x / (float)VGetWidth();
+            float _y = -1.0f + 2 * y / (float)VGetHeight();
+            float _w = _x + 2 * w / (float)VGetWidth();
+            float _h = _y + 2 * h / (float)VGetHeight();
+            float localVertices[10] = 
             {
                 _x, _y, 0, 0, 0,
                 _w, _h, 0, 1, 1,
             };
 
             IGeometry* line = geometryfactroy::GetGlobalLineCPU();
-            line->VGetVertexBuffer()->VSetData(localVertices, sizeof(FLOAT) * 10);
+            line->VGetVertexBuffer()->VSetData(localVertices, sizeof(float) * 10);
             line->VBind();
             line->VDraw();
         }
 
-        VOID Renderer::VDrawScreenQuad(VOID)
+        void Renderer::VDrawScreenQuad(void)
         {
             geometryfactroy::GetGlobalScreenQuad()->VBind();
             geometryfactroy::GetGlobalScreenQuad()->VDraw();
         }
 
-        VOID Renderer::Delete(VOID)
+        void Renderer::Delete(void)
         {
             for(UCHAR i = 0; i < BufferCnt; ++i)
             {
@@ -729,27 +729,27 @@ namespace chimera
             }
         }
 
-        VOID Renderer::VPushAlphaBlendState(VOID)
+        void Renderer::VPushAlphaBlendState(void)
         {
             VPushBlendState(m_pAlphaBlendState);
         }
 
-        Renderer::~Renderer(VOID) 
+        Renderer::~Renderer(void) 
         {
             VDestroy();
         }
 
         //Defshader
-        AlbedoBuffer::AlbedoBuffer(UINT w, UINT h)
+        AlbedoBuffer::AlbedoBuffer(uint w, uint h)
         {
-            for(UINT i = 0; i < Diff_SamplersCnt; ++i)
+            for(uint i = 0; i < Diff_SamplersCnt; ++i)
             {
                 m_targets[i] = new RenderTarget();
             }
             VOnRestore(w, h);
         }
 
-        VOID AlbedoBuffer::VOnRestore(UINT w, UINT h)
+        void AlbedoBuffer::VOnRestore(uint w, uint h)
         {
             m_height = h;
             m_width = w;
@@ -758,14 +758,14 @@ namespace chimera
                 SAFE_DELETE(m_targets[i]);
                 m_targets[i] = new d3d::RenderTarget;
             }*/
-            m_targets[eDiff_WorldPositionTarget]->VOnRestore(m_width, m_height, eFormat_R32G32B32A32_FLOAT, TRUE);
-            m_targets[eDiff_NormalsTarget]->VOnRestore(m_width, m_height, eFormat_R32G32B32A32_FLOAT, FALSE);
-            m_targets[eDiff_DiffuseMaterialSpecRTarget]->VOnRestore(m_width, m_height, eFormat_R16G16B16A16_FLOAT, FALSE);
-            m_targets[eDiff_AmbientMaterialSpecGTarget]->VOnRestore(m_width, m_height, eFormat_R16G16B16A16_FLOAT, FALSE);
-            m_targets[eDiff_DiffuseColorSpecBTarget]->VOnRestore(m_width, m_height, eFormat_R16G16B16A16_FLOAT, FALSE);
-            m_targets[eDiff_ReflectionStrTarget]->VOnRestore(m_width, m_height, eFormat_R16_FLOAT, FALSE);
+            m_targets[eDiff_WorldPositionTarget]->VOnRestore(m_width, m_height, eFormat_R32G32B32A32_FLOAT, true);
+            m_targets[eDiff_NormalsTarget]->VOnRestore(m_width, m_height, eFormat_R32G32B32A32_FLOAT, false);
+            m_targets[eDiff_DiffuseMaterialSpecRTarget]->VOnRestore(m_width, m_height, eFormat_R16G16B16A16_FLOAT, false);
+            m_targets[eDiff_AmbientMaterialSpecGTarget]->VOnRestore(m_width, m_height, eFormat_R16G16B16A16_FLOAT, false);
+            m_targets[eDiff_DiffuseColorSpecBTarget]->VOnRestore(m_width, m_height, eFormat_R16G16B16A16_FLOAT, false);
+            m_targets[eDiff_ReflectionStrTarget]->VOnRestore(m_width, m_height, eFormat_R16_FLOAT, false);
 
-            for(UINT i = 0; i < Diff_SamplersCnt; ++i)
+            for(uint i = 0; i < Diff_SamplersCnt; ++i)
             {
                 m_views[i] = m_targets[i]->GetRenderTargetView();
             }
@@ -775,18 +775,18 @@ namespace chimera
             m_viewPort.TopLeftX = 0;
             m_viewPort.TopLeftY = 0;
 
-            m_viewPort.Width = (FLOAT)m_width;
-            m_viewPort.Height = (FLOAT)m_height;
+            m_viewPort.Width = (float)m_width;
+            m_viewPort.Height = (float)m_height;
         }
 
-        IRenderTarget* AlbedoBuffer::VGetDepthStencilTarget(VOID)
+        IRenderTarget* AlbedoBuffer::VGetDepthStencilTarget(void)
         {
             return m_targets[0];//->GetDepthStencilView();
         }
 
-        VOID AlbedoBuffer::VClearAndBindRenderTargets(VOID)
+        void AlbedoBuffer::VClearAndBindRenderTargets(void)
         {
-            for(UINT i = 0; i < Diff_SamplersCnt; ++i)
+            for(uint i = 0; i < Diff_SamplersCnt; ++i)
             {
                 m_targets[i]->VClear();
             }
@@ -797,7 +797,7 @@ namespace chimera
         }
 
         
-        VOID AlbedoBuffer::VUnbindRenderTargets(VOID)
+        void AlbedoBuffer::VUnbindRenderTargets(void)
         {
             ID3D11RenderTargetView* v[Diff_SamplersCnt] = {NULL, NULL, NULL, NULL, NULL, NULL};
             chimera::d3d::GetContext()->OMSetRenderTargets(Diff_SamplersCnt, v, NULL);
@@ -808,9 +808,9 @@ namespace chimera
             return m_targets[stage];
         }
 
-        AlbedoBuffer::~AlbedoBuffer(VOID)
+        AlbedoBuffer::~AlbedoBuffer(void)
         {
-            for(UINT i = 0; i < Diff_SamplersCnt; ++i)
+            for(uint i = 0; i < Diff_SamplersCnt; ++i)
             {
                 SAFE_DELETE(m_targets[i]);
             }

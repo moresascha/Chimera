@@ -19,42 +19,42 @@ namespace chimera
         std::unique_ptr<ISceneNode> m_root;
         std::shared_ptr<ICamera> m_camera;
         util::tbdStack<Frustum*> m_frustumStack;
-        std::map<UINT, std::list<ISceneNode*>> m_pathToNode;
-        ULONG m_visbibilityCheckTime;
-        BOOL m_visibiltyReset;
+        std::map<uint, std::list<ISceneNode*>> m_pathToNode;
+        ulong m_visbibilityCheckTime;
+        bool m_visibiltyReset;
 
     public:
-        SceneGraph(VOID);
+        SceneGraph(void);
 
-        VOID VAddChild(ActorId actorid, std::unique_ptr<ISceneNode> child);
+        void VAddChild(ActorId actorid, std::unique_ptr<ISceneNode> child);
 
-        VOID VRemoveChild(ActorId actorid);
+        void VRemoveChild(ActorId actorid);
 
-        BOOL VOnRender(RenderPath path);
+        bool VOnRender(RenderPath path);
 
-        BOOL VOnRestore(VOID);
+        bool VOnRestore(void);
 
-        BOOL VOnUpdate(ULONG millis);
+        bool VOnUpdate(ulong millis);
 
-        std::shared_ptr<ICamera> VGetCamera(VOID) { return m_camera; }
+        std::shared_ptr<ICamera> VGetCamera(void) { return m_camera; }
 
-        CONST Frustum* VGetFrustum(VOID);
+        const Frustum* VGetFrustum(void);
 
-        VOID VPushFrustum(Frustum* f);
+        void VPushFrustum(Frustum* f);
 
-        VOID VPopFrustum(VOID);
+        void VPopFrustum(void);
 
-        VOID VResetVisibility(VOID);
+        void VResetVisibility(void);
 
-        BOOL VIsVisibilityReset(VOID);
+        bool VIsVisibilityReset(void);
 
         ISceneNode* VFindActorNode(ActorId id);
 
         std::unique_ptr<ISceneNode> VReleaseNode(ActorId id);
 
-        VOID VSetCamera(std::shared_ptr<ICamera> camera);
+        void VSetCamera(std::shared_ptr<ICamera> camera);
 
-        virtual ~SceneGraph(VOID);
+        virtual ~SceneGraph(void);
     };
 }
 

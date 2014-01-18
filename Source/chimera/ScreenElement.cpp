@@ -4,107 +4,107 @@
 
 namespace chimera
 {
-    ScreenElement::ScreenElement(VOID) : m_color(Color(0,0,0,1)), m_isActive(FALSE), m_isEnable(TRUE), m_name("unknown")
+    ScreenElement::ScreenElement(void) : m_color(Color(0,0,0,1)), m_isActive(false), m_isEnable(true), m_name("unknown")
     {
 
     }
 
-    CONST CMDimension& ScreenElement::VGetDimension(VOID)
+    const CMDimension& ScreenElement::VGetDimension(void)
     {
         return m_dimension;
     }
 
-    LPCSTR ScreenElement::VGetName(VOID) CONST
+    LPCSTR ScreenElement::VGetName(void) const
     {
         return m_name.c_str();
     }
 
-    BOOL ScreenElement::VIsIn(UINT x, UINT y)
+    bool ScreenElement::VIsIn(uint x, uint y)
     {
         return !(x < VGetPosX() || x > VGetPosX() + VGetWidth() || y < VGetPosY() || y > VGetPosY() + VGetHeight());
     }
 
-    VOID ScreenElement::VSetName(LPCSTR name)
+    void ScreenElement::VSetName(LPCSTR name)
     {
         m_name = std::string(name);
     }
 
-    BOOL ScreenElement::VIsActive(VOID) CONST
+    bool ScreenElement::VIsActive(void) const
     {
         return m_isActive;
     }
 
-    VOID ScreenElement::VSetActive(BOOL active)
+    void ScreenElement::VSetActive(bool active)
     {
         m_isActive = active;
     }
 
-    VOID ScreenElement::VSetDimension(CONST CMDimension& dim)
+    void ScreenElement::VSetDimension(const CMDimension& dim)
     {
-        m_dimensionPercent.x = dim.x / (FLOAT)CmGetApp()->VGetWindowWidth();
-        m_dimensionPercent.y = dim.y / (FLOAT)CmGetApp()->VGetWindowHeight();
-        m_dimensionPercent.w = dim.w / (FLOAT)CmGetApp()->VGetWindowWidth();
-        m_dimensionPercent.h = dim.h / (FLOAT)CmGetApp()->VGetWindowHeight();
+        m_dimensionPercent.x = dim.x / (float)CmGetApp()->VGetWindowWidth();
+        m_dimensionPercent.y = dim.y / (float)CmGetApp()->VGetWindowHeight();
+        m_dimensionPercent.w = dim.w / (float)CmGetApp()->VGetWindowWidth();
+        m_dimensionPercent.h = dim.h / (float)CmGetApp()->VGetWindowHeight();
         ScreenElement::VOnRestore();
     }
 
-    UINT ScreenElement::VGetHeight(VOID) CONST
+    uint ScreenElement::VGetHeight(void) const
     {
         return m_dimension.h;
     }
 
-    UINT ScreenElement::VGetWidth(VOID) CONST
+    uint ScreenElement::VGetWidth(void) const
     {
         return m_dimension.w;
     }
 
-    UINT ScreenElement::VGetPosX(VOID) CONST
+    uint ScreenElement::VGetPosX(void) const
     {
         return m_dimension.x;
     }
 
-    UINT ScreenElement::VGetPosY(VOID) CONST
+    uint ScreenElement::VGetPosY(void) const
     {
         return m_dimension.y;
     }
 
-    FLOAT ScreenElement::VGetAlpha(VOID) CONST
+    float ScreenElement::VGetAlpha(void) const
     {
         return m_color.a;
     }
 
-    VOID ScreenElement::VSetAlpha(FLOAT alpha)
+    void ScreenElement::VSetAlpha(float alpha)
     {
         m_color.a = alpha;
     }
 
-    VOID ScreenElement::VSetBackgroundColor(FLOAT r, FLOAT g, FLOAT b)
+    void ScreenElement::VSetBackgroundColor(float r, float g, float b)
     {
         m_color.r = r;
         m_color.g = g;
         m_color.b = b;
     }
 
-    CONST Color& ScreenElement::VGetBackgroundColor(VOID) CONST
+    const Color& ScreenElement::VGetBackgroundColor(void) const
     {
         return m_color;
     }
 
-    VOID ScreenElement::VUpdate(ULONG millis)
+    void ScreenElement::VUpdate(ulong millis)
     {
 
     }
 
-    BOOL ScreenElement::VOnRestore(VOID)
+    bool ScreenElement::VOnRestore(void)
     {
-        m_dimension.x = (UINT)(m_dimensionPercent.x * CmGetApp()->VGetWindowWidth());
-        m_dimension.y = (UINT)(m_dimensionPercent.y * CmGetApp()->VGetWindowHeight());
-        m_dimension.w = (UINT)(m_dimensionPercent.w * CmGetApp()->VGetWindowWidth());
-        m_dimension.h = (UINT)(m_dimensionPercent.h * CmGetApp()->VGetWindowHeight());
-        return TRUE;
+        m_dimension.x = (uint)(m_dimensionPercent.x * CmGetApp()->VGetWindowWidth());
+        m_dimension.y = (uint)(m_dimensionPercent.y * CmGetApp()->VGetWindowHeight());
+        m_dimension.w = (uint)(m_dimensionPercent.w * CmGetApp()->VGetWindowWidth());
+        m_dimension.h = (uint)(m_dimensionPercent.h * CmGetApp()->VGetWindowHeight());
+        return true;
     }
 
-    VOID ScreenElementContainer::VAddComponent(IScreenElement* cmp)
+    void ScreenElementContainer::VAddComponent(IScreenElement* cmp)
     {
         if(m_components.find(cmp->VGetName()) != m_components.end())
         {
@@ -125,7 +125,7 @@ namespace chimera
         return it->second;
     }
 
-    VOID ScreenElementContainer::VSetBackgroundColor(FLOAT r, FLOAT g, FLOAT b)
+    void ScreenElementContainer::VSetBackgroundColor(float r, float g, float b)
     {
         ScreenElement::VSetBackgroundColor(r, g, b);
         TBD_FOR(m_components)
@@ -134,17 +134,17 @@ namespace chimera
         }
     }
 
-    BOOL ScreenElementContainer::VOnRestore(VOID)
+    bool ScreenElementContainer::VOnRestore(void)
     {
         ScreenElement::VOnRestore();
         TBD_FOR(m_components)
         {
             it->second->VOnRestore();
         }
-        return TRUE;
+        return true;
     }
 
-    VOID ScreenElementContainer::VUpdate(ULONG millis)
+    void ScreenElementContainer::VUpdate(ulong millis)
     {
         if(VIsActive())
         {
@@ -159,7 +159,7 @@ namespace chimera
         }
     }
 
-    VOID ScreenElementContainer::VSetActive(BOOL active)
+    void ScreenElementContainer::VSetActive(bool active)
     {
         ScreenElement::VSetActive(active);
         TBD_FOR(m_components)
@@ -168,7 +168,7 @@ namespace chimera
         }
     }
 
-    VOID ScreenElementContainer::VDraw(VOID)
+    void ScreenElementContainer::VDraw(void)
     {
         if(VIsActive())
         {
@@ -182,7 +182,7 @@ namespace chimera
         }        
     }
 
-    ScreenElementContainer::~ScreenElementContainer(VOID)
+    ScreenElementContainer::~ScreenElementContainer(void)
     {
         TBD_FOR(m_components)
         {
@@ -195,27 +195,27 @@ namespace chimera
 
     }
 
-    VOID RenderScreen::_DrawFulscreenQuad(VOID)
+    void RenderScreen::_DrawFulscreenQuad(void)
     {
         CmGetApp()->VGetHumanView()->VGetRenderer()->VDrawScreenQuad();
     }
 
-    VOID RenderScreen::_DrawQuad(VOID)
+    void RenderScreen::_DrawQuad(void)
     {
         CmGetApp()->VGetHumanView()->VGetRenderer()->VDrawScreenQuad(m_dimension.x, m_dimension.y, m_dimension.w, m_dimension.h);
     }
 
-    VOID RenderScreen::VSetDimension(CONST CMDimension& dim)
+    void RenderScreen::VSetDimension(const CMDimension& dim)
     {
         ScreenElement::VSetDimension(dim);
     }
 
-    VOID RenderScreen::VDraw(VOID)
+    void RenderScreen::VDraw(void)
     {
         m_pSettings->VRender();
     }
 
-    BOOL RenderScreen::VOnRestore(VOID)
+    bool RenderScreen::VOnRestore(void)
     {
         ScreenElement::VOnRestore();
 
@@ -231,7 +231,7 @@ namespace chimera
         return m_pSettings->VOnRestore(m_dimension.w, m_dimension.h);
     }
 
-    RenderScreen::~RenderScreen(VOID)
+    RenderScreen::~RenderScreen(void)
     {
 
     }
@@ -240,7 +240,7 @@ namespace chimera
     {
     }
 
-    VOID RenderTargetScreen::VDraw(VOID)
+    void RenderTargetScreen::VDraw(void)
     {
         IRenderer* renderer = CmGetApp()->VGetHumanView()->VGetRenderer();
 
@@ -255,7 +255,7 @@ namespace chimera
         renderer->VSetTexture(eDiffuseColorSampler, NULL);
     }
 
-    RenderTargetScreen::~RenderTargetScreen(VOID)
+    RenderTargetScreen::~RenderTargetScreen(void)
     {
 
     }

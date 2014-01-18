@@ -3,31 +3,31 @@
 namespace chimera
 {
 
-    VOID DefaultDraw(VOID)
+    void DefaultDraw(void)
     {
         CmGetApp()->VGetHumanView()->VGetRenderer()->VDrawScreenQuad();
     }
 
-    Effect::Effect(VOID) 
+    Effect::Effect(void) 
         : m_pPixelShader(NULL), m_target(NULL), m_source(NULL), m_w(0), m_h(0),
-        m_params(NULL), m_isProcessed(FALSE)
+        m_params(NULL), m_isProcessed(false)
     {
         m_pfDraw = DefaultDraw;
     }
 
-    VOID Effect::VCreate(CONST CMShaderDescription& shaderDesc, FLOAT w, FLOAT h)
+    void Effect::VCreate(const CMShaderDescription& shaderDesc, float w, float h)
     {
         m_shaderDesc = shaderDesc;
         m_w = w;
         m_h = h;
     }
 
-    VOID Effect::VSetDrawMethod(EffectDrawMethod dm)
+    void Effect::VSetDrawMethod(EffectDrawMethod dm)
     {
         m_pfDraw = dm;
     }
 
-    BOOL Effect::VOnRestore(UINT w, UINT h, ErrorLog* log)
+    bool Effect::VOnRestore(uint w, uint h, ErrorLog* log)
     {
         if(!m_pPixelShader)
         {
@@ -36,56 +36,56 @@ namespace chimera
 
         if(m_target)
         {
-            m_target->VOnRestore(max(1, (UINT)(w * m_w)), max(1, (UINT)(h * m_h)), eFormat_R32G32B32A32_FLOAT, FALSE);
+            m_target->VOnRestore(max(1, (uint)(w * m_w)), max(1, (uint)(h * m_h)), eFormat_R32G32B32A32_FLOAT, false);
         }
 
-        return TRUE;
+        return true;
     }
 
-    FLOAT2 Effect::VGetViewPort(VOID)
+    float2 Effect::VGetViewPort(void)
     {
-        FLOAT2 vp;
+        float2 vp;
         vp.x = m_w;
         vp.y = m_h;
         return vp;
     }
 
-    VOID Effect::VAddRequirement(IEffect* e)
+    void Effect::VAddRequirement(IEffect* e)
     {
         std::unique_ptr<IRenderTarget> t(CmGetApp()->VGetHumanView()->VGetGraphicsFactory()->VCreateRenderTarget());
         e->VSetTarget(std::move(t));
-        FLOAT2 vp = e->VGetViewPort();
-        e->VGetTarget()->VOnRestore((UINT)(vp.x * (FLOAT)CmGetApp()->VGetWindowWidth()), (UINT)(vp.y * (FLOAT)CmGetApp()->VGetWindowHeight()), eFormat_R32G32B32A32_FLOAT, FALSE);
+        float2 vp = e->VGetViewPort();
+        e->VGetTarget()->VOnRestore((uint)(vp.x * (float)CmGetApp()->VGetWindowWidth()), (uint)(vp.y * (float)CmGetApp()->VGetWindowHeight()), eFormat_R32G32B32A32_FLOAT, false);
         m_requirements.push_back(e);
     }
 
-    VOID Effect::VSetParameters(IEffectParmaters* params)
+    void Effect::VSetParameters(IEffectParmaters* params)
     {
         m_params = params;
     }
 
-    VOID Effect::VSetSource(IRenderTarget* src)
+    void Effect::VSetSource(IRenderTarget* src)
     {
         m_source = src;
     }
 
-    IRenderTarget* Effect::VGetTarget(VOID)
+    IRenderTarget* Effect::VGetTarget(void)
     {
         return m_target;
     }
 
-    VOID Effect::VSetTarget(IRenderTarget* target)
+    void Effect::VSetTarget(IRenderTarget* target)
     {
         m_target = target;
     }
 
-    VOID Effect::VSetTarget(std::unique_ptr<IRenderTarget> target)
+    void Effect::VSetTarget(std::unique_ptr<IRenderTarget> target)
     {
         m_ownedTarget = std::move(target);
         m_target = m_ownedTarget.get();
     }
 
-    VOID Effect::VProcess(VOID)
+    void Effect::VProcess(void)
     {
         if(m_isProcessed)
         {
@@ -112,8 +112,8 @@ namespace chimera
 
         //m_params->VApply();
 
-        CONST UINT c_startSlot = eEffect0;
-        UINT startSlot = c_startSlot;
+        const uint c_startSlot = eEffect0;
+        uint startSlot = c_startSlot;
         IDeviceTexture* view = NULL;
 
         if(m_source)
@@ -133,20 +133,20 @@ namespace chimera
 
         view = NULL;
 
-        for(INT i = startSlot-1; i >= c_startSlot; --i)
+        for(int i = startSlot-1; i >= c_startSlot; --i)
         {
             CmGetApp()->VGetHumanView()->VGetRenderer()->VSetTexture((TextureSlot)i, view);
         }
 
-        m_isProcessed = TRUE;
+        m_isProcessed = true;
     }
 
-    VOID Effect::VReset(VOID)
+    void Effect::VReset(void)
     {
-        m_isProcessed = FALSE;
+        m_isProcessed = false;
     }
 
-    Effect::~Effect(VOID)
+    Effect::~Effect(void)
     {
     }
 
@@ -154,12 +154,12 @@ namespace chimera
     {
     }
 
-    IRenderTarget* EffectChain::VGetResult(VOID)
+    IRenderTarget* EffectChain::VGetResult(void)
     {
         return m_pTarget;
     }
 
-    IEffect* EffectChain::VCreateEffect(CONST CMShaderDescription& shaderDesc, FLOAT w, FLOAT h)
+    IEffect* EffectChain::VCreateEffect(const CMShaderDescription& shaderDesc, float w, float h)
     {
         std::unique_ptr<IEffect> e(m_pEffectFactory->VCreateEffect());
 
@@ -178,7 +178,7 @@ namespace chimera
         return m_leaf;
     }
 
-    VOID EffectChain::VOnRestore(UINT w, UINT h)
+    void EffectChain::VOnRestore(uint w, uint h)
     {
         if(!m_pVertexShader)
         {
@@ -186,13 +186,13 @@ namespace chimera
             desc.layoutCount = 2;
             
             desc.inputLayout[0].format = eFormat_R32G32B32_FLOAT;
-            desc.inputLayout[0].instanced = FALSE;
+            desc.inputLayout[0].instanced = false;
             desc.inputLayout[0].name = "POSITION";
             desc.inputLayout[0].position = 0;
             desc.inputLayout[0].slot = 0;
 
             desc.inputLayout[1].format = eFormat_R32G32_FLOAT;
-            desc.inputLayout[1].instanced = FALSE;
+            desc.inputLayout[1].instanced = false;
             desc.inputLayout[1].name = "TEXCOORD";
             desc.inputLayout[1].position = 1;
             desc.inputLayout[1].slot = 0;
@@ -210,22 +210,22 @@ namespace chimera
     }
 
 
-    VOID EffectChain::VSetSource(IRenderTarget* src)
+    void EffectChain::VSetSource(IRenderTarget* src)
     {
         m_pSrc = src;
     }
 
-    VOID EffectChain::VSetTarget(IRenderTarget* target)
+    void EffectChain::VSetTarget(IRenderTarget* target)
     {
         m_pTarget = target;
     }
 
-    EffectChain::~EffectChain(VOID)
+    EffectChain::~EffectChain(void)
     {
 
     }
 
-    VOID EffectChain::VProcess(VOID)
+    void EffectChain::VProcess(void)
     {
         
         //ID3D11VertexShader* tmp;

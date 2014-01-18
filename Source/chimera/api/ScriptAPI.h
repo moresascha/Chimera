@@ -6,13 +6,13 @@ namespace chimera
     class IScript
     {
     public:
-        virtual BOOL VInit(VOID) = 0;
+        virtual bool VInit(void) = 0;
 
-        virtual BOOL VRunFile(LPCSTR file) = 0;
+        virtual bool VRunFile(LPCSTR file) = 0;
 
-        virtual BOOL VRunString(LPCSTR str) = 0;
+        virtual bool VRunString(LPCSTR str) = 0;
 
-        virtual ~IScript(VOID) {}
+        virtual ~IScript(void) {}
     };
 
     class IScriptEventManager

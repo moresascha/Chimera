@@ -6,19 +6,19 @@ namespace chimera
     class ILogic
     {
     public:
-        ILogic(VOID) {}
+        ILogic(void) {}
 
-        virtual BOOL VInitialise(FactoryPtr* facts) = 0;
+        virtual bool VInitialise(FactoryPtr* facts) = 0;
 
-        virtual VOID VOnUpdate(ULONG millis) = 0;
+        virtual void VOnUpdate(ulong millis) = 0;
 
-        virtual IActor* VCreateActor(LPCSTR resource, BOOL appendToLevel = FALSE) = 0;
+        virtual IActor* VCreateActor(LPCSTR resource, bool appendToLevel = false) = 0;
 
-        virtual IActor* VCreateActor(std::unique_ptr<ActorDescription> desc, BOOL appendToLevel = FALSE) = 0;
+        virtual IActor* VCreateActor(std::unique_ptr<ActorDescription> desc, bool appendToLevel = false) = 0;
 
-        virtual VOID VAttachView(std::unique_ptr<IView> view, IActor* actor) = 0;
+        virtual void VAttachView(std::unique_ptr<IView> view, IActor* actor) = 0;
 
-        virtual VOID VRemoveActor(ActorId id) = 0;
+        virtual void VRemoveActor(ActorId id) = 0;
 
         virtual IActor* VFindActor(ActorId id) = 0;
 
@@ -28,116 +28,116 @@ namespace chimera
 
         virtual IView* VFindView(LPCSTR name) = 0;
 
-        virtual ILevel* VGetlevel(VOID) = 0;
+        virtual ILevel* VGetlevel(void) = 0;
 
-        virtual BOOL VLoadLevel(ILevel* level) = 0;
+        virtual bool VLoadLevel(ILevel* level) = 0;
 
-        virtual BOOL VLoadLevel(CONST CHAR* ressource) = 0;
+        virtual bool VLoadLevel(const char* ressource) = 0;
 
-        virtual ICommandInterpreter* VGetCommandInterpreter(VOID) = 0;
+        virtual ICommandInterpreter* VGetCommandInterpreter(void) = 0;
 
-        virtual IProcessManager* VGetProcessManager(VOID) = 0;
+        virtual IProcessManager* VGetProcessManager(void) = 0;
 
-        virtual IPhysicsSystem* VGetPhysics(VOID) = 0;
+        virtual IPhysicsSystem* VGetPhysics(void) = 0;
 
-        virtual IHumanView* VGetHumanView(VOID) = 0;
+        virtual IHumanView* VGetHumanView(void) = 0;
 
-        virtual GameState VGetGameState(VOID) = 0;
+        virtual GameState VGetGameState(void) = 0;
 
-        virtual IActorFactory* VGetActorFactory(VOID) = 0;
+        virtual IActorFactory* VGetActorFactory(void) = 0;
 
-        virtual VOID VSetGameState(GameState state) = 0;
+        virtual void VSetGameState(GameState state) = 0;
 
-        virtual ~ILogic(VOID) {}
+        virtual ~ILogic(void) {}
     };
 
     class ILevel
     {
     public:
-        virtual BOOL VLoad(BOOL block) = 0;
+        virtual bool VLoad(bool block) = 0;
 
-        virtual VOID VUnload(VOID) = 0;
+        virtual void VUnload(void) = 0;
 
-        virtual CONST std::string& VGetName(VOID) = 0;
+        virtual const std::string& VGetName(void) = 0;
 
-        virtual CONST std::string& VGetFile(VOID) = 0;
+        virtual const std::string& VGetFile(void) = 0;
 
-        virtual BOOL VSave(LPCSTR file = NULL) = 0;
+        virtual bool VSave(LPCSTR file = NULL) = 0;
 
-        virtual UINT VGetActorsCount(VOID) = 0;
+        virtual uint VGetActorsCount(void) = 0;
 
-        virtual FLOAT VGetLoadingProgress(VOID) = 0;
+        virtual float VGetLoadingProgress(void) = 0;
 
         virtual IActor* VAddActor(std::unique_ptr<ActorDescription> desc) = 0;
 
-        virtual VOID VRemoveActor(ActorId id) = 0;
+        virtual void VRemoveActor(ActorId id) = 0;
 
         virtual IActor* VFindActor(ActorId id) = 0;
 
-        virtual CONST std::map<ActorId, std::unique_ptr<IActor>>& VGetActors(VOID) = 0;
+        virtual const std::map<ActorId, std::unique_ptr<IActor>>& VGetActors(void) = 0;
 
-        virtual ~ILevel(VOID) {}
+        virtual ~ILevel(void) {}
     };
 
     class IProcessManager
     {
     public:
-        virtual UINT VUpdate(ULONG delatMillis) = 0;
+        virtual uint VUpdate(ulong delatMillis) = 0;
 
         virtual IProcess* VAttach(std::shared_ptr<IProcess> process) = 0;
 
         virtual IProcess* VAttachWithScheduler(std::shared_ptr<IProcess> process) = 0;
 
-        virtual  VOID VAbortAll(BOOL immediate) = 0;
+        virtual  void VAbortAll(bool immediate) = 0;
 
-        virtual UINT VGetProcessCount(VOID) CONST = 0;
-        virtual ~IProcessManager(VOID) {}
+        virtual uint VGetProcessCount(void) const = 0;
+        virtual ~IProcessManager(void) {}
     };
 
     class ICommand
     {
     public:
         
-        virtual BOOL VInitArgumentTypes(INT args, ...) = 0;
+        virtual bool VInitArgumentTypes(int args, ...) = 0;
 
-        virtual FLOAT VGetNextFloat(VOID) = 0;
+        virtual float VGetNextFloat(void) = 0;
         
-        virtual INT VGetNextInt(VOID) = 0;
+        virtual int VGetNextInt(void) = 0;
         
-        virtual CHAR VGetNextChar(VOID) = 0;
+        virtual char VGetNextChar(void) = 0;
         
-        virtual BOOL VGetNextBool(VOID) = 0;
+        virtual bool VGetNextBool(void) = 0;
         
-        virtual std::string VGetNextCharStr(VOID) = 0;
+        virtual std::string VGetNextCharStr(void) = 0;
         
-        virtual std::string VGetRemainingString(VOID) = 0;
+        virtual std::string VGetRemainingString(void) = 0;
 
-        virtual BOOL VIsError(VOID) = 0;
+        virtual bool VIsError(void) = 0;
         
-        virtual BOOL VIsValid(VOID) = 0;
+        virtual bool VIsValid(void) = 0;
 
-        virtual ~ICommand(VOID) { }
+        virtual ~ICommand(void) { }
     };
 
     class ICommandInterpreter
     {
     public:
-        virtual BOOL VCallCommand(LPCSTR cmd) = 0;
+        virtual bool VCallCommand(LPCSTR cmd) = 0;
 
-        virtual std::vector<std::string> VGetCommands(VOID) = 0;
+        virtual std::vector<std::string> VGetCommands(void) = 0;
 
-        virtual VOID VLoadCommands(LPCSTR file) = 0;
+        virtual void VLoadCommands(LPCSTR file) = 0;
 
-        virtual VOID VRegisterCommand(LPCSTR name, CommandHandler command, LPCSTR usage = NULL) = 0;
+        virtual void VRegisterCommand(LPCSTR name, CommandHandler command, LPCSTR usage = NULL) = 0;
 
-        virtual ~ICommandInterpreter(VOID) {} 
+        virtual ~ICommandInterpreter(void) {} 
     };
 
     class IScheduler
     {
     public:
         virtual IProcess* VAddProcess(std::shared_ptr<IProcess> proc) = 0;
-        virtual ~IScheduler(VOID) {}
+        virtual ~IScheduler(void) {}
     };
 
     class IProcess
@@ -146,18 +146,18 @@ namespace chimera
         ProcessState m_state;
         std::unique_ptr<IProcess> m_child;
     public:
-        virtual VOID VOnInit(VOID) {};
-        virtual VOID VOnAbort(VOID) {};
-        virtual VOID VOnFail(VOID) {};
-        virtual VOID VOnSuccess(VOID) {};
-        virtual VOID VOnUpdate(ULONG deltaMillis) = 0;
-        virtual ProcessType VGetType(VOID) { return eProcessType_Normal; }
+        virtual void VOnInit(void) {};
+        virtual void VOnAbort(void) {};
+        virtual void VOnFail(void) {};
+        virtual void VOnSuccess(void) {};
+        virtual void VOnUpdate(ulong deltaMillis) = 0;
+        virtual ProcessType VGetType(void) { return eProcessType_Normal; }
 
-        VOID SetState(ProcessState state) { m_state = state; }
+        void SetState(ProcessState state) { m_state = state; }
 
-        IProcess(VOID) : m_state(eProcessState_Uninitialized) { }
+        IProcess(void) : m_state(eProcessState_Uninitialized) { }
 
-        CM_INLINE std::unique_ptr<IProcess> RemoveChild(VOID)
+        CM_INLINE std::unique_ptr<IProcess> RemoveChild(void)
         {
             if(m_child)
             {
@@ -167,24 +167,24 @@ namespace chimera
             return NULL;
         }
 
-        virtual VOID VSetChild(std::unique_ptr<IProcess> child) { m_child = std::move(child); }
+        virtual void VSetChild(std::unique_ptr<IProcess> child) { m_child = std::move(child); }
 
-        CM_INLINE ProcessState GetState(VOID) CONST { return m_state; }
+        CM_INLINE ProcessState GetState(void) const { return m_state; }
 
-        CM_INLINE VOID Succeed(VOID) { m_state = eProcessState_Succed; }
-        CM_INLINE VOID Fail(VOID) { m_state = eProcessState_Failed; }
-        CM_INLINE VOID Pause(VOID) { m_state = eProcessState_Paused; }
-        CM_INLINE VOID UnPause(VOID) { m_state = eProcessState_Running; }
+        CM_INLINE void Succeed(void) { m_state = eProcessState_Succed; }
+        CM_INLINE void Fail(void) { m_state = eProcessState_Failed; }
+        CM_INLINE void Pause(void) { m_state = eProcessState_Paused; }
+        CM_INLINE void UnPause(void) { m_state = eProcessState_Running; }
 
-        virtual BOOL IsAlive(VOID) CONST { return m_state == eProcessState_Running || m_state == eProcessState_Paused; }
-        virtual BOOL IsDead(VOID) CONST { return m_state == eProcessState_Succed || m_state == eProcessState_Aborted || m_state == eProcessState_Failed; }
+        virtual bool IsAlive(void) const { return m_state == eProcessState_Running || m_state == eProcessState_Paused; }
+        virtual bool IsDead(void) const { return m_state == eProcessState_Succed || m_state == eProcessState_Aborted || m_state == eProcessState_Failed; }
 
-        virtual ~IProcess(VOID) {}
+        virtual ~IProcess(void) {}
     };
 
     class ILogicFactory
     {
     public:
-        virtual ILogic* VCreateLogic(VOID) = 0;
+        virtual ILogic* VCreateLogic(void) = 0;
     };
 }

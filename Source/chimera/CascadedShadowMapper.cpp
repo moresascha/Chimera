@@ -63,9 +63,9 @@ namespace chimera
         //ADD_EVENT_LISTENER(this, &CascadedShadowMapper::SetSunPositionDelegate, SetSunPositionEvent::TYPE);
     }
 
-    BOOL CascadedShadowMapper::VOnRestore(VOID)
+    bool CascadedShadowMapper::VOnRestore(void)
     {
-        UINT startSize = CmGetApp()->VGetConfig()->VGetInteger("iCSMSize");
+        uint startSize = CmGetApp()->VGetConfig()->VGetInteger("iCSMSize");
 
         if(!m_ppTargets)
         {
@@ -78,7 +78,7 @@ namespace chimera
                 m_ppTargets[i] = CmGetApp()->VGetHumanView()->VGetGraphicsFactory()->VCreateRenderTarget().release();
                 m_ppBlurredTargets[i] = CmGetApp()->VGetHumanView()->VGetGraphicsFactory()->VCreateRenderTarget().release();
 
-                UINT dim = startSize / (1 << i);
+                uint dim = startSize / (1 << i);
 
                 m_ppBlurChain[i] = CmGetApp()->VGetHumanView()->VGetEffectFactory()->VCreateEffectChain();// chimera::EffectChain(m_ppTargets[i], dim, dim);
 
@@ -101,22 +101,22 @@ namespace chimera
 
         m_pCascadesSettings = new CascadeSettings[m_cascades];
 
-        FLOAT f = 1000;
+        float f = 1000;
         
-        FLOAT factor = 3.5;
-        FLOAT l = 0;
+        float factor = 3.5;
+        float l = 0;
         for(UCHAR i = 0; i < m_cascades; ++i)
         {
-            l += (FLOAT)pow(factor, i);
+            l += (float)pow(factor, i);
         }
-        FLOAT t = 1.0f / l;
-        FLOAT sum = 0;
+        float t = 1.0f / l;
+        float sum = 0;
 
-        FLOAT lastZ = 0;
+        float lastZ = 0;
 
         for(UCHAR i = 1; i <= m_cascades; ++i)
         {
-            UINT dim = startSize / (1 << (i-1));
+            uint dim = startSize / (1 << (i-1));
             m_ppTargets[i - 1]->VSetClearColor(1000, 1000, 1000, 1000);
             //m_ppTargets[i - 1]->SetMiscflags(D3D11_RESOURCE_MISC_GENERATE_MIPS);
             m_ppTargets[i - 1]->VOnRestore(dim, dim, eFormat_R32G32_FLOAT);
@@ -128,7 +128,7 @@ namespace chimera
             m_ppBlurChain[i - 1]->VOnRestore(dim, dim);
         }
 
-        FLOAT cuttOffset = 0;
+        float cuttOffset = 0;
 
         m_pCascadesSettings[0].start = 0;//-cuttOffset;
         m_pCascadesSettings[0].end = 16;
@@ -148,19 +148,19 @@ namespace chimera
         desc.vs.layoutCount = 3;
         desc.vs.inputLayout[0].name = "POSITION";
         desc.vs.inputLayout[0].format = eFormat_R32G32B32_FLOAT;
-        desc.vs.inputLayout[0].instanced = FALSE;
+        desc.vs.inputLayout[0].instanced = false;
         desc.vs.inputLayout[0].slot = 0;
         desc.vs.inputLayout[0].position = 0;
 
         desc.vs.inputLayout[1].format = eFormat_R32G32B32_FLOAT;
         desc.vs.inputLayout[1].name = "NORMAL";
-        desc.vs.inputLayout[1].instanced = FALSE;
+        desc.vs.inputLayout[1].instanced = false;
         desc.vs.inputLayout[1].slot = 0;
         desc.vs.inputLayout[1].position = 1;
 
         desc.vs.inputLayout[2].name = "TEXCOORD";
         desc.vs.inputLayout[2].format = eFormat_R32G32_FLOAT;
-        desc.vs.inputLayout[2].instanced = FALSE;
+        desc.vs.inputLayout[2].instanced = false;
         desc.vs.inputLayout[2].slot = 0;
         desc.vs.inputLayout[2].position = 2;
 
@@ -174,25 +174,25 @@ namespace chimera
 
         desc.vs.layoutCount = 4;
 
-        desc.vs.inputLayout[0].instanced = FALSE;
+        desc.vs.inputLayout[0].instanced = false;
         desc.vs.inputLayout[0].name = "POSITION";
         desc.vs.inputLayout[0].position = 0;
         desc.vs.inputLayout[0].slot = 0;
         desc.vs.inputLayout[0].format = eFormat_R32G32B32_FLOAT;
 
-        desc.vs.inputLayout[1].instanced = FALSE;
+        desc.vs.inputLayout[1].instanced = false;
         desc.vs.inputLayout[1].name = "NORMAL";
         desc.vs.inputLayout[1].position = 1;
         desc.vs.inputLayout[1].slot = 0;
         desc.vs.inputLayout[1].format = eFormat_R32G32B32_FLOAT;
 
-        desc.vs.inputLayout[2].instanced = FALSE;
+        desc.vs.inputLayout[2].instanced = false;
         desc.vs.inputLayout[2].name = "TEXCOORD";
         desc.vs.inputLayout[2].position = 2;
         desc.vs.inputLayout[2].slot = 0;
         desc.vs.inputLayout[2].format = eFormat_R32G32_FLOAT;
 
-        desc.vs.inputLayout[3].instanced = TRUE;
+        desc.vs.inputLayout[3].instanced = true;
         desc.vs.inputLayout[3].name = "TANGENT";
         desc.vs.inputLayout[3].position = 3;
         desc.vs.inputLayout[3].slot = 1;
@@ -211,10 +211,10 @@ namespace chimera
         //m_camera.Rotate(0, 0.785f);
         //m_camera.Rotate(0, XM_PIDIV2);
         //m_camera.GetView().Print();
-        return TRUE;
+        return true;
     }
 
-    VOID CascadedShadowMapper::VRender(ISceneGraph* graph)
+    void CascadedShadowMapper::VRender(ISceneGraph* graph)
     {
 
         IRenderer* renderer = CmGetApp()->VGetHumanView()->VGetRenderer();
@@ -242,7 +242,7 @@ namespace chimera
 
         //util::Mat4 viewToLight = util::Mat4::Mul(lightCamera->GetView(), viewCamera->GetIView());//vcc->GetCamera()->GetIView());
 
-        FLOAT distances[3];
+        float distances[3];
 
         for(UCHAR ci = 0; ci < m_cascades; ++ci)
         {
@@ -251,8 +251,8 @@ namespace chimera
             /*util::StaticCamera* staticCam;
             staticCam = (util::StaticCamera*)(m_cascadeCameraActor[ci]->GetComponent<chimera::CameraComponent>(chimera::CameraComponent::COMPONENT_ID).lock()->GetCamera().get());*/
 
-            FLOAT farr = settings.end;
-            FLOAT nnear = settings.start;
+            float farr = settings.end;
+            float nnear = settings.start;
  
             cascadeFrusta.CreatePerspective(viewCamera->GetAspect(), viewCamera->GetFoV(), nnear, farr);
 
@@ -261,7 +261,7 @@ namespace chimera
             util::Vec3 vFrustumPoints[8];
             util::Vec3 vecs[8];
 
-            for(UINT i = 0; i < 8; ++i)
+            for(uint i = 0; i < 8; ++i)
             {
                 util::Vec3 v = util::Mat4::Transform(viewCamera->GetIView(), cascadeFrusta.GetPoints()[i]);
 
@@ -378,7 +378,7 @@ namespace chimera
        // renderer->SetCSMSettings(lightCamera->GetView(), lightCamera->GetIView(), mats, lcc->GetCamera()->GetEyePos(), distances);
     }
 
-    VOID CascadedShadowMapper::SetSunPositionDelegate(chimera::IEventPtr data)
+    void CascadedShadowMapper::SetSunPositionDelegate(chimera::IEventPtr data)
     {
         /*std::shared_ptr<chimera::SetSunPositionEvent> e = std::static_pointer_cast<chimera::SetSunPositionEvent>(data);
         std::shared_ptr<chimera::CameraComponent> cc = m_lightActorCamera->GetComponent<chimera::CameraComponent>(chimera::CameraComponent::COMPONENT_ID).lock();
@@ -391,7 +391,7 @@ namespace chimera
         XMStoreFloat4x4(&m.m_m, XMMatrixLookAtLH(XMLoadFloat3(&newPos.m_v), XMLoadFloat3(&(f.m_v)), XMLoadFloat3(&u.m_v)));*/
     }
 
-    VOID CascadedShadowMapper::Destroy(VOID)
+    void CascadedShadowMapper::Destroy(void)
     {
         for(UCHAR i = 0; i < m_cascades; ++i)
         {
@@ -409,7 +409,7 @@ namespace chimera
         SAFE_ARRAY_DELETE(m_pCascadesSettings);
     }
 
-    CascadedShadowMapper::~CascadedShadowMapper(VOID)
+    CascadedShadowMapper::~CascadedShadowMapper(void)
     {
         //REMOVE_EVENT_LISTENER(this, &CascadedShadowMapper::SetSunPositionDelegate, chimera::SetSunPositionEvent::TYPE);
         Destroy();

@@ -19,10 +19,33 @@ namespace chimera
         {
         }
 
-        VOID VOnFileModification(VOID)
+        void VOnFileModification(void)
         {
             QUEUE_EVENT_TSAVE(new chimera::ResourceChangedEvent(m_resource));
             DEBUG_OUT_A("change on Res: %s\n", m_resource.c_str());
+        }
+    };
+
+    class LoadResourceAsync : public RealtimeProcess
+    {
+    private:
+        IResourceCache* m_pCache;
+        CMResource m_res;
+        OnResourceLoadedCallback m_cb;
+
+    public:
+        LoadResourceAsync(IResourceCache* cache, CMResource& res, OnResourceLoadedCallback cb) : m_pCache(cache), m_res(res), m_cb(cb)
+        {
+            SetPriority(THREAD_PRIORITY_HIGHEST);
+        }
+
+        void VThreadProc(void)
+        {
+            std::shared_ptr<IResHandle> handle = m_pCache->VGetHandle(m_res);
+            if(m_cb)
+            {
+                m_cb(handle);
+            }
             Succeed();
         }
     };
@@ -30,11 +53,11 @@ namespace chimera
     class LoadFunctionHolder 
     {
     public:
-        static VOID Load(CMResource& r, ResourceCache* cache, IResourceFile* pFile, IResourceLoader* loader, IResourceDecompressor* decomp, std::shared_ptr<IResHandle> handle)
+        static void Load(CMResource& r, ResourceCache* cache, IResourceFile* pFile, IResourceLoader* loader, IResourceDecompressor* decomp, std::shared_ptr<IResHandle> handle)
         {
-            CHAR* buffer = NULL;
+            char* buffer = NULL;
             chimera::CMResource tmp(loader->VSubFolder() + r.m_name);
-            UINT size = pFile->VGetRawRessource(tmp, &buffer);
+            uint size = pFile->VGetRawRessource(tmp, &buffer);
 
             if(!pFile->VIsCompressed())
             {
@@ -46,8 +69,8 @@ namespace chimera
             }
             else
             {
-                CHAR* dst = NULL;
-                UINT newSize = decomp->VDecompressRessource(buffer, size, &dst);
+                char* dst = NULL;
+                uint newSize = decomp->VDecompressRessource(buffer, size, &dst);
                 size = loader->VLoadRessource(dst, newSize, handle);
                 if(!size)
                 {
@@ -59,7 +82,7 @@ namespace chimera
                 }
             }
 
-            handle->VSetReady(TRUE);
+            handle->VSetReady(true);
             handle->VSetSize(size);
 
             cache->AllocSilent(size);
@@ -91,45 +114,22 @@ namespace chimera
         }
     };
 
-    class LoadResourceAsyncProcess : public RealtimeProcess
+    ResourceCache::ResourceCache(void) : m_defaultDecompressor(NULL), m_defaultLoader(NULL), m_currentCacheSize(NULL)
     {
-    private:
-        std::shared_ptr<IResHandle> m_handle;
-        IResourceFile* m_file;
-        CMResource m_r;
-        IResourceDecompressor* m_decomp;
-        IResourceLoader* m_loader;
-        ResourceCache* m_cache;
-
-    public:
-
-        LoadResourceAsyncProcess(CMResource r, ResourceCache* cache, IResourceFile* file, IResourceLoader* loader, IResourceDecompressor* decomp, std::shared_ptr<IResHandle> handle) 
-            : m_handle(handle), m_file(file), m_decomp(decomp), m_r(r), m_cache(cache), m_loader(loader)
-        {
-        }
-
-        VOID VThreadProc(VOID)
-        {
-            LoadFunctionHolder::Load(m_r, m_cache, m_file, m_loader, m_decomp, m_handle);
-            Succeed();
-        }
-    };
-
-    ResourceCache::ResourceCache(VOID) : m_defaultDecompressor(NULL), m_defaultLoader(NULL), m_currentCacheSize(NULL)
-    {
+        ADD_EVENT_LISTENER(this, &ResourceCache::OnResourceChanged, CM_EVENT_RESOURCE_CHANGED);
     }
 
-    VOID ResourceCache::OnResourceChanged(IEventPtr data)
+    void ResourceCache::OnResourceChanged(IEventPtr data)
     {
         std::shared_ptr<ResourceChangedEvent> event = std::static_pointer_cast<ResourceChangedEvent>(data);
         std::shared_ptr<IResHandle> h = Find(CMResource(event->m_resource));
         if(h)
         {
-            h->VSetReady(FALSE);
+            h->VSetReady(false);
         }
     }
 
-    BOOL ResourceCache::VInit(UINT mbSize, IResourceFile* resFile) 
+    bool ResourceCache::VInit(uint mbSize, IResourceFile* resFile) 
     {
          m_maxCacheSize = 1024 * 1024 * mbSize;
          m_pFile = resFile; 
@@ -137,25 +137,25 @@ namespace chimera
         {
             m_defaultDecompressor = new DefaultRessourceDecompressor();
             m_defaultLoader = new DefaultRessourceLoader();
-            return TRUE;
+            return true;
         }
-        return FALSE;
+        return false;
     }
 
-    VOID ResourceCache::VRegisterLoader(std::unique_ptr<IResourceLoader> loader) 
+    void ResourceCache::VRegisterLoader(std::unique_ptr<IResourceLoader> loader) 
     {
         m_loader[loader->VGetPattern()] = std::move(loader);
     }
 
-    VOID ResourceCache::VRegisterDecompressor(std::unique_ptr<IResourceDecompressor> decompressor) 
+    void ResourceCache::VRegisterDecompressor(std::unique_ptr<IResourceDecompressor> decompressor) 
     {
         m_decompressor[decompressor->VGetPattern()] = std::move(decompressor);
     }
 
-    VOID ResourceCache::VAppendHandle(std::unique_ptr<IResHandle> handle)
+    void ResourceCache::VAppendHandle(std::unique_ptr<IResHandle> handle)
     {
         m_lock.Lock();
-        CONST CMResource& r = handle->VGetResource();
+        const CMResource& r = handle->VGetResource();
         auto it = m_locks.find(r.m_name);
         if(it == m_locks.end())
         {
@@ -167,23 +167,19 @@ namespace chimera
             m_handlesmap[r.m_name] = shrdHanel;
 
             shrdHanel->VSetResourceCache(this);
-            shrdHanel->VSetReady(TRUE);
+            shrdHanel->VSetReady(true);
             AllocSilent(shrdHanel->VSize());
         }
         m_lock.Unlock();
     }
 
+    void ResourceCache::VGetHandleAsync(CMResource& r, OnResourceLoadedCallback cb) 
+    {
+        std::shared_ptr<IProcess> proc = std::shared_ptr<IProcess>(new LoadResourceAsync(this, r, cb));
+        CmGetApp()->VGetLogic()->VGetProcessManager()->VAttach(proc);
+    }
+
     std::shared_ptr<IResHandle> ResourceCache::VGetHandle(CMResource& r) 
-    {
-        return _GetHandle(r, FALSE);
-    }
-
-    std::shared_ptr<IResHandle> ResourceCache::VGetHandleAsync(CMResource& r) 
-    {
-        return _GetHandle(r, TRUE);
-    }
-
-    std::shared_ptr<IResHandle> ResourceCache::_GetHandle(CMResource& r, BOOL async) 
     {
         m_lock.Lock();
     
@@ -196,12 +192,7 @@ namespace chimera
 
         m_lock.Unlock();
 
-        if(!async)
-        {
-            //DEBUG_OUT_A("waiting for %s %d", r.m_name.c_str(), GetCurrentThreadId());
-            m_locks[r.m_name]->Lock();
-            //DEBUG_OUT_A("waiting done %s %d", r.m_name.c_str(), GetCurrentThreadId());
-        }
+        m_locks[r.m_name]->Lock();
 
         m_lock.Lock();
 
@@ -218,12 +209,12 @@ namespace chimera
             }
             m_handlesmap.erase(handle->VGetResource().m_name);
             m_handlesList.remove(handle);
-            CHAR* d = handle->VBuffer();
+            char* d = handle->VBuffer();
             SAFE_ARRAY_DELETE(d);
             MemoryHasBeenFreed(handle->VSize());
         }
 
-        handle = Load(r, async);
+        handle = Load(r);
 
         return handle;
     }
@@ -238,17 +229,17 @@ namespace chimera
         return NULL;
     }
 
-    BOOL ResourceCache::VIsLoaded(CMResource& r)
+    bool ResourceCache::VIsLoaded(CMResource& r)
     {
         std::shared_ptr<IResHandle> handle = Find(r);
         if(handle)
         {
             return handle->VIsReady();
         }
-        return FALSE;
+        return false;
     }
 
-    std::shared_ptr<IResHandle> ResourceCache::Load(CMResource& r, BOOL async)
+    std::shared_ptr<IResHandle> ResourceCache::Load(CMResource& r)
     {
         IResourceLoader* loader;
         IResourceDecompressor* decomp = NULL;
@@ -301,24 +292,16 @@ namespace chimera
                 decomp = compIt->second.get();
             }
         }
-        if(async)
-        {
-            std::unique_ptr<IProcess> proc = std::unique_ptr<IProcess>(new LoadResourceAsyncProcess(r, this, m_pFile, loader, decomp, handle));
-            CmGetApp()->VGetLogic()->VGetProcessManager()->VAttach(std::move(proc));
-            LOG_CRITICAL_ERROR("this might not work with critical sections");
-        }
-        else
-        {
-            LoadFunctionHolder::Load(r, this, m_pFile, loader, decomp, handle);
-            m_locks[r.m_name]->Unlock();
-        }
+
+        LoadFunctionHolder::Load(r, this, m_pFile, loader, decomp, handle);
+        m_locks[r.m_name]->Unlock();
 
         //TODO: throw resource loaded event
 
         return handle;
     }
 
-    CHAR* ResourceCache::Alloc(UINT size)
+    char* ResourceCache::Alloc(uint size)
     {
 
         if(!MakeRoom(size))
@@ -326,7 +309,7 @@ namespace chimera
             return NULL;
         }
 
-        CHAR* buffer = new CHAR[size];
+        char* buffer = new char[size];
 
         if(!buffer)
         {
@@ -338,37 +321,37 @@ namespace chimera
         return buffer;
     }
 
-    BOOL ResourceCache::MakeRoom(UINT size)
+    bool ResourceCache::MakeRoom(uint size)
     {
 
         if(size > m_maxCacheSize)
         {
-            return FALSE;
+            return false;
         }
 
         while(m_currentCacheSize + size > m_maxCacheSize)
         {
             if(m_handlesList.empty())
             {
-                return FALSE;
+                return false;
             }
 
             FreeOneRessource();
         }
 
-        return TRUE;
+        return true;
     }
 
-    VOID ResourceCache::FreeOneRessource(VOID) 
+    void ResourceCache::FreeOneRessource(void) 
     {
         Free(m_handlesList.back());
     }
 
-    VOID ResourceCache::Free(std::shared_ptr<IResHandle> handle) 
+    void ResourceCache::Free(std::shared_ptr<IResHandle> handle) 
     {
         m_lock.Lock();
 
-        CHAR* d = handle->VBuffer();
+        char* d = handle->VBuffer();
         SAFE_ARRAY_DELETE(d);
 
         MemoryHasBeenFreed(handle->VSize());
@@ -380,13 +363,13 @@ namespace chimera
         m_lock.Unlock();
     }
 
-    VOID ResourceCache::Update(std::shared_ptr<IResHandle> handle)
+    void ResourceCache::Update(std::shared_ptr<IResHandle> handle)
     {
         m_handlesList.remove(handle);
         m_handlesList.push_front(handle);
     }
 
-    VOID ResourceCache::VFlush(VOID) 
+    void ResourceCache::VFlush(void) 
     {
         while(!m_handlesList.empty())
         {
@@ -394,20 +377,20 @@ namespace chimera
         }
     }
 
-    VOID ResourceCache::MemoryHasBeenFreed(UINT size)
+    void ResourceCache::MemoryHasBeenFreed(uint size)
     {
         m_lock.Lock();
         m_currentCacheSize -= size;
         m_lock.Unlock();
     }
 
-    BOOL ResourceCache::VHasResource(CMResource& r)
+    bool ResourceCache::VHasResource(CMResource& r)
     {
         std::vector<std::string> elems = util::split(r.m_name, '.');
 
         if(elems.size() < 2)
         {
-            return FALSE;
+            return false;
         }
 
         std::string pattern = elems.back();
@@ -416,24 +399,25 @@ namespace chimera
 
         if(it == m_loader.end())
         {
-            return FALSE;
+            return false;
         }
         std::string fileName = m_pFile->VGetName() + "/" + it->second->VSubFolder() + r.m_name;
         std::ifstream file(fileName, std::ios::in | std::ios::binary);
-        BOOL good = file.good();
+        bool good = file.good();
         file.close();
         return good;
     }
 
-    VOID ResourceCache::AllocSilent(UINT size) 
+    void ResourceCache::AllocSilent(uint size) 
     {
         m_lock.Lock();
         m_currentCacheSize += size;
         m_lock.Unlock();
     }
 
-    ResourceCache::~ResourceCache(VOID)
+    ResourceCache::~ResourceCache(void)
     {
+        REMOVE_EVENT_LISTENER(this, &ResourceCache::OnResourceChanged, CM_EVENT_RESOURCE_CHANGED);
         while(!m_handlesList.empty())
         {
             FreeOneRessource();
@@ -443,18 +427,18 @@ namespace chimera
         SAFE_DELETE(m_defaultLoader);
     }
 
-    ResHandle::~ResHandle(VOID) 
+    ResHandle::~ResHandle(void) 
     {
 
     }
 
-    BOOL ResourceFolder::VOpen(VOID) 
+    bool ResourceFolder::VOpen(void) 
     {
         DWORD att = GetFileAttributesW(util::string2wstring(this->m_folder).c_str());
         return att & FILE_ATTRIBUTE_DIRECTORY;
     }
 
-    INT ResourceFolder::VGetRawRessource(CONST CMResource&  r, CHAR** buffer)
+    int ResourceFolder::VGetRawRessource(const CMResource&  r, char** buffer)
     {
         std::string fileName(m_folder + "/" + r.m_name);
         std::ifstream file(fileName, std::ios::in | std::ios::binary);
@@ -468,7 +452,7 @@ namespace chimera
         struct stat status;
         stat(fileName.c_str(), &status);
     
-        CHAR* tmp = new CHAR[status.st_size];
+        char* tmp = new char[status.st_size];
 
         file.read(tmp, status.st_size);
 
@@ -479,27 +463,27 @@ namespace chimera
         return status.st_size;
     }
 
-    BOOL ResourceFolder::VHasFile(CONST CMResource& r)
+    bool ResourceFolder::VHasFile(const CMResource& r)
     {
         std::string fileName(m_folder + "/" + r.m_name);
         std::ifstream file(fileName, std::ios::in | std::ios::binary);
-        BOOL open = file.is_open();
+        bool open = file.is_open();
         return open;
     }
 
-    INT ResourceFolder::VGetNumFiles(VOID) 
+    int ResourceFolder::VGetNumFiles(void) 
     {
         LOG_CRITICAL_ERROR("not supported");
         return 0;
     }
 
-    std::string ResourceFolder::VGetRessourceName(INT num) 
+    std::string ResourceFolder::VGetRessourceName(int num) 
     {
         LOG_CRITICAL_ERROR("not supported");
         return "";
     }
 
-    INT DefaultRessourceLoader::VLoadRessource(CHAR* source, UINT size, std::shared_ptr<IResHandle> handle)
+    int DefaultRessourceLoader::VLoadRessource(char* source, uint size, std::shared_ptr<IResHandle>& handle)
     {
         handle->VSetBuffer(source);
         return size;

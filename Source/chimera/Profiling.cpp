@@ -3,7 +3,7 @@
 
 namespace chimera
 {
-    D3DQuery::D3DQuery(LPCSTR infoText, D3D11_QUERY query, VOID* pData, UINT size) : Query(infoText), m_queryType(query), m_pQuery(NULL), m_pData(pData), m_dataSize(size)
+    D3DQuery::D3DQuery(LPCSTR infoText, D3D11_QUERY query, void* pData, uint size) : Query(infoText), m_queryType(query), m_pQuery(NULL), m_pData(pData), m_dataSize(size)
     {
         D3D11_QUERY_DESC desc;
         desc.Query = query;
@@ -11,12 +11,12 @@ namespace chimera
         D3D_SAVE_CALL(chimera::GetDevice()->CreateQuery(&desc, &m_pQuery));
     }
 
-    VOID D3DQuery::VStart(VOID)
+    void D3DQuery::VStart(void)
     {
         chimera::g_pContext->Begin(m_pQuery);
     }
 
-    VOID D3DQuery::VEnd(VOID)
+    void D3DQuery::VEnd(void)
     {
         chimera::g_pContext->End(m_pQuery);
         while(S_OK != chimera::GetContext()->GetData(m_pQuery, m_pData, m_dataSize, 0))
@@ -25,29 +25,29 @@ namespace chimera
         }
     }
 
-    D3DQuery::~D3DQuery(VOID)
+    D3DQuery::~D3DQuery(void)
     {
         SAFE_RELEASE(m_pQuery);
     }
 
-    D3DOcclusionQuery::D3DOcclusionQuery(VOID) : D3DQuery("Fragments generated", D3D11_QUERY_OCCLUSION, &m_data, 8)
+    D3DOcclusionQuery::D3DOcclusionQuery(void) : D3DQuery("Fragments generated", D3D11_QUERY_OCCLUSION, &m_data, 8)
     {
 
     }
 
-    VOID D3DOcclusionQuery::GetResultAsString(std::string& result) CONST
+    void D3DOcclusionQuery::GetResultAsString(std::string& result) const
     {
         std::stringstream ss;
         ss << m_data;
         result = ss.str();
     }
 
-    D3DPipelineStatisticsQuery::D3DPipelineStatisticsQuery(VOID) : D3DQuery("Pipelinestatistics", D3D11_QUERY_PIPELINE_STATISTICS, &m_data, sizeof(D3D11_QUERY_DATA_PIPELINE_STATISTICS))
+    D3DPipelineStatisticsQuery::D3DPipelineStatisticsQuery(void) : D3DQuery("Pipelinestatistics", D3D11_QUERY_PIPELINE_STATISTICS, &m_data, sizeof(D3D11_QUERY_DATA_PIPELINE_STATISTICS))
     {
 
     }
 
-    VOID D3DPipelineStatisticsQuery::GetResultAsString(std::string& result) CONST
+    void D3DPipelineStatisticsQuery::GetResultAsString(std::string& result) const
     {
         std::stringstream ss;
         ss << "Vertices Read: ";
@@ -80,48 +80,48 @@ namespace chimera
         result = ss.str();
     }
 
-    D3DTimestampDisjointQuery::D3DTimestampDisjointQuery(VOID) : D3DQuery("TimestampDJ", D3D11_QUERY_TIMESTAMP_DISJOINT, &m_data, sizeof(D3D11_QUERY_DATA_TIMESTAMP_DISJOINT))
+    D3DTimestampDisjointQuery::D3DTimestampDisjointQuery(void) : D3DQuery("TimestampDJ", D3D11_QUERY_TIMESTAMP_DISJOINT, &m_data, sizeof(D3D11_QUERY_DATA_TIMESTAMP_DISJOINT))
     {
 
     }
 
-    VOID D3DTimestampDisjointQuery::GetResultAsString(std::string& result) CONST
-    {
-        //--
-    }
-
-    D3DTimestampQuery::D3DTimestampQuery(VOID) : D3DQuery("Timestamp", D3D11_QUERY_TIMESTAMP, &m_data, sizeof(UINT64))
-    {
-
-    }
-
-    VOID D3DTimestampQuery::GetResultAsString(std::string& result) CONST
+    void D3DTimestampDisjointQuery::GetResultAsString(std::string& result) const
     {
         //--
     }
 
-    D3DTimeDeltaQuery::D3DTimeDeltaQuery(VOID) : D3DQuery("Time", D3D11_QUERY_TIMESTAMP, &m_data, sizeof(UINT64))
+    D3DTimestampQuery::D3DTimestampQuery(void) : D3DQuery("Timestamp", D3D11_QUERY_TIMESTAMP, &m_data, sizeof(UINT64))
+    {
+
+    }
+
+    void D3DTimestampQuery::GetResultAsString(std::string& result) const
+    {
+        //--
+    }
+
+    D3DTimeDeltaQuery::D3DTimeDeltaQuery(void) : D3DQuery("Time", D3D11_QUERY_TIMESTAMP, &m_data, sizeof(UINT64))
     {
         m_pDisjointQuery = new D3DTimestampDisjointQuery();
         m_pTS0 = new D3DTimestampQuery();
         m_pTS1 = new D3DTimestampQuery();
     }
 
-    VOID D3DTimeDeltaQuery::VStart(VOID)
+    void D3DTimeDeltaQuery::VStart(void)
     {
         m_pDisjointQuery->VStart();
 
         m_pTS0->VEnd();
     }
 
-    VOID D3DTimeDeltaQuery::VEnd(VOID)
+    void D3DTimeDeltaQuery::VEnd(void)
     {
         m_pTS1->VEnd();
 
         m_pDisjointQuery->VEnd();
     }
 
-    VOID D3DTimeDeltaQuery::GetResultAsString(std::string& result) CONST
+    void D3DTimeDeltaQuery::GetResultAsString(std::string& result) const
     {
         D3D10_QUERY_DATA_TIMESTAMP_DISJOINT* djd = (D3D10_QUERY_DATA_TIMESTAMP_DISJOINT *)m_pDisjointQuery->GetData();
         if(djd->Disjoint)
@@ -136,12 +136,12 @@ namespace chimera
         ss << ", T1=";
         ss << t1;
         ss << ", dt (ms)="; */
-        ss << ((t1 - t0) / (FLOAT)djd->Frequency) * 1000.0f;
+        ss << ((t1 - t0) / (float)djd->Frequency) * 1000.0f;
         result = ss.str();
         //DEBUG_OUT_A("%s\n", result.c_str());
     }
 
-    D3DTimeDeltaQuery::~D3DTimeDeltaQuery(VOID)
+    D3DTimeDeltaQuery::~D3DTimeDeltaQuery(void)
     {
         SAFE_DELETE(m_pDisjointQuery);
         SAFE_DELETE(m_pTS0);

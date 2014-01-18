@@ -5,9 +5,12 @@
 #include <sstream>
 #endif
 
+typedef unsigned long ulong;
+typedef unsigned int uint;
+
 #include <string>
 
-typedef VOID (*WriteLogCallBack) (std::string);
+typedef void (*WriteLogCallBack) (std::string);
 
 namespace Logger 
 {
@@ -16,26 +19,26 @@ namespace Logger
     private:
         WriteLogCallBack m_writeCallBack;
         CRITICAL_SECTION m_critSection; 
-        VOID GetString(std::string& dest, CONST std::string& tag, CONST std::string& message, CONST CHAR* funcName, CONST CHAR* file, CONST UINT line);
+        void GetString(std::string& dest, const std::string& tag, const std::string& message, const char* funcName, const char* file, const uint line);
 
     public:
-        LogManager(VOID) 
+        LogManager(void) 
         {
             InitializeCriticalSection(&m_critSection);
             SetWriteCallBack(NULL);
         }
 
-        VOID Log(CONST std::string& tag, CONST std::string& message, CONST CHAR* funcName, CONST CHAR* file, CONST UINT line);
-        VOID CriticalError(CONST std::string& tag, CONST std::string& message, CONST CHAR* funcName, CONST CHAR* file, CONST UINT line);
-        VOID WriteTo(std::string& message);
-        VOID Destroy(VOID);
+        void Log(const std::string& tag, const std::string& message, const char* funcName, const char* file, const uint line);
+        void CriticalError(const std::string& tag, const std::string& message, const char* funcName, const char* file, const uint line);
+        void WriteTo(std::string& message);
+        void Destroy(void);
 
-        VOID SetWriteCallBack(WriteLogCallBack cb)
+        void SetWriteCallBack(WriteLogCallBack cb)
         {
             m_writeCallBack = cb;
         }
 
-        ~LogManager(VOID) 
+        ~LogManager(void) 
         {
             DeleteCriticalSection(&m_critSection);
         }
@@ -45,11 +48,11 @@ namespace Logger
 
     extern std::string* s_fileName;
     
-    VOID Init(std::string fileName);
+    void Init(std::string fileName);
 
-    VOID Destroy(VOID);
+    void Destroy(void);
 
-    VOID Log(CONST std::string& tag, CONST std::string& message, CONST CHAR* funcName, CONST CHAR* file, CONST UINT line);
+    void Log(const std::string& tag, const std::string& message, const char* funcName, const char* file, const uint line);
 }
 
 //#ifdef _DEBUG

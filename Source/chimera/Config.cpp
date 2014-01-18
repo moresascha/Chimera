@@ -15,13 +15,13 @@ namespace chimera
 
         typedef std::vector<std::string> NameValuePair;
 
-        BOOL CheckValue(std::string& valueLine)
+        bool CheckValue(std::string& valueLine)
         {
             return valueLine.find("=") != std::string::npos;
         }
 
         template<class T>
-        BOOL GetNumericValue(T& t, std::string& value)
+        bool GetNumericValue(T& t, std::string& value)
         {
             std::stringstream ss;
             ss << value;
@@ -29,7 +29,7 @@ namespace chimera
             return !ss.fail();
         }
 
-        BOOL Config::VLoadConfigFile(LPCSTR file)
+        bool Config::VLoadConfigFile(LPCSTR file)
         {
             std::ifstream stream(file);
 
@@ -48,7 +48,7 @@ namespace chimera
                     if(!CheckValue(line))
                     {
                         LOG_CRITICAL_ERROR_A("Error parsing config.ini: %s", line.c_str());
-                        return FALSE;
+                        return false;
                     }
 
                     NameValuePair pair = util::split(line, '=');
@@ -63,15 +63,15 @@ namespace chimera
                     }
                     else if(line[0] == 'i')
                     {
-                        INT i;
+                        int i;
                         RETURN_IF_FAILED(GetNumericValue(i, pair[1]));
-                        v = new Value<INT>(i);
+                        v = new Value<int>(i);
                     }
                     else if(line[0] == 'f')
                     {
-                        FLOAT f;
+                        float f;
                         RETURN_IF_FAILED(GetNumericValue(f, pair[1]));
-                        v = new Value<FLOAT>(f);
+                        v = new Value<float>(f);
                     }
                     else if(line[0] == 'd')
                     {
@@ -81,27 +81,27 @@ namespace chimera
                     }
                     else if(line[0] == 'b')
                     {
-                        BOOL b;
+                        bool b;
                         RETURN_IF_FAILED(GetNumericValue(b, pair[1]));
-                        v = new Value<BOOL>(b);
+                        v = new Value<bool>(b);
                     }
                     else
                     {
                         LOG_CRITICAL_ERROR_A("Error parsing config.ini: %s", line.c_str());
-                        return FALSE;
+                        return false;
                     }
                     if(m_values.find(pair[0]) != m_values.end())
                     {
                         LOG_CRITICAL_ERROR_A("Error parsing config.ini: Double entry %s", line.c_str());
-                        return FALSE;
+                        return false;
                     }
                     m_values[pair[0]] = v;
                 }
             }
-            return TRUE;
+            return true;
         }
 
-        Config::~Config(VOID)
+        Config::~Config(void)
         {
             for(auto it = m_values.begin(); it != m_values.end(); ++it)
             {

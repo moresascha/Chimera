@@ -5,12 +5,12 @@
 
 namespace chimera
 {
-    LevelManager::LevelManager(VOID)
+    LevelManager::LevelManager(void)
     {
         m_formatSaver[0] = new SaveXMLLevel();
     }
 
-    LevelManager::~LevelManager(VOID)
+    LevelManager::~LevelManager(void)
     {
         TBD_FOR_INT(eCNT)
         {
@@ -18,7 +18,7 @@ namespace chimera
         }
     }
 
-    BOOL SaveXMLLevel::VSaveLevel(ILevel* level, LPCSTR file)
+    bool SaveXMLLevel::VSaveLevel(ILevel* level, LPCSTR file)
     {
         tinyxml2::XMLDocument doc;
 
@@ -28,7 +28,7 @@ namespace chimera
 
         tinyxml2::XMLElement* root = doc.NewElement("Level");
         
-        CONST std::map<ActorId, std::unique_ptr<IActor>>& actors = level->VGetActors();
+        const std::map<ActorId, std::unique_ptr<IActor>>& actors = level->VGetActors();
 
         std::vector<ActorId> wasChild;
 
@@ -73,10 +73,10 @@ namespace chimera
         s += CmGetApp()->VGetConfig()->VGetString("sLevelPath");
         s += file + std::string(".xml");
 
-        return doc.SaveFile(s.c_str());
+        return doc.SaveFile(s.c_str()) != tinyxml2::XML_NO_ERROR;
     }
 
-    BaseLevel::BaseLevel(CONST std::string& file, IActorFactory* factory) : m_file(file), m_name("unnamed"), m_pActorFactory(factory)
+    BaseLevel::BaseLevel(const std::string& file, IActorFactory* factory) : m_file(file), m_name("unnamed"), m_pActorFactory(factory)
     {
         ADD_EVENT_LISTENER(this, &XMLLevel::ActorCreatedDelegate, CM_EVENT_ACTOR_CREATED);
     }
@@ -91,17 +91,17 @@ namespace chimera
         return it->second.get();
     }
 
-    UINT BaseLevel::VGetActorsCount(VOID)
+    uint BaseLevel::VGetActorsCount(void)
     {
-        return (UINT)m_actors.size();
+        return (uint)m_actors.size();
     }
 
-    VOID BaseLevel::VRemoveActor(ActorId id)
+    void BaseLevel::VRemoveActor(ActorId id)
     {
         m_actors.erase(id);
     }
 
-    VOID BaseLevel::ActorCreatedDelegate(IEventPtr eventData)
+    void BaseLevel::ActorCreatedDelegate(IEventPtr eventData)
     {
         std::shared_ptr<ActorCreatedEvent> data = std::static_pointer_cast<ActorCreatedEvent>(eventData);
         auto it = std::find(m_idsToLoad.begin(), m_idsToLoad.end(), data->m_id);
@@ -125,12 +125,12 @@ namespace chimera
         return raw;
     }
 
-    FLOAT BaseLevel::VGetLoadingProgress(VOID)
+    float BaseLevel::VGetLoadingProgress(void)
     {
-        return 1.0f - m_idsToLoad.size() / (FLOAT)VGetActorsCount();
+        return 1.0f - m_idsToLoad.size() / (float)VGetActorsCount();
     }
 
-    VOID BaseLevel::VUnload(VOID)
+    void BaseLevel::VUnload(void)
     {
         for(auto it = m_actors.begin(); it != m_actors.end(); ++it)
         {
@@ -139,13 +139,13 @@ namespace chimera
         }
     }
 
-    BaseLevel::~BaseLevel(VOID)
+    BaseLevel::~BaseLevel(void)
     {
         VUnload();
         REMOVE_EVENT_LISTENER(this, &XMLLevel::ActorCreatedDelegate, CM_EVENT_ACTOR_CREATED);
     }
 
-    XMLLevel::XMLLevel(CONST std::string& file, IActorFactory* factory) : BaseLevel(file, factory)
+    XMLLevel::XMLLevel(const std::string& file, IActorFactory* factory) : BaseLevel(file, factory)
     {
 
     }
@@ -169,13 +169,13 @@ namespace chimera
         return parent;
     }
 
-    BOOL XMLLevel::VSave(LPCSTR file /* = NULL */)
+    bool XMLLevel::VSave(LPCSTR file /* = NULL */)
     {
 
-        return TRUE;
+        return true;
     }
 
-    BOOL XMLLevel::VLoad(BOOL block)
+    bool XMLLevel::VLoad(bool block)
     {
         tinyxml2::XMLDocument doc;
 
@@ -185,16 +185,23 @@ namespace chimera
 
         if(!handle)
         {
-            return FALSE;
+            return false;
         }
 
-        doc.Parse((CHAR*)handle->VBuffer());
+        doc.Parse((char*)handle->VBuffer());
 
         tinyxml2::XMLElement* root = doc.RootElement();
-        RETURN_IF_FAILED(root);
+        
+        if(!root)
+        {
+            LOG_CRITICAL_ERROR_A("Failed to load XML File '%s | %s'", doc.GetErrorStr1(), doc.GetErrorStr2());
+        }
 
-        VAddActor(root);
+        for(tinyxml2::XMLNode* pNode = root->FirstChild(); pNode; pNode = pNode->NextSibling())
+        {
+            VAddActor(pNode);
+        }
 
-        return TRUE;
+        return true;
     }
 }

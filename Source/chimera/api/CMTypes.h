@@ -1,6 +1,9 @@
 #pragma once
 #include "CMCommon.h"
 
+typedef unsigned long ulong;
+typedef unsigned int uint;
+
 namespace chimera
 {
     class _ActorDescription;
@@ -67,6 +70,8 @@ namespace chimera
     class IEffectFactoryFactory;
     class IEnvironmentLighting;
     class ICMStream;
+    class IParticleModifier;
+    class IParticleSystem;
 
     namespace util
     {
@@ -90,36 +95,36 @@ namespace chimera
         eErrorCode_InvalidValue
     };
 
-    typedef fastdelegate::FastDelegate0<VOID> UpdateAction;
-    typedef UINT RenderPath;
-    typedef fastdelegate::FastDelegate3<INT, INT, INT> MouseScrollAction;
+    typedef fastdelegate::FastDelegate0<void> UpdateAction;
+    typedef uint RenderPath;
+    typedef fastdelegate::FastDelegate3<int, int, int> MouseScrollAction;
     typedef ISceneNode* (*SceneNodeCreator)(IHumanView*, IActor*);
     typedef size_t FactoryPtr;
     typedef WNDPROC CM_WINDOW_CALLBACK;
     typedef HINSTANCE CM_INSTANCE;
     typedef HWND CM_HWND;
-    typedef UINT ViewId;
+    typedef uint ViewId;
     typedef util::Vec4 Color;
-    typedef ULONG ActorId;
-    typedef UINT ComponentId;
+    typedef ulong ActorId;
+    typedef uint ComponentId;
     typedef fastdelegate::FastDelegate0<> OnFileChangedCallback;
-    typedef fastdelegate::FastDelegate1<ULONG> _FDelegate;
-    typedef IActorComponent* (*ActorComponentCreator)(VOID);
-    typedef VOID (*ActorComponentSerializer)(ICMStream*);
-    typedef BOOL (*ActorComponentInitializer)(IActorComponent*, ICMStream*);
-    typedef ULONG EventType;
+    typedef fastdelegate::FastDelegate1<ulong> _FDelegate;
+    typedef IActorComponent* (*ActorComponentCreator)(void);
+    typedef void (*ActorComponentSerializer)(ICMStream*);
+    typedef bool (*ActorComponentInitializer)(IActorComponent*, ICMStream*);
+    typedef ulong EventType;
     typedef std::shared_ptr<IEvent> IEventPtr;
     typedef fastdelegate::FastDelegate1<IEventPtr> EventListener;
     typedef CMResource VRamResource;
-    typedef fastdelegate::FastDelegate1<ICommand&, BOOL> CommandHandler;
+    typedef fastdelegate::FastDelegate1<ICommand&, bool> CommandHandler;
     typedef std::string ErrorLog;
-    typedef INT PixelFormat;
-    typedef INT GameState;
+    typedef int PixelFormat;
+    typedef int GameState;
 
-    struct FLOAT2
+    struct float2
     {
-        FLOAT x;
-        FLOAT y;
+        float x;
+        float y;
     };
 
     enum GraphicsFormat
@@ -317,14 +322,14 @@ namespace chimera
     {
         Fillmode FillMode;
         CullMode CullMode;
-        BOOL FrontCounterClockwise;
-        INT DepthBias;
-        FLOAT DepthBiasClamp;
-        FLOAT SlopeScaledDepthBias;
-        BOOL DepthClipEnable;
-        BOOL ScissorEnable;
-        BOOL MultisampleEnable;
-        BOOL AntialiasedLineEnable;
+        bool FrontCounterClockwise;
+        int DepthBias;
+        float DepthBiasClamp;
+        float SlopeScaledDepthBias;
+        bool DepthClipEnable;
+        bool ScissorEnable;
+        bool MultisampleEnable;
+        bool AntialiasedLineEnable;
     };
 
     enum Blend
@@ -348,7 +353,7 @@ namespace chimera
 
     struct RenderTargetBlendDesc
     {
-        BOOL BlendEnable;
+        bool BlendEnable;
         Blend SrcBlend;
         Blend DestBlend;
         BlendOP BlendOp;
@@ -360,8 +365,8 @@ namespace chimera
 
     struct BlendStateDesc
     {
-        BOOL AlphaToCoverageEnable;
-        BOOL IndependentBlendEnable;
+        bool AlphaToCoverageEnable;
+        bool IndependentBlendEnable;
         RenderTargetBlendDesc RenderTarget[8];
     } ;
 
@@ -414,10 +419,10 @@ namespace chimera
 
     struct DepthStencilStateDesc
     {
-        BOOL DepthEnable;
+        bool DepthEnable;
         DepthWriteMask DepthWriteMask;
         ComparisonFunc DepthFunc;
-        BOOL StencilEnable;
+        bool StencilEnable;
         UINT8 StencilReadMask;
         UINT8 StencilWriteMask;
         DepthStencilOperationDesc FrontFace;
@@ -468,33 +473,33 @@ namespace chimera
 
     struct CMFontMetrics
     {
-        FLOAT leftU;
-        FLOAT rightU;
-        UINT pixelWidth;
+        float leftU;
+        float rightU;
+        uint pixelWidth;
     };
 
     struct CMCharMetric
     {
         UCHAR id;
-        UINT x;
-        UINT y;
-        UINT width;
-        UINT height;
-        INT xoffset;
-        INT yoffset;
-        UINT xadvance;
+        uint x;
+        uint y;
+        uint width;
+        uint height;
+        int xoffset;
+        int yoffset;
+        uint xadvance;
     };
 
     struct CMFontStyle
     {
-        BOOL italic;
-        BOOL bold;
-        UINT charCount;
-        UINT lineHeight;
-        UINT texWidth;
-        UINT texHeight;
-        UINT size;
-        UINT base;
+        bool italic;
+        bool bold;
+        uint charCount;
+        uint lineHeight;
+        uint texWidth;
+        uint texHeight;
+        uint size;
+        uint base;
         std::string textureFile;
         std::string metricFile;
         std::string name;
@@ -502,20 +507,20 @@ namespace chimera
 
     struct CMTextureDescription
     {
-        UINT width;
-        UINT height;
-        UINT mipmapLevels;
-        UINT arraySize;
-        UINT usage;
-        UINT cpuAccess;
+        uint width;
+        uint height;
+        uint mipmapLevels;
+        uint arraySize;
+        uint usage;
+        uint cpuAccess;
         GraphicsFormat format;
         TextureMiscFlags miscflags;
-        VOID* data;
+        void* data;
     };
 
     struct CMShaderDescription
     {
-        CMShaderDescription(VOID) : file(NULL), function(NULL)
+        CMShaderDescription(void) : file(NULL), function(NULL)
         {
 
         }
@@ -526,16 +531,16 @@ namespace chimera
     struct CMVertexInputLayout
     {
         LPCSTR name;
-        UINT position;
-        UINT slot;
+        uint position;
+        uint slot;
         GraphicsFormat format;
-        BOOL instanced;
+        bool instanced;
     };
 
     struct CMVertexShaderDescription : public CMShaderDescription
     {
         CMVertexInputLayout inputLayout[16];
-        UINT layoutCount;
+        uint layoutCount;
     };
 
     struct CMShaderProgramDescription
@@ -549,12 +554,12 @@ namespace chimera
 
     struct CMDimension
     {
-        UINT x;
-        UINT y;
-        UINT w;
-        UINT h;
+        uint x;
+        uint y;
+        uint w;
+        uint h;
 
-        CMDimension(VOID)
+        CMDimension(void)
         {
             x = 0;
             y = 0;
@@ -562,7 +567,7 @@ namespace chimera
             h = 0;
         }
 
-        CMDimension(CONST CMDimension& dim)
+        CMDimension(const CMDimension& dim)
         {
             x = dim.x;
             y = dim.y;
@@ -590,7 +595,7 @@ namespace chimera
 
     public:
         std::string m_name;
-        CMResource(CONST std::string &name) : m_name(name) 
+        CMResource(const std::string &name) : m_name(name) 
         {
             std::transform(m_name.begin(), m_name.end(), m_name.begin(), ::tolower);
         }
@@ -601,58 +606,58 @@ namespace chimera
             std::transform(m_name.begin(), m_name.end(), m_name.begin(), ::tolower);
         }
 
-        CMResource(CONST CMResource& r)
+        CMResource(const CMResource& r)
         {
             this->m_name = r.m_name;
         }
 
-        CMResource(VOID) : m_name("unknown") {}
+        CMResource(void) : m_name("unknown") {}
 
-        VOID CMResource::operator=(std::string& str) 
+        void CMResource::operator=(std::string& str) 
         {
             std::transform(str.begin(), str.end(), str.begin(), ::tolower);
             this->m_name = str;
         }
 
-        VOID CMResource::operator=(CHAR* chars) 
+        void CMResource::operator=(char* chars) 
         {
             std::string str(chars);
             std::transform(str.begin(), str.end(), str.begin(), ::tolower);
             this->m_name = str;
         }
 
-        VOID CMResource::operator=(CONST CMResource& res)
+        void CMResource::operator=(const CMResource& res)
         {
             m_name = res.m_name;
         }
 
-        BOOL CMResource::operator!=(CONST CMResource& res)
+        bool CMResource::operator!=(const CMResource& res)
         {
             return m_name != res.m_name;
         }
 
-        BOOL CMResource::operator==(CONST CMResource& res)
+        bool CMResource::operator==(const CMResource& res)
         {
             return m_name == res.m_name;
         }
 
-        friend CMResource operator+(CONST CMResource& res0, CONST CMResource& res1)
+        friend CMResource operator+(const CMResource& res0, const CMResource& res1)
         {
             return CMResource(res0.m_name + res1.m_name);
         }
 
-        friend CMResource operator+(CONST CMResource& res0, CONST std::string& res1)
+        friend CMResource operator+(const CMResource& res0, const std::string& res1)
         {
             return CMResource(res0.m_name + res1);
         }
 
-        ~CMResource(VOID) { }
+        ~CMResource(void) { }
     };
 
     template <typename T>
-    T* FindFactory(FactoryPtr* facts, UINT type, size_t* size)
+    T* FindFactory(FactoryPtr* facts, uint type, size_t* size)
     {
-        for(UINT i = 0; CM_FACTORY_END != facts[0]; i+=3)
+        for(uint i = 0; CM_FACTORY_END != facts[0]; i+=3)
         {
             if(type == facts[i])
             {
@@ -667,7 +672,7 @@ namespace chimera
     }
 
     template <typename T>
-    T* FindFactory(FactoryPtr* facts, UINT type)
+    T* FindFactory(FactoryPtr* facts, uint type)
     {
         return FindFactory<T>(facts, type, NULL);
     }
@@ -675,13 +680,13 @@ namespace chimera
     template <typename T>
     T* CopyFactory(T* fact, size_t size)
     {
-        VOID* mem = malloc(size);
+        void* mem = malloc(size);
         memcpy(mem, fact, size);
         return (T*)(mem);
     }
 
     template <typename T>
-    T* FindAndCopyFactory(FactoryPtr* facts, UINT type)
+    T* FindAndCopyFactory(FactoryPtr* facts, uint type)
     {
         size_t size;
         T* fact = FindFactory<T>(facts, type, &size);
@@ -703,10 +708,10 @@ namespace chimera
 
     struct TextLine
     {
-        UINT width;
-        UINT height;
+        uint width;
+        uint height;
         std::string text;
-        TextLine(VOID) : width(0), height(0)
+        TextLine(void) : width(0), height(0)
         {
 
         }

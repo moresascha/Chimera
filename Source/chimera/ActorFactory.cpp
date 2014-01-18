@@ -14,17 +14,17 @@ namespace chimera
     private:
         HANDLE m_handle;
     public:
-        __CC(VOID)
+        __CC(void)
         {
-            m_handle = CreateEvent(NULL, FALSE, FALSE, NULL);
+            m_handle = CreateEvent(NULL, false, false, NULL);
         }
 
-        EventType VGetEventType(VOID)
+        EventType VGetEventType(void)
         {
             return CM_EVENT___CC;
         }
 
-        ~__CC(VOID)
+        ~__CC(void)
         {
             if(m_handle)
             {
@@ -43,13 +43,13 @@ namespace chimera
         {
         }
 
-        VOID WaitForEvent(IEventPtr event)
+        void WaitForEvent(IEventPtr event)
         {
             std::shared_ptr<__CC> cc = std::static_pointer_cast<__CC>(event);
             SetEvent(cc->m_handle);
         }
 
-        VOID VThreadProc(VOID)
+        void VThreadProc(void)
         {
             /*HANDLE* pHandles = new HANDLE[m_actor->VGetComponents().size()];
             TBD_FOR_INT(m_actor->VGetComponents().size())
@@ -80,7 +80,7 @@ namespace chimera
             SetPriority(THREAD_PRIORITY_HIGHEST);
         }
 
-        VOID VThreadProc(VOID)
+        void VThreadProc(void)
         {
             for(auto it = m_actor->VGetComponents().begin(); it != m_actor->VGetComponents().end(); ++it)
             {
@@ -95,64 +95,64 @@ namespace chimera
         }
     };
 
-    IActorComponent* CreateTransformComponent(VOID) 
+    IActorComponent* CreateTransformComponent(void) 
     {
         return new TransformComponent;
     }
 
-    IActorComponent* CreateRenderComponent(VOID)
+    IActorComponent* CreateRenderComponent(void)
     {
         return new RenderComponent;
     }
 
-    IActorComponent* CreateCameraComponent(VOID) 
+    IActorComponent* CreateCameraComponent(void) 
     {
         return new CameraComponent;
     }
 
-    IActorComponent* CreatePhysicComponent(VOID) 
+    IActorComponent* CreatePhysicComponent(void) 
     {
         return new PhysicComponent;
     }
 
-    IActorComponent* CreateLightComponent(VOID) 
+    IActorComponent* CreateLightComponent(void) 
     {
         return new LightComponent;
     }
 
-    IActorComponent* CreatePickableComponent(VOID)
+    IActorComponent* CreatePickableComponent(void)
     {
         return new PickableComponent;
     }
 
-    IActorComponent* CreateSoundEmitterComponent(VOID)
+    IActorComponent* CreateSoundEmitterComponent(void)
     {
         return new SoundComponent;
     }
 
-    IActorComponent* CreateParentComponent(VOID)
+    IActorComponent* CreateParentComponent(void)
     {
         return new ParentComponent;
     }
 
-    IActorComponent* CreateControllerComponent(VOID)
+    IActorComponent* CreateControllerComponent(void)
     {
         return new ControllerComponent;
     }
 
-    BOOL InitiaizeTransformComponent(IActorComponent* cmp, ICMStream* stream);
+    bool InitiaizeTransformComponent(IActorComponent* cmp, ICMStream* stream);
 
-    BOOL InitiaizeRenderingComponent(IActorComponent* cmp, ICMStream* stream);
+    bool InitiaizeRenderingComponent(IActorComponent* cmp, ICMStream* stream);
 
-    BOOL InitiaizeCameraComponent(IActorComponent* cmp, ICMStream* stream);
+    bool InitiaizeCameraComponent(IActorComponent* cmp, ICMStream* stream);
 
-    BOOL InitiaizeControllerComponent(IActorComponent* cmp, ICMStream* stream);
+    bool InitiaizeControllerComponent(IActorComponent* cmp, ICMStream* stream);
 
-    BOOL InitiaizePhysicsComponent(IActorComponent* cmp, ICMStream* stream);
+    bool InitiaizePhysicsComponent(IActorComponent* cmp, ICMStream* stream);
 
-    BOOL InitiaizeLightComponent(IActorComponent* cmp, ICMStream* stream);
+    bool InitiaizeLightComponent(IActorComponent* cmp, ICMStream* stream);
 
-    ActorFactory::ActorFactory(VOID) : m_lastActorId(0)
+    ActorFactory::ActorFactory(void) : m_lastActorId(0)
     {
         VAddComponentCreator(CreateTransformComponent, "TransformComponent", CM_CMP_TRANSFORM);
         VAddComponentCreator(CreateRenderComponent, "RenderComponent", CM_CMP_RENDERING);
@@ -171,18 +171,18 @@ namespace chimera
         VAddComponentInitializer(InitiaizeLightComponent, "LightComponent", CM_CMP_LIGHT);
     }
 
-    VOID ActorFactory::VAddComponentCreator(ActorComponentCreator creator, LPCSTR name, ComponentId id)
+    void ActorFactory::VAddComponentCreator(ActorComponentCreator creator, LPCSTR name, ComponentId id)
     {
         m_creators[std::string(name)] = creator;
         m_creatorsId[id] = creator;
     }
 
-    VOID ActorFactory::VAddComponentSerializer(ActorComponentSerializer serializer, LPCSTR name, ComponentId id)
+    void ActorFactory::VAddComponentSerializer(ActorComponentSerializer serializer, LPCSTR name, ComponentId id)
     {
         m_serializerId[std::string(name)] = serializer;
     }
 
-    VOID ActorFactory::VAddComponentInitializer(ActorComponentInitializer initializer, LPCSTR name, ComponentId id)
+    void ActorFactory::VAddComponentInitializer(ActorComponentInitializer initializer, LPCSTR name, ComponentId id)
     {
         m_initializerId[std::string(name)] = initializer;
     }
@@ -280,7 +280,7 @@ namespace chimera
         return pActor;
     }
 
-    IActor* ActorFactory::VCreateActor(CONST CMResource& resource, std::vector<std::unique_ptr<IActor>>& actors)
+    IActor* ActorFactory::VCreateActor(const CMResource& resource, std::vector<std::unique_ptr<IActor>>& actors)
     {
         tinyxml2::XMLDocument doc;
         CMResource r(CmGetApp()->VGetConfig()->VGetString("sActorPath") + resource);

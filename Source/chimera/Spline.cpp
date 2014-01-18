@@ -3,12 +3,12 @@
 namespace util
 {
 
-    UniformBSpline::UniformBSpline(INT devisions /* = 10 */) : m_devisions(devisions), m_pSplinePoints(NULL)
+    UniformBSpline::UniformBSpline(int devisions /* = 10 */) : m_devisions(devisions), m_pSplinePoints(NULL)
     {
 
     }
 
-    UniformBSpline::UniformBSpline(CONST UniformBSpline& spline)
+    UniformBSpline::UniformBSpline(const UniformBSpline& spline)
     {
         TBD_FOR(spline.m_controlPoints)
         {
@@ -17,12 +17,12 @@ namespace util
         m_devisions = spline.m_devisions;
     }
 
-    CONST std::vector<util::Vec3>& UniformBSpline::GetControlPoints(VOID) CONST
+    const std::vector<util::Vec3>& UniformBSpline::GetControlPoints(void) const
     {
         return m_controlPoints;
     }
 
-    VOID computeVector(float p0, float p1, float p2, float p3, float a[4])
+    void computeVector(float p0, float p1, float p2, float p3, float a[4])
     {
         a[0] = (-p0 + 3 * p1 - 3 * p2 + p3) / 6.0f;
         a[1] = (3 * p0 - 6 * p1 + 3 * p2) / 6.0f;
@@ -30,13 +30,13 @@ namespace util
         a[3] = (p0 + 4 * p1 + p2) / 6.0f;
     }
 
-    VOID UniformBSpline::SetDivisions(INT divs)
+    void UniformBSpline::SetDivisions(int divs)
     {
         m_devisions = divs;
         //Create();
     }
 
-    VOID UniformBSpline::Blend(CONST util::Vec3& p1, CONST util::Vec3& p2, CONST util::Vec3& p3, CONST util::Vec3& p4, int offset)
+    void UniformBSpline::Blend(const util::Vec3& p1, const util::Vec3& p2, const util::Vec3& p3, const util::Vec3& p4, int offset)
     {
         float x[4];
         float y[4];
@@ -45,7 +45,7 @@ namespace util
         computeVector(p1.y, p2.y, p3.y, p4.y, y);
         computeVector(p1.z, p2.z, p3.z, p4.z, z);
 
-        for (INT i = 0; i < m_devisions; i++)
+        for (int i = 0; i < m_devisions; i++)
         { 
             float t = i / (float)(m_devisions);
             m_pSplinePoints[i + offset].x = t * t * t * x[0] + t * t * x[1] + t * x[2] + x[3];
@@ -54,25 +54,25 @@ namespace util
         }
     }
 
-    VOID UniformBSpline::AddPoint(CONST util::Vec3& p)
+    void UniformBSpline::AddPoint(const util::Vec3& p)
     {
         m_controlPoints.push_back(p);
     }
 
-    INT UniformBSpline::GetPointsCount(VOID) CONST
+    int UniformBSpline::GetPointsCount(void) const
     {
-        return (INT)(m_devisions * m_controlPoints.size());
+        return (int)(m_devisions * m_controlPoints.size());
     }
 
-    util::Vec3 UniformBSpline::GetIntpolPoint(FLOAT time) CONST
+    util::Vec3 UniformBSpline::GetIntpolPoint(float time) const
     {
-        INT l = GetPointsCount();
-        INT pos = (INT)(l * time);
+        int l = GetPointsCount();
+        int pos = (int)(l * time);
 
         return m_pSplinePoints[pos];
     }
 
-    VOID UniformBSpline::Create(VOID)
+    void UniformBSpline::Create(void)
     {
         assert(m_controlPoints.size() > 3);
 
@@ -83,16 +83,16 @@ namespace util
 
         m_pSplinePoints = new util::Vec3[m_devisions * m_controlPoints.size()];
 
-        INT N = (INT)m_controlPoints.size();
+        int N = (int)m_controlPoints.size();
         
-        for(INT i = 0; i < m_controlPoints.size(); ++i)
+        for(int i = 0; i < m_controlPoints.size(); ++i)
         {
-            INT start = (INT)m_controlPoints.size() - 1 + i;
+            int start = (int)m_controlPoints.size() - 1 + i;
 
-            INT id0 = (start + 0) % N;
-            INT id1 = (start + 1) % N;
-            INT id2 = (start + 2) % N;
-            INT id3 = (start + 3) % N;
+            int id0 = (start + 0) % N;
+            int id1 = (start + 1) % N;
+            int id2 = (start + 2) % N;
+            int id3 = (start + 3) % N;
 
             util::Vec3& pmi  = m_controlPoints[id0];
             util::Vec3& pi   = m_controlPoints[id1];
@@ -121,7 +121,7 @@ namespace util
         }
     }
 
-    UniformBSpline::~UniformBSpline(VOID)
+    UniformBSpline::~UniformBSpline(void)
     {
         SAFE_ARRAY_DELETE(m_pSplinePoints);
     }

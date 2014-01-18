@@ -9,14 +9,14 @@ namespace chimera
     struct InputMessage
     {
         UCHAR message;
-        INT mouseX;
-        INT mouseDX;
-        UINT mouseY;
-        UINT mouseDY;
-        UINT mouseWheelDelta;
-        UINT button;
+        int mouseX;
+        int mouseDX;
+        uint mouseY;
+        uint mouseDY;
+        uint mouseWheelDelta;
+        uint button;
 
-        InputMessage(VOID) : message(0), mouseX(0), mouseY(0), mouseDX(0), mouseDY(0), mouseWheelDelta(0), button(0)
+        InputMessage(void) : message(0), mouseX(0), mouseY(0), mouseDX(0), mouseDY(0), mouseWheelDelta(0), button(0)
         {
 
         }
@@ -25,31 +25,31 @@ namespace chimera
     class KeyAdapterListener : public IKeyListener
     {
     public:
-        virtual BOOL VOnKeyDown(UINT CONST code) { return TRUE; }
-        virtual BOOL VOnKeyPressed(UINT CONST code) { return TRUE; }
-        virtual BOOL VOnKeyReleased(UINT CONST code) { return TRUE; }
-        virtual BOOL VOnKeyRepeat(UINT CONST code) { return TRUE; }
+        virtual bool VOnKeyDown(uint const code) { return true; }
+        virtual bool VOnKeyPressed(uint const code) { return true; }
+        virtual bool VOnKeyReleased(uint const code) { return true; }
+        virtual bool VOnKeyRepeat(uint const code) { return true; }
     };
     class MouseAdapterListener : public IMouseListener
     {
     public:
-        virtual BOOL VOnMouseButtonPressed(INT x, INT y, INT button) { return TRUE; }
-        virtual BOOL VOnMouseButtonDown(INT x, INT y, INT button) { return TRUE; }
-        virtual BOOL VOnMouseButtonReleased(INT x, INT y, INT button) { return TRUE; }
-        virtual BOOL VOnMouseMoved(INT x, INT y, INT dx, INT dy) { return TRUE; }
-        virtual BOOL VOnMouseDragged(INT x, INT y, INT dx, INT dy, INT button) { return TRUE; }
-        virtual BOOL VOnMousePressed(INT x, INT y, INT button) { return TRUE; }
-        virtual BOOL VOnMouseWheel(INT x, INT y, INT delta) { return TRUE; }
+        virtual bool VOnMouseButtonPressed(int x, int y, int button) { return true; }
+        virtual bool VOnMouseButtonDown(int x, int y, int button) { return true; }
+        virtual bool VOnMouseButtonReleased(int x, int y, int button) { return true; }
+        virtual bool VOnMouseMoved(int x, int y, int dx, int dy) { return true; }
+        virtual bool VOnMouseDragged(int x, int y, int dx, int dy, int button) { return true; }
+        virtual bool VOnMousePressed(int x, int y, int button) { return true; }
+        virtual bool VOnMouseWheel(int x, int y, int delta) { return true; }
     };
 
     class DefaultWinInputHandler : public IInputHandler
     {
     private:
-        BOOL m_isMouseGrabbed;
-        UINT m_lastMousePosX;
-        UINT m_lastMousePosY;
-        INT m_curserXOffset;
-        INT m_curserYOffset;
+        bool m_isMouseGrabbed;
+        uint m_lastMousePosX;
+        uint m_lastMousePosY;
+        int m_curserXOffset;
+        int m_curserYOffset;
         tagPOINT m_mousePosition;
         HWND m_hwnd;
 
@@ -58,39 +58,39 @@ namespace chimera
         util::tbdStack<IMouseListener*> m_mouseStack;
 
     protected:
-        BOOL UpdateListener(InputMessage msg);
-        BOOL m_isKeyDown[0xFE];
+        bool UpdateListener(InputMessage msg);
+        bool m_isKeyDown[0xFE];
 
     public:
-        DefaultWinInputHandler(VOID);
+        DefaultWinInputHandler(void);
 
-        BOOL VInit(CM_INSTANCE hinstance, CM_HWND hwnd, UINT width, UINT height);
+        bool VInit(CM_INSTANCE hinstance, CM_HWND hwnd, uint width, uint height);
 
-        BOOL VOnRestore(VOID);
+        bool VOnRestore(void);
 
-        VOID VOnUpdate(VOID);
+        void VOnUpdate(void);
 
-        BOOL VOnMessage(CONST MSG&);
+        bool VOnMessage(const MSG&);
 
-        BOOL VGrabMouse(BOOL aq);
+        bool VGrabMouse(bool aq);
 
-        BOOL VIsMouseGrabbed(VOID);
+        bool VIsMouseGrabbed(void);
 
-        VOID VSetCurserOffsets(INT x, INT y);
+        void VSetCurserOffsets(int x, int y);
 
-        VOID VPushKeyListener(IKeyListener* listener);
+        void VPushKeyListener(IKeyListener* listener);
 
-        VOID VPopKeyListener(VOID);
+        void VPopKeyListener(void);
 
-        VOID VPushMouseListener(IMouseListener* listener);
+        void VPushMouseListener(IMouseListener* listener);
 
-        VOID VPopMouseListener(VOID);
+        void VPopMouseListener(void);
 
-        VOID VRemoveKeyListener(IKeyListener* listener);
+        void VRemoveKeyListener(IKeyListener* listener);
 
-        VOID VRemoveMouseListener(IMouseListener* listener);
+        void VRemoveMouseListener(IMouseListener* listener);
         
-        BOOL VIsKeyDown(UINT code)
+        bool VIsKeyDown(uint code)
         {
             return m_isKeyDown[code];
         }

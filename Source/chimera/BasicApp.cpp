@@ -18,7 +18,7 @@
 
 namespace chimera
 {
-    VOID BasicApp::VCreateLogicAndView(VOID)
+    void BasicApp::VCreateLogicAndView(void)
     {
         m_pLogic = new chimera::BaseGameLogic();
 
@@ -171,9 +171,9 @@ namespace chimera
         wnd->VSetBackgroundColor(0,0,0);
         wnd->VSetAlpha(0);
         
-        dim.x = (INT)(0.8 * chimera::g_width);
+        dim.x = (int)(0.8 * chimera::g_width);
         dim.y = 12;
-        dim.w = (INT)(0.2 * chimera::g_width);
+        dim.w = (int)(0.2 * chimera::g_width);
         dim.h = 400;
         wnd->VSetDimension(dim);
         c->AddComponent("informationwindow", wnd);

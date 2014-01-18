@@ -12,7 +12,7 @@ namespace chimera
         class InstancedDrawer : public GeometryDrawer
         {
         public:
-            VOID VDraw(Geometry* geo, CONST UINT& count, CONST UINT& start, CONST UINT& vertexbase)
+            void VDraw(Geometry* geo, const uint& count, const uint& start, const uint& vertexbase)
             {
                 chimera::d3d::GetContext()->DrawIndexedInstanced(count, geo->VGetInstanceBuffer()->VGetElementCount(), start, vertexbase, 0);
             }
@@ -21,7 +21,7 @@ namespace chimera
         class DefaultDrawer : public GeometryDrawer
         {
         public:
-            VOID VDraw(Geometry* geo, CONST UINT& count, CONST UINT& start, CONST UINT& vertexbase)
+            void VDraw(Geometry* geo, const uint& count, const uint& start, const uint& vertexbase)
             {
                 chimera::d3d::GetContext()->DrawIndexed(count, start, vertexbase);            
             }
@@ -30,77 +30,77 @@ namespace chimera
         class ArrayDrawer : public GeometryDrawer
         {
         public:
-            VOID VDraw(Geometry* geo, CONST UINT& count, CONST UINT& start, CONST UINT& vertexbase)
+            void VDraw(Geometry* geo, const uint& count, const uint& start, const uint& vertexbase)
             {
                 chimera::d3d::GetContext()->Draw(count, start);
             }
         };
 
-        VOID Geometry::Create(VOID)
+        void Geometry::Create(void)
         {
             Geometry::INSTANCED_DRAWER = new InstancedDrawer();
             Geometry::DEFAULT_DRAWER = new DefaultDrawer();
             Geometry::ARRAY_DRAWER = new ArrayDrawer();
         }
 
-        VOID Geometry::Destroy(VOID)
+        void Geometry::Destroy(void)
         {
             SAFE_DELETE(Geometry::INSTANCED_DRAWER);
             SAFE_DELETE(Geometry::DEFAULT_DRAWER);
             SAFE_DELETE(Geometry::ARRAY_DRAWER);
         }
 
-        Buffer::Buffer(VOID) : m_pBuffer(0), m_created(FALSE), m_elementCount(0)
+        Buffer::Buffer(void) : m_pBuffer(0), m_created(false), m_elementCount(0)
         {
             ZeroMemory(&m_desc, sizeof(D3D11_BUFFER_DESC));
             ZeroMemory(&m_data, sizeof(D3D11_SUBRESOURCE_DATA));
         }
 
-        VOID Buffer::VCreate(VOID) 
+        void Buffer::VCreate(void) 
         {
             if(m_created) return;
-            m_created = TRUE;
+            m_created = true;
             m_desc.Usage = GetUsage();
             m_desc.CPUAccessFlags = GetCPUAccess();
             m_desc.BindFlags = GetBindflags();
             D3D_SAVE_CALL(chimera::d3d::GetDevice()->CreateBuffer(&m_desc, &m_data, &m_pBuffer));
         }
 
-        D3D11_MAPPED_SUBRESOURCE* Buffer::Map(VOID)
+        D3D11_MAPPED_SUBRESOURCE* Buffer::Map(void)
         {
             D3D_SAVE_CALL(chimera::d3d::GetContext()->Map(m_pBuffer, 0, GetCPUAccess() == D3D11_CPU_ACCESS_WRITE ? D3D11_MAP_WRITE_DISCARD : D3D11_MAP_READ, 0, &m_mappedData));
             return &m_mappedData;
         }
 
-        VOID Buffer::VSetData(CONST VOID* v, UINT bytes)
+        void Buffer::VSetData(const void* v, uint bytes)
         {
             D3D11_MAPPED_SUBRESOURCE* sub = Map();
             memcpy(sub->pData, v, bytes);
             Unmap();
         }
 
-        VOID Buffer::Unmap(VOID)
+        void Buffer::Unmap(void)
         {
             chimera::d3d::GetContext()->Unmap(m_pBuffer, 0);
         }
 
-        VOID Buffer::DeleteRawData(VOID)
+        void Buffer::DeleteRawData(void)
         {
             SAFE_ARRAY_DELETE(m_data.pSysMem);
         }
 
-        Buffer::~Buffer(VOID) 
+        Buffer::~Buffer(void) 
         {
             SAFE_RELEASE(m_pBuffer);
         }
 
-        IndexBuffer::IndexBuffer(VOID) { }
+        IndexBuffer::IndexBuffer(void) { }
 
-        IndexBuffer::IndexBuffer(CONST UINT* data, UINT size) 
+        IndexBuffer::IndexBuffer(const uint* data, uint size) 
         {
             SetBindflags(D3D11_BIND_INDEX_BUFFER);
             SetUsage(D3D11_USAGE_DEFAULT);
-            m_desc.ByteWidth = sizeof(UINT) * size;
+            m_desc.ByteWidth = sizeof(uint) * size;
 
             m_data.pSysMem = data;
             m_data.SysMemPitch = 0;
@@ -109,21 +109,21 @@ namespace chimera
             m_elementCount = size;
         }
 
-        VOID IndexBuffer::VBind(VOID) 
+        void IndexBuffer::VBind(void) 
         {
             chimera::d3d::GetContext()->IASetIndexBuffer(m_pBuffer, DXGI_FORMAT_R32_UINT, 0);
         }
 
         IndexBuffer::~IndexBuffer() {}
 
-        VertexBuffer::VertexBuffer(VOID) : m_stride(1), m_offset(0) { }
+        VertexBuffer::VertexBuffer(void) : m_stride(1), m_offset(0) { }
 
-        VertexBuffer::VertexBuffer(UINT vertexCount, UINT stride, CONST VOID* data, BOOL cpuAccessFlags)
+        VertexBuffer::VertexBuffer(uint vertexCount, uint stride, const void* data, bool cpuAccessFlags)
         {
             VInitParamater(vertexCount, stride, data, cpuAccessFlags);
         }
 
-        VOID VertexBuffer::VInitParamater(UINT vertexCount, UINT stride, CONST VOID* data /* = NULL */, BOOL cpuAccessFlags /* = FALSE */)
+        void VertexBuffer::VInitParamater(uint vertexCount, uint stride, const void* data /* = NULL */, bool cpuAccessFlags /* = FALSE */)
         {
             m_offset = 0;
             m_stride = stride; 
@@ -143,30 +143,30 @@ namespace chimera
             m_data.SysMemSlicePitch = 0;            
         }
 
-        VOID VertexBuffer::VBind(VOID)
+        void VertexBuffer::VBind(void)
         {
             chimera::d3d::GetContext()->IASetVertexBuffers(0, 1, &m_pBuffer, &m_stride, &m_offset);
         }
 
         VertexBuffer::~VertexBuffer() {}
 
-        Geometry::Geometry(BOOL ownsInstanceBuffer /* = false */) 
-            : m_pVertexBuffer(NULL), m_pIndexBuffer(NULL), m_ownsInstanceBuffer(ownsInstanceBuffer), m_pInstanceBuffer(NULL), m_elementCount(0), m_initialized(FALSE)
+        Geometry::Geometry(bool ownsInstanceBuffer /* = false */) 
+            : m_pVertexBuffer(NULL), m_pIndexBuffer(NULL), m_ownsInstanceBuffer(ownsInstanceBuffer), m_pInstanceBuffer(NULL), m_elementCount(0), m_initialized(false)
         {
             m_pDrawer = DEFAULT_DRAWER;
         }
 
-        VOID Geometry::VSetIndexBuffer(CONST UINT* indices, UINT size) 
+        void Geometry::VSetIndexBuffer(const uint* indices, uint size) 
         {
             m_pIndexBuffer = new chimera::d3d::IndexBuffer(indices, size);
         }
 
-        VOID Geometry::VSetVertexBuffer(CONST FLOAT* vertices, UINT count, UINT stride, BOOL cpuWrite) 
+        void Geometry::VSetVertexBuffer(const float* vertices, uint count, uint stride, bool cpuWrite) 
         {
             m_pVertexBuffer = new chimera::d3d::VertexBuffer(count, stride, vertices, cpuWrite);
         }
 
-        VOID Geometry::VSetTopology(GeometryTopology primType)
+        void Geometry::VSetTopology(GeometryTopology primType)
         {
             if(primType == eTopo_Lines)
             {
@@ -186,27 +186,27 @@ namespace chimera
             }
         }
 
-        UINT Geometry::VGetByteCount(VOID) CONST
+        uint Geometry::VGetByteCount(void) const
         {
-            UINT indexBytes = 0;
-            UINT instancedBytes = 0;
+            uint indexBytes = 0;
+            uint instancedBytes = 0;
             if(m_pIndexBuffer)
             {
-                indexBytes = sizeof(UINT) * m_pIndexBuffer->VGetElementCount();
+                indexBytes = sizeof(uint) * m_pIndexBuffer->VGetElementCount();
             }
             if(m_pInstanceBuffer)
             {
-                instancedBytes = m_pInstanceBuffer->VGetElementCount() * m_pInstanceBuffer->VGetStride() * sizeof(FLOAT);
+                instancedBytes = m_pInstanceBuffer->VGetElementCount() * m_pInstanceBuffer->VGetStride() * sizeof(float);
             }
-            return m_pVertexBuffer->VGetElementCount() * m_pVertexBuffer->VGetStride() * sizeof(FLOAT) + instancedBytes + indexBytes;
+            return m_pVertexBuffer->VGetElementCount() * m_pVertexBuffer->VGetStride() * sizeof(float) + instancedBytes + indexBytes;
         }
 
-        IVertexBuffer* Geometry::VGetVertexBuffer(VOID)
+        IVertexBuffer* Geometry::VGetVertexBuffer(void)
         {
             return m_pVertexBuffer;
         }
 
-        BOOL Geometry::VCreate(VOID)
+        bool Geometry::VCreate(void)
         {
            // if(VIsReady()) return TRUE; //TODO needed?
 
@@ -231,20 +231,20 @@ namespace chimera
                 m_pDrawer = INSTANCED_DRAWER;
             }
 
-            return TRUE;
+            return true;
         }
 
-        VOID Geometry::VDraw(VOID)
+        void Geometry::VDraw(void)
         {
             m_pDrawer->VDraw(this, m_elementCount, 0, 0);
         }
 
-        VOID Geometry::VDraw(UINT start, UINT count)
+        void Geometry::VDraw(uint start, uint count)
         {
             m_pDrawer->VDraw(this, count, start, 0);
         }
 
-        VOID Geometry::VBind(VOID)
+        void Geometry::VBind(void)
         {
             if(m_psCurrentBound != this)
             {
@@ -259,11 +259,11 @@ namespace chimera
                     buffer[0] = (ID3D11Buffer*)m_pVertexBuffer->VGetDevicePtr();
                     buffer[1] = (ID3D11Buffer*)m_pInstanceBuffer->VGetDevicePtr();
 
-                    UINT strides[2];
+                    uint strides[2];
                     strides[0] = m_pVertexBuffer->VGetStride();
                     strides[1] = m_pInstanceBuffer->VGetStride();
 
-                    UINT offsets[2];
+                    uint offsets[2];
                     offsets[0] = m_pVertexBuffer->VGetOffset();
                     offsets[1] = m_pInstanceBuffer->VGetOffset();
 
@@ -280,7 +280,7 @@ namespace chimera
             }
         }
 
-        VOID Geometry::VDestroy(VOID)
+        void Geometry::VDestroy(void)
         {
             SAFE_DELETE(m_pIndexBuffer);
             SAFE_DELETE(m_pVertexBuffer);
@@ -290,17 +290,17 @@ namespace chimera
             }
         }
 
-        IVertexBuffer* Geometry::VGetInstanceBuffer(VOID)
+        IVertexBuffer* Geometry::VGetInstanceBuffer(void)
         {
             return m_pInstanceBuffer;
         }
 
-        IDeviceBuffer* Geometry::VGetIndexBuffer(VOID)
+        IDeviceBuffer* Geometry::VGetIndexBuffer(void)
         {
             return m_pIndexBuffer;
         }
 
-        VOID Geometry::SetOwnsInstanceBuffer(BOOL owns)
+        void Geometry::SetOwnsInstanceBuffer(bool owns)
         {
             m_ownsInstanceBuffer = owns;
         }
@@ -315,7 +315,7 @@ namespace chimera
 //             m_pDrawer = INSTANCED_DRAWER;
 //         }
 
-        VOID Geometry::VSetInstanceBuffer(IVertexBuffer* buffer)
+        void Geometry::VSetInstanceBuffer(IVertexBuffer* buffer)
         {
             m_pInstanceBuffer = buffer;
             if(m_psCurrentBound == this)
@@ -326,7 +326,7 @@ namespace chimera
             m_pDrawer = buffer != NULL ? INSTANCED_DRAWER : DEFAULT_DRAWER;
         }
 
-        VOID Geometry::DeleteRawData(VOID)
+        void Geometry::DeleteRawData(void)
         {
             if(m_pIndexBuffer)
             {
@@ -338,7 +338,7 @@ namespace chimera
             }
         }
 
-        Geometry::~Geometry(VOID) 
+        Geometry::~Geometry(void) 
         {
             VDestroy();
         }

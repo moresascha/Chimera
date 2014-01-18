@@ -8,11 +8,11 @@ namespace chimera
     class GuiLookAndFeel : public IGuiLookAndFeel
     {
     public:
-        Color VGetBackgroundColor(VOID) { return Color(0,0,0,0.75f); }
+        Color VGetBackgroundColor(void) { return Color(0,0,0,0.75f); }
 
-        Color VGetForegroundColor(VOID) { return Color(0,0,0,1); }
+        Color VGetForegroundColor(void) { return Color(0,0,0,1); }
 
-        Color VGetFontColor(VOID) { return Color(1,1,1,1); }
+        Color VGetFontColor(void) { return Color(1,1,1,1); }
     };
 
     class GuiComponent : public virtual IGuiComponent, public virtual ScreenElement
@@ -20,49 +20,49 @@ namespace chimera
     protected:
         IShader* m_pPixelShader;
         std::string m_shaderName;
-        BOOL m_hasFocus;
-        BOOL m_enabled;
+        bool m_hasFocus;
+        bool m_enabled;
 
     public:
-        GuiComponent(VOID);
+        GuiComponent(void);
 
-        VOID VSetEffect(LPCSTR pixelShader);
+        void VSetEffect(LPCSTR pixelShader);
 
-        virtual BOOL VOnRestore(VOID);
+        virtual bool VOnRestore(void);
 
-        virtual VOID VSetEnabled(BOOL enable);
+        virtual void VSetEnabled(bool enable);
 
-        virtual VOID VSetFocus(BOOL focus);
+        virtual void VSetFocus(bool focus);
 
-        virtual ~GuiComponent(VOID);
+        virtual ~GuiComponent(void);
     };
 
     class Gui : public ScreenElementContainer, public IGui
     {
     private:
         std::vector<IGuiComponent*> m_guiComponents;
-        VOID ComputeInput(INT, INT, INT);
-        VOID ComputeKeyInput(UINT);
+        void ComputeInput(int, int, int);
+        void ComputeKeyInput(uint);
 
     public:
-        Gui(VOID);
+        Gui(void);
 
-        VOID VAddComponent(IGuiComponent* cmp);
+        void VAddComponent(IGuiComponent* cmp);
 
-        VOID VSetActive(BOOL activate);
+        void VSetActive(bool activate);
 
-        ~Gui(VOID);
+        ~Gui(void);
     };
 
     class GuiRectangle : public GuiComponent, public IGuiRectangle
     {
     protected:
-        FLOAT m_tx, m_ty, m_u, m_v;
+        float m_tx, m_ty, m_u, m_v;
 
     public:
-        GuiRectangle(VOID);
-        virtual VOID VDraw(VOID);
-        ~GuiRectangle(VOID);
+        GuiRectangle(void);
+        virtual void VDraw(void);
+        ~GuiRectangle(void);
     };
 
     class GuiTextureComponent : public GuiRectangle, public IGuiTextureComponent
@@ -70,13 +70,13 @@ namespace chimera
     protected:
         std::string m_resource;
         std::shared_ptr<IDeviceTexture> m_textureHandle;
-        VOID SetTextureCoords(FLOAT x, FLOAT y, FLOAT u, FLOAT v);
+        void SetTextureCoords(float x, float y, float u, float v);
 
     public:
-        GuiTextureComponent(VOID);
-        VOID VSetTexture(LPCSTR texture);
-        virtual BOOL VOnRestore(VOID);
-        virtual VOID VDraw(VOID);
+        GuiTextureComponent(void);
+        void VSetTexture(LPCSTR texture);
+        virtual bool VOnRestore(void);
+        virtual void VDraw(void);
     };
 
 /*
@@ -98,67 +98,67 @@ namespace chimera
         AppendDirection m_appendDir;
         std::vector<TextLine> m_textLines;
         chimera::Color m_textColor;
-        VOID DrawText(TextLine& line, INT x, INT y);
+        void DrawText(TextLine& line, int x, int y);
 
     public:
-        GuiTextComponent(VOID);
+        GuiTextComponent(void);
 
-        VOID VSetAlignment(Alignment alignment);
+        void VSetAlignment(Alignment alignment);
 
-        VOID VSetTextAppendDirection(AppendDirection dir);
+        void VSetTextAppendDirection(AppendDirection dir);
 
         //VOID AddText(CONST std::string& text, INT x, INT y);
 
-        VOID VAppendText(CONST std::string& text);
+        void VAppendText(const std::string& text);
 
-        CONST std::vector<TextLine>& VGetTextLines(VOID) CONST;
+        const std::vector<TextLine>& VGetTextLines(void) const;
 
-        VOID VSetTextColor(CONST util::Vec4& color);
+        void VSetTextColor(const util::Vec4& color);
 
-        VOID VClearText(VOID);
+        void VClearText(void);
 
-        virtual BOOL VOnRestore(VOID);
+        virtual bool VOnRestore(void);
 
-        virtual VOID VDraw(VOID);
+        virtual void VDraw(void);
 
-        virtual ~GuiTextComponent(VOID);
+        virtual ~GuiTextComponent(void);
     };
 
     class GuiTextInputComponent : public IGuiTextInputComponent, public GuiRectangle
     {
     protected:
         Color m_textColor;
-        BOOL m_drawCurser;
-        INT m_curserPos;
+        bool m_drawCurser;
+        int m_curserPos;
         std::string m_textLine;
-        ULONG m_time;
+        ulong m_time;
 
-        VOID ComputeInput(CONST UINT code);
+        void ComputeInput(const uint code);
 
     public:
-        GuiTextInputComponent(VOID);
+        GuiTextInputComponent(void);
             
-        virtual VOID VDraw(VOID);
+        virtual void VDraw(void);
 
-        virtual VOID VAddChar(CHAR c);
+        virtual void VAddChar(char c);
 
-        VOID VRemoveChar(VOID);
+        void VRemoveChar(void);
 
-        VOID VAddText(std::string& text);
+        void VAddText(std::string& text);
             
-        CONST std::string& VGetText(VOID);
+        const std::string& VGetText(void);
 
-        VOID VSetTextColor(CONST util::Vec4& color);
+        void VSetTextColor(const util::Vec4& color);
 
-        VOID VSetText(CONST std::string& text);
+        void VSetText(const std::string& text);
 
-        VOID VClearText(VOID) { VSetText(""); }
+        void VClearText(void) { VSetText(""); }
 
-        VOID VUpdate(ULONG millis);
+        void VUpdate(ulong millis);
 
-        virtual BOOL VOnRestore(VOID);
+        virtual bool VOnRestore(void);
 
-        ~GuiTextInputComponent(VOID);
+        ~GuiTextInputComponent(void);
     };
 
     class GuiConsole : public ScreenElementContainer
@@ -168,47 +168,47 @@ namespace chimera
         IGuiTextInputComponent* m_pTextInput;
         IGuiTextComponent* m_pTextLabel;
         IGuiTextComponent* m_pAutoComplete;
-        INT m_currentHistoryLine;
-        INT m_currentAutoCompleteIndex;
+        int m_currentHistoryLine;
+        int m_currentAutoCompleteIndex;
 
-        VOID ComputeInput(UINT CONST code);
+        void ComputeInput(uint const code);
 
-        VOID SetAutoComplete(VOID);
+        void SetAutoComplete(void);
 
     public:
-        GuiConsole(VOID);
+        GuiConsole(void);
 
-        VOID VDraw(VOID);
+        void VDraw(void);
 
-        VOID VSetActive(BOOL activate);
+        void VSetActive(bool activate);
 
-        BOOL VOnRestore(VOID);
+        bool VOnRestore(void);
 
-        VOID AppendText(CONST std::string& text);
+        void AppendText(const std::string& text);
             
-        ~GuiConsole(VOID) {}
+        ~GuiConsole(void) {}
     };
 
     class Histogram : public GuiRectangle
     {
     private:
-        std::list<INT> m_vals;
-        FLOAT* m_pFloats;
-        UINT m_pos;
-        UINT m_iVal;
-        UINT m_uVal;
-        UINT m_time;
-        INT m_max;
+        std::list<int> m_vals;
+        float* m_pFloats;
+        uint m_pos;
+        uint m_iVal;
+        uint m_uVal;
+        uint m_time;
+        int m_max;
     public:
-        Histogram(UINT iVal = 10, UINT uVal = 200);
+        Histogram(uint iVal = 10, uint uVal = 200);
 
-        VOID AddValue(INT val);
+        void AddValue(int val);
 
-        VOID VDraw(VOID);
+        void VDraw(void);
 
-        BOOL VOnRestore(VOID);
+        bool VOnRestore(void);
 
-        ~Histogram(VOID);
+        ~Histogram(void);
     };
 }
 

@@ -11,15 +11,15 @@ namespace chimera
     Application* g_pApp = NULL;
     HINSTANCE Application::g_hInstance = NULL;
 
-    LRESULT CALLBACK WndProc(HWND, UINT, WPARAM, LPARAM);
+    LRESULT CALLBACK WndProc(HWND, uint, WPARAM, LPARAM);
 
-    Application::Application(VOID)
+    Application::Application(void)
     {
         g_pApp = this;
-        m_running = TRUE;
+        m_running = true;
     }
 
-    BOOL Application::VInitialise(FactoryPtr* facts)
+    bool Application::VInitialise(FactoryPtr* facts)
     {
         m_pConfig = new util::Config();
 
@@ -50,10 +50,10 @@ namespace chimera
         m_pUpdateTimer = new chimera::util::Timer();
         m_pRenderingTimer = new chimera::util::Timer();
 
-        return TRUE;
+        return true;
     }
 
-    VOID Application::VClose(VOID)
+    void Application::VClose(void)
     {
         SAFE_DELETE(m_timer0);
         SAFE_DELETE(m_pUpdateTimer);
@@ -66,16 +66,16 @@ namespace chimera
         SAFE_DELETE(m_pConfig);
     }
 
-    VOID Application::Render(VOID)
+    void Application::Render(void)
     {
         m_pLogic->VGetHumanView()->VOnRender();
         m_pRenderingTimer->VTick(); 
     }
 
-    VOID Application::Update(VOID) 
+    void Application::Update(void) 
     {
         m_timer0->VTick();
-        ULONG time = m_timer0->VGetTime();
+        ulong time = m_timer0->VGetTime();
         if(time < m_updateFreqMillis)
         {
             return;
@@ -88,13 +88,13 @@ namespace chimera
         m_pUpdateTimer->VTick();
     }
 
-    static BOOL s_mimnimized = FALSE;
-    static BOOL s_initialized = FALSE;
-    VOID Application::VRun(VOID)
+    static bool s_mimnimized = false;
+    static bool s_initialized = false;
+    void Application::VRun(void)
     {
         MSG msg;
-        m_running = TRUE;
-        s_initialized = TRUE;
+        m_running = true;
+        s_initialized = true;
         m_pUpdateTimer->VReset();
         m_pRenderingTimer->VReset();
 
@@ -127,34 +127,34 @@ namespace chimera
         }
     }
 
-    HWND Application::VGetWindowHandle(VOID)
+    HWND Application::VGetWindowHandle(void)
     {
         return m_pLogic->VGetHumanView()->VGetRenderer()->VGetWindowHandle();
     }
 
-    UINT Application::VGetWindowWidth(VOID) CONST
+    uint Application::VGetWindowWidth(void) const
     {
         return m_pLogic->VGetHumanView()->VGetRenderer()->VGetWidth();
     }
 
-    UINT Application::VGetWindowHeight(VOID) CONST
+    uint Application::VGetWindowHeight(void) const
     {
         return m_pLogic->VGetHumanView()->VGetRenderer()->VGetHeight();
     }
 
-    IHumanView* Application::VGetHumanView(VOID)
+    IHumanView* Application::VGetHumanView(void)
     {
         return m_pLogic->VGetHumanView();
     }
 
-    Application::~Application(VOID)
+    Application::~Application(void)
     {
 
     }
     
-    LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
+    LRESULT CALLBACK WndProc(HWND hWnd, uint message, WPARAM wParam, LPARAM lParam)
     {
-        INT wmId, wmEvent;
+        int wmId, wmEvent;
         PAINTSTRUCT ps;
         HDC hdc;
 
@@ -164,8 +164,8 @@ namespace chimera
             {
                 if(s_initialized)
                 {
-                    UINT w = LOWORD(lParam);
-                    UINT h = HIWORD(lParam);
+                    uint w = LOWORD(lParam);
+                    uint h = HIWORD(lParam);
                     s_mimnimized = wParam == SIZE_MINIMIZED;
                     if(!s_mimnimized && (w > 0 && h > 0))
                     {

@@ -3,12 +3,12 @@
 namespace chimera 
 {
 
-    EventManager::EventManager(VOID) : m_activeQueue(0) 
+    EventManager::EventManager(void) : m_activeQueue(0) 
     { 
 
     }
 
-    BOOL EventManager::VAddEventListener(CONST EventListener& listener, CONST EventType& type) {
+    bool EventManager::VAddEventListener(const EventListener& listener, const EventType& type) {
 
         std::list<EventListener>& list = m_eventListenerMap[type];
     
@@ -17,15 +17,15 @@ namespace chimera
             if(*it == listener)
             {
                 LOG_WARNING("VAddEventListener ignored: Attempting to register an EventListener twice!");
-                return FALSE;
+                return false;
             }
         }
         list.push_back(listener);
 
-        return TRUE;
+        return true;
     }
 
-    BOOL EventManager::VRemoveEventListener(CONST EventListener& listener, CONST EventType& type) {
+    bool EventManager::VRemoveEventListener(const EventListener& listener, const EventType& type) {
 
         auto it = m_eventListenerMap.find(type);
 
@@ -37,21 +37,21 @@ namespace chimera
                 if(*i == listener) 
                 {
                     it->second.erase(i);
-                    return TRUE;
+                    return true;
                 }
             }
         }
 
-        return FALSE;
+        return false;
     }
 
-    BOOL EventManager::VTriggetEvent(CONST IEventPtr& chimera) {
+    bool EventManager::VTriggetEvent(const IEventPtr& chimera) {
 
         auto it = m_eventListenerMap.find(chimera->VGetEventType());
 
         if(it == m_eventListenerMap.end())
         {
-            return FALSE;
+            return false;
         }
 
         for(auto i = it->second.begin(); i != it->second.end(); ++i)
@@ -60,10 +60,10 @@ namespace chimera
             (*i)(chimera);
         }
 
-        return TRUE;
+        return true;
     }
 
-    BOOL EventManager::VQueueEventTest(CONST IEventPtr& chimera) {
+    bool EventManager::VQueueEventTest(const IEventPtr& chimera) {
         /*
         auto it = m_eventListenerMap.find(event->VGetEventType());
 
@@ -80,10 +80,10 @@ namespace chimera
         m_eventQueues[m_activeQueue].push_back(event); */
 
 
-        return TRUE;
+        return true;
     }
 
-    BOOL EventManager::VQueueEvent(CONST IEventPtr& chimera) {
+    bool EventManager::VQueueEvent(const IEventPtr& chimera) {
 
         auto it = m_eventListenerMap.find(chimera->VGetEventType());
 
@@ -94,7 +94,7 @@ namespace chimera
             ss << chimera->VGetEventType();
             LOG_INFO_A("Failed to queue event, no listener for event: %s", ss.str());
     #endif
-            return FALSE;
+            return false;
         }
 
         //LOG_INFO("Event queued: "+std::string(event->VGetName()));
@@ -102,32 +102,32 @@ namespace chimera
         m_eventQueues[m_activeQueue].push_back(chimera);
 
 
-        return TRUE;
+        return true;
     }
 
-    BOOL EventManager::VQueueEventThreadSave(CONST IEventPtr& chimera) {
+    bool EventManager::VQueueEventThreadSave(const IEventPtr& chimera) {
 
         auto it = m_eventListenerMap.find(chimera->VGetEventType());
 
         if(it == m_eventListenerMap.end()) 
         {
-            return FALSE;
+            return false;
         }
 
         m_threadSaveQueue.push(chimera);
 
-        return TRUE;
+        return true;
     }
 
-    BOOL EventManager::VAbortEvent(CONST EventType& type, BOOL all) {
+    bool EventManager::VAbortEvent(const EventType& type, bool all) {
 
         auto it = m_eventListenerMap.find(type);
 
         if(it == m_eventListenerMap.end()) 
         {
-            return FALSE;
+            return false;
         }
-        BOOL aborted = FALSE;
+        bool aborted = false;
 
         if(all)
         {
@@ -137,7 +137,7 @@ namespace chimera
                 if((*i)->VGetEventType() == type)
                 {
                     i = queue.erase(i);
-                    aborted = TRUE;
+                    aborted = true;
                 }
             }
         }
@@ -149,7 +149,7 @@ namespace chimera
                 if((*i)->VGetEventType() == type)
                 {
                     i = queue.erase(i);
-                    aborted = TRUE;
+                    aborted = true;
                     break;
                 }
             }
@@ -158,11 +158,11 @@ namespace chimera
         return aborted;
     }
 
-    BOOL EventManager::VUpdate(CONST ULONG maxMillis) {
+    bool EventManager::VUpdate(const ulong maxMillis) {
 
-        ULONG current = GetTickCount();
-        ULONG max = maxMillis == -1 ? -1 : current += maxMillis;
-        INT queue = m_activeQueue;
+        ulong current = GetTickCount();
+        ulong max = maxMillis == -1 ? -1 : current += maxMillis;
+        int queue = m_activeQueue;
         m_activeQueue = (m_activeQueue + 1) % 2;
         m_eventQueues[m_activeQueue].clear();
 
@@ -201,7 +201,7 @@ namespace chimera
                 m_eventQueues[m_activeQueue].push_front(e);
 
             }
-            return FALSE;
+            return false;
         }
     
         while(!m_threadSaveQueue.empty())
@@ -216,10 +216,10 @@ namespace chimera
             }
         }
 
-        return TRUE;
+        return true;
     }
 
-    EventManager::~EventManager(VOID) 
+    EventManager::~EventManager(void) 
     {
     }
 };

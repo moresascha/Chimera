@@ -24,17 +24,17 @@ namespace chimera
     protected:
         IActor* m_owner;
     public:
-        ActorComponent(VOID);
+        ActorComponent(void);
 
-        VOID VSetOwner(IActor* pOwner) { m_owner = pOwner; }
+        void VSetOwner(IActor* pOwner) { m_owner = pOwner; }
 
-        virtual VOID VPostInit(VOID);
+        virtual void VPostInit(void);
 
-        virtual VOID VCreateResources(VOID) { }
+        virtual void VCreateResources(void) { }
 
-        IActor* VGetActor(VOID) { return m_owner; }
+        IActor* VGetActor(void) { return m_owner; }
 
-        virtual ~ActorComponent(VOID);
+        virtual ~ActorComponent(void);
     };
 
     class ControllerComponent : public ActorComponent
@@ -48,12 +48,12 @@ namespace chimera
     private:
         util::Mat4 m_transformation;
     public:
-        FLOAT m_phi;
-        FLOAT m_theta;
+        float m_phi;
+        float m_theta;
 
-        TransformComponent(VOID);
+        TransformComponent(void);
 
-        util::Mat4* GetTransformation(VOID) {
+        util::Mat4* GetTransformation(void) {
             return &m_transformation;
         }
 
@@ -70,7 +70,9 @@ namespace chimera
 
         std::string m_drawType;
 
-        FLOAT m_anchorRadius;
+        std::string m_meshId;
+
+        float m_anchorRadius;
 
         util::Vec3 m_anchorBoxHE;
 
@@ -80,11 +82,11 @@ namespace chimera
 
         std::shared_ptr<IVertexBuffer> m_vmemInstances;
 
-        RenderComponent(VOID);
+        RenderComponent(void);
 
         CMResource m_resource;
 
-        VOID VCreateResources(VOID);
+        void VCreateResources(void);
 
         CM_CREATE_CMP_HEADER(CM_CMP_RENDERING, RenderComponent);
     };
@@ -95,13 +97,13 @@ namespace chimera
         std::shared_ptr<ICamera> m_camera;
         std::string m_type;
 
-        CameraComponent(VOID)
+        CameraComponent(void)
         {
 
         }
-        std::shared_ptr<ICamera> GetCamera(VOID) { return m_camera; }
+        std::shared_ptr<ICamera> GetCamera(void) { return m_camera; }
 
-        VOID SetCamera(std::shared_ptr<ICamera> cam) { m_camera = cam; }
+        void SetCamera(std::shared_ptr<ICamera> cam) { m_camera = cam; }
 
         CM_CREATE_CMP_HEADER(CM_CMP_CAMERA, CameraComponent);
     };
@@ -116,15 +118,15 @@ namespace chimera
 
         chimera::CMResource m_meshFile;
 
-        FLOAT m_radius;
+        float m_radius;
         util::Vec3 m_dim;
 
-        PhysicComponent(VOID) : m_dim(1,1,1), m_radius(1)
+        PhysicComponent(void) : m_dim(1,1,1), m_radius(1)
         {
 
         }
 
-        VOID VCreateResources(VOID);
+        void VCreateResources(void);
 
         CM_CREATE_CMP_HEADER(CM_CMP_PHX, PhysicComponent); 
     };
@@ -135,13 +137,13 @@ namespace chimera
     public:
         std::string m_type;
         util::Vec4 m_color;
-        FLOAT m_angle;
-        FLOAT m_intensity;
-        BOOL m_activated;
+        float m_angle;
+        float m_intensity;
+        bool m_activated;
         std::string m_projTexture;
-        BOOL m_castShadow;
+        bool m_castShadow;
 
-        LightComponent(VOID) : m_angle(0), m_activated(TRUE), m_intensity(1), m_color(1,1,1,1), m_projTexture("white.png"), m_castShadow(1)
+        LightComponent(void) : m_angle(0), m_activated(true), m_intensity(1), m_color(1,1,1,1), m_projTexture("white.png"), m_castShadow(1)
         {
 
         }
@@ -152,7 +154,7 @@ namespace chimera
     class PickableComponent : public ActorComponent
     {
     public:
-        BOOL VInit(tinyxml2::XMLElement* pData) { return TRUE; }
+        bool VInit(tinyxml2::XMLElement* pData) { return true; }
 
         CM_CREATE_CMP_HEADER(CM_CMP_PICKABLE, PickableComponent); 
     };
@@ -160,12 +162,12 @@ namespace chimera
     class SoundComponent : public ActorComponent
     {
     public:
-        SoundComponent(VOID);
+        SoundComponent(void);
         std::string m_soundFile;
-        FLOAT m_radius;
-        BOOL m_emitter;
-        BOOL m_loop;
-        VOID VCreateResources(VOID);
+        float m_radius;
+        bool m_emitter;
+        bool m_loop;
+        void VCreateResources(void);
         
         CM_CREATE_CMP_HEADER(CM_CMP_SOUND, SoundComponent); 
     };
@@ -175,9 +177,9 @@ namespace chimera
     public:
         ActorId m_parentId;
     public:
-        ActorId GetParent(VOID) { return m_parentId; }
+        ActorId GetParent(void) { return m_parentId; }
 
-        VOID VPostInit(VOID);
+        void VPostInit(void);
 
         CM_CREATE_CMP_HEADER(CM_CMP_PARENT_ACTOR, ParentComponent); 
     };

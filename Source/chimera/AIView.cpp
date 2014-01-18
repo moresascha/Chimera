@@ -16,48 +16,48 @@ namespace packman
 
     }
 
-    VOID EnemyAIView::VOnAttach(UINT viewId, std::shared_ptr<chimera::Actor> actor)
+    void EnemyAIView::VOnAttach(uint viewId, std::shared_ptr<chimera::Actor> actor)
     {
         chimera::IGameView::VOnAttach(viewId, actor);
         m_pTransform = m_actor->GetComponent<chimera::TransformComponent>(chimera::TransformComponent::COMPONENT_ID).lock().get();
     }
 
-    VOID EnemyAIView::PickDir(VOID)
+    void EnemyAIView::PickDir(void)
     {
-        FLOAT dx = 0;
-        FLOAT dz = 0;
+        float dx = 0;
+        float dz = 0;
 
-        INT size = m_pLevel->GetSize();
-        FLOAT radius = 0.5f;
-        dx = (rand() / (FLOAT) RAND_MAX) < 0.5f ? -1.0f : 1.0f;
-        dx *=  ((rand() / (FLOAT) RAND_MAX) < 0.5f ? radius : 0.0f);
+        int size = m_pLevel->GetSize();
+        float radius = 0.5f;
+        dx = (rand() / (float) RAND_MAX) < 0.5f ? -1.0f : 1.0f;
+        dx *=  ((rand() / (float) RAND_MAX) < 0.5f ? radius : 0.0f);
 
         if(dx == 0)
         {
-            dz = (rand() / (FLOAT) RAND_MAX) < 0.5f ? -1.0f : 1.0f;
+            dz = (rand() / (float) RAND_MAX) < 0.5f ? -1.0f : 1.0f;
             dz *=  radius;
         }
 
         m_dir = util::Vec3 (dx, 0, dz);
     }
 
-    chimera::ViewType EnemyAIView::VGetType(VOID) CONST
+    chimera::ViewType EnemyAIView::VGetType(void) const
     {
         return chimera::eProjectionType_AI;
     }
 
-    VOID ScriptOnUpdate(ActorId id, CONST util::Vec3& position, INT levelSize)
+    void ScriptOnUpdate(ActorId id, const util::Vec3& position, int levelSize)
     {
         LuaPlus::LuaObject o = chimera::g_pApp->GetScript()->GetState()->GetGlobal("OnUpdate");
         if(!o.IsNil() && o.IsFunction())
         {
-            LuaPlus::LuaFunction<VOID> function = chimera::g_pApp->GetScript()->GetState()->GetGlobal("OnUpdate");
+            LuaPlus::LuaFunction<void> function = chimera::g_pApp->GetScript()->GetState()->GetGlobal("OnUpdate");
 
             function(chimera::script::GetIntegerObject(id), chimera::script::GetVec3Object(position), chimera::script::GetIntegerObject(levelSize));
         }
     }
 
-    VOID EnemyAIView::VOnUpdate(ULONG deltaMillis)
+    void EnemyAIView::VOnUpdate(ulong deltaMillis)
     {
         if(m_timer.GetTime() > 16)
         {

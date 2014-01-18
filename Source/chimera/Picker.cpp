@@ -6,27 +6,27 @@
 #include "SceneGraph.h"
 namespace chimera
 {
-    ActorId ActorPicker::VPick(VOID) CONST
+    ActorId ActorPicker::VPick(void) const
     {
         return m_currentActor;
     }
 
-    VOID ActorPicker::VPostRender(VOID)
+    void ActorPicker::VPostRender(void)
     {
         D3D11_MAPPED_SUBRESOURCE res;
         chimera::GetContext()->CopyResource(m_texture->GetTexture(), m_renderTarget->GetTexture());
         chimera::GetContext()->Flush();
         chimera::GetContext()->Map(m_texture->GetTexture(), 0, D3D11_MAP_READ, 0, &res);
-        m_currentActor = ((UINT*)(res.pData))[0];
+        m_currentActor = ((uint*)(res.pData))[0];
         chimera::GetContext()->Unmap(m_texture->GetTexture(), 0);
         // app::g_pApp->GetHumanView()->GetRenderer()->SetActorId(m_currentActor);
         chimera::ConstBuffer* buffer = chimera::g_pApp->GetHumanView()->GetRenderer()->GetBuffer(chimera::eSelectedActorIdBuffer);
-        UINT* b = (UINT*)buffer->Map();
+        uint* b = (uint*)buffer->Map();
         b[0] = m_currentActor;
         buffer->Unmap();
     }
 
-    VOID ActorPicker::VRender(VOID)
+    void ActorPicker::VRender(void)
     {
         m_shaderProgram->Bind();
         m_renderTarget->Bind();
@@ -39,19 +39,19 @@ namespace chimera
         LOG_CRITICAL_ERROR("todo"); */
     }
 
-    BOOL ActorPicker::VHasPicked(VOID) CONST
+    bool ActorPicker::VHasPicked(void) const
     {
         return m_currentActor != CM_INVALID_ACTOR_ID;
     }
 
-    BOOL ActorPicker::VCreate(VOID)
+    bool ActorPicker::VCreate(void)
     {
         if(m_created)
         {
-            return TRUE;
+            return true;
         }
 
-        m_created = TRUE;
+        m_created = true;
 
         m_shaderProgram = chimera::ShaderProgram::CreateProgram("Picking", L"Picking.hlsl", "Picking_VS", "Picking_PS", NULL).get();
         m_shaderProgram->SetInputAttr("POSITION", 0, 0, DXGI_FORMAT_R32G32B32_FLOAT);
@@ -65,7 +65,7 @@ namespace chimera
         m_renderTarget->SetBindflags(D3D11_BIND_RENDER_TARGET);
         //m_renderTarget->SetClearColor(-1, -1, -1, -1);
         //m_renderTarget->SetCPUAccess(D3D11_CPU_ACCESS_READ);
-        UINT w = 1, h = 1;
+        uint w = 1, h = 1;
         m_texture = new chimera::D3DTexture2D();
         m_texture->SetWidth(w);
         m_texture->SetHeight(h);
@@ -75,25 +75,25 @@ namespace chimera
         
         if(!m_texture->VCreate())
         {
-            return FALSE;
+            return false;
         }
 
         if(!m_renderTarget->OnRestore(w, h, DXGI_FORMAT_R32_UINT))
         {
-            return FALSE;
+            return false;
         }
 
         m_projection = util::Mat4::CreatePerspectiveLH(XM_PIDIV2, 1, 0.01f, 1000.0f);
 
-        return TRUE;
+        return true;
     }
 
-    chimera::RenderTarget* ActorPicker::GetTarget(VOID)
+    chimera::RenderTarget* ActorPicker::GetTarget(void)
     {
         return m_renderTarget;
     }
 
-    ActorPicker::~ActorPicker(VOID)
+    ActorPicker::~ActorPicker(void)
     {
         SAFE_DELETE(m_renderTarget);
         SAFE_DELETE(m_texture);

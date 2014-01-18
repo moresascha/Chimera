@@ -19,7 +19,7 @@ namespace chimera
 
     }
 
-    BOOL BaseGameLogic::VInitialise(FactoryPtr* facts) 
+    bool BaseGameLogic::VInitialise(FactoryPtr* facts) 
     {
         IActorFactoryFactory* aff = FindFactory<IActorFactoryFactory>(facts, CM_FACTORY_ACTOR);
         RETURN_IF_FAILED(aff);
@@ -52,18 +52,18 @@ namespace chimera
 
         //m_pLevelManager = new chimera::LevelManager();
 
-        return TRUE;
+        return true;
     }
 
-    VOID BaseGameLogic::VAttachView(std::unique_ptr<IView> view, IActor* actor) 
+    void BaseGameLogic::VAttachView(std::unique_ptr<IView> view, IActor* actor) 
     {
         IView* raw = view.get();
         m_actorToViewMap[actor->GetId()] = raw;
         m_gameViewList.push_back(std::move(view));
-        raw->VOnAttach((UINT)m_gameViewList.size(), actor);
+        raw->VOnAttach((uint)m_gameViewList.size(), actor);
     }
 
-    VOID BaseGameLogic::VOnUpdate(ULONG millis) 
+    void BaseGameLogic::VOnUpdate(ulong millis) 
     {
 
         m_pPhysics->VUpdate(millis * 1e-3f);
@@ -127,7 +127,7 @@ namespace chimera
         } */
     }
 
-    VOID BaseGameLogic::VOnRender(VOID) 
+    void BaseGameLogic::VOnRender(void) 
     {
         switch(m_gameState)
         {
@@ -145,7 +145,6 @@ namespace chimera
         auto it = m_actors.find(id);
         if(it == m_actors.end()) 
         {
-            LOG_CRITICAL_ERROR("no level support atm");
             return m_pLevel->VFindActor(id);
         }
         else
@@ -214,7 +213,7 @@ namespace chimera
         return std::shared_ptr<tbd::Actor>();
     } */
 
-    IActor* BaseGameLogic::VCreateActor(std::unique_ptr<ActorDescription> desc, BOOL appendToLevel)
+    IActor* BaseGameLogic::VCreateActor(std::unique_ptr<ActorDescription> desc, bool appendToLevel)
     {
         IActor* actor = NULL;
         if(appendToLevel)
@@ -231,7 +230,7 @@ namespace chimera
         }
     }
 
-    IActor* BaseGameLogic::VCreateActor(CONST CHAR* resource, BOOL appendToLevel) 
+    IActor* BaseGameLogic::VCreateActor(const char* resource, bool appendToLevel) 
     {
         if(!resource) 
         {
@@ -259,7 +258,7 @@ namespace chimera
         return root;
     }
 
-    VOID BaseGameLogic::VRemoveActor(ActorId id) 
+    void BaseGameLogic::VRemoveActor(ActorId id) 
     {
         m_actors.erase(id);
         auto it = m_actorToViewMap.find(id);
@@ -270,7 +269,7 @@ namespace chimera
         m_pLevel->VRemoveActor(id);
     }
 
-    BOOL BaseGameLogic::VLoadLevel(ILevel* level)
+    bool BaseGameLogic::VLoadLevel(ILevel* level)
     {
         m_gameState = CM_STATE_LOADING;
 
@@ -285,10 +284,10 @@ namespace chimera
             SAFE_DELETE(m_pLevel);
         }
         m_pLevel = level;
-        return m_pLevel->VLoad(FALSE);
+        return m_pLevel->VLoad(false);
     }
 
-    BOOL BaseGameLogic::VLoadLevel(CONST CHAR* resource) 
+    bool BaseGameLogic::VLoadLevel(const char* resource) 
     {
         m_gameState = CM_STATE_LOADING;
 
@@ -298,27 +297,27 @@ namespace chimera
 
         m_pLevel = new XMLLevel(resource, m_pActorFactory); 
 
-        m_pLevel->VLoad(FALSE);
+        m_pLevel->VLoad(false);
 
-        return TRUE;
+        return true;
     }
 
-    FLOAT BaseGameLogic::GetLevelLoadProgress(VOID) CONST
+    float BaseGameLogic::GetLevelLoadProgress(void) const
     {
         return m_pLevel->VGetLoadingProgress();
     }
 
-    UINT BaseGameLogic::GetLevelActorCount(VOID) CONST
+    uint BaseGameLogic::GetLevelActorCount(void) const
     {
         return m_pLevel->VGetActorsCount();
     }
 
-    VOID BaseGameLogic::ActorCreatedDelegate(IEventPtr eventData)
+    void BaseGameLogic::ActorCreatedDelegate(IEventPtr eventData)
     {
 
     }
 
-    VOID BaseGameLogic::MoveActorDelegate(IEventPtr eventData) 
+    void BaseGameLogic::MoveActorDelegate(IEventPtr eventData) 
     {
         std::shared_ptr<MoveActorEvent> data = std::static_pointer_cast<MoveActorEvent>(eventData);
         IActor* actor = VFindActor(data->m_id);
@@ -426,7 +425,7 @@ namespace chimera
         }
     }
 
-    VOID BaseGameLogic::CreateActorDelegate(IEventPtr eventData) 
+    void BaseGameLogic::CreateActorDelegate(IEventPtr eventData) 
     {
         std::shared_ptr<CreateActorEvent> data = std::static_pointer_cast<CreateActorEvent>(eventData);
 
@@ -437,7 +436,7 @@ namespace chimera
         event::IEventManager::Get()->VQueueEvent(actorCreatedEvent); */
     }
 
-    VOID BaseGameLogic::DeleteActorDelegate(IEventPtr eventData)
+    void BaseGameLogic::DeleteActorDelegate(IEventPtr eventData)
     {
         std::shared_ptr<DeleteActorEvent> data = std::static_pointer_cast<DeleteActorEvent>(eventData);
         ActorId id = data->m_id;
@@ -455,18 +454,18 @@ namespace chimera
         }
     }
 
-    VOID BaseGameLogic::LoadLevelDelegate(IEventPtr eventData)
+    void BaseGameLogic::LoadLevelDelegate(IEventPtr eventData)
     {
         /*std::shared_ptr<LoadLevelEvent> data = std::static_pointer_cast<LoadLevelEvent>(eventData);
         VLoadLevel(new XMLLevel(data->m_name.c_str(), m_pActorFactory)); */
     }
 
-    VOID BaseGameLogic::LevelLoadedDelegate(IEventPtr eventData)
+    void BaseGameLogic::LevelLoadedDelegate(IEventPtr eventData)
     {
         m_gameState = eProcessState_Running;
     }
 
-    VOID BaseGameLogic::CreateProcessDelegate(IEventPtr eventData)
+    void BaseGameLogic::CreateProcessDelegate(IEventPtr eventData)
     {
         std::shared_ptr<CreateProcessEvent> e = std::static_pointer_cast<CreateProcessEvent>(eventData);
         m_pProcessManager->VAttach(std::unique_ptr<IProcess>(e->m_pProcess));
@@ -496,7 +495,7 @@ namespace chimera
 
         SAFE_DELETE(m_pCmdInterpreter);
 
-        m_pProcessManager->VAbortAll(TRUE);
+        m_pProcessManager->VAbortAll(true);
 
         SAFE_DELETE(m_pProcessManager);
 

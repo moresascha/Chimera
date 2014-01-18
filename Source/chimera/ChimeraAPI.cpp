@@ -22,11 +22,11 @@
 #include "GuiComponent.h"
 #include <fstream>
 
-#define INIT_XML "../Assets/Actors/init.xml"
+#define INIT_XML "/Actors/init.xml"
 
-BOOL APIENTRY DllMain (HINSTANCE hInst, DWORD reason, LPVOID lpReserved)
+bool APIENTRY DllMain (HINSTANCE hInst, DWORD reason, LPVOID lpReserved)
 {
-    return TRUE;
+    return true;
 }
 
 namespace chimera
@@ -34,7 +34,7 @@ namespace chimera
     class DefaultHumanViewFactory : public IHumanViewFactory
     {
     public:
-        IHumanView* VCreateHumanView(VOID)
+        IHumanView* VCreateHumanView(void)
         {
             return new HumanGameView();
         }
@@ -43,7 +43,7 @@ namespace chimera
     class DefaultVRamManagerFactory : public IVRamManagerFactory
     {
     public:
-        IVRamManager* VCreateVRamManager(VOID)
+        IVRamManager* VCreateVRamManager(void)
         {
             IVRamManager* vrm = new VRamManager(1024);
             vrm->VRegisterHandleCreator("obj", new GeometryCreator());
@@ -56,7 +56,7 @@ namespace chimera
     class DefaultInputFactroy : public IInputFactory
     {
     public:
-        IInputHandler* VCreateInputHanlder(VOID)
+        IInputHandler* VCreateInputHanlder(void)
         {
             return new DefaultWinInputHandler();
         }
@@ -65,7 +65,7 @@ namespace chimera
     class DefaultEffectFactoryFactory : public IEffectFactoryFactory
     {
     public:
-        IEffectFactory* VCreateEffectFactroy(VOID)
+        IEffectFactory* VCreateEffectFactroy(void)
         {
             return new EffectFactroy();
         }
@@ -74,10 +74,10 @@ namespace chimera
     class DefaultResourceCacheFactory : public IResourceFactory
     {
     public:
-        IResourceCache* VCreateCache(VOID)
+        IResourceCache* VCreateCache(void)
         {
             IResourceCache* cache = new ResourceCache();
-            cache->VInit(1024, new ResourceFolder("../Assets/"));
+            cache->VInit(1024, new ResourceFolder(CmGetDescription()->cachePath));
             IConfig* cfg = CmGetApp()->VGetConfig();
             cache->VRegisterLoader(std::unique_ptr<IResourceLoader>(new ImageLoader("png", cfg->VGetString("sTexturePath"))));
             cache->VRegisterLoader(std::unique_ptr<IResourceLoader>(new ImageLoader("jpg", cfg->VGetString("sTexturePath"))));
@@ -91,7 +91,7 @@ namespace chimera
     class DefaultEventFactroy : public IEventFactory
     {
     public:
-        IEventManager* VCreateEventManager(VOID)
+        IEventManager* VCreateEventManager(void)
         {
             return new EventManager();
         }
@@ -100,7 +100,7 @@ namespace chimera
     class DefaultLogicFactory : public ILogicFactory
     {
     public:
-        ILogic* VCreateLogic(VOID)
+        ILogic* VCreateLogic(void)
         {
             return new BaseGameLogic();
         }
@@ -109,7 +109,7 @@ namespace chimera
     class DefaultActorFactory : public IActorFactoryFactory
     {
     public:
-        IActorFactory* VCreateActorFactroy(VOID)
+        IActorFactory* VCreateActorFactroy(void)
         {
             return new ActorFactory();
         }
@@ -118,16 +118,16 @@ namespace chimera
     class DefaultFontFactroy : public IFontFactory
     {
     public:
-        IFont* VCreateFont(VOID)
+        IFont* VCreateFont(void)
         {
             return new BMFont();
         }
-        IFontRenderer* VCreateFontRenderer(VOID)
+        IFontRenderer* VCreateFontRenderer(void)
         {
             return new FontRenderer();
         }
 
-        IFontManager* VCreateFontManager(VOID)
+        IFontManager* VCreateFontManager(void)
         {
             return new FontManager();
         }
@@ -136,28 +136,28 @@ namespace chimera
     class DefaultGuiFactory : public IGuiFactory
     {
     public:
-        IGuiRectangle* VCreateRectangle(VOID) { return new GuiRectangle(); }
+        IGuiRectangle* VCreateRectangle(void) { return new GuiRectangle(); }
 
-        IGuiTextureComponent* VCreateTextureComponent(VOID) { return new GuiTextComponent(); }
+        IGuiTextureComponent* VCreateTextureComponent(void) { return new GuiTextComponent(); }
 
-        IGuiTextComponent* VCreateTextComponent(VOID) { return new GuiTextComponent(); }
+        IGuiTextComponent* VCreateTextComponent(void) { return new GuiTextComponent(); }
 
-        IGuiTextInputComponent* VCreateTextInputComponent(VOID) { return new GuiTextInputComponent(); }
+        IGuiTextInputComponent* VCreateTextInputComponent(void) { return new GuiTextInputComponent(); }
 
-        IGuiLookAndFeel* VCreateLookAndFeel(VOID) { return new GuiLookAndFeel(); }
+        IGuiLookAndFeel* VCreateLookAndFeel(void) { return new GuiLookAndFeel(); }
 
-        IGui* VCreateGui(VOID) { return new Gui(); }
+        IGui* VCreateGui(void) { return new Gui(); }
     };
 
     //factories end
 
     CM_APP_DESCRIPTION* pDescription = NULL;
-    CONST CM_APP_DESCRIPTION* CM_API CmGetDescription(VOID)
+    const CM_APP_DESCRIPTION* CM_API CmGetDescription(void)
     {
         return pDescription;
     }
 
-    VOID CopyDescription(CM_APP_DESCRIPTION* desc)
+    void CopyDescription(CM_APP_DESCRIPTION* desc)
     {
         pDescription = new CM_APP_DESCRIPTION();
         pDescription->cachePath = desc->cachePath;
@@ -168,12 +168,12 @@ namespace chimera
         pDescription->titel = desc->titel;
     }
 
-    IApplication* CmGetApp(VOID)
+    IApplication* CmGetApp(void)
     {
         return g_pApp;
     }
 
-    ErrorCode CmGetError(VOID)
+    ErrorCode CmGetError(void)
     {
         return APIGetLastError();
     }
@@ -272,7 +272,9 @@ namespace chimera
         }
 
         //load init scene
-        std::ifstream initXml(INIT_XML);
+        std::stringstream ss;
+        ss << CmGetDescription()->cachePath << INIT_XML;
+        std::ifstream initXml(ss.str());
         if(initXml)
         {
             std::string line;
@@ -295,9 +297,9 @@ namespace chimera
             IScreenElement* rect = new GuiConsole();
             rect->VSetName(VIEW_CONSOLE_NAME);
             CMDimension dim;
-            dim.x = 0; dim.x = 0; dim.w = CmGetApp()->VGetWindowWidth(); dim.h = (UINT)(CmGetApp()->VGetWindowHeight() * 0.45f);
+            dim.x = 0; dim.x = 0; dim.w = CmGetApp()->VGetWindowWidth(); dim.h = (uint)(CmGetApp()->VGetWindowHeight() * 0.45f);
             rect->VSetDimension(dim);
-            rect->VSetActive(FALSE);
+            rect->VSetActive(false);
             app->VGetHumanView()->VAddScreenElement(std::unique_ptr<IScreenElement>(rect));
         }
 
@@ -308,7 +310,7 @@ namespace chimera
             APISetError(eErrorCode_InvalidValue);
         }
 
-        BOOL fullscreen = app->VGetConfig()->VGetBool("bFullscreen");
+        bool fullscreen = app->VGetConfig()->VGetBool("bFullscreen");
 
         if(fullscreen)
         {
@@ -319,17 +321,17 @@ namespace chimera
         return app;
     }
 
-    VOID CmLog(CONST std::string& tag, CONST std::string& message, CONST CHAR* funcName, CONST CHAR* file, CONST UINT line) 
+    void CmLog(const std::string& tag, const std::string& message, const char* funcName, const char* file, const uint line) 
     {
         Logger::s_pLogMgr->Log(tag, message, funcName, file, line);
     }
 
-    VOID CmCriticalError(CONST std::string& tag, CONST std::string& message, CONST CHAR* funcName, CONST CHAR* file, CONST UINT line)
+    void CmCriticalError(const std::string& tag, const std::string& message, const char* funcName, const char* file, const uint line)
     {
         Logger::s_pLogMgr->CriticalError(tag, message, funcName, file, line);
     }
 
-    VOID CmReleaseApplication(VOID)
+    void CmReleaseApplication(void)
     {
         SAFE_DELETE(pDescription);
         g_pApp->VClose();

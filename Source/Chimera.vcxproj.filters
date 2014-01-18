@@ -112,6 +112,9 @@
     <Filter Include="Source Files\view\nodes">
       <UniqueIdentifier>{bf1334a4-cc77-48ac-9fd9-fe8011ae9775}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Header Files\view\particles">
+      <UniqueIdentifier>{0f9992ae-ea6a-4b8e-9e32-ade8b623e7c2}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\Assets\shader\ShaderGlobals.h">
@@ -335,6 +338,12 @@
     </ClInclude>
     <ClInclude Include="chimera\SpotlightNode.h">
       <Filter>Header Files\view\nodes</Filter>
+    </ClInclude>
+    <ClInclude Include="chimera\ParticleSystem.h">
+      <Filter>Header Files\view\particles</Filter>
+    </ClInclude>
+    <ClInclude Include="chimera\api\ParticleSystemAPI.h">
+      <Filter>Header Files\api</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

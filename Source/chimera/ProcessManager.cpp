@@ -2,7 +2,7 @@
 
 namespace chimera 
 {
-    ProcessManager::ProcessManager(VOID)
+    ProcessManager::ProcessManager(void)
     {
         //TODO move to app
         SYSTEM_INFO sysinfo;
@@ -35,14 +35,14 @@ namespace chimera
         }
     }
 
-    VOID ProcessManager::SchedulerAdd(std::shared_ptr<IProcess> process)
+    void ProcessManager::SchedulerAdd(std::shared_ptr<IProcess> process)
     {
         m_lock.Lock();
         m_processes.push_back(process);
         m_lock.Unlock();
     }
 
-    UINT ProcessManager::VUpdate(ULONG deltaMillis) 
+    uint ProcessManager::VUpdate(ulong deltaMillis) 
     {
         m_lock.Lock();
     
@@ -90,7 +90,7 @@ namespace chimera
         return 0; // TODO
     }
 
-    VOID ProcessManager::VAbortAll(BOOL immediate) 
+    void ProcessManager::VAbortAll(bool immediate) 
     {
         for(auto it = m_processes.begin(); it != m_processes.end(); ++it)
         {
@@ -106,7 +106,7 @@ namespace chimera
         }
     }
 
-    ProcessManager::~ProcessManager(VOID)
+    ProcessManager::~ProcessManager(void)
     {
         TBD_FOR(m_processes)
         {

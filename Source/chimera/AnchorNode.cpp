@@ -6,12 +6,12 @@
 #include "Components.h"
 namespace chimera
 {    
-    UINT AnchorNode::VGetRenderPaths(VOID)
+    uint AnchorNode::VGetRenderPaths(void)
     {
         return eRenderPath_DrawEditMode | eRenderPath_DrawPicking | eRenderPath_DrawDebugInfo;
     }
 
-    VOID AnchorNode::_VRender(chimera::SceneGraph* graph, chimera::RenderPath& path)
+    void AnchorNode::_VRender(chimera::SceneGraph* graph, chimera::RenderPath& path)
     {
         switch(m_meshType)
         {

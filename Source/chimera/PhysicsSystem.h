@@ -31,62 +31,62 @@ namespace chimera
     {
     public:
 
-        virtual BOOL VInit(VOID) = 0;
+        virtual bool VInit(void) = 0;
     
-        virtual VOID VCreateStaticPlane(CONST util::Vec3& dimension, IActor* actor, std::string& material) = 0;
+        virtual void VCreateStaticPlane(const util::Vec3& dimension, IActor* actor, std::string& material) = 0;
 
-        virtual VOID VCreateSphere(FLOAT radius, IActor* actor, CONST util::Vec3& offsetPosition, std::string& material) = 0;
+        virtual void VCreateSphere(float radius, IActor* actor, const util::Vec3& offsetPosition, std::string& material) = 0;
 
-        virtual VOID VCreateCube(CONST util::Vec3& dimension, IActor* actor, CONST util::Vec3& offsetPosition, std::string& material) = 0;
+        virtual void VCreateCube(const util::Vec3& dimension, IActor* actor, const util::Vec3& offsetPosition, std::string& material) = 0;
 
-        virtual VOID VCreateTrigger(FLOAT radius, IActor* actor) = 0;
+        virtual void VCreateTrigger(float radius, IActor* actor) = 0;
 
-        virtual VOID VCreateTriangleMesh(IActor* actor, CONST IMesh* mesh, CONST util::Vec3& offsetPosition, std::string& material, std::string & shapeType) = 0;
+        virtual void VCreateTriangleMesh(IActor* actor, const IMesh* mesh, const util::Vec3& offsetPosition, std::string& material, std::string & shapeType) = 0;
 
-        virtual VOID VCreateCharacterController(ActorId id, CONST util::Vec3& pos, FLOAT radius, FLOAT height) = 0;
+        virtual void VCreateCharacterController(ActorId id, const util::Vec3& pos, float radius, float height) = 0;
 
-        virtual VOID VRemoveActor(ActorId id) = 0;
+        virtual void VRemoveActor(ActorId id) = 0;
 
-        virtual VOID VApplyForce(CONST util::Vec3& dir, FLOAT newtons, IActor* actor) = 0;
+        virtual void VApplyForce(const util::Vec3& dir, float newtons, IActor* actor) = 0;
 
-        virtual VOID VApplyTorque(CONST util::Vec3& dir, FLOAT newtons, IActor* actor) = 0;
+        virtual void VApplyTorque(const util::Vec3& dir, float newtons, IActor* actor) = 0;
 
-        virtual VOID VMoveKinematic(IActor* actor, CONST util::Vec3* pos, CONST util::Vec4* quat, FLOAT deltaMillis, BOOL isDeltaMove, BOOL isJump = FALSE) = 0;
+        virtual void VMoveKinematic(IActor* actor, const util::Vec3* pos, const util::Vec4* quat, float deltaMillis, bool isDeltaMove, bool isJump = false) = 0;
 
-        virtual VOID VMoveKinematic(IActor* actor, CONST util::Vec3* pos, CONST util::Vec3* axis, FLOAT angle, FLOAT deltaMillis, BOOL isDeltaMove, BOOL isJump = FALSE) = 0;
+        virtual void VMoveKinematic(IActor* actor, const util::Vec3* pos, const util::Vec3* axis, float angle, float deltaMillis, bool isDeltaMove, bool isJump = false) = 0;
 
-        virtual VOID VDebugRender(VOID) { }
+        virtual void VDebugRender(void) { }
 
-        virtual VOID VSyncScene(VOID) = 0;
+        virtual void VSyncScene(void) = 0;
 
-        virtual VOID VUpdate(FLOAT deltaMillis) = 0;
+        virtual void VUpdate(float deltaMillis) = 0;
 
-        virtual ~IPhysicsSystem(VOID) {}
+        virtual ~IPhysicsSystem(void) {}
     };
 
     class IPhysicsDebugRenderer 
     {
     public:
-        virtual VOID VDrawLine(CONST util::Vec3& start, CONST util::Vec3& end) = 0;
-        virtual VOID VDrawCube(CONST util::Vec3& extends, CONST util::Vec3& position) = 0;
+        virtual void VDrawLine(const util::Vec3& start, const util::Vec3& end) = 0;
+        virtual void VDrawCube(const util::Vec3& extends, const util::Vec3& position) = 0;
     };
 
     namespace px
     {
         struct Material 
         {
-            FLOAT m_staticFriction;
-            FLOAT m_dynamicFriction;
-            FLOAT m_restitution;
-            FLOAT m_mass;
-            FLOAT m_angulardamping;
+            float m_staticFriction;
+            float m_dynamicFriction;
+            float m_restitution;
+            float m_mass;
+            float m_angulardamping;
             //FLOAT m_
             physx::PxMaterial* m_material;
-            Material(FLOAT staticFriction, FLOAT dynamicFriction, FLOAT restitution, FLOAT mass, FLOAT angularDamping, physx::PxPhysics* physx);
+            Material(float staticFriction, float dynamicFriction, float restitution, float mass, float angularDamping, physx::PxPhysics* physx);
 
-            Material(VOID) : m_material(NULL) {}
+            Material(void) : m_material(NULL) {}
 
-            ~Material(VOID) { }
+            ~Material(void) { }
         };
     }
 
@@ -98,22 +98,22 @@ namespace chimera
         class Controller_
         {
         private:
-            FLOAT m_jumpDy;
-            FLOAT m_time;
-            FLOAT m_duration;
-            FLOAT m_p0;
-            FLOAT m_p1;
-            FLOAT m_maxJumpvalueFunc;
-            FLOAT m_jumpVelo;
-            FLOAT m_a;
+            float m_jumpDy;
+            float m_time;
+            float m_duration;
+            float m_p0;
+            float m_p1;
+            float m_maxJumpvalueFunc;
+            float m_jumpVelo;
+            float m_a;
 
         public:
-            Controller_(VOID);
-            VOID SetJumpSettings(FLOAT duration);
-            VOID Update(FLOAT deltaMillis);
-            VOID Move(FLOAT dx, FLOAT dy, FLOAT deltaMilli);
-            VOID Jump(FLOAT dy);
-            BOOL IsOnGround(VOID);
+            Controller_(void);
+            void SetJumpSettings(float duration);
+            void Update(float deltaMillis);
+            void Move(float dx, float dy, float deltaMilli);
+            void Jump(float dy);
+            bool IsOnGround(void);
             physx::PxController* m_controller;
             util::Vec3 m_rotation;
         };
@@ -133,11 +133,11 @@ namespace chimera
 
         DefaultFilterCallback* m_pDefaultFilterCallback;
 
-        FLOAT m_lastMillis;
+        float m_lastMillis;
 
         PVD::PvdConnection* m_pDebugConnection;
 
-        physx::PxActor* AddActor(physx::PxGeometry& geo, IActor* actor, CONST util::Vec3& offsetPosition, std::string& material, FLOAT density);
+        physx::PxActor* AddActor(physx::PxGeometry& geo, IActor* actor, const util::Vec3& offsetPosition, std::string& material, float density);
 
         px::Material& CheckMaterial(std::string material) {
 
@@ -153,51 +153,51 @@ namespace chimera
 
         std::map<std::string, px::Material> m_materials;
 
-        VOID CreateTriangleConcaveMesh(IActor* actor, CONST IMesh* mesh, CONST util::Vec3& position, std::string& material);
-        VOID CreateTriangleConvexMesh(IActor* actor, CONST IMesh* mesh, CONST util::Vec3& position, std::string& material);
+        void CreateTriangleConcaveMesh(IActor* actor, const IMesh* mesh, const util::Vec3& position, std::string& material);
+        void CreateTriangleConvexMesh(IActor* actor, const IMesh* mesh, const util::Vec3& position, std::string& material);
 
-        VOID CreateFromActor(IActor* actor);
+        void CreateFromActor(IActor* actor);
 
     public:
 
-        PhysX(VOID);
+        PhysX(void);
 
-        BOOL VInit(VOID);
+        bool VInit(void);
 
-        VOID VCreateStaticPlane(CONST util::Vec3& dimension, IActor* actor, std::string& material);
+        void VCreateStaticPlane(const util::Vec3& dimension, IActor* actor, std::string& material);
 
-        VOID VCreateSphere(FLOAT radius, IActor* actor, CONST util::Vec3& offsetPosition, std::string& material);
+        void VCreateSphere(float radius, IActor* actor, const util::Vec3& offsetPosition, std::string& material);
 
-        VOID VCreateCube(CONST util::Vec3& dimension, IActor* actor, CONST util::Vec3& offsetPosition, std::string& material);
+        void VCreateCube(const util::Vec3& dimension, IActor* actor, const util::Vec3& offsetPosition, std::string& material);
 
-        VOID VCreateTriangleMesh(IActor* actor, CONST IMesh* mesh, CONST util::Vec3& position, std::string& material, std::string& shapeType);
+        void VCreateTriangleMesh(IActor* actor, const IMesh* mesh, const util::Vec3& position, std::string& material, std::string& shapeType);
 
-        VOID VCreateTrigger(FLOAT radius, IActor* actor);
+        void VCreateTrigger(float radius, IActor* actor);
 
-        VOID VRemoveActor(ActorId id);
+        void VRemoveActor(ActorId id);
 
-        VOID VApplyForce(CONST util::Vec3& dir, FLOAT newtons, IActor* actor);
+        void VApplyForce(const util::Vec3& dir, float newtons, IActor* actor);
 
-        VOID VApplyTorque(CONST util::Vec3& dir, FLOAT newtons, IActor* actor);
+        void VApplyTorque(const util::Vec3& dir, float newtons, IActor* actor);
 
-        VOID VCreateCharacterController(ActorId id, CONST util::Vec3& pos, FLOAT radius, FLOAT height);
+        void VCreateCharacterController(ActorId id, const util::Vec3& pos, float radius, float height);
 
-        VOID VMoveKinematic(IActor* actor, CONST util::Vec3* pos, CONST util::Vec4* quat, FLOAT deltaMillis, BOOL isDeltaMove, BOOL isJump = FALSE);
+        void VMoveKinematic(IActor* actor, const util::Vec3* pos, const util::Vec4* quat, float deltaMillis, bool isDeltaMove, bool isJump = false);
 
-        VOID VMoveKinematic(IActor* actor, CONST util::Vec3* pos, CONST util::Vec3* axis, FLOAT angle, FLOAT deltaMillis, BOOL isDeltaMove, BOOL isJump = FALSE);
+        void VMoveKinematic(IActor* actor, const util::Vec3* pos, const util::Vec3* axis, float angle, float deltaMillis, bool isDeltaMove, bool isJump = false);
 
-        VOID VDebugRender(VOID);
+        void VDebugRender(void);
 
-        VOID VSyncScene(VOID);
+        void VSyncScene(void);
 
-        VOID VUpdate(FLOAT deltaMillis);
+        void VUpdate(float deltaMillis);
 
-        VOID NewComponentDelegate(IEventPtr data);
+        void NewComponentDelegate(IEventPtr data);
 
-        VOID ApplyForceTorqueDelegate(IEventPtr data);
+        void ApplyForceTorqueDelegate(IEventPtr data);
 
-        VOID OnResourceChanged(IEventPtr data);
+        void OnResourceChanged(IEventPtr data);
 
-        ~PhysX(VOID);
+        ~PhysX(void);
     };
 };

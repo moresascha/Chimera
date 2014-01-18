@@ -3,11 +3,11 @@
 
 namespace chimera
 {
-    ParticleManager::ParticleManager(VOID)
+    ParticleManager::ParticleManager(void)
     {
     }
 
-    VOID ParticleManager::Update(ULONG time, UINT dt)
+    void ParticleManager::Update(ulong time, uint dt)
     {
         TBD_FOR(m_systems)
         {
@@ -15,7 +15,7 @@ namespace chimera
         }
     }
 
-    ParticleManager::~ParticleManager(VOID)
+    ParticleManager::~ParticleManager(void)
     {
     }
 }

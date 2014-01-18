@@ -36,7 +36,7 @@ namespace chimera
             return "";
         }
 
-        VOID __CheckError(HRESULT __error)
+        void __CheckError(HRESULT __error)
         {
             if(FAILED(__error)) 
             {
@@ -70,12 +70,12 @@ namespace chimera
         LPCSTR g_pixelShaderMaxProfile;
         LPCSTR g_geometryShaderMaxProfile;
         HWND g_hWnd;
-        UINT g_width;
-        UINT g_height;
-        UINT g_samples = 1;
-        UINT g_quality = 0;
+        uint g_width;
+        uint g_height;
+        uint g_samples = 1;
+        uint g_quality = 0;
 
-        UINT flags = 0;
+        uint flags = 0;
 
         std::string* g_adapterName = 0;
 
@@ -321,13 +321,13 @@ namespace chimera
             DXGI_FORMAT_FORCE_UINT
         };
 
-        VOID DisplayMode::Print(VOID)
+        void DisplayMode::Print(void)
         {
             DEBUG_OUT_A("Widht=%d Height=%d Refreshrate=(%d %d) Format=%s\n", 
                 mode.Width, mode.Height, mode.RefreshRate.Numerator, mode.RefreshRate.Denominator, DXGI_FORMAT_STR[mode.Format]);
         }
 
-        HRESULT Init(WNDPROC wndProc, CONST HINSTANCE hInstance, LPCWSTR title, UINT width, UINT height) 
+        HRESULT Init(WNDPROC wndProc, const HINSTANCE hInstance, LPCWSTR title, uint width, uint height) 
         {
             DXGI_MODE_DESC md;
             ZeroMemory(&md, sizeof(DXGI_MODE_DESC));
@@ -367,7 +367,7 @@ namespace chimera
             desc.OutputWindow = g_hWnd;
             desc.SampleDesc.Count = g_samples;
             desc.SampleDesc.Quality = g_quality;
-            desc.Windowed = TRUE;
+            desc.Windowed = true;
             desc.BufferDesc.Height = height;
             desc.BufferDesc.Width = width;
             desc.Flags = DXGI_SWAP_CHAIN_FLAG_ALLOW_MODE_SWITCH;
@@ -440,14 +440,14 @@ namespace chimera
                         
             D3D11_DEPTH_STENCIL_DESC dsDesc;
             ZeroMemory(&dsDesc, sizeof(D3D11_DEPTH_STENCIL_DESC));
-            dsDesc.DepthEnable = TRUE;
+            dsDesc.DepthEnable = true;
             dsDesc.DepthWriteMask = D3D11_DEPTH_WRITE_MASK_ALL;
             dsDesc.DepthFunc = D3D11_COMPARISON_LESS_EQUAL;
-            dsDesc.StencilEnable = FALSE;
+            dsDesc.StencilEnable = false;
 
             //D3D_SAVE_CALL(g_pDevice->CreateDepthStencilState(&dsDesc, &m_pDepthNoStencilState));
 
-            dsDesc.StencilEnable = TRUE;
+            dsDesc.StencilEnable = true;
             dsDesc.StencilWriteMask = 0xFF;
             dsDesc.StencilReadMask = 0xFF;
 
@@ -474,15 +474,15 @@ namespace chimera
             dsDesc.BackFace.StencilFunc = D3D11_COMPARISON_EQUAL;
             //D3D_SAVE_CALL(g_pDevice->CreateDepthStencilState(&dsDesc, &m_pDepthCmpStencilState));
 
-            dsDesc.DepthEnable = FALSE;
-            dsDesc.StencilEnable = FALSE;
+            dsDesc.DepthEnable = false;
+            dsDesc.StencilEnable = false;
            // D3D_SAVE_CALL(g_pDevice->CreateDepthStencilState(&dsDesc, &m_pNoDepthNoStencilState));
 
             D3D11_BLEND_DESC blendDesc;
             ZeroMemory(&blendDesc, sizeof(D3D11_BLEND_DESC));
             for(int i = 0; i < 8; ++i)
             {
-                blendDesc.RenderTarget[i].BlendEnable = FALSE;
+                blendDesc.RenderTarget[i].BlendEnable = false;
                 blendDesc.RenderTarget[i].RenderTargetWriteMask = D3D11_COLOR_WRITE_ENABLE_ALL;
             }
            // D3D_SAVE_CALL(g_pDevice->CreateBlendState(&blendDesc, &g_pBlendStateNoBlending));
@@ -490,7 +490,7 @@ namespace chimera
             ZeroMemory(&blendDesc, sizeof(D3D11_BLEND_DESC));
             for(int i = 0; i < 8; ++i)
             {
-                blendDesc.RenderTarget[i].BlendEnable = TRUE;
+                blendDesc.RenderTarget[i].BlendEnable = true;
                 blendDesc.RenderTarget[i].RenderTargetWriteMask = D3D11_COLOR_WRITE_ENABLE_ALL;
 
                 blendDesc.RenderTarget[i].BlendOp = D3D11_BLEND_OP_ADD;
@@ -507,7 +507,7 @@ namespace chimera
 
             for(int i = 0; i < 8; ++i)
             {
-                blendDesc.RenderTarget[i].BlendEnable = TRUE;
+                blendDesc.RenderTarget[i].BlendEnable = true;
                 blendDesc.RenderTarget[i].RenderTargetWriteMask = D3D11_COLOR_WRITE_ENABLE_ALL;
 
                 blendDesc.RenderTarget[i].BlendOp = D3D11_BLEND_OP_ADD;
@@ -526,10 +526,10 @@ namespace chimera
             ZeroMemory(&rasterDesc, sizeof(D3D11_RASTERIZER_DESC));
             rasterDesc.CullMode = D3D11_CULL_BACK;
             rasterDesc.FillMode = D3D11_FILL_SOLID;
-            rasterDesc.DepthClipEnable = TRUE;
-            rasterDesc.FrontCounterClockwise = TRUE;
-            rasterDesc.MultisampleEnable = FALSE;
-            rasterDesc.AntialiasedLineEnable = FALSE;
+            rasterDesc.DepthClipEnable = true;
+            rasterDesc.FrontCounterClockwise = true;
+            rasterDesc.MultisampleEnable = false;
+            rasterDesc.AntialiasedLineEnable = false;
             //D3D_SAVE_CALL(g_pDevice->CreateRasterizerState(&rasterDesc, &g_pRasterizerStateFrontFaceSolid));
 
             rasterDesc.FillMode = D3D11_FILL_WIREFRAME;
@@ -590,20 +590,20 @@ namespace chimera
            
             SetDefaultStates();
 
-            return TRUE;
+            return true;
         }
 
-        LPCSTR GetAdapterName(VOID)
+        LPCSTR GetAdapterName(void)
         {
             return g_adapterName->c_str();
         }
 
-        VOID GetDisplayModeList(DisplayModeList& modes)
+        void GetDisplayModeList(DisplayModeList& modes)
         {
             IDXGIOutput* output;
             D3D_SAVE_CALL(g_pAdapter->EnumOutputs(0, &output));
 
-            UINT n;
+            uint n;
             output->GetDisplayModeList(DXGI_FORMAT_R8G8B8A8_UNORM, 0, &n, NULL);
 
             DXGI_MODE_DESC* mds = new DXGI_MODE_DESC[n];
@@ -618,7 +618,7 @@ namespace chimera
             SAFE_ARRAY_DELETE(mds);
         }
 
-        DisplayMode GetClosestDisplayMode(CONST DisplayMode& mode)
+        DisplayMode GetClosestDisplayMode(const DisplayMode& mode)
         {
             IDXGIOutput* output;
             D3D_SAVE_CALL(g_pAdapter->EnumOutputs(0, &output));
@@ -628,17 +628,17 @@ namespace chimera
             return dm;
         }
 
-        UINT GetWindowHeight(VOID)
+        uint GetWindowHeight(void)
         {
             return g_height;
         }
 
-        UINT GetWindowWidth(VOID)
+        uint GetWindowWidth(void)
         {
             return g_width;
         }
 
-        VOID GetFullscreenSize(UINT* width, UINT* height)
+        void GetFullscreenSize(uint* width, uint* height)
         {
             RECT r;
             GetWindowRect(GetDesktopWindow(), &r);
@@ -646,7 +646,7 @@ namespace chimera
             *width = r.right;
         }
 
-        VOID ReleaseBackbuffer(VOID) 
+        void ReleaseBackbuffer(void) 
         {
             g_pContext->OMSetRenderTargets(0, 0, 0);
             SAFE_RELEASE(g_pDepthStencilBuffer);
@@ -655,32 +655,32 @@ namespace chimera
             SAFE_RELEASE(g_pBackBufferView);
         }
 
-        VOID BindBackbuffer(VOID) 
+        void BindBackbuffer(void) 
         {
             g_pContext->OMSetRenderTargets(1, &g_pBackBufferView, g_pDepthStencilView);
             //chimera::SetDefaultViewPort();
         }
 
-        VOID ClearBackBuffer(CONST FLOAT color[4])
+        void ClearBackBuffer(const float color[4])
         {
             g_pContext->ClearRenderTargetView(g_pBackBufferView, color);
             g_pContext->ClearDepthStencilView(g_pDepthStencilView, D3D11_CLEAR_STENCIL | D3D11_CLEAR_DEPTH, 1, 1);
         }
 
-        VOID SetDefaultViewPort(VOID)
+        void SetDefaultViewPort(void)
         {
             D3D11_VIEWPORT port;
             port.MinDepth = 0;
             port.MaxDepth = 1;
             port.TopLeftX = 0;
             port.TopLeftY = 0;
-            port.Width = (FLOAT)g_width;
-            port.Height = (FLOAT)g_height;
+            port.Width = (float)g_width;
+            port.Height = (float)g_height;
 
             g_pContext->RSSetViewports(1, &port);
         }
 
-        VOID CreateBackbuffer(UINT width, UINT height) 
+        void CreateBackbuffer(uint width, uint height) 
         {
             g_pSwapChain->GetBuffer(0, __uuidof(ID3D11Texture2D), (LPVOID*)&g_pBackBuffer);
 
@@ -712,7 +712,7 @@ namespace chimera
             SAFE_RELEASE(g_pBackBuffer);
         }
 
-        VOID SetDefaultStates(VOID) 
+        void SetDefaultStates(void) 
         {
             g_pContext->PSSetSamplers(0, 4, g_pSamplerStates);
             g_pContext->VSSetSamplers(0, 4, g_pSamplerStates);
@@ -725,14 +725,14 @@ namespace chimera
             g_pContext->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
         }
 
-        BOOL GetFullscreenState(VOID)
+        bool GetFullscreenState(void)
         {
-            BOOL state;
+            bool state;
             D3D_SAVE_CALL(g_pSwapChain->GetFullscreenState(&state, NULL));
             return state;
         }
 
-        VOID SetFullscreenState(BOOL fs, UINT width, UINT height)
+        void SetFullscreenState(bool fs, uint width, uint height)
         {
             if(fs == GetFullscreenState())
             {
@@ -765,7 +765,7 @@ namespace chimera
             D3D_SAVE_CALL(g_pSwapChain->ResizeTarget(&closest.mode));
         }
 
-        VOID Resize(UINT width, UINT height)
+        void Resize(uint width, uint height)
         {
             if(g_pSwapChain) 
             {
@@ -780,10 +780,10 @@ namespace chimera
                 port.MaxDepth = 1;
                 port.TopLeftX = 0;
                 port.TopLeftY = 0;
-                port.Width = (FLOAT)width;
-                port.Height = (FLOAT)height;
+                port.Width = (float)width;
+                port.Height = (float)height;
 
-                UINT ports = 1;
+                uint ports = 1;
                 g_pContext->RSSetViewports(ports, &port);
 
                 g_width = width;
@@ -791,13 +791,13 @@ namespace chimera
             }
         }
 
-        BOOL _CreateWindow(
+        bool _CreateWindow(
             WNDPROC wndProc ,
-            HINSTANCE hInstance, LPCWSTR title, UINT width, UINT height) 
+            HINSTANCE hInstance, LPCWSTR title, uint width, uint height) 
         {
 
             RECT rec = {0,0,width,height};
-            AdjustWindowRect(&rec, WS_OVERLAPPEDWINDOW, FALSE);
+            AdjustWindowRect(&rec, WS_OVERLAPPEDWINDOW, false);
 
             WNDCLASSEX wcex;
 
@@ -824,21 +824,21 @@ namespace chimera
 
             if (!g_hWnd)
             {
-                return FALSE;
+                return false;
             }
 
             ShowWindow(g_hWnd, 10);
             UpdateWindow(g_hWnd);
 
-            return TRUE;
+            return true;
         }
 
-        ID3D11Device* GetDevice(VOID) 
+        ID3D11Device* GetDevice(void) 
         { 
             return g_pDevice; 
         };
 
-        ID3D11DeviceContext* GetContext(VOID)
+        ID3D11DeviceContext* GetContext(void)
         { 
             return g_pContext; 
         };
@@ -861,7 +861,7 @@ namespace chimera
             return d3dFormatMap[format];
         }
 
-        VOID Release(VOID) 
+        void Release(void) 
         {
             ID3D11Buffer* null[D3D11_COMMONSHADER_CONSTANT_BUFFER_API_SLOT_COUNT];
             TBD_FOR_INT(D3D11_COMMONSHADER_CONSTANT_BUFFER_API_SLOT_COUNT)
@@ -917,7 +917,7 @@ namespace chimera
             SAFE_RELEASE(g_pRasterizerStateNoCullingSolid);
             SAFE_RELEASE(g_pRasterizerStateBackFaceSolid);
             SAFE_RELEASE(g_pRasterizerStateWrireframe);
-            g_pSwapChain->SetFullscreenState(FALSE, NULL);
+            g_pSwapChain->SetFullscreenState(false, NULL);
             SAFE_RELEASE(g_pSwapChain);
             ReleaseBackbuffer();
             SAFE_RELEASE(g_pContext);

@@ -3,26 +3,26 @@
 
 namespace chimera
 {
-    IGeometry* CreateSkyDome(VOID)
+    IGeometry* CreateSkyDome(void)
     {
-        UINT segmentsX = 64;
-        UINT segmentsY = 8;
-        UINT indexCount = segmentsY * 2 * (segmentsX + 1) + segmentsY;
-        UINT vertexCount = (segmentsX + 1) * (segmentsY + 1);
+        uint segmentsX = 64;
+        uint segmentsY = 8;
+        uint indexCount = segmentsY * 2 * (segmentsX + 1) + segmentsY;
+        uint vertexCount = (segmentsX + 1) * (segmentsY + 1);
 
-        UINT* indexBuffer = new UINT[indexCount];
-        FLOAT* vertexBuffer = new FLOAT[vertexCount * 5];
+        uint* indexBuffer = new uint[indexCount];
+        float* vertexBuffer = new float[vertexCount * 5];
 
-        FLOAT dphi = 2 * XM_PI / (FLOAT)segmentsX;
-        FLOAT dtheta = XM_PI / (FLOAT)segmentsY;
-        FLOAT phi = 0;
-        FLOAT theta = 0;//-XM_PI;
-        UINT ic = 0;
-        UINT vc = 0;
+        float dphi = 2 * XM_PI / (float)segmentsX;
+        float dtheta = XM_PI / (float)segmentsY;
+        float phi = 0;
+        float theta = 0;//-XM_PI;
+        uint ic = 0;
+        uint vc = 0;
 
-        for(UINT i = 0; i <= segmentsY; ++i)
+        for(uint i = 0; i <= segmentsY; ++i)
         {
-            for(UINT j = 0; j <= segmentsX; ++j)
+            for(uint j = 0; j <= segmentsX; ++j)
             {
                 vertexBuffer[vc++] = sin(theta) * cos(phi);
                 vertexBuffer[vc++] = cos(theta);
@@ -36,9 +36,9 @@ namespace chimera
             theta -= 0.5f * dtheta;
         }
 
-        for(UINT i = 0; i < segmentsY; ++i)
+        for(uint i = 0; i < segmentsY; ++i)
         {
-            for(UINT j = 0; j <= segmentsX; ++j)
+            for(uint j = 0; j <= segmentsX; ++j)
             {
                 indexBuffer[ic++] = i * (segmentsX+1) + j + segmentsX + 1;
                 indexBuffer[ic++] = i * (segmentsX+1) + j;
@@ -49,7 +49,7 @@ namespace chimera
         IGeometry* m_sSkyDome = CmGetApp()->VGetHumanView()->VGetGraphicsFactory()->VCreateGeoemtry().release();
         m_sSkyDome->VSetIndexBuffer(indexBuffer, indexCount);
         m_sSkyDome->VSetTopology(eTopo_TriangleStrip);
-        m_sSkyDome->VSetVertexBuffer(vertexBuffer, vertexCount, 5 * sizeof(FLOAT));
+        m_sSkyDome->VSetVertexBuffer(vertexBuffer, vertexCount, 5 * sizeof(float));
         m_sSkyDome->VCreate();
 
         delete[] indexBuffer;
@@ -63,14 +63,14 @@ namespace chimera
         VSetRenderPaths(CM_RENDERPATH_SKY);
     }
 
-    BOOL SkyDomeNode::VIsVisible(ISceneGraph* graph)
+    bool SkyDomeNode::VIsVisible(ISceneGraph* graph)
     {
-        return TRUE;
+        return true;
     }
 
-    VOID SkyDomeNode::VOnRestore(ISceneGraph* graph)
+    void SkyDomeNode::VOnRestore(ISceneGraph* graph)
     {
-        GetActorCompnent<TransformComponent>(m_actor, CM_CMP_TRANSFORM)->GetTransformation()->SetScale(400);
+        GetActorCompnent<TransformComponent>(m_actor, CM_CMP_TRANSFORM)->GetTransformation()->SetScale(1000);
         m_textureHandle = std::static_pointer_cast<IDeviceTexture>(CmGetApp()->VGetHumanView()->VGetVRamManager()->VGetHandle(m_TextureRes));
 
         if(!m_pGeometry)
@@ -79,7 +79,7 @@ namespace chimera
         }
     }
 
-    VOID SkyDomeNode::_VRender(ISceneGraph* graph, chimera::RenderPath& path)
+    void SkyDomeNode::_VRender(ISceneGraph* graph, chimera::RenderPath& path)
     {
         switch(path)
         {
@@ -109,7 +109,7 @@ namespace chimera
 
     }
 
-    SkyDomeNode::~SkyDomeNode(VOID)
+    SkyDomeNode::~SkyDomeNode(void)
     {
         m_pGeometry->VDestroy();
     }

@@ -59,8 +59,8 @@ namespace chimera {
 
     HRESULT STDMETHODCALLTYPE ByteStream::Read( 
         __out_bcount_part(cb, *pcbRead)  void *pv,
-        ULONG cb,
-        __out_opt  ULONG *pcbRead)
+        ulong cb,
+        __out_opt  ulong *pcbRead)
     {
         size_t          bytes_left;
         size_t          bytes_out;
@@ -75,7 +75,7 @@ namespace chimera {
         bytes_out = min(cb, bytes_left);
         memcpy(pv, &m_bytes[m_currentPos], bytes_out);
         m_currentPos += (LONG)bytes_out;
-        if (pcbRead != NULL) *pcbRead = (ULONG)bytes_out;
+        if (pcbRead != NULL) *pcbRead = (ulong)bytes_out;
         return S_OK;
     }
 };

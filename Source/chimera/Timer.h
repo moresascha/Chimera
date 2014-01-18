@@ -8,29 +8,29 @@ namespace chimera
         class Timer : public ITimer
         {
         private:
-            ULONG m_framesCount;
-            ULONG m_lastFramesCount;
-            UINT m_start;
-            UINT m_lastFramesStart;
-            UINT m_lastCounter;
-            UINT m_currentCounter;
+            ulong m_framesCount;
+            ulong m_lastFramesCount;
+            uint m_start;
+            uint m_lastFramesStart;
+            uint m_lastCounter;
+            uint m_currentCounter;
 
         public:
-            Timer(VOID);
+            Timer(void);
     
-            VOID VTick(VOID);
+            void VTick(void);
 
-            VOID VReset(VOID);
+            void VReset(void);
 
-            FLOAT VGetFPS(VOID) CONST;
+            float VGetFPS(void) const;
 
-            ULONG VGetTime(VOID) CONST;
+            ulong VGetTime(void) const;
 
-            ULONG VGetLastMillis(VOID) CONST;
+            ulong VGetLastMillis(void) const;
 
-            ULONG VGetLastMicros(VOID) CONST;
+            ulong VGetLastMicros(void) const;
          
-            ~Timer(VOID);
+            ~Timer(void);
         };
 
         class HTimer //todo: public ITimer
@@ -40,18 +40,18 @@ namespace chimera
             LARGE_INTEGER m_end;
             DOUBLE m_freq;
         public:
-            HTimer(VOID)
+            HTimer(void)
             {
                 QueryPerformanceFrequency(&m_start);
                 m_freq = (DOUBLE)(m_start.QuadPart);
             }
 
-            VOID Start(VOID)
+            void Start(void)
             {
                 QueryPerformanceCounter(&m_start);
             }
 
-            VOID Stop(VOID)
+            void Stop(void)
             {
                 QueryPerformanceCounter(&m_end);
             }
@@ -61,22 +61,22 @@ namespace chimera
                 return (DOUBLE)((m_end.QuadPart - m_start.QuadPart) * multiplier) / m_freq;
             }
 
-            DOUBLE GetNanos(VOID)
+            DOUBLE GetNanos(void)
             {
                 return GetTime(1e9);
             }
 
-            DOUBLE GetMicros(VOID)
+            DOUBLE GetMicros(void)
             {
                 return GetTime(1e6);
             }
 
-            DOUBLE GetMillis(VOID)
+            DOUBLE GetMillis(void)
             {
                 return GetTime(1e3);
             }
 
-            DOUBLE GetSeconds(VOID)
+            DOUBLE GetSeconds(void)
             {
                 return GetTime(1);
             }

@@ -6,6 +6,6 @@ namespace chimera
     class ICMStream
     {
     public:
-        virtual VOID Close(VOID) = 0;
+        virtual void Close(void) = 0;
     };
 }

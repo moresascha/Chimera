@@ -5,11 +5,11 @@ namespace chimera
     KeyAdapterListener g_keyAdapter;
     MouseAdapterListener g_mouseAdapter;
 
-    DefaultWinInputHandler::DefaultWinInputHandler(VOID) : m_hwnd(NULL)
+    DefaultWinInputHandler::DefaultWinInputHandler(void) : m_hwnd(NULL)
     {
-        for(UINT i = 0; i < 0xFE; ++i)
+        for(uint i = 0; i < 0xFE; ++i)
         {
-            m_isKeyDown[i] = FALSE;
+            m_isKeyDown[i] = false;
         }
         VPushKeyListener(&g_keyAdapter);
         VPushMouseListener(&g_mouseAdapter);
@@ -17,38 +17,38 @@ namespace chimera
         VOnRestore();
     }
 
-    VOID DefaultWinInputHandler::VPushKeyListener(IKeyListener* listener)
+    void DefaultWinInputHandler::VPushKeyListener(IKeyListener* listener)
     {
         m_keyStack.Push(listener);
     }
 
-    VOID DefaultWinInputHandler::VPopKeyListener(VOID)
+    void DefaultWinInputHandler::VPopKeyListener(void)
     {
         m_keyStack.Pop();
     }
 
-    VOID DefaultWinInputHandler::VPushMouseListener(IMouseListener* listener)
+    void DefaultWinInputHandler::VPushMouseListener(IMouseListener* listener)
     {
         m_mouseStack.Push(listener);
     }
 
-    VOID DefaultWinInputHandler::VPopMouseListener(VOID)
+    void DefaultWinInputHandler::VPopMouseListener(void)
     {
         m_mouseStack.Pop();
     }
 
-    VOID DefaultWinInputHandler::VRemoveKeyListener(IKeyListener* listener)
+    void DefaultWinInputHandler::VRemoveKeyListener(IKeyListener* listener)
     {
         m_keyStack.Remove(listener);
     }
 
-    VOID DefaultWinInputHandler::VRemoveMouseListener(IMouseListener* listener)
+    void DefaultWinInputHandler::VRemoveMouseListener(IMouseListener* listener)
     {
         m_mouseStack.Remove(listener);
     }
 
-    BOOL DefaultWinInputHandler::UpdateListener(InputMessage msg) {
-        BOOL result = 0;
+    bool DefaultWinInputHandler::UpdateListener(InputMessage msg) {
+        bool result = 0;
         
         switch(msg.message) 
         {
@@ -97,9 +97,9 @@ namespace chimera
         return result;
     }
 
-    VOID DefaultWinInputHandler::VOnUpdate(VOID)
+    void DefaultWinInputHandler::VOnUpdate(void)
     {
-        for(UINT i = 0; i < 0xFE; ++i)
+        for(uint i = 0; i < 0xFE; ++i)
         {
             if(m_isKeyDown[i])
             {
@@ -111,35 +111,35 @@ namespace chimera
         }
     }
 
-    BOOL DefaultWinInputHandler::VInit(CM_INSTANCE hinstance, CM_HWND hwnd, UINT width, UINT height)
+    bool DefaultWinInputHandler::VInit(CM_INSTANCE hinstance, CM_HWND hwnd, uint width, uint height)
     {
         m_hwnd = (HWND)hwnd;
-        return TRUE;
+        return true;
     }
 
-    BOOL DefaultWinInputHandler::VOnRestore(VOID)
+    bool DefaultWinInputHandler::VOnRestore(void)
     {
-        m_isMouseGrabbed = FALSE;
+        m_isMouseGrabbed = false;
         m_lastMousePosX = 0; //todo
         m_lastMousePosY = 0; //todo
         //VGrabMouse(FALSE);
-        return TRUE;
+        return true;
     }
 
-    VOID DefaultWinInputHandler::VSetCurserOffsets(INT x, INT y)
+    void DefaultWinInputHandler::VSetCurserOffsets(int x, int y)
     {
         m_curserXOffset = x;
         m_curserYOffset = y;
     }
 
-    BOOL DefaultWinInputHandler::VOnMessage(CONST MSG& msg)
+    bool DefaultWinInputHandler::VOnMessage(const MSG& msg)
     {
         switch(msg.message)
         {
         case WM_MOUSEMOVE:
             {
-                INT posx = GET_X_LPARAM(msg.lParam);
-                INT posy = GET_Y_LPARAM(msg.lParam);
+                int posx = GET_X_LPARAM(msg.lParam);
+                int posy = GET_Y_LPARAM(msg.lParam);
                 InputMessage imsg;
 
                 imsg.mouseX = posx;
@@ -149,8 +149,8 @@ namespace chimera
                 {
                     RECT rc;
                     GetWindowRect(m_hwnd, &rc);
-                    INT x = (rc.right - rc.left) / 2;
-                    INT y = (rc.bottom - rc.top) / 2;
+                    int x = (rc.right - rc.left) / 2;
+                    int y = (rc.bottom - rc.top) / 2;
 
                     imsg.mouseDY = posy - y;
                     imsg.mouseDX = posx - x;
@@ -179,8 +179,8 @@ namespace chimera
             } break;
         case WM_LBUTTONDOWN:
             {
-                INT posx = GET_X_LPARAM(msg.lParam);
-                INT posy = GET_Y_LPARAM(msg.lParam);
+                int posx = GET_X_LPARAM(msg.lParam);
+                int posy = GET_Y_LPARAM(msg.lParam);
                 InputMessage imsg;
                 imsg.mouseX = posx;
                 imsg.mouseY = posy;
@@ -190,8 +190,8 @@ namespace chimera
             } break;
         case WM_RBUTTONDOWN:
             {
-                INT posx = GET_X_LPARAM(msg.lParam);
-                INT posy = GET_Y_LPARAM(msg.lParam);
+                int posx = GET_X_LPARAM(msg.lParam);
+                int posy = GET_Y_LPARAM(msg.lParam);
                 InputMessage imsg;
                 imsg.mouseX = posx;
                 imsg.mouseY = posy;
@@ -201,8 +201,8 @@ namespace chimera
             } break;
         case WM_LBUTTONUP:
             {
-                INT posx = GET_X_LPARAM(msg.lParam);
-                INT posy = GET_Y_LPARAM(msg.lParam);
+                int posx = GET_X_LPARAM(msg.lParam);
+                int posy = GET_Y_LPARAM(msg.lParam);
                 InputMessage imsg;
                 imsg.mouseX = posx;
                 imsg.mouseY = posy;
@@ -212,8 +212,8 @@ namespace chimera
             } break;
         case WM_RBUTTONUP:
             {
-                INT posx = GET_X_LPARAM(msg.lParam);
-                INT posy = GET_Y_LPARAM(msg.lParam);
+                int posx = GET_X_LPARAM(msg.lParam);
+                int posy = GET_Y_LPARAM(msg.lParam);
                 InputMessage imsg;
                 imsg.mouseX = posx;
                 imsg.mouseY = posy;
@@ -224,24 +224,24 @@ namespace chimera
         case WM_KEYDOWN:
             {
                 InputMessage imsg;
-                imsg.button = (UINT)msg.wParam;
+                imsg.button = (uint)msg.wParam;
                 imsg.message = (KF_REPEAT & HIWORD(msg.lParam)) ? KEY_REPEAT : KEY_PRESSED;
                 UpdateListener(imsg);
-                m_isKeyDown[imsg.button] = TRUE;
+                m_isKeyDown[imsg.button] = true;
 
             } break;
         case WM_KEYUP:
             {
                 InputMessage imsg;
-                imsg.button = (UINT)msg.wParam;
+                imsg.button = (uint)msg.wParam;
                 imsg.message = KEY_RELEASED;
                 UpdateListener(imsg);
-                m_isKeyDown[imsg.button] = FALSE;
+                m_isKeyDown[imsg.button] = false;
             } break;
         case WM_MOUSEWHEEL:
             {
-                INT posx = GET_X_LPARAM(msg.lParam);
-                INT posy = GET_Y_LPARAM(msg.lParam);
+                int posx = GET_X_LPARAM(msg.lParam);
+                int posy = GET_Y_LPARAM(msg.lParam);
                 InputMessage imsg;
                 imsg.mouseX = posx;
                 imsg.mouseY = posy;
@@ -250,14 +250,14 @@ namespace chimera
                 UpdateListener(imsg);
             } break;
         }
-        return TRUE;
+        return true;
     }
 
-    BOOL DefaultWinInputHandler::VGrabMouse(BOOL grab)
+    bool DefaultWinInputHandler::VGrabMouse(bool grab)
     {
         if(grab)
         {
-            while(ShowCursor(FALSE) >= 0);
+            while(ShowCursor(false) >= 0);
             GetCursorPos(&m_mousePosition);
             SetCapture(m_hwnd);
             /*RECT rc;
@@ -267,7 +267,7 @@ namespace chimera
         else
         {
             SetCursor(LoadCursor(NULL, IDC_ARROW));
-            while(ShowCursor(TRUE) <= 0);
+            while(ShowCursor(true) <= 0);
             ReleaseCapture();
             if(m_isMouseGrabbed)
             {
@@ -276,10 +276,10 @@ namespace chimera
         }
 
         m_isMouseGrabbed = grab;
-        return TRUE;
+        return true;
     }
 
-    BOOL DefaultWinInputHandler::VIsMouseGrabbed(VOID)
+    bool DefaultWinInputHandler::VIsMouseGrabbed(void)
     {
         return m_isMouseGrabbed;
     }

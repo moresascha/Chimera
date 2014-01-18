@@ -22,36 +22,36 @@ namespace chimera
         IGraphicsFactory* m_pGraphicsFactory;
         IEffectFactory* m_pEffectFactory;
         IGuiFactory* m_pGuiFactroy;
-        BOOL m_isFullscreen;
+        bool m_isFullscreen;
 
     public:
-        HumanGameView(VOID);
+        HumanGameView(void);
 
-        BOOL VOnRestore(VOID);
+        bool VOnRestore(void);
 
-        VOID VOnRender(VOID);
+        void VOnRender(void);
     
-        VOID VPostRender(VOID);
+        void VPostRender(void);
 
-        VOID VSetFullscreen(BOOL fullscreen);
+        void VSetFullscreen(bool fullscreen);
 
-        BOOL VIsFullscreen(VOID);
+        bool VIsFullscreen(void);
         
-        BOOL VInitialise(FactoryPtr* facts);
+        bool VInitialise(FactoryPtr* facts);
 
-        IRenderer* VGetRenderer(VOID);
+        IRenderer* VGetRenderer(void);
 
-        VOID VOnUpdate(ULONG deltaMillis);
+        void VOnUpdate(ulong deltaMillis);
     
-        VOID VOnAttach(ViewId viewId, IActor* actor);
+        void VOnAttach(ViewId viewId, IActor* actor);
 
-        VOID VSetTarget(IActor* actor);
+        void VSetTarget(IActor* actor);
 
-        IPicker* VGetPicker(VOID) { return m_picker; }
+        IPicker* VGetPicker(void) { return m_picker; }
 
-        VOID VAddSceneNodeCreator(SceneNodeCreator nc, ComponentId cmpid);
+        void VAddSceneNodeCreator(SceneNodeCreator nc, ComponentId cmpid);
 
-        VOID VRemoveSceneNodeCreator(ComponentId cmpid);
+        void VRemoveSceneNodeCreator(ComponentId cmpid);
 
         //VOID SetGraphicsSettings(GraphicsSettingType type) { m_graphicsSettingsType = type; }
 
@@ -59,128 +59,128 @@ namespace chimera
 
         //IGraphicsSettings* GetGraphicsSettings(VOID) { return m_pGraphisSettings[m_graphicsSettingsType]; }
 
-        IGraphicsFactory* VGetGraphicsFactory(VOID) { return m_pGraphicsFactory; }
+        IGraphicsFactory* VGetGraphicsFactory(void) { return m_pGraphicsFactory; }
 
-        IGuiFactory* VGetGuiFactory(VOID) { return m_pGuiFactroy; }
+        IGuiFactory* VGetGuiFactory(void) { return m_pGuiFactroy; }
 
-        IVRamManager* VGetVRamManager(VOID) { return m_pVramManager; }
+        IVRamManager* VGetVRamManager(void) { return m_pVramManager; }
 
-        IFontManager* VGetFontManager(VOID) { return m_pFontManager; }
+        IFontManager* VGetFontManager(void) { return m_pFontManager; }
 
-        IEffectFactory* VGetEffectFactory(VOID) { return m_pEffectFactory; }
+        IEffectFactory* VGetEffectFactory(void) { return m_pEffectFactory; }
 
-        ISoundEngine* VGetSoundEngine(VOID) { return m_pSoundEngine; }
+        ISoundEngine* VGetSoundEngine(void) { return m_pSoundEngine; }
 
-        ISoundSystem* VGetSoundSystem(VOID) { return m_pSoundSystem; }
+        ISoundSystem* VGetSoundSystem(void) { return m_pSoundSystem; }
 
-        ViewType VGetType(VOID) CONST { return eViewType_Human; }
+        ViewType VGetType(void) const { return eViewType_Human; }
 
-        ISceneGraph* VGetSceneGraph(VOID) { return this->m_pSceneGraph; }
+        ISceneGraph* VGetSceneGraph(void) { return this->m_pSceneGraph; }
 
-        IActor* VGetTarget(VOID) CONST { return m_actor; }
+        IActor* VGetTarget(void) const { return m_actor; }
 
-        VOID VAddScreenElement(std::unique_ptr<IScreenElement> element);
+        void VAddScreenElement(std::unique_ptr<IScreenElement> element);
 
-        VOID VAddScene(std::unique_ptr<IRenderScreen> screen);
+        void VAddScene(std::unique_ptr<IRenderScreen> screen);
 
-        VOID VActivateScene(LPCSTR name);
+        void VActivateScene(LPCSTR name);
 
         IRenderScreen* VGetSceneByName(LPCSTR name);
 
         IScreenElement* VGetScreenElementByName(LPCSTR name); //this is slowly implemented
 
-        VOID ToggleConsole(VOID);
+        void ToggleConsole(void);
 
         /*chimera::gui::D3D_GUI* VGetGUI(VOID) CONST { return m_pGui; }
 
         chimera::gui::GuiConsole* GetConsole(VOID);*/
 
-        VOID ActorMovedDelegate(IEventPtr eventData);
+        void ActorMovedDelegate(IEventPtr eventData);
 
-        VOID NewComponentDelegate(IEventPtr pEventData);
+        void NewComponentDelegate(IEventPtr pEventData);
 
-        VOID DeleteActorDelegate(IEventPtr pEventData);
+        void DeleteActorDelegate(IEventPtr pEventData);
 
-        VOID LoadingLevelDelegate(IEventPtr pEventData);
+        void LoadingLevelDelegate(IEventPtr pEventData);
 
-        VOID LevelLoadedDelegate(IEventPtr pEventData);
+        void LevelLoadedDelegate(IEventPtr pEventData);
 
-        VOID SetParentDelegate(IEventPtr pEventData);
+        void SetParentDelegate(IEventPtr pEventData);
 
-        VOID VOnResize(UINT w, UINT h);
+        void VOnResize(uint w, uint h);
 
-        virtual ~HumanGameView(VOID);
+        virtual ~HumanGameView(void);
     };
 
     class ActorController : public IActorController 
     {
     protected:
-        INT m_lastPosX;
-        INT m_lastPosY;
-        FLOAT m_minSpeed;
-        FLOAT m_maxSpeed;
+        int m_lastPosX;
+        int m_lastPosY;
+        float m_minSpeed;
+        float m_maxSpeed;
 
         //todo: do for released
         /*std::map<UINT, KeyboardButtonPressedAction> m_keyBoardButtonPressedActions;
         std::map<UINT, KeyboardButtonPressedAction> m_keyBoardButtonDownActions;
         std::map<UINT, MouseButtonPressedAction> m_mouseButtonPressedActions; */
 
-        std::map<UINT, std::string> m_keyBoadButtonPressedCommand;
-        std::map<UINT, std::string> m_keyBoadButtonReleasedCommand;
-        std::map<UINT, std::string> m_keyBoadButtonDownCommand;
+        std::map<uint, std::string> m_keyBoadButtonPressedCommand;
+        std::map<uint, std::string> m_keyBoadButtonReleasedCommand;
+        std::map<uint, std::string> m_keyBoadButtonDownCommand;
 
         MouseScrollAction m_scrollAction;
         UpdateAction m_updateAction;
 
-        UINT m_forwardKey;
-        UINT m_backKey;
-        UINT m_leftKey;
-        UINT m_rightKey;
+        uint m_forwardKey;
+        uint m_backKey;
+        uint m_leftKey;
+        uint m_rightKey;
 
     public:
-        ActorController(VOID);
+        ActorController(void);
 
-        virtual BOOL VInitialise(FactoryPtr* facts) { return TRUE; }
+        virtual bool VInitialise(FactoryPtr* facts) { return true; }
 
-        VOID VSetMinSpeed(FLOAT minSpeed) { m_minSpeed = minSpeed; }
-        VOID VSetMaxSpeed(FLOAT maxSpeed) { m_maxSpeed = maxSpeed; }
+        void VSetMinSpeed(float minSpeed) { m_minSpeed = minSpeed; }
+        void VSetMaxSpeed(float maxSpeed) { m_maxSpeed = maxSpeed; }
 
-        VOID VActivate(VOID);
+        void VActivate(void);
 
-        VOID VDeactivate(VOID);
+        void VDeactivate(void);
 
-        virtual BOOL VOnRestore(VOID) { return TRUE; }
+        virtual bool VOnRestore(void) { return true; }
 
-        virtual VOID VOnRender(DOUBLE time, FLOAT elapsedTime) { }
+        virtual void VOnRender(DOUBLE time, float elapsedTime) { }
 
-        virtual VOID VOnUpdate(ULONG deltaMillis);
+        virtual void VOnUpdate(ulong deltaMillis);
 
-        virtual ViewType VGetType(VOID) CONST { return eProjectionType_Controller; }
+        virtual ViewType VGetType(void) const { return eProjectionType_Controller; }
 
-        virtual BOOL VOnKeyDown(UINT CONST code);
-        virtual BOOL VOnKeyPressed(UINT CONST code);
-        virtual BOOL VOnKeyReleased(UINT CONST code);
-        virtual BOOL VOnKeyRepeat(UINT CONST code);
+        virtual bool VOnKeyDown(uint const code);
+        virtual bool VOnKeyPressed(uint const code);
+        virtual bool VOnKeyReleased(uint const code);
+        virtual bool VOnKeyRepeat(uint const code);
 
-        virtual BOOL VOnMouseButtonDown(INT x, INT y, INT button);
+        virtual bool VOnMouseButtonDown(int x, int y, int button);
 
-        virtual BOOL VOnMouseButtonReleased(INT x, INT y, INT button);
-        virtual BOOL VOnMouseButtonPressed(INT x, INT y, INT button);
-        virtual BOOL VOnMousePressed(INT x, INT y, INT button);
-        virtual BOOL VOnMouseMoved(INT x, INT y, INT dx, INT dy);
-        virtual BOOL VOnMouseDragged(INT x, INT y, INT dx, INT dy, INT button);
-        virtual BOOL VOnMouseWheel(INT x, INT y, INT delta);
+        virtual bool VOnMouseButtonReleased(int x, int y, int button);
+        virtual bool VOnMouseButtonPressed(int x, int y, int button);
+        virtual bool VOnMousePressed(int x, int y, int button);
+        virtual bool VOnMouseMoved(int x, int y, int dx, int dy);
+        virtual bool VOnMouseDragged(int x, int y, int dx, int dy, int button);
+        virtual bool VOnMouseWheel(int x, int y, int delta);
 
-        VOID VRegisterKeyPressedCommand(UINT key, CONST std::string& command);
-        VOID VRegisterKeyReleasedCommand(UINT key, CONST std::string& command);
-        VOID VRegisterKeyDownCommand(UINT key, CONST std::string& command);
+        void VRegisterKeyPressedCommand(uint key, const std::string& command);
+        void VRegisterKeyReleasedCommand(uint key, const std::string& command);
+        void VRegisterKeyDownCommand(uint key, const std::string& command);
 
-        VOID VRegisterKeyCommand(UINT key, CONST std::string& command);
+        void VRegisterKeyCommand(uint key, const std::string& command);
 
-        VOID VSetMouseScrollAction(MouseScrollAction action);
-        VOID VSetUpdateAction(UpdateAction action);
+        void VSetMouseScrollAction(MouseScrollAction action);
+        void VSetUpdateAction(UpdateAction action);
 
-        virtual ~ActorController(VOID) { VDeactivate(); }
+        virtual ~ActorController(void) { VDeactivate(); }
     };
 
     class CameraComponent;
@@ -196,14 +196,14 @@ namespace chimera
         ActorId m_toModify;
         BOOL m_kinematicPhysical; */
     public:
-        CharacterController(VOID);
+        CharacterController(void);
 
-        BOOL VOnMouseButtonPressed(INT x, INT y, INT button);
-        BOOL VOnMouseMoved(INT x, INT y, INT dx, INT dy);
-        VOID VOnUpdate(ULONG millis);
-        BOOL VOnKeyDown(UINT CONST code);
-        VOID VOnAttach(ViewId viewId, IActor* actor);
-        VOID VSetTarget(IActor* actor);
+        bool VOnMouseButtonPressed(int x, int y, int button);
+        bool VOnMouseMoved(int x, int y, int dx, int dy);
+        void VOnUpdate(ulong millis);
+        bool VOnKeyDown(uint const code);
+        void VOnAttach(ViewId viewId, IActor* actor);
+        void VSetTarget(IActor* actor);
     };
 };
 

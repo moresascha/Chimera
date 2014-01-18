@@ -84,21 +84,21 @@ namespace chimera
 
         }
 
-        LPCSTR GetFunctionFile(VOID)
+        LPCSTR GetFunctionFile(void)
         {
             return m_function.c_str();
         }
 
-        LPCTSTR GetFile(VOID)
+        LPCTSTR GetFile(void)
         {
             return m_file.c_str();
         }
 
-        virtual BOOL VCompile(ErrorLog* errorLog) = 0;
+        virtual bool VCompile(ErrorLog* errorLog) = 0;
 
-        virtual VOID VBind(VOID) = 0;
+        virtual void VBind(void) = 0;
 
-        virtual VOID VUnbind(VOID) = 0;
+        virtual void VUnbind(void) = 0;
     };
 
     class PixelShader : public Shader
@@ -109,17 +109,17 @@ namespace chimera
     public:
         PixelShader(LPCTSTR file, LPCSTR function);
 
-        BOOL VCompile(ErrorLog* errorLog);
+        bool VCompile(ErrorLog* errorLog);
 
-        ShaderType VGetType(VOID) { return eShaderType_FragmentShader; }
+        ShaderType VGetType(void) { return eShaderType_FragmentShader; }
 
-        VOID VBind(VOID);
+        void VBind(void);
 
-        VOID VUnbind(VOID);
+        void VUnbind(void);
         
         static PixelShader* m_sCurrent;
 
-        ~PixelShader(VOID);
+        ~PixelShader(void);
     };
 
     class VertexShader : public Shader
@@ -129,31 +129,31 @@ namespace chimera
         ID3D11VertexShader* m_pShader;
         ID3D11InputLayout* m_pLayout;
         D3D11_INPUT_ELEMENT_DESC m_layouts[16];
-        UINT m_numInputElemens;
+        uint m_numInputElemens;
         
     public:
         VertexShader(LPCTSTR file, LPCSTR function);
 
-        BOOL VCompile(ErrorLog* errorLog);
+        bool VCompile(ErrorLog* errorLog);
 
-        ShaderType VGetType(VOID) { return eShaderType_VertexShader; }
+        ShaderType VGetType(void) { return eShaderType_VertexShader; }
 
-        VOID SetInputAttr(LPCSTR name, UINT position, UINT slot, UINT offset, DXGI_FORMAT format);
+        void SetInputAttr(LPCSTR name, uint position, uint slot, uint offset, DXGI_FORMAT format);
 
-        VOID SetInputAttr(LPCSTR name, UINT position, UINT slot, DXGI_FORMAT format);
+        void SetInputAttr(LPCSTR name, uint position, uint slot, DXGI_FORMAT format);
 
-        VOID SetInputAttrInstanced(LPCSTR name, UINT position, UINT slot, DXGI_FORMAT format);
+        void SetInputAttrInstanced(LPCSTR name, uint position, uint slot, DXGI_FORMAT format);
 
-        VOID GenerateLayout(VOID);
+        void GenerateLayout(void);
 
-        ID3D11InputLayout* GetInputLayout(VOID);
+        ID3D11InputLayout* GetInputLayout(void);
 
-        VOID VBind(VOID);
+        void VBind(void);
 
-        VOID VUnbind(VOID);
+        void VUnbind(void);
         
         static VertexShader* m_sCurrent;
-        ~VertexShader(VOID);
+        ~VertexShader(void);
     };
 
     class GeometryShader : public Shader
@@ -164,16 +164,16 @@ namespace chimera
     public:
         GeometryShader(LPCTSTR file, LPCSTR function);
 
-        BOOL VCompile(ErrorLog* errorLog);
+        bool VCompile(ErrorLog* errorLog);
 
-        VOID VBind(VOID);
+        void VBind(void);
 
-        VOID VUnbind(VOID);
+        void VUnbind(void);
 
-        ShaderType VGetType(VOID) { return eShaderType_GeometryShader; }
+        ShaderType VGetType(void) { return eShaderType_GeometryShader; }
 
         static GeometryShader* m_sCurrent;
-        ~GeometryShader(VOID);
+        ~GeometryShader(void);
     };
     
     class ShaderProgram : public IShaderProgram
@@ -184,19 +184,19 @@ namespace chimera
         GeometryShader* m_pGeometryShader;
 
     public:
-        ShaderProgram(VOID);
+        ShaderProgram(void);
 
-        BOOL VCompile(ErrorLog* errorLog = NULL);
+        bool VCompile(ErrorLog* errorLog = NULL);
 
-        VOID VBind(VOID);
+        void VBind(void);
 
-        VOID VAddShader(IShader* shader);
+        void VAddShader(IShader* shader);
 
-        VOID VUnbind(VOID);
+        void VUnbind(void);
 
-        VOID GenerateLayout(VOID);
+        void GenerateLayout(void);
 
-        ~ShaderProgram(VOID);
+        ~ShaderProgram(void);
     };
     }
 }

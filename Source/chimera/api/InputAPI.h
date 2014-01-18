@@ -3,12 +3,12 @@
 
 namespace chimera
 {
-    CM_INLINE CHAR GetCharFromVK(UINT key)
+    CM_INLINE char GetCharFromVK(uint key)
     {
         return MapVirtualKey(key, MAPVK_VK_TO_CHAR);
     }
 
-    CM_INLINE UINT GetVKFromchar(CHAR key)
+    CM_INLINE uint GetVKFromchar(char key)
     {
         return VkKeyScan(key);
     }
@@ -16,82 +16,82 @@ namespace chimera
     class IInputHandler
     {
     public:
-        virtual BOOL VOnMessage(CONST MSG& msg) = 0;
+        virtual bool VOnMessage(const MSG& msg) = 0;
 
-        virtual VOID VOnUpdate(VOID) = 0;
+        virtual void VOnUpdate(void) = 0;
 
-        virtual BOOL VInit(CM_INSTANCE hinstance, CM_HWND hwnd, UINT width, UINT height) = 0;
+        virtual bool VInit(CM_INSTANCE hinstance, CM_HWND hwnd, uint width, uint height) = 0;
 
-        virtual BOOL VOnRestore(VOID) = 0;
+        virtual bool VOnRestore(void) = 0;
 
-        virtual BOOL VGrabMouse(BOOL aq) = 0;
+        virtual bool VGrabMouse(bool aq) = 0;
 
-        virtual BOOL VIsMouseGrabbed(VOID) = 0;
+        virtual bool VIsMouseGrabbed(void) = 0;
 
-        virtual VOID VSetCurserOffsets(INT x, INT y) {}
+        virtual void VSetCurserOffsets(int x, int y) {}
 
-        virtual BOOL VIsKeyDown(UINT code) = 0;
+        virtual bool VIsKeyDown(uint code) = 0;
 
-        virtual VOID VPushKeyListener(IKeyListener* listener) = 0;
+        virtual void VPushKeyListener(IKeyListener* listener) = 0;
 
-        virtual VOID VPopKeyListener(VOID) = 0;
+        virtual void VPopKeyListener(void) = 0;
 
-        virtual VOID VPushMouseListener(IMouseListener* listener) = 0;
+        virtual void VPushMouseListener(IMouseListener* listener) = 0;
 
-        virtual VOID VPopMouseListener(VOID) = 0;
+        virtual void VPopMouseListener(void) = 0;
 
-        virtual VOID VRemoveKeyListener(IKeyListener* listener) = 0;
+        virtual void VRemoveKeyListener(IKeyListener* listener) = 0;
 
-        virtual VOID VRemoveMouseListener(IMouseListener* listener) = 0;
+        virtual void VRemoveMouseListener(IMouseListener* listener) = 0;
 
-        virtual ~IInputHandler(VOID) {}
+        virtual ~IInputHandler(void) {}
     };
 
     class IKeyListener 
     {
     public:
-        virtual BOOL VOnKeyDown(UINT CONST code) = 0;
+        virtual bool VOnKeyDown(uint const code) = 0;
 
-        virtual BOOL VOnKeyPressed(UINT CONST code) = 0;
+        virtual bool VOnKeyPressed(uint const code) = 0;
 
-        virtual BOOL VOnKeyReleased(UINT CONST code) = 0;
+        virtual bool VOnKeyReleased(uint const code) = 0;
 
-        virtual BOOL VOnKeyRepeat(UINT CONST code) = 0;
+        virtual bool VOnKeyRepeat(uint const code) = 0;
     };
 
     class IMouseListener 
     {
     public:
-        virtual BOOL VOnMouseButtonPressed(INT x, INT y, INT button) = 0;
+        virtual bool VOnMouseButtonPressed(int x, int y, int button) = 0;
 
-        virtual BOOL VOnMouseButtonDown(INT x, INT y, INT button) = 0;
+        virtual bool VOnMouseButtonDown(int x, int y, int button) = 0;
 
-        virtual BOOL VOnMouseButtonReleased(INT x, INT y, INT button) = 0;
+        virtual bool VOnMouseButtonReleased(int x, int y, int button) = 0;
 
-        virtual BOOL VOnMouseMoved(INT x, INT y, INT dx, INT dy) = 0;
+        virtual bool VOnMouseMoved(int x, int y, int dx, int dy) = 0;
 
-        virtual BOOL VOnMouseDragged(INT x, INT y, INT dx, INT dy, INT button) = 0;
+        virtual bool VOnMouseDragged(int x, int y, int dx, int dy, int button) = 0;
 
-        virtual BOOL VOnMouseWheel(INT x, INT y, INT delta) = 0;
+        virtual bool VOnMouseWheel(int x, int y, int delta) = 0;
     };
 
     class IInputFactory
     {
     public:
-        virtual IInputHandler* VCreateInputHanlder(VOID) = 0;
+        virtual IInputHandler* VCreateInputHanlder(void) = 0;
     };
 
-    typedef fastdelegate::FastDelegate1<UINT> KeyboardButtonPressedListener;
-    typedef fastdelegate::FastDelegate1<UINT> KeyboardButtonReleasedListener;
-    typedef fastdelegate::FastDelegate1<UINT> KeyboardButtonDownListener;
-    typedef fastdelegate::FastDelegate1<UINT> KeyboardButtonRepeatListener;
+    typedef fastdelegate::FastDelegate1<uint> KeyboardButtonPressedListener;
+    typedef fastdelegate::FastDelegate1<uint> KeyboardButtonReleasedListener;
+    typedef fastdelegate::FastDelegate1<uint> KeyboardButtonDownListener;
+    typedef fastdelegate::FastDelegate1<uint> KeyboardButtonRepeatListener;
 
-    typedef fastdelegate::FastDelegate3<INT, INT, INT> MouseButtonPressedListener;
-    typedef fastdelegate::FastDelegate3<INT, INT, INT> MouseButtonReleasedListener;
-    typedef fastdelegate::FastDelegate3<INT, INT, INT> MouseButtonDownListener;
-    typedef fastdelegate::FastDelegate3<INT, INT, INT> MouseWheelListener;
-    typedef fastdelegate::FastDelegate4<INT, INT, INT, INT> MouseMovedListener;
-    typedef fastdelegate::FastDelegate5<INT, INT, INT, INT, INT> MouseDraggedListener;
+    typedef fastdelegate::FastDelegate3<int, int, int> MouseButtonPressedListener;
+    typedef fastdelegate::FastDelegate3<int, int, int> MouseButtonReleasedListener;
+    typedef fastdelegate::FastDelegate3<int, int, int> MouseButtonDownListener;
+    typedef fastdelegate::FastDelegate3<int, int, int> MouseWheelListener;
+    typedef fastdelegate::FastDelegate4<int, int, int, int> MouseMovedListener;
+    typedef fastdelegate::FastDelegate5<int, int, int, int, int> MouseDraggedListener;
 
     class InputAdapter : public IKeyListener, public IMouseListener
     {
@@ -110,208 +110,208 @@ namespace chimera
         std::vector<MouseWheelListener> m_mouseWheelListener;
         std::vector<MouseMovedListener> m_mouseMovedListener;
 
-        BOOL m_active;
+        bool m_active;
 
     public:
 
-        CM_INLINE InputAdapter(VOID);
+        CM_INLINE InputAdapter(void);
 
-        CM_INLINE virtual VOID ActivateInput(VOID);
+        CM_INLINE virtual void ActivateInput(void);
 
-        CM_INLINE virtual VOID DeactivateInput(VOID);
+        CM_INLINE virtual void DeactivateInput(void);
 
-        CM_INLINE BOOL IsInputActive(VOID);
+        CM_INLINE bool IsInputActive(void);
 
-        CM_INLINE VOID AddKeyPressedListener(KeyboardButtonPressedListener listener);
+        CM_INLINE void AddKeyPressedListener(KeyboardButtonPressedListener listener);
 
-        CM_INLINE VOID AddKeyReleasedListener(KeyboardButtonReleasedListener listener);
+        CM_INLINE void AddKeyReleasedListener(KeyboardButtonReleasedListener listener);
 
-        CM_INLINE VOID AddKeyDownListener(KeyboardButtonDownListener listener);
+        CM_INLINE void AddKeyDownListener(KeyboardButtonDownListener listener);
 
-        CM_INLINE VOID AddKeyRepeatListener(KeyboardButtonRepeatListener listener);
+        CM_INLINE void AddKeyRepeatListener(KeyboardButtonRepeatListener listener);
 
-        CM_INLINE VOID AddMousePressedListener(MouseButtonPressedListener listener);
+        CM_INLINE void AddMousePressedListener(MouseButtonPressedListener listener);
 
-        CM_INLINE VOID AddMouseReleasedListener(MouseButtonReleasedListener listener);
+        CM_INLINE void AddMouseReleasedListener(MouseButtonReleasedListener listener);
 
-        CM_INLINE VOID AddMouseDownListener(MouseButtonDownListener listener);
+        CM_INLINE void AddMouseDownListener(MouseButtonDownListener listener);
 
-        CM_INLINE VOID AddMouseMovedListener(MouseMovedListener listener);
+        CM_INLINE void AddMouseMovedListener(MouseMovedListener listener);
 
-        CM_INLINE VOID AddMouseDraggedListener(MouseDraggedListener listener);
+        CM_INLINE void AddMouseDraggedListener(MouseDraggedListener listener);
 
-        CM_INLINE VOID AddMouseScrollListener(MouseWheelListener listener);
+        CM_INLINE void AddMouseScrollListener(MouseWheelListener listener);
 
-        CM_INLINE BOOL VOnMouseButtonPressed(INT x, INT y, INT button);
+        CM_INLINE bool VOnMouseButtonPressed(int x, int y, int button);
 
-        CM_INLINE BOOL VOnMouseButtonDown(INT x, INT y, INT button);
+        CM_INLINE bool VOnMouseButtonDown(int x, int y, int button);
 
-        CM_INLINE BOOL VOnMouseButtonReleased(INT x, INT y, INT button);
+        CM_INLINE bool VOnMouseButtonReleased(int x, int y, int button);
 
-        CM_INLINE BOOL VOnMouseMoved(INT x, INT y, INT dx, INT dy);
+        CM_INLINE bool VOnMouseMoved(int x, int y, int dx, int dy);
 
-        CM_INLINE BOOL VOnMouseDragged(INT x, INT y, INT dx, INT dy, INT button);
+        CM_INLINE bool VOnMouseDragged(int x, int y, int dx, int dy, int button);
 
-        CM_INLINE BOOL VOnMouseWheel(INT x, INT y, INT delta);
+        CM_INLINE bool VOnMouseWheel(int x, int y, int delta);
 
-        CM_INLINE BOOL VOnKeyDown(UINT CONST code);
+        CM_INLINE bool VOnKeyDown(uint const code);
 
-        CM_INLINE BOOL VOnKeyPressed(UINT CONST code);
+        CM_INLINE bool VOnKeyPressed(uint const code);
 
-        CM_INLINE BOOL VOnKeyReleased(UINT CONST code);
+        CM_INLINE bool VOnKeyReleased(uint const code);
 
-        CM_INLINE BOOL VOnKeyRepeat(UINT CONST code);
+        CM_INLINE bool VOnKeyRepeat(uint const code);
 
-        virtual ~InputAdapter(VOID) { }
+        virtual ~InputAdapter(void) { }
     };
 
-    InputAdapter::InputAdapter(VOID) : m_active(FALSE)
+    InputAdapter::InputAdapter(void) : m_active(false)
     {
 
     }
 
-    BOOL InputAdapter::IsInputActive(VOID)
+    bool InputAdapter::IsInputActive(void)
     {
         return m_active;
     }
 
-    VOID InputAdapter::ActivateInput(VOID)
+    void InputAdapter::ActivateInput(void)
     {
         if(!m_active)
         {
             CmGetApp()->VGetInputHandler()->VPushKeyListener(this);
             CmGetApp()->VGetInputHandler()->VPushMouseListener(this);
-            m_active = TRUE;
+            m_active = true;
         }
     }
 
-    VOID InputAdapter::DeactivateInput(VOID)
+    void InputAdapter::DeactivateInput(void)
     {
         if(m_active)
         {
             CmGetApp()->VGetInputHandler()->VPopKeyListener();
             CmGetApp()->VGetInputHandler()->VPopMouseListener();
-            m_active = FALSE;
+            m_active = false;
         }
     }
 
-    VOID InputAdapter::AddKeyPressedListener(KeyboardButtonPressedListener listener)
+    void InputAdapter::AddKeyPressedListener(KeyboardButtonPressedListener listener)
     {
         m_keyBoardButtonPressedListener.push_back(listener);
     }
 
-    VOID InputAdapter::AddKeyReleasedListener(KeyboardButtonReleasedListener listener)
+    void InputAdapter::AddKeyReleasedListener(KeyboardButtonReleasedListener listener)
     {
         m_keyBoardButtonReleasedListener.push_back(listener);
     }
 
-    VOID InputAdapter::AddKeyDownListener(KeyboardButtonDownListener listener)
+    void InputAdapter::AddKeyDownListener(KeyboardButtonDownListener listener)
     {
         m_keyBoardButtonDownListener.push_back(listener);;
     }
 
-    VOID InputAdapter::AddKeyRepeatListener(KeyboardButtonRepeatListener listener)
+    void InputAdapter::AddKeyRepeatListener(KeyboardButtonRepeatListener listener)
     {
         m_keyBoardButtonRepeatListener.push_back(listener);
     }
 
-    VOID InputAdapter::AddMousePressedListener(MouseButtonPressedListener listener)
+    void InputAdapter::AddMousePressedListener(MouseButtonPressedListener listener)
     {
         m_mouseButtonPressedListener.push_back(listener);
     }
 
-    VOID InputAdapter::AddMouseScrollListener(MouseWheelListener listener)
+    void InputAdapter::AddMouseScrollListener(MouseWheelListener listener)
     {
         m_mouseWheelListener.push_back(listener);
     }
 
-    BOOL InputAdapter::VOnMouseButtonPressed(INT x, INT y, INT button)
+    bool InputAdapter::VOnMouseButtonPressed(int x, int y, int button)
     {
         TBD_FOR(m_mouseButtonPressedListener)
         {
             (*it)(x, y, button);
         }
-        return TRUE;
+        return true;
     }
 
-    BOOL InputAdapter::VOnMouseButtonDown(INT x, INT y, INT button)
+    bool InputAdapter::VOnMouseButtonDown(int x, int y, int button)
     {
         TBD_FOR(m_mouseButtonDownListener)
         {
             (*it)(x, y, button);
         }
-        return TRUE;
+        return true;
     }
 
-    BOOL InputAdapter::VOnMouseButtonReleased(INT x, INT y, INT button)
+    bool InputAdapter::VOnMouseButtonReleased(int x, int y, int button)
     {
         TBD_FOR(m_mouseButtonPressedListener)
         {
             (*it)(x, y, button);
         }
-        return TRUE;
+        return true;
     }
 
-    BOOL InputAdapter::VOnMouseMoved(INT x, INT y, INT dx, INT dy)
+    bool InputAdapter::VOnMouseMoved(int x, int y, int dx, int dy)
     {
         TBD_FOR(m_mouseMovedListener)
         {
             (*it)(x, y, dx, dy);
         }
-        return TRUE;
+        return true;
     }
 
-    BOOL InputAdapter::VOnMouseDragged(INT x, INT y, INT dx, INT dy, INT button)
+    bool InputAdapter::VOnMouseDragged(int x, int y, int dx, int dy, int button)
     {
         TBD_FOR(m_mouseDraggedListener)
         {
             (*it)(x, y, dx, dy, button);
         }
-        return TRUE;
+        return true;
     }
 
-    BOOL InputAdapter::VOnMouseWheel(INT x, INT y, INT delta)
+    bool InputAdapter::VOnMouseWheel(int x, int y, int delta)
     {
         TBD_FOR(m_mouseWheelListener)
         {
             (*it)(x, y, delta);
         }
-        return TRUE;
+        return true;
     }
 
-    BOOL InputAdapter::VOnKeyDown(UINT CONST code)
+    bool InputAdapter::VOnKeyDown(uint const code)
     {
         TBD_FOR(m_keyBoardButtonDownListener)
         {
             (*it)(code);
         }
-        return TRUE;
+        return true;
     }
 
-    BOOL InputAdapter::VOnKeyPressed(UINT CONST code)
+    bool InputAdapter::VOnKeyPressed(uint const code)
     {
         TBD_FOR(m_keyBoardButtonPressedListener)
         {
             (*it)(code);
         }
-        return TRUE;
+        return true;
     }
 
-    BOOL InputAdapter::VOnKeyReleased(UINT CONST code)
+    bool InputAdapter::VOnKeyReleased(uint const code)
     {
         TBD_FOR(m_keyBoardButtonReleasedListener)
         {
             (*it)(code);
         }
-        return TRUE;
+        return true;
     }
 
-    BOOL InputAdapter::VOnKeyRepeat(UINT CONST code)
+    bool InputAdapter::VOnKeyRepeat(uint const code)
     {
         TBD_FOR(m_keyBoardButtonRepeatListener)
         {
             (*it)(code);
         }
-        return TRUE;
+        return true;
     }
 }

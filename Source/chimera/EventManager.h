@@ -14,29 +14,29 @@ namespace chimera
         std::map<EventType, std::list<EventListener>> m_eventListenerMap;
         std::list<IEventPtr> m_eventQueues[2];
         util::ts_queue<IEventPtr> m_threadSaveQueue;
-        UINT m_lastEventsFired;
+        uint m_lastEventsFired;
 
     public:
-        EventManager(VOID);
+        EventManager(void);
 
-        BOOL VAddEventListener(CONST EventListener& listener, CONST EventType& type);
+        bool VAddEventListener(const EventListener& listener, const EventType& type);
 
-        BOOL VRemoveEventListener(CONST EventListener& listener, CONST EventType& type);
+        bool VRemoveEventListener(const EventListener& listener, const EventType& type);
 
-        BOOL VQueueEvent(CONST IEventPtr& event);
+        bool VQueueEvent(const IEventPtr& event);
 
-        BOOL VQueueEventTest(CONST IEventPtr& event);
+        bool VQueueEventTest(const IEventPtr& event);
 
-        BOOL VQueueEventThreadSave(CONST IEventPtr& event);
+        bool VQueueEventThreadSave(const IEventPtr& event);
 
-        BOOL VTriggetEvent(CONST IEventPtr& event);
+        bool VTriggetEvent(const IEventPtr& event);
 
-        BOOL VAbortEvent(CONST EventType& type, BOOL all = FALSE);
+        bool VAbortEvent(const EventType& type, bool all = false);
 
-        BOOL VUpdate(CONST ULONG maxMillis = -1);
+        bool VUpdate(const ulong maxMillis = -1);
 
-        UINT LastEventsFired(VOID) { return m_lastEventsFired; }
+        uint LastEventsFired(void) { return m_lastEventsFired; }
 
-        ~EventManager(VOID);
+        ~EventManager(void);
     };
 };

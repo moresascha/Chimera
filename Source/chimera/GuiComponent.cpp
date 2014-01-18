@@ -5,7 +5,7 @@
 namespace chimera
 {
 
-    Gui::Gui(VOID)
+    Gui::Gui(void)
     {
         MouseButtonPressedListener l0 = fastdelegate::MakeDelegate(this, &Gui::ComputeInput);
         AddMousePressedListener(l0);
@@ -14,12 +14,12 @@ namespace chimera
         AddKeyPressedListener(l1);
     }
 
-    VOID Gui::VSetActive(BOOL activate)
+    void Gui::VSetActive(bool activate)
     {
         if(activate)
         {
             ActivateInput();
-            CmGetApp()->VGetInputHandler()->VGrabMouse(FALSE);
+            CmGetApp()->VGetInputHandler()->VGrabMouse(false);
         }
         else
         {
@@ -28,21 +28,21 @@ namespace chimera
         ScreenElementContainer::VSetActive(activate);
     }
 
-    VOID Gui::VAddComponent(IGuiComponent* cmp)
+    void Gui::VAddComponent(IGuiComponent* cmp)
     {
         ScreenElementContainer::VAddComponent(cmp);
         m_guiComponents.push_back(cmp);
     }
 
-    VOID Gui::ComputeKeyInput(UINT key)
+    void Gui::ComputeKeyInput(uint key)
     {
         if(key == KEY_ESC)
         {
-            VSetActive(FALSE);
+            VSetActive(false);
         }
     }
 
-    VOID Gui::ComputeInput(INT x, INT y, INT s)
+    void Gui::ComputeInput(int x, int y, int s)
     {
         if(s != MOUSE_BTN_LEFT)
         {
@@ -53,12 +53,12 @@ namespace chimera
             IGuiComponent* element = *it;
             if(element->VIsIn(x, y))
             {
-                element->VSetFocus(TRUE);
+                element->VSetFocus(true);
             }
         }
     }
 
-    Gui::~Gui(VOID)
+    Gui::~Gui(void)
     {
     }
 
@@ -68,12 +68,12 @@ namespace chimera
     {
     }
 
-    VOID GuiComponent::VSetEnabled(BOOL enable)
+    void GuiComponent::VSetEnabled(bool enable)
     {
         m_enabled = enable;
     }
 
-    VOID GuiComponent::VSetFocus(BOOL focus)
+    void GuiComponent::VSetFocus(bool focus)
     {
         if(focus)
         {
@@ -85,12 +85,12 @@ namespace chimera
         }
     }
 
-    VOID GuiComponent::VSetEffect(LPCSTR pixelShader)
+    void GuiComponent::VSetEffect(LPCSTR pixelShader)
     {
         m_shaderName = pixelShader;
     }
 
-    BOOL GuiComponent::VOnRestore(VOID)
+    bool GuiComponent::VOnRestore(void)
     {
         CMShaderDescription desc;
         desc.file = GUI_SHADER_FILE;
@@ -100,28 +100,28 @@ namespace chimera
         return ScreenElement::VOnRestore();
     }
 
-    GuiComponent::~GuiComponent(VOID)
+    GuiComponent::~GuiComponent(void)
     {
 
     }
 
-    GuiRectangle::GuiRectangle(VOID) : m_tx(0), m_ty(0), m_u(1), m_v(1)
+    GuiRectangle::GuiRectangle(void) : m_tx(0), m_ty(0), m_u(1), m_v(1)
     {
 
     }
 
-    VOID GuiRectangle::VDraw(VOID)
+    void GuiRectangle::VDraw(void)
     {
         if(VGetAlpha() < 1)
         {
             CmGetApp()->VGetHumanView()->VGetRenderer()->VPushAlphaBlendState();
         }
 
-        FLOAT x = -1.0f + 2 * VGetPosX() / (FLOAT)CmGetApp()->VGetWindowWidth();
-        FLOAT y = 1.0f - 2 * VGetPosY() / (FLOAT)CmGetApp()->VGetWindowHeight();
-        FLOAT w = x + 2 * VGetWidth() / (FLOAT)CmGetApp()->VGetWindowWidth();
-        FLOAT h = y - 2 * VGetHeight() / (FLOAT)CmGetApp()->VGetWindowHeight();
-        FLOAT localVertices[20] = 
+        float x = -1.0f + 2 * VGetPosX() / (float)CmGetApp()->VGetWindowWidth();
+        float y = 1.0f - 2 * VGetPosY() / (float)CmGetApp()->VGetWindowHeight();
+        float w = x + 2 * VGetWidth() / (float)CmGetApp()->VGetWindowWidth();
+        float h = y - 2 * VGetHeight() / (float)CmGetApp()->VGetWindowHeight();
+        float localVertices[20] = 
         {
             x, h, 0, m_tx, m_ty,
             w, h, 0, m_u, m_ty,
@@ -140,7 +140,7 @@ namespace chimera
 
         m_pPixelShader->VBind();
         IGeometry* quad = geometryfactroy::GetGlobalScreenQuadCPU();
-        quad->VGetVertexBuffer()->VSetData(localVertices, 20 * sizeof(FLOAT));
+        quad->VGetVertexBuffer()->VSetData(localVertices, 20 * sizeof(float));
         quad->VBind();
         quad->VDraw();
 
@@ -150,12 +150,12 @@ namespace chimera
         }
     }
 
-    GuiRectangle::~GuiRectangle(VOID)
+    GuiRectangle::~GuiRectangle(void)
     {
 
     }
 
-    VOID GuiTextureComponent::SetTextureCoords(FLOAT x, FLOAT y, FLOAT u, FLOAT v)
+    void GuiTextureComponent::SetTextureCoords(float x, float y, float u, float v)
     {
         m_tx = x;
         m_ty = y;
@@ -163,14 +163,14 @@ namespace chimera
         m_v = v;
     }
 
-    GuiTextureComponent::GuiTextureComponent(VOID)
+    GuiTextureComponent::GuiTextureComponent(void)
     {
         VSetEffect("GuiTexture_PS");
         VSetTexture("default64x641.png");
         SetTextureCoords(0, 0, 1, 1);
     }
 
-    VOID GuiTextureComponent::VDraw(VOID)
+    void GuiTextureComponent::VDraw(void)
     {
         if(m_textureHandle)
         {
@@ -191,7 +191,7 @@ namespace chimera
         }
     }
 
-    VOID GuiTextureComponent::VSetTexture(LPCSTR texFile)
+    void GuiTextureComponent::VSetTexture(LPCSTR texFile)
     {
         m_resource = texFile;
         if(strcmp(texFile, "") == 0)
@@ -204,7 +204,7 @@ namespace chimera
         }
     }
 
-    BOOL GuiTextureComponent::VOnRestore(VOID)
+    bool GuiTextureComponent::VOnRestore(void)
     {
         m_textureHandle = std::static_pointer_cast<IDeviceTexture>(CmGetApp()->VGetHumanView()->VGetVRamManager()->VGetHandle(m_resource));
         return GuiRectangle::VOnRestore();
@@ -245,29 +245,29 @@ namespace chimera
 
     }*/
 
-    GuiTextComponent::GuiTextComponent(VOID) : m_appendDir(eGuiTextAppendDown), m_alignment(eGuiAlignLeft), m_textColor(1,1,1,1)
+    GuiTextComponent::GuiTextComponent(void) : m_appendDir(eGuiTextAppendDown), m_alignment(eGuiAlignLeft), m_textColor(1,1,1,1)
     {
         VSetTexture("");
     }
 
-    CONST std::vector<TextLine>& GuiTextComponent::VGetTextLines() CONST
+    const std::vector<TextLine>& GuiTextComponent::VGetTextLines() const
     {
         return m_textLines;
     }
 
-    VOID GuiTextComponent::VSetAlignment(Alignment alignment)
+    void GuiTextComponent::VSetAlignment(Alignment alignment)
     {
         m_alignment = alignment;
     }
 
-    VOID GuiTextComponent::VSetTextAppendDirection(AppendDirection dir)
+    void GuiTextComponent::VSetTextAppendDirection(AppendDirection dir)
     {
         m_appendDir = dir;
     }
 
-    VOID GuiTextComponent::VAppendText(CONST std::string& text)
+    void GuiTextComponent::VAppendText(const std::string& text)
     {
-        UINT maxHistory = 100; //todo
+        uint maxHistory = 100; //todo
         if(m_textLines.size() >= maxHistory)
         {
             m_textLines.erase(m_textLines.begin());
@@ -281,9 +281,9 @@ namespace chimera
         {
             TextLine line;
             line.text = *it;
-            for(INT i = 0; i < line.text.size(); ++i)
+            for(int i = 0; i < line.text.size(); ++i)
             {
-                CONST CMCharMetric* metric = CmGetApp()->VGetHumanView()->VGetFontManager()->VGetCurrentFont()->VGetCharMetric(line.text[i]);
+                const CMCharMetric* metric = CmGetApp()->VGetHumanView()->VGetFontManager()->VGetCurrentFont()->VGetCharMetric(line.text[i]);
                 if(!metric)
                 {
                     metric = CmGetApp()->VGetHumanView()->VGetFontManager()->VGetCurrentFont()->VGetCharMetric('?');
@@ -294,7 +294,7 @@ namespace chimera
         }
     }
 
-    BOOL GuiTextComponent::VOnRestore(VOID)
+    bool GuiTextComponent::VOnRestore(void)
     {
         if(m_resource != "")
         {
@@ -306,12 +306,12 @@ namespace chimera
         }
     }
 
-    VOID GuiTextComponent::DrawText(TextLine& line, INT x, INT y)
+    void GuiTextComponent::DrawText(TextLine& line, int x, int y)
     {
-        INT mx = x;
+        int mx = x;
         if(m_alignment == eGuiAlignCenter)
         {
-            mx -= (INT)(0.5 * line.width);
+            mx -= (int)(0.5 * line.width);
         }
         else if(m_alignment == eGuiAlignRight)
         {
@@ -320,34 +320,34 @@ namespace chimera
         if(mx + line.width > VGetPosX() + VGetWidth())
         {
             //slow implementation, only do this when dimension change, for example. Todo
-            INT w = mx + line.width;
+            int w = mx + line.width;
             std::string text = line.text;
-            while(w > (INT)(VGetPosX() + VGetWidth()))
+            while(w > (int)(VGetPosX() + VGetWidth()))
             {
-                CHAR c = text.substr(text.size() - 1, text.size())[0];
+                char c = text.substr(text.size() - 1, text.size())[0];
                 w -= CmGetApp()->VGetHumanView()->VGetFontManager()->VGetCurrentFont()->VGetCharMetric(c)->xadvance;
                 text = text.substr(0, text.size() - 1);
             }
-            CmGetApp()->VGetHumanView()->VGetFontManager()->VRenderText(text, mx / (FLOAT)CmGetApp()->VGetWindowWidth(), y / (FLOAT)CmGetApp()->VGetWindowHeight(), &m_textColor);
+            CmGetApp()->VGetHumanView()->VGetFontManager()->VRenderText(text, mx / (float)CmGetApp()->VGetWindowWidth(), y / (float)CmGetApp()->VGetWindowHeight(), &m_textColor);
         }
         else
         {
-            CmGetApp()->VGetHumanView()->VGetFontManager()->VRenderText(line.text, mx / (FLOAT)CmGetApp()->VGetWindowWidth(), y / (FLOAT)CmGetApp()->VGetWindowHeight(), &m_textColor);
+            CmGetApp()->VGetHumanView()->VGetFontManager()->VRenderText(line.text, mx / (float)CmGetApp()->VGetWindowWidth(), y / (float)CmGetApp()->VGetWindowHeight(), &m_textColor);
         }
     }
 
-    VOID GuiTextComponent::VClearText(VOID)
+    void GuiTextComponent::VClearText(void)
     {
         m_textLines.clear();
     }
 
-    VOID GuiTextComponent::VDraw(VOID)
+    void GuiTextComponent::VDraw(void)
     {
         GuiTextureComponent::VDraw();
 
-        INT y = VGetPosY();
+        int y = VGetPosY();
             
-        INT lineheight = CmGetApp()->VGetHumanView()->VGetFontManager()->VGetCurrentFont()->VGetLineHeight();
+        int lineheight = CmGetApp()->VGetHumanView()->VGetFontManager()->VGetCurrentFont()->VGetLineHeight();
 
         /*if(m_appendDir == eUp)
         {
@@ -358,13 +358,13 @@ namespace chimera
             y += lineheight;
         } */
             
-        INT x = VGetPosX();
+        int x = VGetPosX();
 
-        INT centerX = 0;
+        int centerX = 0;
 
         if(m_alignment == eGuiAlignCenter)
         {
-            x = x + (INT)(0.5 * VGetWidth());
+            x = x + (int)(0.5 * VGetWidth());
         }
         else if(m_alignment == eGuiAlignRight)
         {
@@ -373,12 +373,12 @@ namespace chimera
 
         if(m_appendDir == eGuiTextAppendUp)
         {
-            for(INT i = (INT)m_textLines.size() - 1; i >= 0; --i)
+            for(int i = (int)m_textLines.size() - 1; i >= 0; --i)
             {
                 TextLine line = m_textLines[i];
                 DrawText(line, x + 2, VGetHeight() - y - lineheight - 2);
                 y += lineheight;
-                if((VGetHeight()-y-lineheight) < (INT)VGetPosY())
+                if((VGetHeight()-y-lineheight) < (int)VGetPosY())
                 {
                     break;
                 }
@@ -386,12 +386,12 @@ namespace chimera
         }
         else
         {
-            for(INT i = 0; i < m_textLines.size(); ++i)
+            for(int i = 0; i < m_textLines.size(); ++i)
             {
                 TextLine line = m_textLines[i];
                 DrawText(line, x + 2, y);
                 y += lineheight;
-                if((y+lineheight) > (INT)(VGetPosY() + VGetHeight()))
+                if((y+lineheight) > (int)(VGetPosY() + VGetHeight()))
                 {
                     break;
                 }
@@ -399,17 +399,17 @@ namespace chimera
         }
     }
 
-    VOID GuiTextComponent::VSetTextColor(CONST util::Vec4& color)
+    void GuiTextComponent::VSetTextColor(const util::Vec4& color)
     {
         m_textColor = color;
     }
 
-    GuiTextComponent::~GuiTextComponent(VOID)
+    GuiTextComponent::~GuiTextComponent(void)
     {
 
     }
 
-    GuiTextInputComponent::GuiTextInputComponent(VOID) : m_time(0), m_drawCurser(FALSE), m_curserPos(0), m_textColor(1,1,1,1)
+    GuiTextInputComponent::GuiTextInputComponent(void) : m_time(0), m_drawCurser(false), m_curserPos(0), m_textColor(1,1,1,1)
     {
         chimera::KeyboardButtonPressedListener l0 = fastdelegate::MakeDelegate(this, &GuiTextInputComponent::ComputeInput);
         chimera::KeyboardButtonRepeatListener l1 = fastdelegate::MakeDelegate(this, &GuiTextInputComponent::ComputeInput);
@@ -417,16 +417,16 @@ namespace chimera
         AddKeyRepeatListener(l1);
     }
 
-    BOOL GuiTextInputComponent::VOnRestore(VOID)
+    bool GuiTextInputComponent::VOnRestore(void)
     {
         GuiComponent::VOnRestore();
-        return TRUE;
+        return true;
     }
 
-    VOID GuiTextInputComponent::VAddChar(CHAR c)
+    void GuiTextInputComponent::VAddChar(char c)
     {
-        INT nextPos = m_curserPos + CmGetApp()->VGetHumanView()->VGetFontManager()->VGetCurrentFont()->VGetCharMetric(c)->xadvance;
-        if(nextPos > (INT)(VGetWidth())-10)
+        int nextPos = m_curserPos + CmGetApp()->VGetHumanView()->VGetFontManager()->VGetCurrentFont()->VGetCharMetric(c)->xadvance;
+        if(nextPos > (int)(VGetWidth())-10)
         {
             return;
         }
@@ -434,46 +434,46 @@ namespace chimera
         m_textLine += c;
     }
 
-    VOID GuiTextInputComponent::VRemoveChar(VOID)
+    void GuiTextInputComponent::VRemoveChar(void)
     {
         if(m_textLine.size() > 0)
         {
-            CHAR c = m_textLine.substr(m_textLine.size() - 1, m_textLine.size())[0];
+            char c = m_textLine.substr(m_textLine.size() - 1, m_textLine.size())[0];
             m_textLine = m_textLine.substr(0, m_textLine.size() - 1);
             m_curserPos -= CmGetApp()->VGetHumanView()->VGetFontManager()->VGetCurrentFont()->VGetCharMetric(c)->xadvance;
         }
     }
 
-    VOID GuiTextInputComponent::VSetText(CONST std::string& text)
+    void GuiTextInputComponent::VSetText(const std::string& text)
     {
         m_curserPos = 0;
         m_textLine = "";
-        for(INT i = 0; i < text.size(); ++i)
+        for(int i = 0; i < text.size(); ++i)
         {
             VAddChar(text[i]);
         }
     }
 
-    CONST std::string& GuiTextInputComponent::VGetText(VOID)
+    const std::string& GuiTextInputComponent::VGetText(void)
     {
         return m_textLine;
     }
 
-    VOID GuiTextInputComponent::VSetTextColor(CONST util::Vec4& color)
+    void GuiTextInputComponent::VSetTextColor(const util::Vec4& color)
     {
         m_textColor = color;
     }
 
-    VOID GuiTextInputComponent::ComputeInput(UINT CONST code)
+    void GuiTextInputComponent::ComputeInput(uint const code)
     {
-        CHAR c = GetCharFromVK(code);
+        char c = GetCharFromVK(code);
             
         if(c >= 0x21 && c <= 0x7E)
         {
             if(c >= 0x41 && c <= 0x5A)
             {
                 std::string s;
-                s = (CHAR)code;
+                s = (char)code;
                 if(CmGetApp()->VGetInputHandler()->VIsKeyDown(KEY_LSHIFT))
                 {
                     std::transform(s.begin(), s.end(), s.begin(), ::towupper);
@@ -489,7 +489,7 @@ namespace chimera
         }
         else if(code == KEY_RETURN)
         {
-            VSetFocus(FALSE);
+            VSetFocus(false);
         }
         else if(code == KEY_BACKSPACE)
         {
@@ -501,7 +501,7 @@ namespace chimera
         }
     }
 
-    VOID GuiTextInputComponent::VUpdate(ULONG millis)
+    void GuiTextInputComponent::VUpdate(ulong millis)
     {
         m_time += millis;
         if(m_time > 400)
@@ -511,31 +511,31 @@ namespace chimera
         }
     }
 
-    VOID GuiTextInputComponent::VDraw(VOID)
+    void GuiTextInputComponent::VDraw(void)
     {
         GuiRectangle::VDraw();
 
-        FLOAT y = VGetPosY() / (FLOAT)CmGetApp()->VGetWindowHeight();
-        FLOAT x = VGetPosX() / (FLOAT)CmGetApp()->VGetWindowWidth();
+        float y = VGetPosY() / (float)CmGetApp()->VGetWindowHeight();
+        float x = VGetPosX() / (float)CmGetApp()->VGetWindowWidth();
 
-        INT lh = CmGetApp()->VGetHumanView()->VGetFontManager()->VGetCurrentFont()->VGetLineHeight();
+        int lh = CmGetApp()->VGetHumanView()->VGetFontManager()->VGetCurrentFont()->VGetLineHeight();
 
-        FLOAT lineheight = lh / (FLOAT)CmGetApp()->VGetWindowHeight();
+        float lineheight = lh / (float)CmGetApp()->VGetWindowHeight();
 
-        CmGetApp()->VGetHumanView()->VGetFontManager()->VRenderText(m_textLine.c_str(), 2.0f / (FLOAT)CmGetApp()->VGetWindowWidth() + x, y, &m_textColor);
+        CmGetApp()->VGetHumanView()->VGetFontManager()->VRenderText(m_textLine.c_str(), 2.0f / (float)CmGetApp()->VGetWindowWidth() + x, y, &m_textColor);
 
         if(m_drawCurser && IsInputActive())
         {
-            CmGetApp()->VGetHumanView()->VGetFontManager()->VRenderText("|", 2.0f / (FLOAT)CmGetApp()->VGetWindowWidth() + m_curserPos / (FLOAT)CmGetApp()->VGetWindowWidth() + x, y, &m_textColor);
+            CmGetApp()->VGetHumanView()->VGetFontManager()->VRenderText("|", 2.0f / (float)CmGetApp()->VGetWindowWidth() + m_curserPos / (float)CmGetApp()->VGetWindowWidth() + x, y, &m_textColor);
         }
     }
 
-    GuiTextInputComponent::~GuiTextInputComponent(VOID)
+    GuiTextInputComponent::~GuiTextInputComponent(void)
     {
 
     }
 
-    GuiConsole::GuiConsole(VOID) : m_currentHistoryLine(0) , m_pAutoComplete(NULL), m_pTextLabel(NULL), m_pTextInput(NULL), m_currentAutoCompleteIndex(-1)
+    GuiConsole::GuiConsole(void) : m_currentHistoryLine(0) , m_pAutoComplete(NULL), m_pTextLabel(NULL), m_pTextInput(NULL), m_currentAutoCompleteIndex(-1)
     {
         m_pTextInput = CmGetApp()->VGetHumanView()->VGetGuiFactory()->VCreateTextInputComponent();
         m_pTextInput->VSetName("input");
@@ -559,18 +559,18 @@ namespace chimera
         VSetBackgroundColor(0,0,0);
     }
 
-    VOID GuiConsole::AppendText(CONST std::string& text)
+    void GuiConsole::AppendText(const std::string& text)
     {
         m_pTextLabel->VAppendText(text);
     }
 
-    VOID GuiConsole::VDraw(VOID)
+    void GuiConsole::VDraw(void)
     {
         ScreenElementContainer::VDraw();
     }
 
     //Todo: create factory
-    BOOL GuiConsole::VOnRestore(VOID)
+    bool GuiConsole::VOnRestore(void)
     {
         ScreenElementContainer::VOnRestore();
 
@@ -586,7 +586,7 @@ namespace chimera
 
         CMDimension dim;
         dim.x = VGetPosX();
-        dim.y = VGetPosY() + (INT)(VGetHeight() * 0.75);
+        dim.y = VGetPosY() + (int)(VGetHeight() * 0.75);
         dim.w = VGetWidth();
         dim.h = CmGetApp()->VGetHumanView()->VGetFontManager()->VGetCurrentFont()->VGetLineHeight() + 2; //todo, font height here
         m_pTextInput->VSetTextColor(tc);
@@ -595,38 +595,38 @@ namespace chimera
         dim.x = VGetPosX();
         dim.y = VGetPosY();
         dim.w = VGetWidth();
-        dim.h = (INT)(VGetHeight() * 0.75);
+        dim.h = (int)(VGetHeight() * 0.75);
         m_pTextLabel->VSetDimension(dim);
 
         m_pTextLabel->VSetTextColor(tc);
 
         dim.x = VGetPosX();
-        dim.y = VGetPosY() + (INT)(VGetHeight() * 0.75) + 16;
+        dim.y = VGetPosY() + (int)(VGetHeight() * 0.75) + 16;
         dim.w = 200;
         dim.h = 100;
 
         m_pAutoComplete->VSetDimension(dim);
         m_pAutoComplete->VSetTextColor(tc);
 
-        return TRUE; 
+        return true; 
     }
 
-    VOID GuiConsole::VSetActive(BOOL active)
+    void GuiConsole::VSetActive(bool active)
     {
         ScreenElementContainer::VSetActive(active);
         m_pTextInput->VSetFocus(active);
     }
 
-    VOID GuiConsole::SetAutoComplete(VOID)
+    void GuiConsole::SetAutoComplete(void)
     {
-        m_currentAutoCompleteIndex = CLAMP(m_currentAutoCompleteIndex, 0, (INT)m_pAutoComplete->VGetTextLines().size()-1);
+        m_currentAutoCompleteIndex = CLAMP(m_currentAutoCompleteIndex, 0, (int)m_pAutoComplete->VGetTextLines().size()-1);
         if(m_pAutoComplete->VGetTextLines().size() > 0 )
         {
             m_pTextInput->VSetText(m_pAutoComplete->VGetTextLines()[m_currentAutoCompleteIndex].text);
         }
     }
 
-    VOID GuiConsole::ComputeInput(UINT CONST code)
+    void GuiConsole::ComputeInput(uint const code)
     {
         if(code == KEY_RETURN)
         {
@@ -649,7 +649,7 @@ namespace chimera
                 }
             }
             m_pTextInput->VSetText("");
-            m_pTextInput->VSetFocus(TRUE);
+            m_pTextInput->VSetFocus(true);
         }
         else if(code == KEY_ARROW_UP)
         {
@@ -682,7 +682,7 @@ namespace chimera
             else
             {
                 m_currentHistoryLine++;
-                m_currentHistoryLine = (INT)(m_currentHistoryLine >= m_commandHistory.size() ? m_commandHistory.size() - 1 : m_currentHistoryLine);
+                m_currentHistoryLine = (int)(m_currentHistoryLine >= m_commandHistory.size() ? m_commandHistory.size() - 1 : m_currentHistoryLine);
                 if(m_commandHistory.size() > 0)
                 {
                     m_pTextInput->VSetText(m_commandHistory[m_currentHistoryLine]);
@@ -706,7 +706,7 @@ namespace chimera
             std::vector<std::string> l = CmGetApp()->VGetLogic()->VGetCommandInterpreter()->VGetCommands();
             for(auto it = l.begin(); it != l.end(); ++it)
             {
-                CONST std::string& text = m_pTextInput->VGetText();
+                const std::string& text = m_pTextInput->VGetText();
                 if(it->substr(0, text.size()) == text)
                 {
                     m_pAutoComplete->VAppendText(*it);

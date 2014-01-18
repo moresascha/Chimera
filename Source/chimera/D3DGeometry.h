@@ -8,8 +8,8 @@ namespace chimera
         class Buffer : public D3DResource, public virtual IDeviceBuffer
         {
         protected:
-            BOOL m_created;
-            UINT m_elementCount;
+            bool m_created;
+            uint m_elementCount;
 
             ID3D11Buffer* m_pBuffer;
             D3D11_BUFFER_DESC m_desc;
@@ -17,70 +17,70 @@ namespace chimera
             D3D11_MAPPED_SUBRESOURCE m_mappedData;
 
         public:
-            Buffer(VOID);
+            Buffer(void);
 
-            VOID VCreate(VOID);
+            void VCreate(void);
 
-            D3D11_MAPPED_SUBRESOURCE* Map(VOID);
+            D3D11_MAPPED_SUBRESOURCE* Map(void);
 
-            UINT VGetElementCount(VOID) CONST { return m_elementCount; }
+            uint VGetElementCount(void) const { return m_elementCount; }
 
-            ID3D11Buffer* GetBuffer(VOID) { return m_pBuffer; }
+            ID3D11Buffer* GetBuffer(void) { return m_pBuffer; }
             
-            VOID* VGetDevicePtr(VOID)
+            void* VGetDevicePtr(void)
             {
-                return (VOID*)GetBuffer();
+                return (void*)GetBuffer();
             }
 
             //WARNING: this might be NULL most of the time
-            CONST VOID* GetRawData(VOID) { return m_data.pSysMem; }
+            const void* GetRawData(void) { return m_data.pSysMem; }
 
-            VOID DeleteRawData(VOID);
+            void DeleteRawData(void);
 
-            VOID Unmap(VOID);
+            void Unmap(void);
 
-            VOID VSetData(CONST VOID* v, UINT bytes);
+            void VSetData(const void* v, uint bytes);
 
-            virtual ~Buffer(VOID);
+            virtual ~Buffer(void);
         };
 
         class IndexBuffer : public Buffer
         {
         public:
-            IndexBuffer(VOID);
+            IndexBuffer(void);
 
-            IndexBuffer(CONST UINT* data, UINT size);
+            IndexBuffer(const uint* data, uint size);
 
-            UINT VGetByteCount(VOID) CONST { return m_elementCount; }
+            uint VGetByteCount(void) const { return m_elementCount; }
 
-            VOID VBind(VOID);
+            void VBind(void);
 
-            ~IndexBuffer(VOID);
+            ~IndexBuffer(void);
         };
 
         class VertexBuffer : public Buffer, public IVertexBuffer
         {
         private:
-            UINT m_stride;
-            UINT m_offset;
+            uint m_stride;
+            uint m_offset;
 
         public:
 
-            VertexBuffer(VOID);
+            VertexBuffer(void);
 
-            VertexBuffer(UINT vertexCount, UINT stride, CONST VOID* data = NULL, BOOL cpuWrite = FALSE);
+            VertexBuffer(uint vertexCount, uint stride, const void* data = NULL, bool cpuWrite = false);
 
-            VOID VBind(VOID);
+            void VBind(void);
 
-            UINT VGetStride(VOID) CONST { return m_stride; }
+            uint VGetStride(void) const { return m_stride; }
 
-            VOID VInitParamater(UINT vertexCount, UINT stride, CONST VOID* data = NULL, BOOL cpuAccessFlags = FALSE);
+            void VInitParamater(uint vertexCount, uint stride, const void* data = NULL, bool cpuAccessFlags = false);
 
-            UINT VGetByteCount(VOID) CONST { return m_elementCount * m_stride; }
+            uint VGetByteCount(void) const { return m_elementCount * m_stride; }
 
-            UINT VGetOffset(VOID) CONST { return m_offset; }
+            uint VGetOffset(void) const { return m_offset; }
 
-            ~VertexBuffer(VOID);
+            ~VertexBuffer(void);
         };
 
         class Geometry;
@@ -88,7 +88,7 @@ namespace chimera
         class GeometryDrawer
         {
         public:
-            virtual VOID VDraw(Geometry* geo, CONST UINT& count, CONST UINT& start, CONST UINT& vertexbase) {}
+            virtual void VDraw(Geometry* geo, const uint& count, const uint& start, const uint& vertexbase) {}
         };
 
         class Geometry : public IGeometry
@@ -106,56 +106,56 @@ namespace chimera
             IndexBuffer* m_pIndexBuffer;
 
             D3D_PRIMITIVE_TOPOLOGY m_primType;
-            BOOL m_initialized;        
+            bool m_initialized;        
 
-            UINT m_elementCount;
+            uint m_elementCount;
 
             GeometryDrawer* m_pDrawer;
 
-            BOOL m_ownsInstanceBuffer;
+            bool m_ownsInstanceBuffer;
 
         public:
 
-            static VOID Create(VOID);
+            static void Create(void);
 
-            static VOID Destroy(VOID);
+            static void Destroy(void);
 
-            Geometry(BOOL ownsInstanceBuffer = FALSE);
+            Geometry(bool ownsInstanceBuffer = false);
 
             //VRamRessource Interface
-            virtual BOOL VCreate(VOID);
+            virtual bool VCreate(void);
 
-            virtual VOID VDestroy();
+            virtual void VDestroy();
 
-            virtual UINT VGetByteCount(VOID) CONST;
+            virtual uint VGetByteCount(void) const;
 
-            virtual VOID VBind(VOID);
+            virtual void VBind(void);
 
-            virtual VOID VDraw(UINT start, UINT count);
+            virtual void VDraw(uint start, uint count);
 
-            virtual VOID VDraw(VOID);
+            virtual void VDraw(void);
 
-            VOID VSetTopology(GeometryTopology top);
+            void VSetTopology(GeometryTopology top);
 
-            VOID VSetVertexBuffer(CONST FLOAT* vertices, UINT count, UINT stride, BOOL cpuWrite = FALSE);
+            void VSetVertexBuffer(const float* vertices, uint count, uint stride, bool cpuWrite = false);
 
-            VOID VSetIndexBuffer(CONST UINT* indices, UINT size);
+            void VSetIndexBuffer(const uint* indices, uint size);
 
-            IVertexBuffer* VGetVertexBuffer(VOID);
+            IVertexBuffer* VGetVertexBuffer(void);
 
-            IVertexBuffer* VGetInstanceBuffer(VOID);
+            IVertexBuffer* VGetInstanceBuffer(void);
 
-            IDeviceBuffer* VGetIndexBuffer(VOID);
+            IDeviceBuffer* VGetIndexBuffer(void);
 
-            VOID VAddInstanceBuffer(FLOAT* data, UINT count, UINT stride);
+            void VAddInstanceBuffer(float* data, uint count, uint stride);
 
-            VOID VSetInstanceBuffer(IVertexBuffer* buffer);
+            void VSetInstanceBuffer(IVertexBuffer* buffer);
 
-            VOID SetOwnsInstanceBuffer(BOOL owns);
+            void SetOwnsInstanceBuffer(bool owns);
 
-            VOID DeleteRawData(VOID);
+            void DeleteRawData(void);
 
-            virtual ~Geometry(VOID);
+            virtual ~Geometry(void);
         };
     }
 }

@@ -14,7 +14,7 @@
 namespace chimera
 {
 
-    VOID BaseSoundSystem::VPauseAll(VOID)
+    void BaseSoundSystem::VPauseAll(void)
     {
         TBD_FOR(m_currentSoundBuffer)
         {
@@ -22,7 +22,7 @@ namespace chimera
         }
     }
 
-    VOID BaseSoundSystem::VResumeAll(VOID)
+    void BaseSoundSystem::VResumeAll(void)
     {
         TBD_FOR(m_currentSoundBuffer)
         {
@@ -30,7 +30,7 @@ namespace chimera
         }
     }
 
-    VOID BaseSoundSystem::VStopAll(VOID)
+    void BaseSoundSystem::VStopAll(void)
     {
         TBD_FOR(m_currentSoundBuffer)
         {
@@ -38,7 +38,7 @@ namespace chimera
         }
     }
 
-    BaseSoundSystem::~BaseSoundSystem(VOID)
+    BaseSoundSystem::~BaseSoundSystem(void)
     {
         TBD_FOR(m_currentSoundBuffer)
         {
@@ -46,18 +46,18 @@ namespace chimera
         }
     }
 
-    DirectSoundSystem::DirectSoundSystem(VOID) : m_pDirectSound(NULL), m_initialized(FALSE)
+    DirectSoundSystem::DirectSoundSystem(void) : m_pDirectSound(NULL), m_initialized(false)
     {
 
     }
 
-    BOOL DirectSoundSystem::VInit(VOID)
+    bool DirectSoundSystem::VInit(void)
     {
         if(m_initialized)
         {
-            return TRUE;
+            return true;
         }
-        m_initialized = TRUE;
+        m_initialized = true;
         //d3d::g_hWnd
         HRESULT hr = DirectSoundCreate8(NULL, &m_pDirectSound, NULL);
 
@@ -95,10 +95,10 @@ namespace chimera
 
         SAFE_RELEASE(m_pPrimaryBuffer);
 
-        return TRUE;
+        return true;
     }
 
-    VOID DirectSoundSystem::VReleaseSoundBuffer(ISoundBuffer* buffer)
+    void DirectSoundSystem::VReleaseSoundBuffer(ISoundBuffer* buffer)
     {
         buffer->VStop();
         m_currentSoundBuffer.remove(buffer);
@@ -116,7 +116,7 @@ namespace chimera
         return sound;
     }
 
-    DirectSoundSystem::~DirectSoundSystem(VOID)
+    DirectSoundSystem::~DirectSoundSystem(void)
     {
         if(m_initialized)
         {
@@ -125,18 +125,18 @@ namespace chimera
     }
 
     DirectWaveBuffer::DirectWaveBuffer(DirectSoundSystem* system, std::shared_ptr<chimera::ResHandle> handle) 
-        : m_pSystem(system), m_pHandle(handle), m_pSoundBuffer(NULL), m_initialized(FALSE)
+        : m_pSystem(system), m_pHandle(handle), m_pSoundBuffer(NULL), m_initialized(false)
     {
 
     }
 
-    BOOL DirectWaveBuffer::VInit(VOID)
+    bool DirectWaveBuffer::VInit(void)
     {
         if(m_initialized)
         {
-            return TRUE;
+            return true;
         }
-        m_initialized = TRUE;
+        m_initialized = true;
 
         DSBUFFERDESC desc;
 
@@ -157,33 +157,33 @@ namespace chimera
         return FillBuffer();
     }
 
-    BOOL DirectWaveBuffer::FillBuffer(VOID)
+    bool DirectWaveBuffer::FillBuffer(void)
     {
         UCHAR* bufferPtr;
-        ULONG size;
-        CHAR* wavData = m_pHandle->Buffer();
-        INT bufferSize = m_pHandle->Size();
+        ulong size;
+        char* wavData = m_pHandle->Buffer();
+        int bufferSize = m_pHandle->Size();
 
-        HR_RETURN_IF_FAILED(m_pSoundBuffer->Lock(0, bufferSize, (VOID**)&bufferPtr, (DWORD*)&size, NULL, 0, 0));
+        HR_RETURN_IF_FAILED(m_pSoundBuffer->Lock(0, bufferSize, (void**)&bufferPtr, (DWORD*)&size, NULL, 0, 0));
 
         memcpy(bufferPtr, wavData, bufferSize);
 
-        HR_RETURN_IF_FAILED(m_pSoundBuffer->Unlock((VOID*)bufferPtr, m_pHandle->Size(), NULL, 0));
+        HR_RETURN_IF_FAILED(m_pSoundBuffer->Unlock((void*)bufferPtr, m_pHandle->Size(), NULL, 0));
 
         HR_RETURN_IF_FAILED(m_pSoundBuffer->SetCurrentPosition(0));
 
         VSetVolume(DSBVOLUME_MAX);
 
-        return TRUE;
+        return true;
     }
 
-    VOID DirectWaveBuffer::VSetVolume(LONG volume)
+    void DirectWaveBuffer::VSetVolume(LONG volume)
     {
         assert(volume >= 0 && volume <= 100);
 
-        FLOAT norm = volume / 100.0f;
-        FLOAT logProp = norm > 0.1f ? (1 + log10(norm)) : 0;
-        FLOAT range = DSBVOLUME_MAX - DSBVOLUME_MIN;
+        float norm = volume / 100.0f;
+        float logProp = norm > 0.1f ? (1 + log10(norm)) : 0;
+        float range = DSBVOLUME_MAX - DSBVOLUME_MIN;
         LONG vol = (LONG)((range * logProp) + DSBVOLUME_MIN);
 
         if(FAILED((m_pSoundBuffer->SetVolume(vol))))
@@ -192,42 +192,42 @@ namespace chimera
         }
     }
 
-    INT DirectWaveBuffer::VGetVolume(VOID)
+    int DirectWaveBuffer::VGetVolume(void)
     {
         LONG v;
         m_pSoundBuffer->GetVolume(&v);
-        return (INT)v;
+        return (int)v;
     }
 
-    FLOAT DirectWaveBuffer::VGetProgress(VOID)
+    float DirectWaveBuffer::VGetProgress(void)
     {
         DWORD pos;
         m_pSoundBuffer->GetCurrentPosition(&pos, NULL);
-        return (FLOAT)pos / (FLOAT)m_pHandle->Size();
+        return (float)pos / (float)m_pHandle->Size();
     }
 
-    BOOL DirectWaveBuffer::VIsPlaying(VOID)
+    bool DirectWaveBuffer::VIsPlaying(void)
     {
         DWORD status;
         m_pSoundBuffer->GetStatus(&status);
         return status & DSBSTATUS_PLAYING;
     }
 
-    BOOL DirectWaveBuffer::VIsLooping(VOID)
+    bool DirectWaveBuffer::VIsLooping(void)
     {
         DWORD status;
         m_pSoundBuffer->GetStatus(&status);
         return status & DSBSTATUS_LOOPING;
     }
 
-    BOOL DirectWaveBuffer::VRestore(VOID)
+    bool DirectWaveBuffer::VRestore(void)
     {
         DWORD status;
         m_pSoundBuffer->GetStatus(&status);
 
         if(status & DSBSTATUS_BUFFERLOST)
         {
-            INT count = 0;
+            int count = 0;
             HRESULT hr = m_pSoundBuffer->Restore();
             if(FAILED(hr))
             {
@@ -238,29 +238,29 @@ namespace chimera
 
             if(FAILED(hr))
             {
-                return FALSE;
+                return false;
             }
         }
         return FillBuffer();
     }
 
-    VOID DirectWaveBuffer::VResume(VOID)
+    void DirectWaveBuffer::VResume(void)
     {
         VPlay(VIsLooping());
     }
 
-    VOID DirectWaveBuffer::VPause(VOID)
+    void DirectWaveBuffer::VPause(void)
     {
         LOG_CRITICAL_ERROR("not implemented");
     }
 
-    VOID DirectWaveBuffer::VSetPan(FLOAT pan)
+    void DirectWaveBuffer::VSetPan(float pan)
     {
         LONG p = (LONG)((pan * 0.5 + 0.5) * (DSBPAN_RIGHT - DSBPAN_LEFT) + DSBPAN_LEFT);
         m_pSoundBuffer->SetPan(p);
     }
 
-    VOID DirectWaveBuffer::VPlay(BOOL loop)
+    void DirectWaveBuffer::VPlay(bool loop)
     {
         VStop();
         if(FAILED(m_pSoundBuffer->Play(0, 0, loop ? DSBPLAY_LOOPING : 0L)))
@@ -269,7 +269,7 @@ namespace chimera
         }
     }
 
-    VOID DirectWaveBuffer::VStop(VOID)
+    void DirectWaveBuffer::VStop(void)
     {
         if(FAILED(m_pSoundBuffer->Stop()))
         {
@@ -277,7 +277,7 @@ namespace chimera
         }
     }
 
-    DirectWaveBuffer::~DirectWaveBuffer(VOID)
+    DirectWaveBuffer::~DirectWaveBuffer(void)
     {
         SAFE_RELEASE(m_pSoundBuffer);
     }

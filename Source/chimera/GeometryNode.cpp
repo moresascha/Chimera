@@ -10,17 +10,17 @@ namespace chimera
         VSetRenderPaths(CM_RENDERPATH_ALBEDO | CM_RENDERPATH_SHADOWMAP);
     }
 
-    VOID GeometryNode::SetMaterial(CONST IMaterial& mat)
+    void GeometryNode::SetMaterial(const IMaterial& mat)
     {
         *m_pMaterial = mat;
     }
 
-    VOID GeometryNode::VOnRestore(ISceneGraph* graph)
+    void GeometryNode::VOnRestore(ISceneGraph* graph)
     {
-        m_pGeometry->VSetReady(TRUE);
+        m_pGeometry->VSetReady(true);
     }
 
-    VOID GeometryNode::_VRender(ISceneGraph* graph, RenderPath& path)
+    void GeometryNode::_VRender(ISceneGraph* graph, RenderPath& path)
     {
         if(m_pGeometry->VIsReady())
         {
@@ -39,7 +39,7 @@ namespace chimera
                     CmGetApp()->VGetHumanView()->VGetRenderer()->VSetDefaultTexture();
                     CmGetApp()->VGetHumanView()->VGetRenderer()->VSetDefaultMaterial();
                     //CmGetApp()->VGetHumanView()->VGetRenderer()->VPushMaterial(*m_pMaterial);
-                    CmGetApp()->VGetHumanView()->VGetRenderer()->VSetNormalMapping(FALSE);
+                    CmGetApp()->VGetHumanView()->VGetRenderer()->VSetNormalMapping(false);
                     m_pGeometry->VBind();
                     m_pGeometry->VDraw();
                 } break;
@@ -51,7 +51,7 @@ namespace chimera
         }
     }
 
-    GeometryNode::~GeometryNode(VOID)
+    GeometryNode::~GeometryNode(void)
     {
         m_pGeometry->VDestroy();
     }

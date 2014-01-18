@@ -7,17 +7,17 @@ namespace chimera
         return std::move(p1);
     }*/
 
-    Scheduler::Scheduler(UINT cores, ProcessManager* manager) : m_systemCores(cores), m_manager(manager), m_currentRunningSize(0), m_event(NULL)
+    Scheduler::Scheduler(uint cores, ProcessManager* manager) : m_systemCores(cores), m_manager(manager), m_currentRunningSize(0), m_event(NULL)
     {
         m_currentRunning = new std::shared_ptr<IProcess>[m_systemCores];
         for(UCHAR i = 0; i < m_systemCores; ++i)
         {
             m_currentRunning[i] = NULL;
         }
-        m_event = CreateEvent(NULL, FALSE, FALSE, NULL);
+        m_event = CreateEvent(NULL, false, false, NULL);
     }
 
-    INT Scheduler::CreateFreeSlot(VOID)
+    int Scheduler::CreateFreeSlot(void)
     {
         for(UCHAR i = 0; i < m_systemCores; ++i)
         {
@@ -30,18 +30,18 @@ namespace chimera
         return -1;
     }
 
-    BOOL Scheduler::HasFreeSlot(VOID)
+    bool Scheduler::HasFreeSlot(void)
     {
         return m_currentRunningSize < m_systemCores;
     }
 
-    VOID Scheduler::FreeSlot(UCHAR slot)
+    void Scheduler::FreeSlot(UCHAR slot)
     {
         m_currentRunningSize--;
         m_currentRunning[slot] = NULL;
     }
 
-    VOID Scheduler::VThreadProc(VOID)
+    void Scheduler::VThreadProc(void)
     {
         while(CmGetApp()->VIsRunning())
         {
@@ -49,7 +49,7 @@ namespace chimera
             {
                 if(HasFreeSlot())
                 {
-                    INT slot = CreateFreeSlot();
+                    int slot = CreateFreeSlot();
                     if(slot == -1)
                     {
                         LOG_CRITICAL_ERROR("slot should not be -1");
@@ -100,7 +100,7 @@ namespace chimera
         return raw;
     }
 
-    Scheduler::~Scheduler(VOID)
+    Scheduler::~Scheduler(void)
     {
         if(m_event)
         {

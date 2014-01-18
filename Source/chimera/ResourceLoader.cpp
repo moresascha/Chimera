@@ -10,8 +10,8 @@ namespace chimera
     struct SubMeshData 
     {
         std::list<Face> m_faces;
-        UINT m_triplesCount;
-        UINT m_trianglesCount;
+        uint m_triplesCount;
+        uint m_trianglesCount;
         SubMeshData() : m_triplesCount(0), m_trianglesCount(0) {}
     };
 
@@ -23,7 +23,7 @@ namespace chimera
         std::vector<util::Vec3> m_tangents;
     };
 
-    VOID GetLine(CHAR* source, UINT& pos, UINT size)
+    void GetLine(char* source, uint& pos, uint size)
     {
         while(source[pos] != '\n' && pos < size)
         {
@@ -34,67 +34,67 @@ namespace chimera
 
     struct ShrdCharPtr
     {
-        UINT m_length;
-        CHAR* m_ptr;
+        uint m_length;
+        char* m_ptr;
 
-        CHAR m_buffer[64];
+        char m_buffer[64];
 
-        ShrdCharPtr(VOID) : m_ptr(NULL), m_length(0)
+        ShrdCharPtr(void) : m_ptr(NULL), m_length(0)
         {
-            ZeroMemory(&m_buffer, sizeof(CHAR) * 64);
+            ZeroMemory(&m_buffer, sizeof(char) * 64);
         }
 
-        std::string GetString(VOID)
+        std::string GetString(void)
         {
             return std::string(m_ptr, m_length);
         }
 
-        FLOAT GetFloat(VOID)
+        float GetFloat(void)
         {
             _memccpy(&m_buffer, m_ptr, '\0', m_length);
-            return (FLOAT)atof(m_buffer);
+            return (float)atof(m_buffer);
         }
 
-        INT GetInt(VOID)
+        int GetInt(void)
         {
             _memccpy(&m_buffer, m_ptr, '\0', m_length);
             return atoi(m_buffer);
         }
     };
 
-    BOOL ShrdPtrStrCmp(ShrdCharPtr& s0, CONST CHAR* str)
+    bool ShrdPtrStrCmp(ShrdCharPtr& s0, const char* str)
     {
         size_t l = std::strlen(str);
         if(s0.m_length != l)
         {
-            return FALSE;
+            return false;
         }
 
         TBD_FOR_INT(s0.m_length)
         {
             if(s0.m_ptr[i] != str[i])
             {
-                return FALSE;
+                return false;
             }
         }
-        return TRUE;
+        return true;
     }
 
     class SharedMemoryStream
     {
     public:
-        UINT m_start;
-        UINT m_length;
-        UINT m_end;
-        CHAR* m_source;
-        CHAR m_delim;
+        uint m_start;
+        uint m_length;
+        uint m_end;
+        char* m_source;
+        char m_delim;
 
-        SharedMemoryStream(UINT s, UINT l, CHAR* src, CHAR delim = ' ') : m_start(s), m_length(l), m_source(src), m_delim(delim)
+        SharedMemoryStream(uint s, uint l, char* src, char delim = ' ') : m_start(s), m_length(l), m_source(src), m_delim(delim)
         {
             m_end = m_start + m_length;
         }
 
-        BOOL Good(VOID)
+        bool Good(void)
         {
             return m_start < m_end;
         }
@@ -106,8 +106,8 @@ namespace chimera
             {
                 LOG_CRITICAL_ERROR("Erf wtf is going on!");
             }
-            INT l = 0;
-            CHAR c = m_source[m_start];
+            int l = 0;
+            char c = m_source[m_start];
             while(Good() && c != m_delim && c != '\n' && c != '\0')
             {
                 m_start++;
@@ -120,7 +120,7 @@ namespace chimera
         }
     };
 
-    UINT GetTriple(CHAR* s, Triple& triple) 
+    uint GetTriple(char* s, Triple& triple) 
     {
         SharedMemoryStream ss(0, INFINITE, s, '/');
         ShrdCharPtr f[3];
@@ -133,29 +133,156 @@ namespace chimera
         return 3;
     }
 
-    INT ObjLoader::VLoadRessource(CHAR* source, UINT size, std::shared_ptr<IResHandle> handle) 
+    void InitMesh(Mesh* currentMesh, RawGeometryData& rawData, uint lastIndexStart, SubMeshData& subMeshData, uint* _out_indexCount, uint* _out_vertexCount, GeometryTopology currentTopo, std::string& matName)
     {
-        std::shared_ptr<chimera::Mesh> mesh = std::static_pointer_cast<chimera::Mesh>(handle);
+
+        std::shared_ptr<chimera::MaterialSet> materials = std::static_pointer_cast<chimera::MaterialSet>(CmGetApp()->VGetCache()->VGetHandle(currentMesh->VGetMaterials()));
+        currentMesh->VAddIndexBufferInterval(lastIndexStart, subMeshData.m_trianglesCount * 3, materials->GetMaterialIndex(matName), currentTopo);
+
+        std::vector<uint> lIndices;
+        lIndices.reserve(currentMesh->VGetFaces().size() * 4);
+
+        std::vector<float> lVertices;
+        lVertices.reserve(rawData.m_positions.size() * 3);
+
+        std::map<LONG, Triple> hashToTriple;
+
+        util::Vec3 zero;
+
+        for(auto it = subMeshData.m_faces.begin(); it != subMeshData.m_faces.end(); ++it)
+        {
+            for(uint i = 0; i < it->m_triples.size(); ++i)
+            {
+                Triple t = it->m_triples[i];
+
+                auto it = hashToTriple.find(t.hash);
+
+                if(it == hashToTriple.end())
+                {
+                    util::Vec3& pos0 = rawData.m_positions[t.position];
+
+                    currentMesh->VGetAABB().AddPoint(pos0);
+
+                    util::Vec3* norm0 = &zero;
+                    if(!rawData.m_normals.empty())
+                    {
+                        norm0 = &rawData.m_normals[t.normal];
+                    }
+
+                    util::Vec3* texCoord0 = &zero;
+                    if(!rawData.m_texCoords.empty())
+                    {
+                        texCoord0 = &rawData.m_texCoords[t.texCoord];
+                    }
+
+                    t.index = (uint)lVertices.size() / 8;
+
+                    lVertices.push_back(pos0.x);
+                    lVertices.push_back(pos0.y);
+                    lVertices.push_back(pos0.z);
+
+                    lVertices.push_back(norm0->x);
+                    lVertices.push_back(norm0->y);
+                    lVertices.push_back(norm0->z);
+
+                    lVertices.push_back(texCoord0->x);
+                    lVertices.push_back(texCoord0->y);
+
+                    hashToTriple.insert(std::pair<LONG, Triple>(t.hash, t));
+                }
+            }
+
+            /*2,0,1,2,0,3*/
+
+            auto i0 = hashToTriple.find(it->m_triples[0].hash);
+            auto i1 = hashToTriple.find(it->m_triples[1].hash);
+
+            __int64 index0 = i0->second.index;
+            __int64 index1 = i1->second.index;
+
+            if(it->m_triples.size() == 2)
+            {
+                lIndices.push_back((uint)index1);
+
+                lIndices.push_back((uint)index0);
+            }
+            else
+            {
+                auto i2 = hashToTriple.find(it->m_triples[2].hash);
+
+                __int64 index2 = i2->second.index;
+
+                lIndices.push_back((uint)index2);
+
+                lIndices.push_back((uint)index1);
+
+                lIndices.push_back((uint)index0);
+
+                if(it->m_triples.size() == 4)
+                {
+                    auto i3 = hashToTriple.find(it->m_triples[3].hash);;
+                    __int64 index3 = i3->second.index;
+                    lIndices.push_back((uint)index2);
+
+                    lIndices.push_back((uint)index0);
+
+                    lIndices.push_back((uint)index3);
+                }
+            }
+        }
+        uint vertexSize = 8;
+        uint indexCount = (uint)lIndices.size();
+        uint vertexCount = (uint)lVertices.size() / vertexSize;
+
+        float* vertices = new float[lVertices.size()];
+        uint* indices = new uint[indexCount];
+        uint stride = vertexSize * sizeof(float);
+
+        for(uint i = 0; i < lVertices.size(); ++i)
+        {
+            vertices[i] = lVertices[i];
+        }
+
+        for(uint i = 0; i < indexCount; ++i)
+        {
+            indices[i] = lIndices[i];
+        }
+
+        currentMesh->VSetIndices(indices, indexCount);
+        currentMesh->VSetVertices(vertices, vertexCount, stride);
+        currentMesh->VGetAABB().Construct();
+
+        *_out_indexCount += indexCount;
+        *_out_vertexCount += vertexCount;
+    }
+
+    int ObjLoader::VLoadRessource(char* source, uint size, std::shared_ptr<IResHandle>& handle) 
+    {
+        //std::shared_ptr<Mesh> mesh = std::static_pointer_cast<Mesh>(handle);
+        std::shared_ptr<MeshSet> meshSet = std::static_pointer_cast<MeshSet>(handle);
 
         SubMeshData subMeshData;
         RawGeometryData rawData;
         std::string matName;
-        UINT lastIndexStart = 0;
-        UINT pos = 0;
+        std::string currentMatLib;
+        uint lastIndexStart = 0;
+        uint pos = 0;
+        uint indexCount = 0;
+        uint vertexCount = 0;
 
         ShrdCharPtr flag;
         ShrdCharPtr x, y, z;
         ShrdCharPtr f[4];
 
-        std::locale loc;
-        CONST std::collate<CHAR>& coll = std::use_facet<std::collate<CHAR>>(loc);
+        //std::locale loc;
+        //CONST std::collate<CHAR>& coll = std::use_facet<std::collate<CHAR>>(loc);
 
         GeometryTopology currentTopo;
+        Mesh* currentMesh = NULL;
 
-        while(pos < size)//sss.good()) 
+        while(pos < size)
         {
-            //std::getline(sss, line);
-            INT start = pos;
+            int start = pos;
             GetLine(source, pos, size);
 
             SharedMemoryStream ss(start, pos - start - 1, source);
@@ -165,9 +292,36 @@ namespace chimera
             {
                 ShrdCharPtr mtllib;
                 ss >> mtllib;
-                mesh->m_materials = mtllib.GetString();
+                currentMatLib = mtllib.GetString();
             }
-            if(ShrdPtrStrCmp(flag, "usemtl"))
+            else if(ShrdPtrStrCmp(flag, "o"))
+            {
+                Mesh* m = new Mesh();
+
+                ShrdCharPtr objName;
+                ss >> objName;
+
+                m->m_materials = currentMatLib;
+
+                CMResource res(objName.GetString());
+                meshSet->m_meshes[res.m_name] = std::shared_ptr<IMesh>(m);
+
+                if(currentMesh)
+                {
+                    InitMesh(currentMesh, rawData, lastIndexStart, subMeshData, &indexCount, &vertexCount, currentTopo, matName);
+
+                    /*rawData.m_normals.clear();
+                    rawData.m_positions.clear();
+                    rawData.m_tangents.clear();
+                    rawData.m_texCoords.clear();*/
+                    subMeshData.m_faces.clear();
+                    subMeshData.m_trianglesCount = 0;
+                    subMeshData.m_triplesCount = 0;
+                }
+
+                currentMesh = m;
+            }
+            else if(ShrdPtrStrCmp(flag, "usemtl"))
             {
                 if(subMeshData.m_triplesCount == 0) 
                 {
@@ -177,15 +331,15 @@ namespace chimera
                     matName = mat.GetString();
                     continue;
                 }
-                std::shared_ptr<MaterialSet> materials = std::static_pointer_cast<MaterialSet>(CmGetApp()->VGetCache()->VGetHandle(mesh->VGetMaterials()));
-                mesh->VAddIndexBufferInterval(lastIndexStart, subMeshData.m_trianglesCount * 3, materials->GetMaterialIndex(matName), currentTopo);
+                std::shared_ptr<MaterialSet> materials = std::static_pointer_cast<MaterialSet>(CmGetApp()->VGetCache()->VGetHandle(currentMesh->VGetMaterials()));
+                currentMesh->VAddIndexBufferInterval(lastIndexStart, subMeshData.m_trianglesCount * 3, materials->GetMaterialIndex(matName), currentTopo);
                 lastIndexStart = subMeshData.m_trianglesCount * 3;
                 matName.clear();
                 ShrdCharPtr mat;
                 ss >> mat;
                 matName = mat.GetString();
             }
-            if(ShrdPtrStrCmp(flag, "v"))
+            else if(ShrdPtrStrCmp(flag, "v"))
             {
                 util::Vec3 vertex;
                 ss >> x;
@@ -215,16 +369,16 @@ namespace chimera
             else if(ShrdPtrStrCmp(flag, "f") || ShrdPtrStrCmp(flag, "l"))
             {
                 currentTopo = ShrdPtrStrCmp(flag, "f") ? eTopo_Triangles : eTopo_Lines;
-                UINT triplesCount = 0;
-                CHAR* s = source + ss.m_start;
-                CHAR* e = source + ss.m_end;
+                uint triplesCount = 0;
+                char* s = source + ss.m_start;
+                char* e = source + ss.m_end;
                 while(ss.Good())
                 {
                     ss >> f[triplesCount];
                     triplesCount++;
                 }
                 Face face;
-                for(UINT i = 0; i < triplesCount; ++i)
+                for(uint i = 0; i < triplesCount; ++i)
                 {
                     Triple triple;
                     GetTriple(f[i].m_ptr, triple); 
@@ -234,183 +388,18 @@ namespace chimera
                 subMeshData.m_triplesCount += triplesCount;
                 subMeshData.m_trianglesCount += triplesCount / 2;
                 subMeshData.m_faces.push_back(face);
-                mesh->m_faces.push_back(face);
+                currentMesh->m_faces.push_back(face);
             }
         }
 
-        //subMeshData.m_faces.resize(fc);
-
-        std::shared_ptr<chimera::MaterialSet> materials = std::static_pointer_cast<chimera::MaterialSet>(CmGetApp()->VGetCache()->VGetHandle(mesh->VGetMaterials()));
-        mesh->VAddIndexBufferInterval(lastIndexStart, subMeshData.m_trianglesCount * 3, materials->GetMaterialIndex(matName), currentTopo);
-
-        std::vector<UINT> lIndices;
-        lIndices.reserve(mesh->VGetFaces().size() * 4);
-
-        std::vector<FLOAT> lVertices;
-        lVertices.reserve(rawData.m_positions.size() * 3);
-
-        std::map<LONG, Triple> hashToTriple;
-
-        util::Vec3 zero;
-
-        for(auto it = subMeshData.m_faces.begin(); it != subMeshData.m_faces.end(); ++it)
-        {
-            /*
-            util::Vec3 tangents[4];
-            if(it->m_triples.size() == 4)
-            {
-                Triple t0 = it->m_triples[0];
-                Triple t1 = it->m_triples[1];
-                Triple t2 = it->m_triples[2];
-                Triple t3 = it->m_triples[3];
-                util::Vec3& p0 = rawData.m_positions[t0.position];
-                util::Vec3& p1 = rawData.m_positions[t1.position];
-                util::Vec3& p2 = rawData.m_positions[t2.position];
-                util::Vec3& p3 = rawData.m_positions[t3.position];
-                util::Vec3& tangent = p2 - p0 + p1 - p0 + p3 - p2 + p3 - p1;
-                tangent.Normalize();
-                tangents[0] = tangent;//(p1 - p0 + p2 - p0).Normalize();
-                tangents[1] = tangent;//(p0 - p1 + p3 - p1).Normalize();
-                tangents[2] = tangent;//(p0 - p2 + p3 - p2).Normalize();
-                tangents[3] = tangent;//(p1 - p3 + p2 - p3).Normalize();
-                p0.Print();
-                p1.Print();
-                p2.Print();
-                p3.Print();
-                tangent.Print(); 
-                DEBUG_OUT("--");
-            }
-            else if(it->m_triples.size() == 3)
-            {
-                Triple t0 = it->m_triples[0];
-                Triple t1 = it->m_triples[1];
-                Triple t2 = it->m_triples[2];
-                util::Vec3& p0 = rawData.m_positions[t0.position];
-                util::Vec3& p1 = rawData.m_positions[t1.position];
-                util::Vec3& p2 = rawData.m_positions[t2.position];
-                util::Vec3& tangent = p2 - p0 + p1 - p0;
-                tangent.Normalize();
-                tangents[0] = tangent;
-                tangents[1] = tangent;
-                tangents[2] = tangent;
-            }
-            else
-            {
-                LOG_ERROR("unkown triples count");
-            } */
-            for(UINT i = 0; i < it->m_triples.size(); ++i)
-            {
-                Triple t = it->m_triples[i];
-
-                auto it = hashToTriple.find(t.hash);
-
-                if(it == hashToTriple.end())
-                {
-                    util::Vec3& pos0 = rawData.m_positions[t.position];
-
-                    mesh->m_aabb.AddPoint(pos0);
-
-                    util::Vec3* norm0 = &zero;
-                    if(!rawData.m_normals.empty())
-                    {
-                        norm0 = &rawData.m_normals[t.normal];
-                    }
-                    
-                    util::Vec3* texCoord0 = &zero;
-                    if(!rawData.m_texCoords.empty())
-                    {
-                        texCoord0 = &rawData.m_texCoords[t.texCoord];
-                    }
-
-                    t.index = (UINT)lVertices.size() / 8;
-                    
-                    lVertices.push_back(pos0.x);
-                    lVertices.push_back(pos0.y);
-                    lVertices.push_back(pos0.z);
-
-                    lVertices.push_back(norm0->x);
-                    lVertices.push_back(norm0->y);
-                    lVertices.push_back(norm0->z);
-
-                    lVertices.push_back(texCoord0->x);
-                    lVertices.push_back(texCoord0->y); //Note: textures used by obj.files are y-inverted, might change in the future since I use old textures
-                    /*
-                    std::stringstream ss;
-                    ss << "Created triple= p=" << t.position << ", tx=" << t.texCoord << ", n=" << t.normal;
-                    LOG_INFO(ss.str()); */
-                    /*lVertices.push_back(tangents[i].x);
-                    lVertices.push_back(tangents[i].y);
-                    lVertices.push_back(tangents[i].z); */
-                    
-                    hashToTriple.insert(std::pair<LONG, Triple>(t.hash, t));
-                }
-            }
-
-            /*2,0,1,2,0,3*/
-
-            auto i0 = hashToTriple.find(it->m_triples[0].hash);
-            auto i1 = hashToTriple.find(it->m_triples[1].hash);
-
-            __int64 index0 = i0->second.index;
-            __int64 index1 = i1->second.index;
-
-            if(it->m_triples.size() == 2)
-            {
-                lIndices.push_back((UINT)index1);
-
-                lIndices.push_back((UINT)index0);
-            }
-            else
-            {
-                auto i2 = hashToTriple.find(it->m_triples[2].hash);
-
-                __int64 index2 = i2->second.index;
-
-                lIndices.push_back((UINT)index2);
-
-                lIndices.push_back((UINT)index1);
-
-                lIndices.push_back((UINT)index0);
-
-                if(it->m_triples.size() == 4)
-                {
-                    auto i3 = hashToTriple.find(it->m_triples[3].hash);;
-                    __int64 index3 = i3->second.index;
-                    lIndices.push_back((UINT)index2);
-
-                    lIndices.push_back((UINT)index0);
-
-                    lIndices.push_back((UINT)index3);
-                }
-            }
-        }
-        UINT vertexSize = 8;
-        UINT indexCount = (UINT)lIndices.size();
-        UINT vertexCount = (UINT)lVertices.size() / vertexSize;
-
-        FLOAT* vertices = new FLOAT[lVertices.size()];
-        UINT* indices = new UINT[indexCount];
-        UINT stride = vertexSize * sizeof(FLOAT);
-
-        for(UINT i = 0; i < lVertices.size(); ++i)
-        {
-            vertices[i] = lVertices[i];
-        }
-
-        for(UINT i = 0; i < indexCount; ++i)
-        {
-            indices[i] = lIndices[i];
-        }
-
-        mesh->VSetIndices(indices, indexCount);
-        mesh->VSetVertices(vertices, vertexCount, stride);
-        mesh->VGetAABB().Construct();
+        uint stride = 8;
+        InitMesh(currentMesh, rawData, lastIndexStart, subMeshData, &indexCount, &vertexCount, currentTopo, matName);
 
         delete[] source;
-        return indexCount * sizeof(UINT) + vertexCount * stride * sizeof(FLOAT);
+        return indexCount * sizeof(uint) + vertexCount * stride * sizeof(float);
     }
     
-    INT MaterialLoader::VLoadRessource(CHAR* source, UINT size, std::shared_ptr<IResHandle> handle)
+    int MaterialLoader::VLoadRessource(char* source, uint size, std::shared_ptr<IResHandle>& handle)
     {
         std::shared_ptr<chimera::MaterialSet> materials = std::static_pointer_cast<chimera::MaterialSet>(handle);
 
@@ -419,7 +408,7 @@ namespace chimera
         ss << desc;
         std::string line;
         std::shared_ptr<chimera::Material> current = NULL;
-        UINT index = 0;
+        uint index = 0;
 
         while(ss.good())
         {
@@ -443,7 +432,7 @@ namespace chimera
                 std::string ns;
                 streamLine >> ns;
                 DOUBLE d = atof(ns.c_str());
-                current->m_specCoef = (FLOAT)d; 
+                current->m_specCoef = (float)d; 
             }
             else if(prefix == "Ka")
             {
@@ -454,7 +443,7 @@ namespace chimera
                 DOUBLE g = atof(val.c_str());
                 streamLine >> val;
                 DOUBLE b = atof(val.c_str());
-                current->m_ambient.Set((FLOAT)r, (FLOAT)g, (FLOAT)b, 1.f);
+                current->m_ambient.Set((float)r, (float)g, (float)b, 1.f);
             }
             else if(prefix == "Kd")
             {
@@ -465,7 +454,7 @@ namespace chimera
                 DOUBLE g = atof(val.c_str());
                 streamLine >> val;
                 DOUBLE b = atof(val.c_str());
-                current->m_diffuse.Set((FLOAT)r, (FLOAT)g, (FLOAT)b, 1.f);
+                current->m_diffuse.Set((float)r, (float)g, (float)b, 1.f);
             }
             else if(prefix == "Ks")
             {
@@ -476,7 +465,7 @@ namespace chimera
                 DOUBLE g = atof(val.c_str());
                 streamLine >> val;
                 DOUBLE b = atof(val.c_str());
-                current->m_specular.Set((FLOAT)r, (FLOAT)g, (FLOAT)b, 1.f);
+                current->m_specular.Set((float)r, (float)g, (float)b, 1.f);
             }
             else if(prefix == "map_Kd")
             {
@@ -487,6 +476,10 @@ namespace chimera
                     current->m_textureDiffuse = chimera::CMResource(val);
                     materials->VGetResourceCache()->VGetHandle(current->m_textureDiffuse); //preload texture
                 }
+                else
+                {
+                    DEBUG_OUT_A("Texture '%s' not found.\n", val.c_str());
+                }
             }
             else if(prefix == "map_Kn")
             {
@@ -495,7 +488,7 @@ namespace chimera
 
                 if(materials->VGetResourceCache()->VGetFile().VHasFile("textures/"+val))
                 {
-                    current->m_hasNormal = TRUE;
+                    current->m_hasNormal = true;
                     current->m_textureNormal = chimera::CMResource(val);
                     materials->VGetResourceCache()->VGetHandle(current->m_textureNormal); //preload texture
                 }
@@ -505,21 +498,21 @@ namespace chimera
                 std::string val;
                 streamLine >> val;
                 DOUBLE illum = atof(val.c_str());
-                current->m_reflectance = (FLOAT)illum;
+                current->m_reflectance = (float)(illum == 1.0f);
             }
             else if(prefix == "scale")
             {
                 std::string val;
                 streamLine >> val;
                 DOUBLE scale = atof(val.c_str());
-                current->m_texScale = (FLOAT)scale;
+                current->m_texScale = (float)scale;
             }
         }
         delete[] source;
         return size;
     }
 
-    INT ImageLoader::VLoadRessource(CHAR* source, UINT size, std::shared_ptr<IResHandle> handle) 
+    int ImageLoader::VLoadRessource(char* source, uint size, std::shared_ptr<IResHandle>& handle) 
     {
         Gdiplus::Bitmap* b = util::GetBitmapFromBytes(source, size);
 
@@ -538,17 +531,17 @@ namespace chimera
     }
 
 
-    std::unique_ptr<IResHandle> ObjLoader::VCreateHandle(VOID) 
+    std::unique_ptr<IResHandle> ObjLoader::VCreateHandle(void) 
     { 
-        return std::unique_ptr<Mesh>(new Mesh()); 
+        return std::unique_ptr<IMeshSet>(new MeshSet());
     }
 
-    std::unique_ptr<IResHandle>  MaterialLoader::VCreateHandle(VOID) 
+    std::unique_ptr<IResHandle>  MaterialLoader::VCreateHandle(void) 
     { 
         return std::unique_ptr<MaterialSet>(new MaterialSet()); 
     }
 
-    BOOL WaveLoader::ParseWaveFile(CHAR* wavStream, std::shared_ptr<IResHandle> handle, UINT& size)
+    bool WaveLoader::ParseWaveFile(char* wavStream, std::shared_ptr<IResHandle> handle, uint& size)
     {
         WaveSoundExtraDatra* data = (WaveSoundExtraDatra*)(handle->VGetExtraData());
 
@@ -563,7 +556,7 @@ namespace chimera
 
         if(type != mmioFOURCC('R', 'I', 'F', 'F'))
         {
-            return FALSE;
+            return false;
         }
 
         length = *((DWORD*)(wavStream+pos));
@@ -574,14 +567,14 @@ namespace chimera
 
         if(type != mmioFOURCC('W', 'A', 'V', 'E'))
         {
-            return FALSE;
+            return false;
         }
 
         fileEnd = length - 4;
 
         ZeroMemory(&data->m_format, sizeof(WAVEFORMATEX));
 
-        BOOL bufferCopied = FALSE;
+        bool bufferCopied = false;
 
         while(file < fileEnd)
         {
@@ -620,12 +613,12 @@ namespace chimera
                 } break;
             case mmioFOURCC('d', 'a', 't', 'a') : 
                 {
-                    bufferCopied = TRUE;
+                    bufferCopied = true;
                     /*if(length != size)
                     {
                         LOG_ERROR("strange");
                     } */
-                    CHAR* buffer = new CHAR[length];
+                    char* buffer = new char[length];
                     memcpy(buffer, wavStream+pos, length);
                     size = length;
                     handle->VSetBuffer(buffer);
@@ -641,7 +634,7 @@ namespace chimera
                 
                 SAFE_ARRAY_DELETE(wavStream);
 
-                return TRUE;
+                return true;
             }
 
             if(length & 1)
@@ -650,10 +643,10 @@ namespace chimera
                 ++file;
             }
         }
-        return FALSE;
+        return false;
     }
 
-    INT WaveLoader::VLoadRessource(CHAR* source, UINT size, std::shared_ptr<IResHandle> handle)
+    int WaveLoader::VLoadRessource(char* source, uint size, std::shared_ptr<IResHandle>& handle)
     {
         //DefaultRessourceLoader::VLoadRessource(source, size, handle);
 
@@ -670,26 +663,47 @@ namespace chimera
 
     //vram
 
-    IVRamHandle* GeometryCreator::VGetHandle(VOID)
+    IVRamHandle* GeometryCreator::VGetHandle(void)
     {
         return new chimera::d3d::Geometry();
     }
 
-    VOID GeometryCreator::VCreateHandle(IVRamHandle* handle)
+    void GeometryCreator::VCreateHandle(IVRamHandle* handle)
     {
         IGeometry* geo = (IGeometry*)handle;
-        std::shared_ptr<Mesh> mesh = std::static_pointer_cast<Mesh>(CmGetApp()->VGetCache()->VGetHandle(CMResource(handle->VGetResource())));
+
+        std::string file = handle->VGetResource().m_name;
+        std::string meshName = "";
+        std::vector<std::string> split = util::split(file, '$');
+
+        if(split.size() > 1)
+        {
+            meshName = split[0];
+            file = split[1];
+        }
+
+        std::shared_ptr<IMeshSet> meshSet = std::static_pointer_cast<IMeshSet>(CmGetApp()->VGetCache()->VGetHandle(CMResource(file)));
+        const IMesh* mesh;
+        if(meshName != "")
+        {
+            mesh = meshSet->VGetMesh(meshName);
+        }
+        else
+        {
+            mesh = meshSet->VGetMesh(0);
+        }
+
         geo->VSetIndexBuffer(mesh->VGetIndices(), mesh->VGetIndexCount());
         geo->VSetVertexBuffer(mesh->VGetVertices(), mesh->VGetVertexCount(), mesh->VGetVertexStride());
         geo->VSetTopology(eTopo_Triangles);
     }
 
-    IVRamHandle* TextureCreator::VGetHandle(VOID)
+    IVRamHandle* TextureCreator::VGetHandle(void)
     {
         return new chimera::d3d::Texture2D();
     }
 
-    VOID TextureCreator::VCreateHandle(IVRamHandle* handle)
+    void TextureCreator::VCreateHandle(IVRamHandle* handle)
     {
         chimera::d3d::Texture2D* texture = (chimera::d3d::Texture2D*)handle;
         CMResource res = handle->VGetResource();

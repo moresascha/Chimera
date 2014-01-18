@@ -7,12 +7,12 @@ namespace chimera
 {
     namespace util 
     {
-        UINT getText(CONST CHAR* pFileName, CHAR** source) 
+        uint getText(const char* pFileName, char** source) 
         {
             FILE *fp;
-            CHAR *content = NULL;
+            char *content = NULL;
 
-            UINT count=0;
+            uint count=0;
 
             if(pFileName != NULL)
             {
@@ -26,8 +26,8 @@ namespace chimera
 
                       if(count > 0)
                       {
-                           content = new CHAR[sizeof(CHAR) * (count+1)];
-                           count = (UINT)fread(content,sizeof(CHAR),count,fp);
+                           content = new char[sizeof(char) * (count+1)];
+                           count = (uint)fread(content,sizeof(char),count,fp);
                            content[count] = '\0';
 
                       }
@@ -40,52 +40,52 @@ namespace chimera
              return count;
         }
 
-        VOID InitGdiplus(VOID) 
+        void InitGdiplus(void) 
         {
             Gdiplus::GdiplusStartupInput gdiplusStartupInput;
            // Initialize GDI+.
             Gdiplus::GdiplusStartup(&gdiplusToken, &gdiplusStartupInput, NULL);
         }
 
-        VOID DestroyGdiplus(VOID) 
+        void DestroyGdiplus(void) 
         {
             Gdiplus::GdiplusShutdown(gdiplusToken);
         }
 
-        Gdiplus::Bitmap* GetBitmapFromFile(CONST WCHAR* file) 
+        Gdiplus::Bitmap* GetBitmapFromFile(const WCHAR* file) 
         {
             return Gdiplus::Bitmap::FromFile(file);
         }
 
-        Gdiplus::Bitmap* GetBitmapFromBytes(CHAR* bytes, UINT size) 
+        Gdiplus::Bitmap* GetBitmapFromBytes(char* bytes, uint size) 
         {
             //tbd::ByteStream bs(bytes, size);
             IStream* pStream;
             HGLOBAL m_hBuffer  = ::GlobalAlloc(GMEM_FIXED, size);
             void* pBuffer = ::GlobalLock(m_hBuffer);
             CopyMemory(pBuffer, bytes, size);
-            HRESULT hr = ::CreateStreamOnHGlobal(m_hBuffer, TRUE, &pStream);
+            HRESULT hr = ::CreateStreamOnHGlobal(m_hBuffer, true, &pStream);
             Gdiplus::Bitmap* map = Gdiplus::Bitmap::FromStream(pStream);
             pStream->Release();
             return map;
         }
 
-        CHAR* GetTextureData(Gdiplus::Bitmap* map) 
+        char* GetTextureData(Gdiplus::Bitmap* map) 
         {
-            CHAR* color = new CHAR[map->GetWidth() * map->GetHeight() * 4];
+            char* color = new char[map->GetWidth() * map->GetHeight() * 4];
             Gdiplus::ImageAttributes atts;
             Gdiplus::Color c;
-            UINT index = 0;
-            for(INT h = 0; h < (INT)map->GetHeight(); ++h)
+            uint index = 0;
+            for(int h = 0; h < (int)map->GetHeight(); ++h)
             {
-                for(INT w = 0; w < (INT)map->GetWidth(); ++w)
+                for(int w = 0; w < (int)map->GetWidth(); ++w)
                 {
                     Gdiplus::PixelFormat f = map->GetPixel(w, map->GetHeight() - h - 1, &c);
                     Gdiplus::ARGB raw = c.GetValue();
-                    INT r = (raw >> 16) & 0xFF;
-                    INT g = (raw >> 8) & 0xFF;
-                    INT b = (raw & 0xFF);
-                    INT a = (raw >> 24) & 0xFF;
+                    int r = (raw >> 16) & 0xFF;
+                    int g = (raw >> 8) & 0xFF;
+                    int b = (raw & 0xFF);
+                    int a = (raw >> 24) & 0xFF;
 
                     //gamma correction
                     //r = (INT)(255 * pow((DOUBLE)r / 255.0, 2.2));
@@ -102,10 +102,10 @@ namespace chimera
             return color;
         } 
 
-        CHAR* GetTextureData(CONST WCHAR* file) 
+        char* GetTextureData(const WCHAR* file) 
         {
             Gdiplus::Bitmap* b = GetBitmapFromFile(file);
-            CHAR* color = GetTextureData(b);
+            char* color = GetTextureData(b);
             delete b;
             return color;
         }
@@ -133,7 +133,7 @@ namespace chimera
             return std::wstring(s.begin(), s.end());
         }
 
-        BOOL CheckIfFileExists(LPCSTR file)
+        bool CheckIfFileExists(LPCSTR file)
         {
             std::ifstream ifile(file);
             return ifile.good();

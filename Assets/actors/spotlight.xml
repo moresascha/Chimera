@@ -1,15 +1,15 @@
 <Actor>
     <TransformComponent>
-        <Position x="0" y="0.0" z="0.0" />
-        <Scale x="50" y="1" z="1"/>
+        <Position x="0" y="1.75" z="0.0" />
+        <Scale x="100" y="1" z="1"/>
     </TransformComponent>
 	<LightComponent>
         <Type>spot</Type>
         <Color r="1" g="1" b="1" />
         <Intensity>7</Intensity>
         <Activate />
-        <Angle>45</Angle>
-        <Texture>flashlight.jpg</Texture>
+        <Angle>70</Angle>
+        <Texture>flashlight.png</Texture>
         <CastShadow>0</CastShadow>
 	</LightComponent>
 </Actor>

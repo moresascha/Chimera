@@ -11,19 +11,19 @@
 #include "Process.h"
 namespace packman
 {
-    CONST ComponentId AIComponent::COMPONENT_ID = 0x9fe588e8;
+    const ComponentId AIComponent::COMPONENT_ID = 0x9fe588e8;
     class AIComponent;
-    chimera::ActorComponent* CreateAIComponent(VOID) 
+    chimera::ActorComponent* CreateAIComponent(void) 
     {
         return new AIComponent;
     }
 
-    INT IsWallFromScript(LuaPlus::LuaObject posVec3)
+    int IsWallFromScript(LuaPlus::LuaObject posVec3)
     {
         util::Vec3 pos;
         chimera::script::ConvertAndCheckTableToVec3(pos, posVec3);
         packman::Maze* m = (packman::Maze*)chimera::g_pApp->GetLogic()->Getlevel();
-        BOOL isWall = m->IsWall(pos.x, pos.z);
+        bool isWall = m->IsWall(pos.x, pos.z);
         return isWall;
     }
 
@@ -34,13 +34,13 @@ namespace packman
         {
 
         }
-        VOID VOnFileModification(VOID)
+        void VOnFileModification(void)
         {
             chimera::g_pApp->GetScript()->VRunFile("files/scripts/packmanai.lua");
         }
     };
 
-    VOID Packman::VCreateLogicAndView(VOID)
+    void Packman::VCreateLogicAndView(void)
     {
         m_pLogic = new packman::PackmanLogic();
 

@@ -8,13 +8,13 @@
 #include "math.h"
 namespace chimera
 {
-    SoundProcess::SoundProcess(std::shared_ptr<chimera::ResHandle> handle, INT soundType /* = 0 */, INT volume /* = 100 */, BOOL loop /* = FALSE */)
+    SoundProcess::SoundProcess(std::shared_ptr<chimera::ResHandle> handle, int soundType /* = 0 */, int volume /* = 100 */, bool loop /* = FALSE */)
         : ActorProcess(NULL), m_pHandle(handle), m_volume(volume), m_soundType(soundType), m_loop(loop), m_pSoundBuffer(NULL)
     {
 
     }
 
-    VOID SoundProcess::VOnInit(VOID)
+    void SoundProcess::VOnInit(void)
     {
         ActorProcess::VOnInit();
 
@@ -27,22 +27,22 @@ namespace chimera
         m_pSoundBuffer->VPlay(m_loop);
     }
 
-    VOID SoundProcess::VOnAbort(VOID)
+    void SoundProcess::VOnAbort(void)
     {
         chimera::g_pApp->GetHumanView()->GetSoundSystem()->VReleaseSoundBuffer(m_pSoundBuffer);
     }
 
-    VOID SoundProcess::VOnFail(VOID)
+    void SoundProcess::VOnFail(void)
     {
         chimera::g_pApp->GetHumanView()->GetSoundSystem()->VReleaseSoundBuffer(m_pSoundBuffer);
     }
 
-    VOID SoundProcess::VOnSuccess(VOID)
+    void SoundProcess::VOnSuccess(void)
     {
         chimera::g_pApp->GetHumanView()->GetSoundSystem()->VReleaseSoundBuffer(m_pSoundBuffer);
     }
 
-    VOID SoundProcess::VOnUpdate(ULONG deltaMillis)
+    void SoundProcess::VOnUpdate(ulong deltaMillis)
     {
         if(!m_pSoundBuffer->VIsPlaying())
         {
@@ -50,12 +50,12 @@ namespace chimera
         }
     }
 
-    VOID SoundProcess::ComputeVolumeFromDistance(CONST util::Vec3& pos, util::ICamera* camera, FLOAT radius)
+    void SoundProcess::ComputeVolumeFromDistance(const util::Vec3& pos, util::ICamera* camera, float radius)
     {
-        CONST util::Vec3& trans = pos;
-        CONST util::Vec3& cameraPos = camera->GetEyePos();
+        const util::Vec3& trans = pos;
+        const util::Vec3& cameraPos = camera->GetEyePos();
         util::Vec3 sub = trans - cameraPos;
-        FLOAT distance = sub.Length();
+        float distance = sub.Length();
 
         if(distance > radius)
         {
@@ -68,9 +68,9 @@ namespace chimera
         {
             LONG vol = 100;
             sub.Normalize();
-            FLOAT dot = camera->GetSideDir().Dot(sub);
+            float dot = camera->GetSideDir().Dot(sub);
 
-            FLOAT stre = 1 + camera->GetViewDir().Dot(sub);
+            float stre = 1 + camera->GetViewDir().Dot(sub);
             stre = CLAMP(stre, 0.8f, 1.0f);
 
             //DEBUG_OUT_A("%f %f", dot, stre);
@@ -91,40 +91,40 @@ namespace chimera
         std::shared_ptr<chimera::Actor> actor,
         std::shared_ptr<chimera::TransformComponent> transCmp, 
         std::shared_ptr<chimera::ResHandle> handle,
-        FLOAT radius,
-        INT soundType /* = 0 */, INT volume /* = 100 */, BOOL loop /* = FALSE */)
+        float radius,
+        int soundType /* = 0 */, int volume /* = 100 */, bool loop /* = FALSE */)
 
         : SoundProcess(handle, soundType, volume, loop), m_transform(transCmp), m_radius(radius)
     {
         m_actor = actor;
     }
 
-    VOID SoundEmitterProcess::VOnUpdate(ULONG deltaMillis)
+    void SoundEmitterProcess::VOnUpdate(ulong deltaMillis)
     {
         SoundProcess::VOnUpdate(deltaMillis);
         util::ICamera* camera = chimera::g_pApp->GetHumanView()->GetSceneGraph()->GetCamera().get();
         ComputeVolumeFromDistance(m_transform->GetTransformation()->GetTranslation(), camera, m_radius);
     }
 
-    VOID SoundEmitterProcess::VOnActorDelete(VOID)
+    void SoundEmitterProcess::VOnActorDelete(void)
     {
         Succeed();
     }
 
-    StaticSoundEmitterProcess::StaticSoundEmitterProcess(CONST util::Vec3& position, std::shared_ptr<chimera::ResHandle> handle, FLOAT radius, INT soundType /* = 0 */, INT volume /* = 100 */, BOOL loop /* = FALSE */)
+    StaticSoundEmitterProcess::StaticSoundEmitterProcess(const util::Vec3& position, std::shared_ptr<chimera::ResHandle> handle, float radius, int soundType /* = 0 */, int volume /* = 100 */, bool loop /* = FALSE */)
         :SoundProcess(handle, soundType, volume, loop), m_position(position), m_radius(radius)
     {
 
     }
 
-    VOID StaticSoundEmitterProcess::VOnInit(VOID)
+    void StaticSoundEmitterProcess::VOnInit(void)
     {
         SoundProcess::VOnInit();
         util::ICamera* camera = chimera::g_pApp->GetHumanView()->GetSceneGraph()->GetCamera().get();
         ComputeVolumeFromDistance(m_position, camera, m_radius);
     }
 
-    VOID StaticSoundEmitterProcess::VOnUpdate(ULONG deltaMillis)
+    void StaticSoundEmitterProcess::VOnUpdate(ulong deltaMillis)
     {
         SoundProcess::VOnUpdate(deltaMillis);
         util::ICamera* camera = chimera::g_pApp->GetHumanView()->GetSceneGraph()->GetCamera().get();

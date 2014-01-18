@@ -8,8 +8,8 @@ namespace chimera
 {
     struct CascadeSettings
     {
-        FLOAT start;
-        FLOAT end;
+        float start;
+        float end;
         util::Mat4 m_projection;
     };
 
@@ -27,22 +27,22 @@ namespace chimera
         IActor* m_lightActorCamera;
         IActor* m_viewActor;
 
-        VOID Destroy(VOID);
+        void Destroy(void);
 
     public:
 
         CascadedShadowMapper(UCHAR cascades);
 
-        BOOL VOnRestore(VOID);
+        bool VOnRestore(void);
 
-        VOID VRender(ISceneGraph* graph);
+        void VRender(ISceneGraph* graph);
 
-        UCHAR VGetSlices(VOID) { return m_cascades; }
+        UCHAR VGetSlices(void) { return m_cascades; }
 
-        IRenderTarget** VGetTargets(VOID) { return m_ppTargets; }
+        IRenderTarget** VGetTargets(void) { return m_ppTargets; }
 
-        VOID SetSunPositionDelegate(IEventPtr data);
+        void SetSunPositionDelegate(IEventPtr data);
 
-        ~CascadedShadowMapper(VOID);
+        ~CascadedShadowMapper(void);
     };
 };

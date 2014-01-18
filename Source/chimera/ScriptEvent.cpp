@@ -20,7 +20,7 @@ namespace chimera
             }
         }
 
-        VOID LuaScriptEventManager::RegisterEventTransformer(LuaScriptEventTransformation transformer, EventType type, LPCSTR name)
+        void LuaScriptEventManager::RegisterEventTransformer(LuaScriptEventTransformation transformer, EventType type, LPCSTR name)
         {
             LuaScript* luas = (LuaScript*)chimera::g_pApp->GetScript();
             LuaPlus::LuaObject table = luas->GetState()->GetGlobals().GetByName("EventType");
@@ -35,7 +35,7 @@ namespace chimera
             m_transformMap[type] = transformer;
         }
 
-        VOID LuaScriptEventManager::AddListener(LuaPlus::LuaObject listener, EventType type)
+        void LuaScriptEventManager::AddListener(LuaPlus::LuaObject listener, EventType type)
         {
             LuaEventListener* l = new LuaEventListener(listener);
             m_listenerMap[type].push_back(std::shared_ptr<LuaEventListener>(l));
@@ -44,7 +44,7 @@ namespace chimera
             chimera::IEventManager::Get()->VAddEventListener(elistener, type);
         }
 
-        VOID LuaScriptEventManager::RemoveListener(LuaPlus::LuaObject listener, EventType type)
+        void LuaScriptEventManager::RemoveListener(LuaPlus::LuaObject listener, EventType type)
         {
             auto it = m_listenerMap.find(type);
             for(auto itt = it->second.begin(); itt != it->second.end(); ++itt)
@@ -59,7 +59,7 @@ namespace chimera
             }
         }
 
-        VOID LuaEventListener::EventListenerDelegate(event::IEventPtr event)
+        void LuaEventListener::EventListenerDelegate(event::IEventPtr event)
         {
             LuaScriptEventTransformation* t = chimera::g_pApp->GetScriptEventManager()->GetTransformation(event->VGetEventType());
             if(t)
@@ -68,7 +68,7 @@ namespace chimera
                 {
                     LOG_ERROR_NR((std::string(m_function.GetString()) + std::string(" is not a function")).c_str());
                 }
-                LuaPlus::LuaFunction<VOID> function(m_function);
+                LuaPlus::LuaFunction<void> function(m_function);
                 
                 LuaPlus::LuaObject obj = t->VBuildForScript(event);
                 if(obj.IsNil())
@@ -86,7 +86,7 @@ namespace chimera
             }
         }
 
-        VOID RegisterScriptEvents(VOID)
+        void RegisterScriptEvents(void)
         {
             REGISTER_SCRIPT_TRANSFORMER(LuaScriptEventTransformation(), chimera::ActorCreatedEvent::TYPE, ActorCreatedEvent);
         }

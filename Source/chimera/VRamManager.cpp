@@ -6,11 +6,11 @@
 namespace chimera 
 {
     //--manager--//
-    VRamManager::VRamManager(UINT mb) : m_bytes(1024 * 1024 * mb), m_currentByteSize(0), m_updateFrequency(0.05f) /*every 20 seconds*/, m_time(0) 
+    VRamManager::VRamManager(uint mb) : m_bytes(1024 * 1024 * mb), m_currentByteSize(0), m_updateFrequency(0.05f) /*every 20 seconds*/, m_time(0) 
     {
     }
 
-    VOID VRamManager::OnResourceChanged(std::shared_ptr<IEvent> data)
+    void VRamManager::OnResourceChanged(std::shared_ptr<IEvent> data)
     {
         std::shared_ptr<ResourceChangedEvent> event = std::static_pointer_cast<ResourceChangedEvent>(data);
         auto h = m_resources.find(event->m_resource);//GetHandle(tbd::VRamResource(event->m_resource));
@@ -21,17 +21,17 @@ namespace chimera
         }
     }
 
-    VOID VRamManager::Reload(std::shared_ptr<IVRamHandle> handle)
+    void VRamManager::Reload(std::shared_ptr<IVRamHandle> handle)
     {
-        handle->VSetReady(FALSE);
+        handle->VSetReady(false);
     }
 
-    std::shared_ptr<IVRamHandle> VRamManager::VGetHandle(CONST VRamResource& ressource)
+    std::shared_ptr<IVRamHandle> VRamManager::VGetHandle(const VRamResource& ressource)
     {
-        return _GetHandle(ressource, FALSE);
+        return _GetHandle(ressource, false);
     }
 
-    VOID VRamManager::VRegisterHandleCreator(LPCSTR suffix, IVRamHandleCreator* creator)
+    void VRamManager::VRegisterHandleCreator(LPCSTR suffix, IVRamHandleCreator* creator)
     {
         VRamResource res(suffix);
         if(m_creators.find(res.m_name) != m_creators.end())
@@ -42,7 +42,7 @@ namespace chimera
     }
 
     
-    VOID VRamManager::VAppendAndCreateHandle(std::shared_ptr<IVRamHandle> handle)
+    void VRamManager::VAppendAndCreateHandle(std::shared_ptr<IVRamHandle> handle)
     {
         m_locker.Lock();
 
@@ -59,19 +59,19 @@ namespace chimera
 
         handle->VCreate();
 
-        handle->VSetReady(TRUE);
+        handle->VSetReady(true);
 
         m_currentByteSize += handle->VGetByteCount();
 
         handle->VUpdate();
     }
 
-    std::shared_ptr<IVRamHandle> VRamManager::VGetHandleAsync(CONST VRamResource& ressource)
+    std::shared_ptr<IVRamHandle> VRamManager::VGetHandleAsync(const VRamResource& ressource)
     {
-        return _GetHandle(ressource, TRUE);
+        return _GetHandle(ressource, true);
     }
 
-    std::shared_ptr<IVRamHandle> VRamManager::_GetHandle(CONST VRamResource& ressource, BOOL async)
+    std::shared_ptr<IVRamHandle> VRamManager::_GetHandle(const VRamResource& ressource, bool async)
     {
 
         /*
@@ -141,7 +141,7 @@ namespace chimera
 
        // DEBUG_OUT("VR loaded " + ressource.m_name);
 
-        handle->VSetReady(TRUE);
+        handle->VSetReady(true);
     
         //m_locks[ressource.m_name]->Unlock();
 
@@ -152,10 +152,10 @@ namespace chimera
         return handle;
     }
 
-    VOID VRamManager::VUpdate(ULONG millis)
+    void VRamManager::VUpdate(ulong millis)
     {
         m_time += millis;
-        FLOAT maxSeconds = 1.0f / m_updateFrequency;
+        float maxSeconds = 1.0f / m_updateFrequency;
 
         if(m_time < maxSeconds * 1000.0f)
         {
@@ -168,7 +168,7 @@ namespace chimera
         {
             std::shared_ptr<IVRamHandle>& r = it->second;
             LONG t = current - r->VGetLastUsageTime();
-            if((t / (FLOAT)CLOCKS_PER_SEC) > maxSeconds && r->VIsReady())
+            if((t / (float)CLOCKS_PER_SEC) > maxSeconds && r->VIsReady())
             {
                 it = Free(r);
             }
@@ -188,14 +188,14 @@ namespace chimera
         }
         m_currentByteSize -= ressource->VGetByteCount();
         ressource->VDestroy();
-        ressource->VSetReady(FALSE);
+        ressource->VSetReady(false);
         delete m_locks[ressource->VGetResource().m_name];
         m_locks.erase(ressource->VGetResource().m_name);
         auto it = m_resources.erase(itt);
         return it;
     }
 
-    VOID VRamManager::VFlush(VOID)
+    void VRamManager::VFlush(void)
     {
         for(auto it = m_resources.begin(); it != m_resources.end();)
         {
@@ -204,7 +204,7 @@ namespace chimera
         m_resources.clear();
     }
 
-    VRamManager::~VRamManager(VOID)
+    VRamManager::~VRamManager(void)
     {
         VFlush();
         for(auto it = m_creators.begin(); it != m_creators.end(); ++it)

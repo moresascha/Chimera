@@ -3,17 +3,17 @@
 namespace util {
 
 FPSControler::FPSControler(std::shared_ptr<ICamera> camera) : p_camera(camera), m_lastPosX(-1), m_lastPosY(-1), m_minSpeed(1), m_maxSpeed(3) {
-    for(UINT i = 0; i < 0xFE; ++i) 
+    for(uint i = 0; i < 0xFE; ++i) 
     {
         m_isKeyDown[i] = NULL;
     }
 }
 
-VOID FPSControler::Update(UINT millis) {
+void FPSControler::Update(uint millis) {
     util::Vec3 move;
     
-    FLOAT factor = 1e-3f * millis;
-    FLOAT speed = 1;
+    float factor = 1e-3f * millis;
+    float speed = 1;
     if(m_isKeyDown[KEY_W]) 
     {
         move.z = factor;
@@ -47,44 +47,44 @@ VOID FPSControler::Update(UINT millis) {
     }
 }
 
-BOOL FPSControler::VOnKeyDown(UINT CONST code) {
-    m_isKeyDown[code] = TRUE;
-    return TRUE;
+bool FPSControler::VOnKeyDown(uint const code) {
+    m_isKeyDown[code] = true;
+    return true;
 }
 
-BOOL FPSControler::VOnKeyPressed(UINT CONST code) {
-    return TRUE;
+bool FPSControler::VOnKeyPressed(uint const code) {
+    return true;
 }
 
-BOOL FPSControler::VOnKeyReleased(UINT CONST code) {
-    m_isKeyDown[code] = FALSE;
-    return TRUE;
+bool FPSControler::VOnKeyReleased(uint const code) {
+    m_isKeyDown[code] = false;
+    return true;
 }
 
-BOOL FPSControler::VOnMouseButtonDown(INT x, INT y, INT button) { 
+bool FPSControler::VOnMouseButtonDown(int x, int y, int button) { 
     this->m_lastPosX = x;
     this->m_lastPosY = y;
-    return TRUE; 
+    return true; 
 };
 
-BOOL FPSControler::VOnMouseButtonReleased(INT x, INT y, INT button) { return FALSE; };
-BOOL FPSControler::VOnMousePressed(INT x, INT y, INT button) { return FALSE; };
-BOOL FPSControler::VOnMouseMoved(INT x, INT y) { return FALSE; };
+bool FPSControler::VOnMouseButtonReleased(int x, int y, int button) { return false; };
+bool FPSControler::VOnMousePressed(int x, int y, int button) { return false; };
+bool FPSControler::VOnMouseMoved(int x, int y) { return false; };
 
-BOOL FPSControler::VOnMouseDragged(INT x, INT y, INT button) {
+bool FPSControler::VOnMouseDragged(int x, int y, int button) {
     if(button & 1) {
-        INT dx = x - m_lastPosX;
-        INT dy = y - m_lastPosY;
-        p_camera->Rotate(2 * dx * (FLOAT)(1e-3), 2 * dy * (FLOAT)(1e-3));
+        int dx = x - m_lastPosX;
+        int dy = y - m_lastPosY;
+        p_camera->Rotate(2 * dx * (float)(1e-3), 2 * dy * (float)(1e-3));
         this->m_lastPosX = x;
         this->m_lastPosY = y;
         this->VOnUpdate();
     }
-    return TRUE; 
+    return true; 
 };
-BOOL FPSControler::VOnMouseWheel(INT x, INT y, INT delta) { return FALSE; };
+bool FPSControler::VOnMouseWheel(int x, int y, int delta) { return false; };
 
 
-FPSControler::~FPSControler(VOID) {
+FPSControler::~FPSControler(void) {
 }
 }

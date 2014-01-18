@@ -6,7 +6,7 @@
 
 namespace chimera
 {
-    BOOL InitiaizeTransformComponent(IActorComponent* cmp, ICMStream* stream)
+    bool InitiaizeTransformComponent(IActorComponent* cmp, ICMStream* stream)
     {
         TransformComponent* transformation = (TransformComponent*)cmp;
         tinyxml2::XMLElement* pData = (tinyxml2::XMLElement*)stream;
@@ -14,7 +14,7 @@ namespace chimera
 
         if(trans)
         {
-            FLOAT x, y, z;
+            float x, y, z;
             RETURN_IF_FAILED(tinyxml2::XML_NO_ATTRIBUTE != trans->QueryFloatAttribute("x", &x));
             RETURN_IF_FAILED(tinyxml2::XML_NO_ATTRIBUTE != trans->QueryFloatAttribute("y", &y));
             RETURN_IF_FAILED(tinyxml2::XML_NO_ATTRIBUTE != trans->QueryFloatAttribute("z", &z));
@@ -25,7 +25,7 @@ namespace chimera
 
         if(rot)
         {
-            FLOAT x, y, z, w;
+            float x, y, z, w;
             RETURN_IF_FAILED(tinyxml2::XML_NO_ATTRIBUTE != rot->QueryFloatAttribute("x", &x));
             RETURN_IF_FAILED(tinyxml2::XML_NO_ATTRIBUTE != rot->QueryFloatAttribute("y", &y));
             RETURN_IF_FAILED(tinyxml2::XML_NO_ATTRIBUTE != rot->QueryFloatAttribute("z", &z));
@@ -37,17 +37,17 @@ namespace chimera
 
         if(scale)
         {
-            FLOAT x, y, z;
+            float x, y, z;
             RETURN_IF_FAILED(tinyxml2::XML_NO_ATTRIBUTE != scale->QueryFloatAttribute("x", &x));
             RETURN_IF_FAILED(tinyxml2::XML_NO_ATTRIBUTE != scale->QueryFloatAttribute("y", &y));
             RETURN_IF_FAILED(tinyxml2::XML_NO_ATTRIBUTE != scale->QueryFloatAttribute("z", &z));
             transformation->GetTransformation()->SetScale(x, y, z);
         }
         
-        return TRUE;
+        return true;
     }
 
-    BOOL InitiaizeRenderingComponent(IActorComponent* cmp, ICMStream* stream)
+    bool InitiaizeRenderingComponent(IActorComponent* cmp, ICMStream* stream)
     {
         RenderComponent* rendering = (RenderComponent*)cmp;
         tinyxml2::XMLElement* pData = (tinyxml2::XMLElement*)stream;
@@ -73,10 +73,10 @@ namespace chimera
             //rendering->m_info = info->GetText();
         }
 
-        return TRUE;
+        return true;
     }
 
-    BOOL InitiaizeCameraComponent(IActorComponent* cmp, ICMStream* stream)
+    bool InitiaizeCameraComponent(IActorComponent* cmp, ICMStream* stream)
     {
         CameraComponent* cameraCmp = (CameraComponent*)cmp;
         tinyxml2::XMLElement* pData = (tinyxml2::XMLElement*)stream;
@@ -84,7 +84,7 @@ namespace chimera
         tinyxml2::XMLElement* settings = pData->FirstChildElement("Settings");
         if(settings)
         {
-            FLOAT fov, aspect, viewDir, n, f;
+            float fov, aspect, viewDir, n, f;
         
             RETURN_IF_FAILED(tinyxml2::XML_NO_ATTRIBUTE != settings->QueryFloatAttribute("fov", &fov));
             RETURN_IF_FAILED(tinyxml2::XML_NO_ATTRIBUTE != settings->QueryFloatAttribute("aspect", &aspect));
@@ -110,8 +110,8 @@ namespace chimera
                 cameraCmp->m_camera = std::shared_ptr<util::FPSCamera>(new util::CharacterCamera(
                     chimera::CmGetApp()->VGetHumanView()->VGetRenderer()->VGetWidth(), 
                     chimera::CmGetApp()->VGetHumanView()->VGetRenderer()->VGetHeight(), 
-                    (FLOAT)n, 
-                    (FLOAT)f)
+                    (float)n, 
+                    (float)f)
                     );
             }
             else if(cameraCmp->m_type == std::string("FPSShakeCharacter"))
@@ -119,8 +119,8 @@ namespace chimera
                 cameraCmp->m_camera = std::shared_ptr<util::FPSCamera>(new util::CharacterHeadShake(
                     chimera::CmGetApp()->VGetHumanView()->VGetRenderer()->VGetWidth(), 
                     chimera::CmGetApp()->VGetHumanView()->VGetRenderer()->VGetHeight(), 
-                    (FLOAT)n, 
-                    (FLOAT)f)
+                    (float)n, 
+                    (float)f)
                     ); 
             }
             else if(cameraCmp->m_type == "FPSStatic")
@@ -128,8 +128,8 @@ namespace chimera
                 cameraCmp->m_camera = std::shared_ptr<util::StaticCamera>(new util::StaticCamera(
                     chimera::CmGetApp()->VGetHumanView()->VGetRenderer()->VGetWidth(), 
                     chimera::CmGetApp()->VGetHumanView()->VGetRenderer()->VGetHeight(), 
-                    (FLOAT)n, 
-                    (FLOAT)f)
+                    (float)n, 
+                    (float)f)
                     ); 
             }
             else
@@ -146,13 +146,13 @@ namespace chimera
                 CmGetApp()->VGetHumanView()->VSetTarget(cameraCmp->VGetActor());
             }
 
-            return TRUE;
+            return true;
         }
 
-        return FALSE;
+        return false;
     }
 
-    BOOL InitiaizeControllerComponent(IActorComponent* cmp, ICMStream* stream)
+    bool InitiaizeControllerComponent(IActorComponent* cmp, ICMStream* stream)
     {
         ControllerComponent* controllerCmp = (ControllerComponent*)cmp;
         tinyxml2::XMLElement* pData = (tinyxml2::XMLElement*)stream;
@@ -163,8 +163,8 @@ namespace chimera
         tinyxml2::XMLElement* speed = pData->FirstChildElement("Speed");
         if(speed)
         {
-            FLOAT mins = 1;
-            FLOAT maxs = 1;
+            float mins = 1;
+            float maxs = 1;
             speed->QueryFloatAttribute("min", &mins);
             speed->QueryFloatAttribute("max", &maxs);
             cc->VSetMinSpeed(mins);
@@ -180,10 +180,10 @@ namespace chimera
 
         CmGetApp()->VGetLogic()->VAttachView(std::move(ac), cmp->VGetActor());
 
-        return TRUE;
+        return true;
     }
 
-    BOOL InitiaizePhysicsComponent(IActorComponent* cmp, ICMStream* stream)
+    bool InitiaizePhysicsComponent(IActorComponent* cmp, ICMStream* stream)
     {
         PhysicComponent* phxCmp = (PhysicComponent*)cmp;
         tinyxml2::XMLElement* pData = (tinyxml2::XMLElement*)stream;
@@ -217,10 +217,10 @@ namespace chimera
         }
 
 
-        return TRUE;
+        return true;
     }
 
-    BOOL InitiaizeLightComponent(IActorComponent* cmp, ICMStream* stream)
+    bool InitiaizeLightComponent(IActorComponent* cmp, ICMStream* stream)
     {
         LightComponent* lightComp = (LightComponent*)cmp;
         tinyxml2::XMLElement* pData = (tinyxml2::XMLElement*)stream;
@@ -234,7 +234,7 @@ namespace chimera
         tinyxml2::XMLElement* color = pData->FirstChildElement("Color");
         if(color)
         {
-            FLOAT r, g, b;
+            float r, g, b;
             RETURN_IF_FAILED(tinyxml2::XML_NO_ATTRIBUTE != color->QueryFloatAttribute("r", &r));
             RETURN_IF_FAILED(tinyxml2::XML_NO_ATTRIBUTE != color->QueryFloatAttribute("g", &g));
             RETURN_IF_FAILED(tinyxml2::XML_NO_ATTRIBUTE != color->QueryFloatAttribute("b", &b));
@@ -270,6 +270,6 @@ namespace chimera
             lightComp->m_castShadow = atof(castShadow->GetText()) > 0;
         }
 
-        return TRUE;
+        return true;
     }
 }

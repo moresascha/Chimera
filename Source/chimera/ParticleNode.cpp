@@ -21,7 +21,7 @@ namespace chimera
     {
     }
 
-    VOID ParticleNode::_VRender(chimera::SceneGraph* graph, chimera::RenderPath& path)
+    void ParticleNode::_VRender(chimera::SceneGraph* graph, chimera::RenderPath& path)
     {
         if(m_pParticleSystem->VIsReady())
         {
@@ -102,13 +102,13 @@ namespace chimera
         }
     }
 
-    BOOL ParticleNode::VIsVisible(SceneGraph* graph)
+    bool ParticleNode::VIsVisible(SceneGraph* graph)
     {
-        BOOL in = graph->GetFrustum()->IsInside(m_transformedBBPoint, m_pParticleSystem->GetAxisAlignedBB().GetRadius());
+        bool in = graph->GetFrustum()->IsInside(m_transformedBBPoint, m_pParticleSystem->GetAxisAlignedBB().GetRadius());
         return in;
     }
 
-    VOID ParticleNode::VOnUpdate(ULONG millis, SceneGraph* graph)
+    void ParticleNode::VOnUpdate(ulong millis, SceneGraph* graph)
     {
         VOnActorMoved();
         if(m_pParticleSystem->VIsReady())
@@ -126,9 +126,9 @@ namespace chimera
         }
     }
 
-    VOID Hover(ULONG dt, std::shared_ptr<chimera::Actor> a)
+    void Hover(ulong dt, std::shared_ptr<chimera::Actor> a)
     {
-        static FLOAT time = 0;
+        static float time = 0;
         time += dt * 1e-3f;
         chimera::TransformComponent* tc = a->GetComponent<chimera::TransformComponent>(chimera::TransformComponent::COMPONENT_ID).lock().get();
         util::Vec3 t;
@@ -140,17 +140,17 @@ namespace chimera
     }
 
     chimera::GradientField* gf;
-    VOID ParticleNode::OnFileChanged(VOID)
+    void ParticleNode::OnFileChanged(void)
     {
         gf->VOnRestore(m_pParticleSystem.get());
     }
 
-    VOID ParticleNode::VOnRestore(chimera::SceneGraph* graph)
+    void ParticleNode::VOnRestore(chimera::SceneGraph* graph)
     {
         if(m_pParticleSystem == NULL || !m_pParticleSystem->VIsReady())
         {
             util::AxisAlignedBB aabb;
-            FLOAT bounds = 50;
+            float bounds = 50;
             aabb.AddPoint(util::Vec3(-bounds, -bounds, -bounds));
             aabb.AddPoint(util::Vec3(+bounds, bounds, +bounds));
             aabb.Construct();
@@ -206,18 +206,18 @@ namespace chimera
         VOnActorMoved();
     }
 
-    VOID ParticleNode::VOnActorMoved(VOID)
+    void ParticleNode::VOnActorMoved(void)
     {
         m_transformedBBPoint = util::Mat4::Transform(*GetTransformation(), m_pParticleSystem->GetAxisAlignedBB().GetMiddle());
         m_pParticleSystem->SetTranslation(GetTransformation()->GetTranslation());
     }
 
-    UINT ParticleNode::VGetRenderPaths(VOID)
+    uint ParticleNode::VGetRenderPaths(void)
     {
         return eRenderPath_DrawParticles | eRenderPath_DrawPicking | eRenderPath_DrawBounding | eRenderPath_DrawEditMode;
     }
 
-    ParticleNode::~ParticleNode(VOID)
+    ParticleNode::~ParticleNode(void)
     {
     }
 }

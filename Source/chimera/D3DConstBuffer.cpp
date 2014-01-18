@@ -4,12 +4,12 @@ namespace chimera
 {
     namespace d3d
     {
-        ConstBuffer::ConstBuffer(VOID) : m_buffer(NULL) 
+        ConstBuffer::ConstBuffer(void) : m_buffer(NULL) 
         {
 
         }
 
-        VOID ConstBuffer::VInit(UINT byteSize, VOID* data) 
+        void ConstBuffer::VInit(uint byteSize, void* data) 
         {
             m_byteSize = byteSize;
 
@@ -28,48 +28,48 @@ namespace chimera
             }
         }
 
-        VOID ConstBuffer::VSetData(VOID* data)
+        void ConstBuffer::VSetData(void* data)
         {
-            VOID* mapped = VMap();
+            void* mapped = VMap();
             memcpy(mapped, data, m_byteSize);
             VUnmap();
         }
 
-        VOID ConstBuffer::VSetFromMatrix(CONST util::Mat4& mat)
+        void ConstBuffer::VSetFromMatrix(const util::Mat4& mat)
         {
-            VSetData((VOID*)&mat.m_m);
+            VSetData((void*)&mat.m_m);
         }
 
-        VOID ConstBuffer::VActivate(ConstShaderBufferSlot slot, UINT shader)
+        void ConstBuffer::VActivate(ConstShaderBufferSlot slot, uint shader)
         {
-            chimera::d3d::GetContext()->VSSetConstantBuffers((UINT)slot, 1, &m_buffer);
-            chimera::d3d::GetContext()->GSSetConstantBuffers((UINT)slot, 1, &m_buffer);
-            chimera::d3d::GetContext()->PSSetConstantBuffers((UINT)slot, 1, &m_buffer);
+            chimera::d3d::GetContext()->VSSetConstantBuffers((uint)slot, 1, &m_buffer);
+            chimera::d3d::GetContext()->GSSetConstantBuffers((uint)slot, 1, &m_buffer);
+            chimera::d3d::GetContext()->PSSetConstantBuffers((uint)slot, 1, &m_buffer);
             //for now only VS, PS and GS
         }
 
-        VOID* ConstBuffer::VMap(VOID) 
+        void* ConstBuffer::VMap(void) 
         {
             chimera::d3d::GetContext()->Map(m_buffer, 0, D3D11_MAP_WRITE_DISCARD, 0, &m_ressource);
             return m_ressource.pData;
         }
 
-        VOID ConstBuffer::VUnmap(VOID)
+        void ConstBuffer::VUnmap(void)
         {
             chimera::d3d::GetContext()->Unmap(m_buffer, 0);
         }
 
-        VOID* ConstBuffer::VGetDevicePtr(VOID) 
+        void* ConstBuffer::VGetDevicePtr(void) 
         {
-            return (VOID*)m_buffer;
+            return (void*)m_buffer;
         }
 
-        ID3D11Buffer* ConstBuffer::GetBuffer(VOID)
+        ID3D11Buffer* ConstBuffer::GetBuffer(void)
         {
             return m_buffer;
         }
 
-        ConstBuffer::~ConstBuffer(VOID) 
+        ConstBuffer::~ConstBuffer(void) 
         {
             SAFE_RELEASE(m_buffer);
         }

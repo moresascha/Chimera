@@ -4,17 +4,17 @@
 
 namespace chimera 
 {
-    SceneGraph::SceneGraph() : m_visibiltyReset(TRUE), m_visbibilityCheckTime(0), m_root(std::unique_ptr<ISceneNode>(new SceneNode(CM_INVALID_ACTOR_ID)))
+    SceneGraph::SceneGraph() : m_visibiltyReset(true), m_visbibilityCheckTime(0), m_root(std::unique_ptr<ISceneNode>(new SceneNode(CM_INVALID_ACTOR_ID)))
     {
     }
 
-    BOOL SceneGraph::VOnUpdate(ULONG millis) 
+    bool SceneGraph::VOnUpdate(ulong millis) 
     {
         m_root->VOnUpdate(millis, this);
-        return TRUE;
+        return true;
     }
 
-    BOOL SceneGraph::VOnRender(RenderPath path) 
+    bool SceneGraph::VOnRender(RenderPath path) 
     {
         //ULONG t = clock();
         TBD_FOR(m_pathToNode[path])
@@ -26,27 +26,27 @@ namespace chimera
         {
             //m_visibiltyReset = FALSE; //wofür war das nochmal?!
         } */
-        return TRUE;
+        return true;
     }
 
-    BOOL SceneGraph::VOnRestore(VOID) 
+    bool SceneGraph::VOnRestore(void) 
     {
         m_root->VOnRestore(this);
         if(m_camera)
         {
             m_camera->SetAspect(chimera::CmGetApp()->VGetHumanView()->VGetRenderer()->VGetWidth(), chimera::CmGetApp()->VGetHumanView()->VGetRenderer()->VGetHeight());
         }
-        return TRUE;
+        return true;
     }
 
-    BOOL SceneGraph::VIsVisibilityReset(VOID)
+    bool SceneGraph::VIsVisibilityReset(void)
     {
         return m_visibiltyReset;
     }
 
-    VOID SceneGraph::VAddChild(ActorId actorId, std::unique_ptr<ISceneNode> node) 
+    void SceneGraph::VAddChild(ActorId actorId, std::unique_ptr<ISceneNode> node) 
     {
-        for(UINT i = 0; i <= CM_RENDERPATH_CNT; ++i)
+        for(uint i = 0; i <= CM_RENDERPATH_CNT; ++i)
         {
             RenderPath path = (RenderPath)(1 << i);
             if(node->VGetRenderPaths() & (path))
@@ -63,7 +63,7 @@ namespace chimera
         return m_root->VRemoveChild(id);
     }
 
-    VOID SceneGraph::VRemoveChild(ActorId actorid) {
+    void SceneGraph::VRemoveChild(ActorId actorid) {
 
         ISceneNode* node = m_root->VFindActor(actorid);
 
@@ -72,7 +72,7 @@ namespace chimera
             LOG_CRITICAL_ERROR("No actor node found");
         }
 
-        for(UINT i = 0; i < CM_RENDERPATH_CNT; ++i)
+        for(uint i = 0; i < CM_RENDERPATH_CNT; ++i)
         {
             RenderPath path = (RenderPath)(1 << i);
             if(node->VGetRenderPaths() & path)
@@ -84,7 +84,7 @@ namespace chimera
         m_root->VRemoveChild(actorid);
     }
 
-    VOID SceneGraph::VSetCamera(std::shared_ptr<ICamera> camera)
+    void SceneGraph::VSetCamera(std::shared_ptr<ICamera> camera)
     {
         m_camera = camera;
         m_frustumStack.Clear();
@@ -92,7 +92,7 @@ namespace chimera
         m_root->VForceVisibilityCheck();
     }
 
-    CONST Frustum* SceneGraph::VGetFrustum(VOID)
+    const Frustum* SceneGraph::VGetFrustum(void)
     { 
         if(m_frustumStack.Size() == 0)
         {
@@ -104,12 +104,12 @@ namespace chimera
         }
     }
 
-    VOID SceneGraph::VPushFrustum(Frustum* f)
+    void SceneGraph::VPushFrustum(Frustum* f)
     {
         m_frustumStack.Push(f);
     }
 
-    VOID SceneGraph::VPopFrustum(VOID)
+    void SceneGraph::VPopFrustum(void)
     {
         if(m_frustumStack.Size() > 0)
         {
@@ -117,10 +117,10 @@ namespace chimera
         }
     }
 
-    VOID SceneGraph::VResetVisibility(VOID)
+    void SceneGraph::VResetVisibility(void)
     {
         //m_visbibilityCheckTime = clock();
-        m_visibiltyReset = TRUE;
+        m_visibiltyReset = true;
     }
 
     ISceneNode* SceneGraph::VFindActorNode(ActorId id)
@@ -128,7 +128,7 @@ namespace chimera
         return m_root->VFindActor(id);
     }
 
-    SceneGraph::~SceneGraph(VOID) 
+    SceneGraph::~SceneGraph(void) 
     {
 
     }

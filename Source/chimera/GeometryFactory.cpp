@@ -8,13 +8,13 @@ namespace chimera
         IGeometry* g_globalQuad = NULL;
         IGeometry* g_globalCPUWriteLine = NULL;
 
-        IGeometry* CreateScreenQuad(BOOL cpuWrite)
+        IGeometry* CreateScreenQuad(bool cpuWrite)
         {
             IGeometry* geo = CmGetApp()->VGetHumanView()->VGetGraphicsFactory()->VCreateGeoemtry().release();
 
-            CONST UINT stride = 5;
-            CONST UINT count = 4;
-            FLOAT localVertices[count * stride] = 
+            const uint stride = 5;
+            const uint count = 4;
+            float localVertices[count * stride] = 
             {
                 -1, -1, 0, 0, 1,
                 +1, -1, 0, 1, 1,
@@ -23,55 +23,55 @@ namespace chimera
             };
 
             geo->VSetTopology(eTopo_TriangleStrip);
-            geo->VSetVertexBuffer(localVertices, count, stride * sizeof(FLOAT), cpuWrite);
+            geo->VSetVertexBuffer(localVertices, count, stride * sizeof(float), cpuWrite);
             geo->VCreate();
             return geo;
         }
 
-        IGeometry* GetGlobalScreenQuad(VOID)
+        IGeometry* GetGlobalScreenQuad(void)
         {
             if(!g_globalQuad)
             {
-                g_globalQuad = CreateScreenQuad(FALSE);
+                g_globalQuad = CreateScreenQuad(false);
             }
             return g_globalQuad;
         }
 
-        IGeometry* GetGlobalScreenQuadCPU(VOID)
+        IGeometry* GetGlobalScreenQuadCPU(void)
         {
             if(!g_globalCPUWriteQuad)
             {
-                g_globalCPUWriteQuad = CreateScreenQuad(TRUE);
+                g_globalCPUWriteQuad = CreateScreenQuad(true);
             }
             return g_globalCPUWriteQuad;
         }
 
-        IGeometry* GetGlobalLineCPU(VOID)
+        IGeometry* GetGlobalLineCPU(void)
         {
             if(!g_globalCPUWriteLine)
             {
                 g_globalCPUWriteLine = CmGetApp()->VGetHumanView()->VGetGraphicsFactory()->VCreateGeoemtry().release();
 
-                CONST UINT stride = 5;
-                CONST UINT count = 2;
-                FLOAT* vertices = new FLOAT[stride * count];
-                UINT* indices = new UINT[count];
+                const uint stride = 5;
+                const uint count = 2;
+                float* vertices = new float[stride * count];
+                uint* indices = new uint[count];
                 //3,2,0,1
                 indices[0] = 0; indices[1] = 1;
 
-                FLOAT localVertices[count * stride] = {
+                float localVertices[count * stride] = {
                     0, 0, 0, 0, 0,
                     1, 1, 0, 1, 1,
                 };
 
-                for(UINT i = 0; i < count * stride; ++i)
+                for(uint i = 0; i < count * stride; ++i)
                 {
                     vertices[i] = localVertices[i];
                 }
 
                 g_globalCPUWriteLine->VSetIndexBuffer(indices, count);
                 g_globalCPUWriteLine->VSetTopology(eTopo_Lines);
-                g_globalCPUWriteLine->VSetVertexBuffer(vertices, count, stride * sizeof(FLOAT), TRUE);
+                g_globalCPUWriteLine->VSetVertexBuffer(vertices, count, stride * sizeof(float), true);
                 g_globalCPUWriteLine->VCreate();
 
                 delete[] indices;
@@ -82,7 +82,7 @@ namespace chimera
             return g_globalCPUWriteLine;
         }
 
-        VOID SafeDestroy(IGeometry* geo)
+        void SafeDestroy(IGeometry* geo)
         {
             if(geo)
             {
@@ -91,7 +91,7 @@ namespace chimera
             SAFE_DELETE(geo);
         }
 
-        VOID Destroy(VOID)
+        void Destroy(void)
         {
             SafeDestroy(g_globalCPUWriteQuad);
             SafeDestroy(g_globalQuad);

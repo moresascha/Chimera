@@ -6,7 +6,7 @@
 #include "Material.h"
 namespace chimera
 {
-    VOID DrawActorInfos(IActor* actor, CONST util::Mat4* matrix, ICamera* camera)
+    void DrawActorInfos(IActor* actor, const util::Mat4* matrix, ICamera* camera)
     {
         
         /*util::Vec3 pos(matrix->GetTranslation());
@@ -38,7 +38,7 @@ namespace chimera
         }
     }
     */
-    VOID DrawToShadowMap(std::shared_ptr<IGeometry> geo, std::shared_ptr<IMesh> mesh, CONST util::Mat4* matrix)
+    void DrawToShadowMap(std::shared_ptr<IGeometry> geo, IMesh* mesh, const util::Mat4* matrix)
     {
         CmGetApp()->VGetHumanView()->VGetRenderer()->VPushWorldTransform(*matrix);
         geo->VBind();
@@ -49,22 +49,32 @@ namespace chimera
         } 
     }
 
-    MeshNode::MeshNode(ActorId actorid, CMResource ressource) : SceneNode(actorid), m_ressource(ressource), m_longestScale(1)
+    MeshNode::MeshNode(ActorId actorid, CMResource ressource, std::string meshId) : SceneNode(actorid), m_ressource(ressource), m_longestScale(1), m_meshId(meshId)
     {
         VSetRenderPaths(CM_RENDERPATH_ALBEDO | CM_RENDERPATH_SHADOWMAP);
     }
 
-    VOID MeshNode::VOnRestore(ISceneGraph* graph)
+    void MeshNode::VOnRestore(ISceneGraph* graph)
     {
-        m_pGeometry = std::static_pointer_cast<IGeometry>(CmGetApp()->VGetHumanView()->VGetVRamManager()->VGetHandle(m_ressource));
-        m_mesh = std::static_pointer_cast<IMesh>(CmGetApp()->VGetCache()->VGetHandle(m_ressource));
+        m_pGeometry = std::static_pointer_cast<IGeometry>(CmGetApp()->VGetHumanView()->VGetVRamManager()->VGetHandle((m_meshId != "" ? m_meshId + std::string("$") : "") + m_ressource));
+        m_meshSet = std::static_pointer_cast<IMeshSet>(CmGetApp()->VGetCache()->VGetHandle(m_ressource));
+
+        if(m_meshId != "")
+        {
+            m_mesh = m_meshSet->VGetMesh(m_meshId);
+        }
+        else
+        {
+            m_mesh = m_meshSet->VGetMesh(0);
+        }
+
         m_materials = std::static_pointer_cast<MaterialSet>(CmGetApp()->VGetCache()->VGetHandle(m_mesh->VGetMaterials()));
         m_diffuseTexturesCount = 0;
 
         VOnActorMoved();
         
         std::vector<IndexBufferInterval>& ivals = m_mesh->VGetIndexBufferIntervals();
-        for(UINT i = 0; i < ivals.size(); ++i)
+        for(uint i = 0; i < ivals.size(); ++i)
         {
             IMaterial* mat = m_materials->GetMaterial(ivals[i].material).get();
             std::shared_ptr<IVRamHandle> handle = CmGetApp()->VGetHumanView()->VGetVRamManager()->VGetHandle(mat->VGetTextureDiffuse());
@@ -80,21 +90,21 @@ namespace chimera
         }
     }
 
-    VOID MeshNode::VOnActorMoved(VOID)
+    void MeshNode::VOnActorMoved(void)
     {
         m_transformedBBPoint = util::Mat4::Transform(*VGetTransformation(), m_mesh->VGetAABB().GetMiddle());
         m_longestScale = abs(max(max(VGetTransformation()->GetScale().x, VGetTransformation()->GetScale().y), VGetTransformation()->GetScale().z));
     }
 
-    BOOL MeshNode::VIsVisible(ISceneGraph* graph)
+    bool MeshNode::VIsVisible(ISceneGraph* graph)
     {
         if(m_pGeometry->VIsReady())
         {
             m_pGeometry->VUpdate();
-            if(m_mesh->VIsReady())
+            if(m_meshSet->VIsReady())
             {
                 util::AxisAlignedBB& aabb = m_mesh->VGetAABB();
-                BOOL in = graph->VGetFrustum()->IsInside(m_transformedBBPoint, m_longestScale * aabb.GetRadius());
+                bool in = graph->VGetFrustum()->IsInside(m_transformedBBPoint, m_longestScale * aabb.GetRadius());
                 return in;
             }
             else
@@ -106,17 +116,17 @@ namespace chimera
         {
             m_pGeometry = std::static_pointer_cast<IGeometry>(CmGetApp()->VGetHumanView()->VGetVRamManager()->VGetHandle(m_ressource));
         }
-        return TRUE;
+        return true;
     }
 
-    VOID MeshNode::_VRender(ISceneGraph* graph, RenderPath& path) 
+    void MeshNode::_VRender(ISceneGraph* graph, RenderPath& path) 
     {
         //DEBUG_OUT("waiting in scene node for" + m_ressource.m_name);
         //DEBUG_OUT("done");
         if(m_pGeometry->VIsReady())
         {
             m_pGeometry->VUpdate();
-            if(m_mesh->VIsReady() && m_materials->VIsReady())
+            if(m_meshSet->VIsReady() && m_materials->VIsReady())
             {
                 switch(path)
                 {
@@ -162,13 +172,13 @@ namespace chimera
         }
     }
 
-    VOID MeshNode::DrawToAlbedo(VOID)
+    void MeshNode::DrawToAlbedo(void)
     {
         CmGetApp()->VGetHumanView()->VGetRenderer()->VPushWorldTransform(*VGetTransformation());
         m_pGeometry->VBind();
         //CmGetApp()->VGetHumanView()->VGetRenderer()->VSetActorId(this->m_actor->GetId());
 
-        UINT texPos = 0;
+        uint texPos = 0;
         for(auto it = m_mesh->VGetIndexBufferIntervals().begin(); it != m_mesh->VGetIndexBufferIntervals().end(); ++it)
         {
             if(m_materials->VIsReady())
@@ -187,7 +197,7 @@ namespace chimera
                         {
                             norm->VUpdate();
                             CmGetApp()->VGetHumanView()->VGetRenderer()->VSetTexture(eNormalColorSampler, norm);
-                            CmGetApp()->VGetHumanView()->VGetRenderer()->VSetNormalMapping(TRUE);
+                            CmGetApp()->VGetHumanView()->VGetRenderer()->VSetNormalMapping(true);
                         }
                         else
                         {
@@ -196,7 +206,7 @@ namespace chimera
                     }
                     else
                     {
-                        CmGetApp()->VGetHumanView()->VGetRenderer()->VSetNormalMapping(FALSE);
+                        CmGetApp()->VGetHumanView()->VGetRenderer()->VSetNormalMapping(false);
                     }
                 }
                 else
@@ -216,7 +226,7 @@ namespace chimera
         }
     }
 
-    MeshNode::~MeshNode(VOID)
+    MeshNode::~MeshNode(void)
     {
         
     }

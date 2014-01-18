@@ -4,22 +4,22 @@
 
 namespace chimera 
 {
-    ActorProcess::ActorProcess(IActor* actor) : m_actor(actor), m_isCreated(FALSE)
+    ActorProcess::ActorProcess(IActor* actor) : m_actor(actor), m_isCreated(false)
     {
 
     }
 
-    VOID ActorProcess::ActorCreatedDelegate(IEventPtr data)
+    void ActorProcess::ActorCreatedDelegate(IEventPtr data)
     {
         std::shared_ptr<ActorCreatedEvent> event = std::static_pointer_cast<ActorCreatedEvent>(data);
         if(event->m_id == m_actor->GetId())
         {
-            m_isCreated = TRUE;
+            m_isCreated = true;
             VOnActorCreate();
         }
     }
 
-    VOID ActorProcess::DeleteActorDelegate(IEventPtr data)
+    void ActorProcess::DeleteActorDelegate(IEventPtr data)
     {
         std::shared_ptr<DeleteActorEvent> event = std::static_pointer_cast<DeleteActorEvent>(data);
         if(event->m_id == m_actor->GetId())
@@ -29,7 +29,7 @@ namespace chimera
         }
     }
 
-    VOID ActorProcess::VOnInit(VOID)
+    void ActorProcess::VOnInit(void)
     {
         if(m_actor)
         {
@@ -38,7 +38,7 @@ namespace chimera
         }
     }
 
-    ActorProcess::~ActorProcess(VOID)
+    ActorProcess::~ActorProcess(void)
     {
         if(m_actor)
         {
@@ -49,10 +49,10 @@ namespace chimera
 
     RealtimeProcess::RealtimeProcess(int priority) : m_threadId(0), m_priority(priority), m_pThreadHandle(NULL), m_pWaitHandle(NULL) { }
 
-    VOID RealtimeProcess::VOnInit(VOID) 
+    void RealtimeProcess::VOnInit(void) 
     {
         //Process::VOnInit();
-        m_pWaitHandle = CreateEvent(NULL, FALSE, FALSE, NULL);
+        m_pWaitHandle = CreateEvent(NULL, false, false, NULL);
         m_pThreadHandle = CreateThread(NULL, 0, (LPTHREAD_START_ROUTINE)(ThreadProc), this, 0, &this->m_threadId);
     
         if(!this->m_pThreadHandle)
@@ -73,7 +73,7 @@ namespace chimera
         return S_OK;
     }
 
-    VOID RealtimeProcess::WaitComplete(VOID)
+    void RealtimeProcess::WaitComplete(void)
     {
         if(m_pThreadHandle)
         {
@@ -81,22 +81,22 @@ namespace chimera
         }
     }
 
-    VOID RealtimeProcess::VOnAbort(VOID)
+    void RealtimeProcess::VOnAbort(void)
     { 
         WaitComplete();
     }
 
-    VOID RealtimeProcess::VOnSuccess(VOID)
+    void RealtimeProcess::VOnSuccess(void)
     { 
         WaitComplete();
     }
 
-    VOID RealtimeProcess::VOnFail(VOID)
+    void RealtimeProcess::VOnFail(void)
     { 
         WaitComplete();
     }
 
-    RealtimeProcess::~RealtimeProcess(VOID)
+    RealtimeProcess::~RealtimeProcess(void)
     { 
         if(m_pThreadHandle) 
         {
@@ -115,16 +115,16 @@ namespace chimera
         ADD_EVENT_LISTENER(this, &ActorRealtimeProcess::ActorCreatedDelegate, CM_EVENT_ACTOR_CREATED);
         ADD_EVENT_LISTENER(this, &ActorRealtimeProcess::DeleteActorDelegate, CM_EVENT_DELETE_ACTOR);
     
-        m_event = CreateEvent(NULL, FALSE, FALSE, NULL);
+        m_event = CreateEvent(NULL, false, false, NULL);
     }
 
-    VOID ActorRealtimeProcess::VThreadProc(VOID)
+    void ActorRealtimeProcess::VThreadProc(void)
     {
         WaitForSingleObject(m_event, INFINITE);
         _VThreadProc();
     }
 
-    VOID ActorRealtimeProcess::ActorCreatedDelegate(IEventPtr data)
+    void ActorRealtimeProcess::ActorCreatedDelegate(IEventPtr data)
     {
         std::shared_ptr<ActorCreatedEvent> event = std::static_pointer_cast<ActorCreatedEvent>(data);
         if(event->m_id == m_actor->GetId())
@@ -133,7 +133,7 @@ namespace chimera
         }
     }
 
-    VOID ActorRealtimeProcess::DeleteActorDelegate(IEventPtr data)
+    void ActorRealtimeProcess::DeleteActorDelegate(IEventPtr data)
     {
         std::shared_ptr<DeleteActorEvent> event = std::static_pointer_cast<DeleteActorEvent>(data);
         if(event->m_id == m_actor->GetId())
@@ -143,7 +143,7 @@ namespace chimera
         }
     }
 
-    ActorRealtimeProcess::~ActorRealtimeProcess(VOID)
+    ActorRealtimeProcess::~ActorRealtimeProcess(void)
     {
         REMOVE_EVENT_LISTENER(this, &ActorRealtimeProcess::ActorCreatedDelegate, CM_EVENT_ACTOR_CREATED);
         REMOVE_EVENT_LISTENER(this, &ActorRealtimeProcess::DeleteActorDelegate, CM_EVENT_DELETE_ACTOR);
@@ -160,14 +160,14 @@ namespace chimera
 
     }
 
-    VOID WatchDirModifacationProcess::VThreadProc(VOID)
+    void WatchDirModifacationProcess::VThreadProc(void)
     {
         HANDLE handles[2];
         handles[0] = m_fileHandle;
         handles[1] = m_closeHandle;
         while(IsAlive())
         {
-            DWORD event = WaitForMultipleObjects(2, handles, FALSE, INFINITE);
+            DWORD event = WaitForMultipleObjects(2, handles, false, INFINITE);
             if(event == WAIT_FAILED)
             {
                 Fail();
@@ -181,20 +181,20 @@ namespace chimera
         }
     }
 
-    VOID WatchDirModifacationProcess::VOnInit(VOID)
+    void WatchDirModifacationProcess::VOnInit(void)
     {
         std::wstring s(m_dir.begin(), m_dir.end());
-        m_fileHandle = FindFirstChangeNotification(s.c_str(), FALSE, FILE_NOTIFY_CHANGE_LAST_WRITE);
+        m_fileHandle = FindFirstChangeNotification(s.c_str(), false, FILE_NOTIFY_CHANGE_LAST_WRITE);
         if(INVALID_HANDLE_VALUE == m_fileHandle)
         {
             LOG_CRITICAL_ERROR("FindFirstChangeNotification failed hard");
         }
-        m_closeHandle = CreateEvent(NULL, FALSE, FALSE, NULL);
+        m_closeHandle = CreateEvent(NULL, false, false, NULL);
 
         RealtimeProcess::VOnInit();
     }
 
-    VOID WatchDirModifacationProcess::Close(VOID)
+    void WatchDirModifacationProcess::Close(void)
     {
         if(m_fileHandle)
         {
@@ -202,25 +202,25 @@ namespace chimera
         }
     }
 
-    VOID WatchDirModifacationProcess::VOnAbort(VOID)
+    void WatchDirModifacationProcess::VOnAbort(void)
     {
         Close();
         RealtimeProcess::VOnAbort();
     }
 
-    VOID WatchDirModifacationProcess::VOnFail(VOID)
+    void WatchDirModifacationProcess::VOnFail(void)
     {
         Close();
         RealtimeProcess::VOnFail();
     }
 
-    VOID WatchDirModifacationProcess::VOnSuccess(VOID)
+    void WatchDirModifacationProcess::VOnSuccess(void)
     {
         Close();
         RealtimeProcess::VOnSuccess();
     }
 
-    WatchDirModifacationProcess::~WatchDirModifacationProcess(VOID)
+    WatchDirModifacationProcess::~WatchDirModifacationProcess(void)
     {
         if(m_fileHandle)
         {
@@ -232,19 +232,19 @@ namespace chimera
         }
     }
 
-    WatchFileModificationProcess::WatchFileModificationProcess(LPCTSTR file, LPCTSTR dir) : WatchDirModifacationProcess(dir), m_file(file), m_update(FALSE)
+    WatchFileModificationProcess::WatchFileModificationProcess(LPCTSTR file, LPCTSTR dir) : WatchDirModifacationProcess(dir), m_file(file), m_update(false)
     {
 
     }
 
-    VOID WatchFileModificationProcess::VOnInit(VOID)
+    void WatchFileModificationProcess::VOnInit(void)
     {
         m_lastModification = GetTime();
 
         WatchDirModifacationProcess::VOnInit();
     }
 
-    VOID WatchFileModificationProcess::VOnFail(VOID)
+    void WatchFileModificationProcess::VOnFail(void)
     {
 #ifdef _DEBUG
         std::wstring ws;
@@ -256,7 +256,7 @@ namespace chimera
         WatchDirModifacationProcess::VOnFail();
     }
 
-    time_t WatchFileModificationProcess::GetTime(VOID)
+    time_t WatchFileModificationProcess::GetTime(void)
     {
         std::wstring s = m_dir + m_file;
         HANDLE file = CreateFile(s.c_str(), GENERIC_READ, FILE_SHARE_READ, NULL,
@@ -296,23 +296,23 @@ namespace chimera
         }
     }
 
-    VOID WatchFileModificationProcess::VOnDirModification(VOID)
+    void WatchFileModificationProcess::VOnDirModification(void)
     {
         time_t time = GetTime();
         if(m_lastModification < time)
         {
-            m_update = TRUE;
+            m_update = true;
             m_lastModification = time;
         }
     }
 
-    VOID WatchFileModificationProcess::VOnUpdate(ULONG deltaMillis)
+    void WatchFileModificationProcess::VOnUpdate(ulong deltaMillis)
     {
         if(m_update)
         {
             VOnFileModification();
         }
-        m_update = FALSE;
+        m_update = false;
     }
 
     FileWatcherProcess::FileWatcherProcess(LPCTSTR file, LPCTSTR dir) : chimera::WatchFileModificationProcess(file, dir)
@@ -328,7 +328,7 @@ namespace chimera
         m_dir = std::wstring(d.begin(), d.end());
     }
 
-    VOID FileWatcherProcess::VOnFileModification(VOID)
+    void FileWatcherProcess::VOnFileModification(void)
     {
         QUEUE_EVENT_TSAVE(new chimera::FileChangedEvent(m_file.c_str()));
     }
@@ -338,7 +338,7 @@ namespace chimera
 
     }
 
-    VOID WatchShaderFileModificationProcess::VOnFileModification(VOID)
+    void WatchShaderFileModificationProcess::VOnFileModification(void)
     {
         chimera::ErrorLog log;
         if(!m_shader->VCompile(&log))

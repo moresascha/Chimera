@@ -1,6 +1,6 @@
 #include "stdafx.h"
 namespace chimera
 {
-    VOID APISetError(ErrorCode code);
-    ErrorCode APIGetLastError(VOID);
+    void APISetError(ErrorCode code);
+    ErrorCode APIGetLastError(void);
 }

@@ -11,19 +11,19 @@ namespace chimera
 
         static ULONG_PTR gdiplusToken;
 
-        UINT getText(CONST CHAR* pFileName, CHAR** source);
+        uint getText(const char* pFileName, char** source);
 
-        VOID InitGdiplus(VOID);
+        void InitGdiplus(void);
 
-        Gdiplus::Bitmap* GetBitmapFromFile(CONST WCHAR* file);
+        Gdiplus::Bitmap* GetBitmapFromFile(const WCHAR* file);
 
-        Gdiplus::Bitmap* GetBitmapFromBytes(CHAR* bytes, UINT size);
+        Gdiplus::Bitmap* GetBitmapFromBytes(char* bytes, uint size);
 
-        CHAR* GetTextureData(CONST WCHAR* file);
+        char* GetTextureData(const WCHAR* file);
 
-        CHAR* GetTextureData(Gdiplus::Bitmap* map);
+        char* GetTextureData(Gdiplus::Bitmap* map);
 
-        VOID DestroyGdiplus(VOID);
+        void DestroyGdiplus(void);
 
         std::vector<std::string> &split(const std::string &s, char delim, std::vector<std::string> &elems);
 
@@ -31,28 +31,28 @@ namespace chimera
 
         std::wstring string2wstring(const std::string& s);
 
-        BOOL CheckIfFileExists(LPCSTR file);
+        bool CheckIfFileExists(LPCSTR file);
 
         class cmRNG
         {
         private:
-            INT m_seed;
+            int m_seed;
             std::default_random_engine m_generator;
-            std::uniform_int_distribution<UINT> m_distribution;
+            std::uniform_int_distribution<uint> m_distribution;
         public:
-            cmRNG(INT seed = 1) : m_seed(seed)
+            cmRNG(int seed = 1) : m_seed(seed)
             {
                 m_generator.seed(m_seed);
             }
 
-            FLOAT NextFloat(VOID)
+            float NextFloat(void)
             {
-                return m_distribution(m_generator) / (FLOAT)UINT_MAX;
+                return m_distribution(m_generator) / (float)UINT_MAX;
             }
 
-            UINT NextInt(VOID)
+            uint NextInt(void)
             {
-                return (UINT)m_distribution(m_generator);
+                return (uint)m_distribution(m_generator);
             }
         };
     };

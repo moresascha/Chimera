@@ -16,47 +16,47 @@ namespace chimera
             util::Vec3 m_mid;
             util::Vec3 m_Tpoints[8];
             util::Line m_lines[12];
-            FLOAT m_radius;
+            float m_radius;
             util::Vec3 m_points[8];
 
         public:
-            CM_DLL_API AxisAlignedBB(VOID);
+            CM_DLL_API AxisAlignedBB(void);
 
-            CM_DLL_API AxisAlignedBB(CONST AxisAlignedBB& aabb);
+            CM_DLL_API AxisAlignedBB(const AxisAlignedBB& aabb);
 
-            CM_DLL_API VOID Clear(VOID);
+            CM_DLL_API void Clear(void);
 
-            CM_DLL_API VOID AddPoint(CONST util::Vec3& point);
+            CM_DLL_API void AddPoint(const util::Vec3& point);
 
-            CM_DLL_API VOID Construct(VOID);
+            CM_DLL_API void Construct(void);
 
-            CM_DLL_API CONST util::Vec3& GetMin(VOID) CONST;
+            CM_DLL_API const util::Vec3& GetMin(void) const;
 
-            CM_DLL_API CONST util::Vec3& GetMax(VOID) CONST;
+            CM_DLL_API const util::Vec3& GetMax(void) const;
 
-            CM_DLL_API FLOAT GetMinAxis(UCHAR axis) CONST;
+            CM_DLL_API float GetMinAxis(UCHAR axis) const;
 
-            CM_DLL_API FLOAT GetMaxAxis(UCHAR axis) CONST;
+            CM_DLL_API float GetMaxAxis(UCHAR axis) const;
 
-            CM_DLL_API FLOAT GetX(UCHAR minMax) CONST;
+            CM_DLL_API float GetX(UCHAR minMax) const;
 
-            CM_DLL_API FLOAT GetY(UCHAR minMax) CONST;
+            CM_DLL_API float GetY(UCHAR minMax) const;
 
-            CM_DLL_API FLOAT GetZ(UCHAR minMax) CONST;
+            CM_DLL_API float GetZ(UCHAR minMax) const;
 
-            CM_DLL_API FLOAT GetRadius(VOID) CONST;
+            CM_DLL_API float GetRadius(void) const;
 
-            CM_DLL_API CONST util::Vec3& GetMiddle(VOID) CONST;
+            CM_DLL_API const util::Vec3& GetMiddle(void) const;
 
-            CM_DLL_API CONST Line& GetLine(UCHAR pos) CONST;
+            CM_DLL_API const Line& GetLine(UCHAR pos) const;
 
-            CM_DLL_API BOOL IsInside(CONST util::Vec3& pos) CONST;
+            CM_DLL_API bool IsInside(const util::Vec3& pos) const;
 
-            CM_DLL_API VOID SetTransform(util::Mat4& mat);
+            CM_DLL_API void SetTransform(util::Mat4& mat);
 
-            CM_DLL_API CONST util::Vec3& GetPoint(UCHAR i) CONST;
+            CM_DLL_API const util::Vec3& GetPoint(UCHAR i) const;
 
-            CM_DLL_API ~AxisAlignedBB(VOID);
+            CM_DLL_API ~AxisAlignedBB(void);
         };
     }
 }

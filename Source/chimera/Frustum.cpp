@@ -2,18 +2,18 @@
 #include "Line.h"
 #include <limits>
 
-CONST UCHAR INS = 0 << 1;
-CONST UCHAR LEFT = 1 << 1;
-CONST UCHAR RIGHT = 1 << 2;
-CONST UCHAR UP = 1 << 3;
-CONST UCHAR DOWN = 1 << 4;
-CONST UCHAR FRONT = 1 << 5;
-CONST UCHAR BACK = 1 << 6;
+const UCHAR INS = 0 << 1;
+const UCHAR LEFT = 1 << 1;
+const UCHAR RIGHT = 1 << 2;
+const UCHAR UP = 1 << 3;
+const UCHAR DOWN = 1 << 4;
+const UCHAR FRONT = 1 << 5;
+const UCHAR BACK = 1 << 6;
 
 namespace chimera
 {
 
-    VOID Frustum::CreateOrthographicOffCenter(FLOAT l, FLOAT r, FLOAT b, FLOAT t, FLOAT fNear, FLOAT fFar)
+    void Frustum::CreateOrthographicOffCenter(float l, float r, float b, float t, float fNear, float fFar)
     {
         m_Initpoints[rightUpNear] = util::Vec3(r, t, fNear);
         m_Initpoints[rightDownNear] = util::Vec3(r, b, fNear);
@@ -38,28 +38,28 @@ namespace chimera
         CreatePlanes();
     }
 
-    VOID Frustum::CreateOrthographic(FLOAT width, FLOAT height, FLOAT fNear, FLOAT fFar)
+    void Frustum::CreateOrthographic(float width, float height, float fNear, float fFar)
     {
-        FLOAT nearRight = width * 0.5f;
-        FLOAT farRight = nearRight;
-        FLOAT nearUp = height * 0.5f;
-        FLOAT farUp = nearUp;
+        float nearRight = width * 0.5f;
+        float farRight = nearRight;
+        float nearUp = height * 0.5f;
+        float farUp = nearUp;
 
         Create(nearRight, farRight, nearUp, farUp, fNear, fFar);
     }
 
-    VOID Frustum::CreatePerspective(FLOAT aspect, FLOAT fov, FLOAT fNear, FLOAT fFar)
+    void Frustum::CreatePerspective(float aspect, float fov, float fNear, float fFar)
     {
-        FLOAT tanFovo2 = (FLOAT)tan(fov / 2.0);
-        FLOAT nearRight = fNear * tanFovo2;// * aspect;
-        FLOAT farRight = fFar * tanFovo2;// * aspect;
-        FLOAT nearUp = fNear * tanFovo2 * aspect;
-        FLOAT farUp = fFar * tanFovo2 * aspect;
+        float tanFovo2 = (float)tan(fov / 2.0);
+        float nearRight = fNear * tanFovo2;// * aspect;
+        float farRight = fFar * tanFovo2;// * aspect;
+        float nearUp = fNear * tanFovo2 * aspect;
+        float farUp = fFar * tanFovo2 * aspect;
 
         Create(nearRight, farRight, nearUp, farUp, fNear, fFar);
     }
 
-    VOID Frustum::Create(FLOAT nearRight, FLOAT farRight, FLOAT nearUp, FLOAT farUp, FLOAT fNear, FLOAT fFar)
+    void Frustum::Create(float nearRight, float farRight, float nearUp, float farUp, float fNear, float fFar)
     {
         m_Initpoints[rightUpNear] = util::Vec3(nearRight, nearUp, fNear);
         m_Initpoints[rightDownNear] = util::Vec3(nearRight, -nearUp, fNear);
@@ -84,41 +84,41 @@ namespace chimera
         CreatePlanes();
     }
 
-    CONST util::Vec3* Frustum::GetPoints(VOID) CONST
+    const util::Vec3* Frustum::GetPoints(void) const
     {
         return m_points;
     }
 
-    BOOL Frustum::IsInside(CONST util::Vec3& point) CONST
+    bool Frustum::IsInside(const util::Vec3& point) const
     {
         return IsInside(point, 0);
     }
 
-    BOOL Frustum::IsInside(CONST util::Vec3& point, FLOAT radius) CONST
+    bool Frustum::IsInside(const util::Vec3& point, float radius) const
     {
-        for(UINT i = 0; i < 6; ++i)
+        for(uint i = 0; i < 6; ++i)
         {
             if(!m_planes[i].IsInside(point, radius))
             {
-                return FALSE;
+                return false;
             }
         }
-        return TRUE;
+        return true;
     }
 
-    BOOL Frustum::IsInside(CONST util::AxisAlignedBB& aabb) CONST
+    bool Frustum::IsInside(const util::AxisAlignedBB& aabb) const
     {
-        for(UINT i = 0; i < 8; ++i)
+        for(uint i = 0; i < 8; ++i)
         {
             if(IsInside(aabb.GetPoint(i)))
             {
-               return TRUE;
+               return true;
             }
         }
-        return FALSE;
+        return false;
     }
 
-    VOID Frustum::Transform(CONST util::Mat4& mat)
+    void Frustum::Transform(const util::Mat4& mat)
     {
         for(UCHAR i = 0; i < 8; ++i)
         {
@@ -128,7 +128,7 @@ namespace chimera
         CreatePlanes();
     }
 
-    VOID Frustum::CreatePlanes(VOID)
+    void Frustum::CreatePlanes(void)
     {
         m_planes[left].Init(m_points[leftDownNear], m_points[leftDownFar], m_points[leftUpFar]);
         m_planes[right].Init(m_points[rightDownNear], m_points[rightUpFar], m_points[rightDownFar]);
@@ -140,7 +140,7 @@ namespace chimera
 
     //**************PointLightFrustum
 
-    VOID PointLightFrustum::SetMatrices(util::Mat4 mats[6])
+    void PointLightFrustum::SetMatrices(util::Mat4 mats[6])
     {
         for(UCHAR i = 0; i < 6; ++i)
         {
@@ -148,7 +148,7 @@ namespace chimera
         }
     }
 
-    VOID PointLightFrustum::CreatePerspective(FLOAT aspect, FLOAT fov, FLOAT fNear, FLOAT fFar)
+    void PointLightFrustum::CreatePerspective(float aspect, float fov, float fNear, float fFar)
     {
         for(UCHAR i = 0; i < 6; ++i)
         {
@@ -156,7 +156,7 @@ namespace chimera
         }
     }
 
-    BOOL PointLightFrustum::IsInside(CONST util::Vec3& point, FLOAT radius) CONST
+    bool PointLightFrustum::IsInside(const util::Vec3& point, float radius) const
     {
         /*for(UCHAR i = 0; i < 6; ++i)
         {
@@ -168,26 +168,26 @@ namespace chimera
         return m_radius + 2 * radius >= (m_position - point).Length();
     }
 
-    VOID PointLightFrustum::SetParams(FLOAT radius, CONST util::Vec3& pos)
+    void PointLightFrustum::SetParams(float radius, const util::Vec3& pos)
     {
         m_radius = radius;
         m_position = pos;
     }
 
-    BOOL PointLightFrustum::IsInside(CONST util::AxisAlignedBB& aabb) CONST
+    bool PointLightFrustum::IsInside(const util::AxisAlignedBB& aabb) const
     {
         LOG_CRITICAL_ERROR("fix me");
         for(UCHAR i = 0; i < 6; ++i)
         {
             if(m_frustums[i].IsInside(aabb))
             {
-                return TRUE;
+                return true;
             }
         }
-        return FALSE;
+        return false;
     }
 
-    VOID PointLightFrustum::Transform(CONST util::Mat4& mat)
+    void PointLightFrustum::Transform(const util::Mat4& mat)
     {
         for(UCHAR i = 0; i < 6; ++i)
         {

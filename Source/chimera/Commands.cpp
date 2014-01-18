@@ -2,10 +2,12 @@
 #include "util.h"
 #include <fstream>
 #include "Event.h"
+#include "Components.h"
+
 namespace chimera
 {
 
-    BOOL CheckForError(std::list<std::string> toCheck)
+    bool CheckForError(std::list<std::string> toCheck)
     {
         return toCheck.size() == 0;
     }
@@ -17,29 +19,29 @@ namespace chimera
     return _RET; \
     }
 
-    Command::Command(std::list<std::string>& elems) : m_values(elems), m_error(FALSE)
+    Command::Command(std::list<std::string>& elems) : m_values(elems), m_error(false)
     {
         
     }
 
-    BOOL Command::VInitArgumentTypes(INT args, ...)
+    bool Command::VInitArgumentTypes(int args, ...)
     {
         va_list pointer;
 
         va_start(pointer, args);
 
-        for(INT i = 0; i < args; ++i)
+        for(int i = 0; i < args; ++i)
         {
-            INT format = va_arg(pointer, INT);
+            int format = va_arg(pointer, int);
             m_argList.push_back(format);
         }
 
         va_end(pointer);
 
-        return TRUE;
+        return true;
     }
 
-    std::string Command::VGetRemainingString(VOID)
+    std::string Command::VGetRemainingString(void)
     {
         std::string s;
         while(!m_values.empty())
@@ -54,14 +56,14 @@ namespace chimera
         return s;
     }
 
-    FLOAT Command::VGetNextFloat(VOID)
+    float Command::VGetNextFloat(void)
     {
-        CHECK_FOR_ERROR((FLOAT)0.0f);
+        CHECK_FOR_ERROR((float)0.0f);
 
-        CHAR* ptr = NULL;
-        CONST CHAR* toConvert = m_values.begin()->c_str();
+        char* ptr = NULL;
+        const char* toConvert = m_values.begin()->c_str();
 
-        FLOAT v = (FLOAT)strtod(toConvert, &ptr);
+        float v = (float)strtod(toConvert, &ptr);
 
         m_error = ptr && ptr == toConvert;
 
@@ -69,20 +71,20 @@ namespace chimera
         return v;
     }
 
-    BOOL Command::VGetNextBool(VOID)
+    bool Command::VGetNextBool(void)
     {
         m_error = CheckForError(m_values);
         return VGetNextInt() != 0;
     }
 
-    INT Command::VGetNextInt(VOID)
+    int Command::VGetNextInt(void)
     {
-        CHECK_FOR_ERROR((INT)0);
+        CHECK_FOR_ERROR((int)0);
 
-        CHAR* ptr = NULL;
-        CONST CHAR* toConvert = m_values.begin()->c_str();
+        char* ptr = NULL;
+        const char* toConvert = m_values.begin()->c_str();
 
-        INT v = (INT)strtol(toConvert, &ptr, 10);
+        int v = (int)strtol(toConvert, &ptr, 10);
 
         m_error = ptr && ptr == toConvert;
 
@@ -90,16 +92,16 @@ namespace chimera
         return v;
     }
 
-    CHAR Command::VGetNextChar(VOID)
+    char Command::VGetNextChar(void)
     {
-        CHECK_FOR_ERROR((CHAR)0);
+        CHECK_FOR_ERROR((char)0);
 
         std::string s = *m_values.begin();
         m_values.pop_front();
-        return (CHAR)s.c_str()[0];
+        return (char)s.c_str()[0];
     }
 
-    std::string Command::VGetNextCharStr(VOID)
+    std::string Command::VGetNextCharStr(void)
     {
         CHECK_FOR_ERROR(std::string());
 
@@ -108,27 +110,27 @@ namespace chimera
         return s;
     }
 
-    BOOL Command::VIsError(VOID)
+    bool Command::VIsError(void)
     {
         return m_error;
     }
 
-    BOOL Command::VIsValid(VOID)
+    bool Command::VIsValid(void)
     {
         return !VIsError();
     }
 
-    Command::~Command(VOID)
+    Command::~Command(void)
     {
 
     }
 
-    CommandInterpreter::CommandInterpreter(VOID)
+    CommandInterpreter::CommandInterpreter(void)
     {
         commands::AddCommandsToInterpreter(*this);
     }
 
-    VOID CommandInterpreter::VRegisterCommand(LPCSTR name, CommandHandler command, LPCSTR usage)
+    void CommandInterpreter::VRegisterCommand(LPCSTR name, CommandHandler command, LPCSTR usage)
     {
         m_nameToCommandHandler[name] = command;
         if(usage)
@@ -141,7 +143,7 @@ namespace chimera
         }
     }
 
-    std::vector<std::string> CommandInterpreter::VGetCommands(VOID)
+    std::vector<std::string> CommandInterpreter::VGetCommands(void)
     {
         std::vector<std::string> list;
         TBD_FOR(m_nameToCommandHandler)
@@ -151,12 +153,12 @@ namespace chimera
         return list;
     }
 
-    BOOL CommandInterpreter::VCallCommand(LPCSTR command)
+    bool CommandInterpreter::VCallCommand(LPCSTR command)
     {
         std::vector<std::string> elements = util::split(std::string(command), ' ');
         if(elements.size() == 0)
         {
-            return FALSE;
+            return false;
         }
         //CHECK_VETOR_SIZE(elements);
 
@@ -167,12 +169,12 @@ namespace chimera
         if(it == m_nameToCommandHandler.end())
         {
             //DEBUG_OUT("no commandhandler for command: " + cmd);
-            return FALSE;
+            return false;
         }
 
         std::list<std::string> vals;
 
-        for(INT i = 1; i < elements.size(); ++i)
+        for(int i = 1; i < elements.size(); ++i)
         {
             vals.push_back(elements[i]);
         }
@@ -192,10 +194,10 @@ namespace chimera
             VCallCommand(printStr.c_str());
         }
 
-        return TRUE;
+        return true;
     }
 
-    VOID CommandInterpreter::VLoadCommands(LPCSTR file)
+    void CommandInterpreter::VLoadCommands(LPCSTR file)
     {        
         std::ifstream stream(file);
         if(stream.fail())
@@ -216,39 +218,39 @@ namespace chimera
         stream.close();
     }
 
-    CommandInterpreter::~CommandInterpreter(VOID)
+    CommandInterpreter::~CommandInterpreter(void)
     {
 
     }
 
-    VOID TranslateActor(ActorId id, CONST util::Vec3& dTranslation)
+    void TranslateActor(ActorId id, const util::Vec3& dTranslation)
     {
         TransformActor(id, dTranslation, util::Vec3());
     }
 
-    VOID RotateActor(ActorId id, CONST util::Vec3& dRotation)
+    void RotateActor(ActorId id, const util::Vec3& dRotation)
     {
         TransformActor(id, util::Vec3(), dRotation);
     }
 
-    VOID TransformActor(ActorId id, CONST util::Vec3& dPostition, CONST util::Vec3& dRrotation)
+    void TransformActor(ActorId id, const util::Vec3& dPostition, const util::Vec3& dRrotation)
     {
-        QUEUE_EVENT(new MoveActorEvent(id, dPostition, dRrotation, TRUE));
+        QUEUE_EVENT(new MoveActorEvent(id, dPostition, dRrotation, true));
     }
 
-    VOID SetActorPosition(ActorId id, CONST util::Vec3& position)
+    void SetActorPosition(ActorId id, const util::Vec3& position)
     {
         SetActorTransformation(id, position, util::Vec3());
     }
 
-    VOID SetActorRotation(ActorId id, CONST util::Vec3& rotation)
+    void SetActorRotation(ActorId id, const util::Vec3& rotation)
     {
         SetActorTransformation(id, util::Vec3(), rotation);
     }
 
-    VOID SetActorTransformation(ActorId id, CONST util::Vec3& postition, CONST util::Vec3& rotation)
+    void SetActorTransformation(ActorId id, const util::Vec3& postition, const util::Vec3& rotation)
     {
-        QUEUE_EVENT(new chimera::MoveActorEvent(id, postition, rotation, FALSE));
+        QUEUE_EVENT(new chimera::MoveActorEvent(id, postition, rotation, false));
     }
 
     //--commands
@@ -270,24 +272,24 @@ namespace chimera
             return cmd;
         }
 
-        BOOL Bind(ICommand& cmd)
+        bool Bind(ICommand& cmd)
         {
             std::string keyStr = cmd.VGetNextCharStr();
             CHECK_COMMAND(cmd);
-            CHAR key;
+            char key;
             if(keyStr.size() <= 1)
             {
                 key = keyStr[0];
             }
             else
             {
-                CHAR* ptr = NULL;
+                char* ptr = NULL;
 
-                key = (CHAR)strtol(keyStr.c_str(), &ptr, 16);
+                key = (char)strtol(keyStr.c_str(), &ptr, 16);
 
                 if(ptr && ptr == keyStr.c_str())
                 {
-                    return FALSE;
+                    return false;
                 }
             }
             
@@ -296,7 +298,7 @@ namespace chimera
 
             std::vector<std::string> split;
             util::split(command, ' ', split);
-            INT vk = GetVKFromchar(key);
+            int vk = GetVKFromchar(key);
             
             IActorController* controller = (IActorController*)(CmGetApp()->VGetLogic()->VFindView(VIEW_CONTROLLER_NAME));
 
@@ -321,13 +323,13 @@ namespace chimera
             }
             else
             {
-                return FALSE;
+                return false;
             }
             
-            return TRUE;
+            return true;
         }
 
-        BOOL PlaySound(ICommand& cmd)
+        bool PlaySound(ICommand& cmd)
         {
             /*chimera::CMResource r(cmd.GetNextCharStr());
             if(!chimera::g_pApp->GetCache()->HasResource(r))
@@ -337,10 +339,10 @@ namespace chimera
             std::shared_ptr<chimera::ResHandle> handle = chimera::g_pApp->GetCache()->GetHandle(r);
             std::shared_ptr<chimera::SoundProcess> proc = std::shared_ptr<chimera::SoundProcess>(new SoundProcess(handle));
             CmGetApp()->VGetLogic()->VGetProcessManager()->VAttach(proc);*/
-            return TRUE;
+            return true;
         }
 
-        BOOL ToogleConsole(ICommand& cmd)
+        bool ToogleConsole(ICommand& cmd)
         {
             IScreenElement* cons = CmGetApp()->VGetHumanView()->VGetScreenElementByName(VIEW_CONSOLE_NAME);
             if(cons)
@@ -351,16 +353,16 @@ namespace chimera
             {
                 throw "No Console installed";
             }
-            return TRUE;
+            return true;
         }
 
-        BOOL Print(ICommand& cmd)
+        bool Print(ICommand& cmd)
         {
             CmGetApp()->VGetHumanView()->VGetScreenElementByName(VIEW_CONSOLE_NAME);
-            return TRUE;
+            return true;
         }
 
-        BOOL SetTarget(LPCSTR actor)
+        bool SetTarget(LPCSTR actor)
         {
             IActor* a = CmGetApp()->VGetLogic()->VFindActor(actor);
             if(a)
@@ -371,24 +373,24 @@ namespace chimera
             return a != NULL;
         }
 
-        BOOL End(ICommand& cmd)
+        bool End(ICommand& cmd)
         {
             CmGetApp()->VStopRunning();
-            return TRUE;
+            return true;
         }
 
-        BOOL SetTarget(ICommand& cmd)
+        bool SetTarget(ICommand& cmd)
         {
             std::string actor = cmd.VGetNextCharStr();
             return SetTarget(actor.c_str());
         }
 
-        BOOL ReloadLevel(ICommand& cmd)
+        bool ReloadLevel(ICommand& cmd)
         {
             return CmGetApp()->VGetLogic()->VLoadLevel(CmGetApp()->VGetLogic()->VGetlevel());
         }
 
-        BOOL RunScript(ICommand& cmd)
+        bool RunScript(ICommand& cmd)
         {
             std::string scriptFile = cmd.VGetNextCharStr();
             CHECK_COMMAND(cmd);
@@ -397,29 +399,29 @@ namespace chimera
                 throw "No Scripting available!";
             }
             CmGetApp()->VGetScript()->VRunFile((CmGetApp()->VGetConfig()->VGetString("sScriptPath") + scriptFile).c_str());
-            return TRUE;
+            return true;
         }
 
-        BOOL SetSunPosition(ICommand& cmd)
+        bool SetSunPosition(ICommand& cmd)
         {
-            FLOAT x = cmd.VGetNextFloat();
-            FLOAT y = cmd.VGetNextFloat();
-            FLOAT z = cmd.VGetNextFloat();
+            float x = cmd.VGetNextFloat();
+            float y = cmd.VGetNextFloat();
+            float z = cmd.VGetNextFloat();
             CHECK_COMMAND(cmd);
             //event::IEventPtr event = std::shared_ptr<event::SetSunPositionEvent>();
             QUEUE_EVENT(new SetSunPositionEvent(x, y, z));
-            return TRUE;
+            return true;
         }
 
-        BOOL SaveLevel(ICommand& cmd)
+        bool SaveLevel(ICommand& cmd)
         {
             std::string name = cmd.VGetNextCharStr();
             CHECK_COMMAND(cmd);
             CmGetApp()->VGetLogic()->VGetlevel()->VSave(name.c_str());
-            return TRUE;
+            return true;
         }
 
-        BOOL LoadLevel(ICommand& cmd)
+        bool LoadLevel(ICommand& cmd)
         {
             std::string name = cmd.VGetNextCharStr();
             CHECK_COMMAND(cmd);
@@ -439,10 +441,10 @@ namespace chimera
             e->m_name = name;
             QUEUE_EVENT(e);
 
-            return TRUE;
+            return true;
         }
 
-        BOOL RunProc(chimera::ICommand& cmd)
+        bool RunProc(chimera::ICommand& cmd)
         {
             std::string cmdStr = cmd.VGetRemainingString();
 
@@ -461,14 +463,14 @@ namespace chimera
             ZeroMemory(&sa, sizeof(sa));
             sa.nLength = sizeof(sa);
             sa.lpSecurityDescriptor = NULL;
-            sa.bInheritHandle = TRUE;
+            sa.bInheritHandle = true;
 
             std::wstring ws(cmdStr.begin(), cmdStr.end());
             LPTSTR szCmdline = _tcsdup(ws.c_str());
 
-            if(!CreateProcess(NULL, szCmdline, &sa, NULL, FALSE, 0, NULL, NULL, &si, &pi))
+            if(!CreateProcess(NULL, szCmdline, &sa, NULL, false, 0, NULL, NULL, &si, &pi))
             {
-                return FALSE;
+                return false;
             }
 
             WaitForSingleObject(pi.hProcess, INFINITE);
@@ -486,7 +488,52 @@ namespace chimera
             return exitCode;
         }
 
-        VOID AddCommandsToInterpreter(CommandInterpreter& interpreter)
+        bool SpawnActor(chimera::ICommand& cmd)
+        {
+            std::string file = cmd.VGetNextCharStr();
+
+            CHECK_COMMAND(cmd);
+
+            IActor* actor = CmGetApp()->VGetLogic()->VCreateActor(file.c_str());
+
+            RETURN_IF_FAILED(actor);
+
+            float x,y,z;
+
+            x = cmd.VGetNextFloat();
+            y = cmd.VGetNextFloat();
+            z = cmd.VGetNextFloat();
+
+            chimera::TransformComponent* cmp;
+            chimera::CameraComponent* camCmp;
+
+            if(cmd.VIsError())
+            {
+                CmGetApp()->VGetHumanView()->VGetTarget()->VQueryComponent(CM_CMP_TRANSFORM, (chimera::IActorComponent**)&cmp);
+                CmGetApp()->VGetHumanView()->VGetTarget()->VQueryComponent(CM_CMP_CAMERA, (chimera::IActorComponent**)&camCmp);
+                x = cmp->GetTransformation()->GetTranslation().x + 6*camCmp->GetCamera()->GetViewDir().x;
+                y = cmp->GetTransformation()->GetTranslation().y + 6*camCmp->GetCamera()->GetViewDir().y;
+                z = cmp->GetTransformation()->GetTranslation().z + 6*camCmp->GetCamera()->GetViewDir().z;
+            }
+
+            actor->VQueryComponent(CM_CMP_TRANSFORM, (chimera::IActorComponent**)&cmp);
+            cmp->GetTransformation()->SetTranslate(util::Vec3(x, y, z));
+
+            return true;
+        }
+
+        bool Jump(chimera::ICommand& cmd)
+        {
+            float height = cmd.VGetNextFloat();
+            CHECK_COMMAND(cmd);
+            ActorId id = CmGetApp()->VGetHumanView()->VGetTarget()->GetId();
+            chimera::MoveActorEvent* me = new chimera::MoveActorEvent(id, util::Vec3(0, height, 0));
+            me->m_isJump = true;
+            QUEUE_EVENT(me);
+            return true;
+        }
+
+        void AddCommandsToInterpreter(CommandInterpreter& interpreter)
         {
             interpreter.VRegisterCommand("runproc", RunProc);
             interpreter.VRegisterCommand("bind", commands::Bind, "bind [key] [command]");
@@ -498,7 +545,9 @@ namespace chimera
             interpreter.VRegisterCommand("runscript", commands::RunScript, "runscript [input file]");
             interpreter.VRegisterCommand("sunpos", commands::SetSunPosition, "sunpos x y z");
             interpreter.VRegisterCommand("savelevel", commands::SaveLevel, "savelevel [levelname]");
-            interpreter.VRegisterCommand("loadlevel", commands::LoadLevel, "LoadLevel [levelname]");
+            interpreter.VRegisterCommand("loadlevel", commands::LoadLevel, "loadLevel [levelname]");
+            interpreter.VRegisterCommand("spawnactor", commands::SpawnActor, "spawnactor [filename]");
+            interpreter.VRegisterCommand("jump", commands::Jump, "jump");
             interpreter.VRegisterCommand("exit", commands::End);
         }
     }

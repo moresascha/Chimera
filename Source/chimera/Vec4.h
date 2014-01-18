@@ -17,7 +17,7 @@ namespace chimera
                 m_v = GetFromVector4(XMVectorZero());
             }
 
-            CM_INLINE Vec4(FLOAT x, FLOAT y, FLOAT z, FLOAT w) 
+            CM_INLINE Vec4(float x, float y, float z, float w) 
             {
                 this->m_v.x = x;
                 this->m_v.y = y;
@@ -25,41 +25,41 @@ namespace chimera
                 this->m_v.w = w;
             }
 
-            CM_INLINE Vec4(CONST Vec4& v)
+            CM_INLINE Vec4(const Vec4& v)
             {
                 this->m_v = v.m_v;
             }
 
-            CM_INLINE Vec4(CONST XMFLOAT4& v) 
+            CM_INLINE Vec4(const XMFLOAT4& v) 
             {
                 this->m_v = v;
             }
 
-            CM_INLINE FLOAT GetX() CONST {
+            CM_INLINE float GetX() const {
                 return this->m_v.x;
             }
 
-            CM_INLINE FLOAT GetY() CONST 
+            CM_INLINE float GetY() const 
             {
                 return this->m_v.y;
             }
 
-            CM_INLINE FLOAT GetZ() CONST 
+            CM_INLINE float GetZ() const 
             {
                 return this->m_v.z;
             }
 
-            CM_INLINE FLOAT GetW() CONST 
+            CM_INLINE float GetW() const 
             {
                 return this->m_v.w;
             }
 
-            CM_INLINE VOID SetX(FLOAT x) 
+            CM_INLINE void SetX(float x) 
             {
                 this->m_v.x = x;
             }
 
-            CM_INLINE FLOAT GetAxis(UINT axis) CONST
+            CM_INLINE float GetAxis(uint axis) const
             {
                 switch(axis)
                 {
@@ -71,22 +71,22 @@ namespace chimera
                 return 0;
             }
 
-            CM_INLINE VOID SetY(FLOAT y)
+            CM_INLINE void SetY(float y)
             {
                 this->m_v.y = y;
             }
 
-            CM_INLINE VOID SetZ(FLOAT z) 
+            CM_INLINE void SetZ(float z) 
             {
                 this->m_v.z = z;
             }
 
-            CM_INLINE VOID SetW(FLOAT w) 
+            CM_INLINE void SetW(float w) 
             {
                 this->m_v.w = w;
             }
 
-            CM_INLINE VOID Set(FLOAT x, FLOAT y, FLOAT z, FLOAT w) 
+            CM_INLINE void Set(float x, float y, float z, float w) 
             {
                 this->m_v.x = x;
                 this->m_v.y = y;
@@ -94,7 +94,7 @@ namespace chimera
                 this->m_v.w = w;
             }
 
-            CM_INLINE VOID Add(Vec4& v)
+            CM_INLINE void Add(Vec4& v)
             {
                 this->m_v.x += v.x;
                 this->m_v.y += v.y;
@@ -102,7 +102,7 @@ namespace chimera
                 this->m_v.w += v.w;
             }
 
-            CM_INLINE VOID Add(FLOAT x, FLOAT y, FLOAT z, FLOAT w) 
+            CM_INLINE void Add(float x, float y, float z, float w) 
             {
                 this->m_v.x += x;
                 this->m_v.y += y;
@@ -110,7 +110,7 @@ namespace chimera
                 this->m_v.w += w;
             }
 
-            CM_INLINE VOID Sub(FLOAT x, FLOAT y, FLOAT z, FLOAT w) 
+            CM_INLINE void Sub(float x, float y, float z, float w) 
             {
                 this->m_v.x -= x;
                 this->m_v.y -= y;
@@ -118,7 +118,7 @@ namespace chimera
                 this->m_v.w -= w;
             }
 
-            CM_INLINE FLOAT Length() 
+            CM_INLINE float Length() 
             {
                   XMVECTOR tmp = XMVector4Length(XMLoadFloat4(&m_v));
                   return GetFromVector4(tmp).x;
@@ -131,7 +131,7 @@ namespace chimera
                 return *this;
             }
 
-            CM_INLINE VOID Homogenize(VOID)
+            CM_INLINE void Homogenize(void)
             {
                 if(m_v.w != 0)
                 {
@@ -142,23 +142,23 @@ namespace chimera
                 }
             }
 
-            CM_INLINE FLOAT Dot(CONST Vec4& v) 
+            CM_INLINE float Dot(const Vec4& v) 
             {
                 return Vec4::GetDot(*this, v);
             }
 
-            CM_INLINE VOID Print(VOID) CONST 
+            CM_INLINE void Print(void) const 
             {
                 DEBUG_OUT_A("Vec4 (%f, %f, %f, %f)\n", this->m_v.x, this->m_v.y, this->m_v.z, this->m_v.w);
             }
 
-            CM_INLINE static float GetDot(CONST Vec4& v0, CONST Vec4& v1) 
+            CM_INLINE static float GetDot(const Vec4& v0, const Vec4& v1) 
             {
                   XMVECTOR m_v = XMVector4Dot(XMLoadFloat4(&v0.m_v), XMLoadFloat4(&v0.m_v));
                   return GetFromVector4(m_v).x;
             }
 
-            CM_INLINE static Vec4 GetNormalize(CONST Vec4& vec) 
+            CM_INLINE static Vec4 GetNormalize(const Vec4& vec) 
             {
                   XMVECTOR m_v = XMVector4Normalize(XMLoadFloat4(&vec.m_v));
                   return Vec4(GetFromVector4(m_v));
@@ -168,7 +168,7 @@ namespace chimera
                   return XMLoadFloat4(&v);
              } */
 
-             CM_INLINE static XMFLOAT4 GetFromVector4(CONST XMVECTOR& v) 
+             CM_INLINE static XMFLOAT4 GetFromVector4(const XMVECTOR& v) 
              {
                   XMFLOAT4 m_v;
                   XMStoreFloat4(&m_v, v);

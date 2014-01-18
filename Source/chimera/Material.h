@@ -15,16 +15,16 @@ namespace chimera
         util::Vec4 m_specular;
         util::Vec4 m_diffuse;
         util::Vec4 m_ambient;
-        FLOAT m_specCoef, m_reflectance, m_texScale;
-        BOOL m_hasNormal; //TODO
+        float m_specCoef, m_reflectance, m_texScale;
+        bool m_hasNormal; //TODO
     public:
 
-        Material(VOID) : m_specular(0.0f,0.0f,0.0f,0), m_diffuse(0.5f, 0.5f, .5f, 1.0f), m_ambient(0.5f,0.5f,0.5f,0), m_specCoef(1), m_reflectance(0), m_texScale(1), m_hasNormal(FALSE), m_textureDiffuse("default.png")
+        Material(void) : m_specular(0.0f,0.0f,0.0f,0), m_diffuse(0.5f, 0.5f, .5f, 1.0f), m_ambient(0.5f,0.5f,0.5f,0), m_specCoef(1), m_reflectance(0), m_texScale(1), m_hasNormal(false), m_textureDiffuse("default.png")
         {
 
         }
 
-        Material(CONST Material& mat)
+        Material(const Material& mat)
         {
             m_ambient = mat.m_ambient;
             m_diffuse = mat.m_diffuse;
@@ -36,23 +36,23 @@ namespace chimera
             m_texScale = mat.m_texScale;
         }
 
-        CONST util::Vec4& VGetSpecular(VOID) CONST { return m_specular; }
+        const util::Vec4& VGetSpecular(void) const { return m_specular; }
 
-        CONST util::Vec4& VGetDiffuse(VOID) CONST { return m_diffuse; }
+        const util::Vec4& VGetDiffuse(void) const { return m_diffuse; }
 
-        CONST util::Vec4& VGetAmbient(VOID) CONST { return m_ambient; }
+        const util::Vec4& VGetAmbient(void) const { return m_ambient; }
 
-        FLOAT VGetSpecularExpo(VOID) { return m_specCoef; }
+        float VGetSpecularExpo(void) { return m_specCoef; }
 
-        FLOAT VGetReflectance(VOID) { return m_reflectance; }
+        float VGetReflectance(void) { return m_reflectance; }
 
-        FLOAT VGetTextureScale(VOID) { return m_texScale; }
+        float VGetTextureScale(void) { return m_texScale; }
 
-        CONST chimera::CMResource& VGetTextureDiffuse(VOID) CONST { return m_textureDiffuse; }
+        const chimera::CMResource& VGetTextureDiffuse(void) const { return m_textureDiffuse; }
 
-        CONST chimera::CMResource& VGetTextureNormal(VOID) CONST { return m_textureNormal; }
+        const chimera::CMResource& VGetTextureNormal(void) const { return m_textureNormal; }
 
-        VOID Material::operator=(CONST Material& mat)
+        void Material::operator=(const Material& mat)
         {
             m_textureDiffuse = mat.m_textureDiffuse;
             m_textureNormal = mat.m_textureNormal;
@@ -65,31 +65,31 @@ namespace chimera
             m_texScale = mat.m_texScale;
         }
 
-        ~Material(VOID) { }
+        ~Material(void) { }
     };
 
     class MaterialSet : public ResHandle
     {
     private:
-        std::map<UINT, std::shared_ptr<IMaterial>> m_indexToMaterials;
-        std::map<std::string, UINT> m_stringToMaterial;
+        std::map<uint, std::shared_ptr<IMaterial>> m_indexToMaterials;
+        std::map<std::string, uint> m_stringToMaterial;
 
     public:
-        std::map<UINT, std::shared_ptr<IMaterial>>* GetMaterials(VOID) { return &m_indexToMaterials; }
-        VOID AddMaterial(std::shared_ptr<IMaterial> material, std::string& name, UINT index) 
+        std::map<uint, std::shared_ptr<IMaterial>>* GetMaterials(void) { return &m_indexToMaterials; }
+        void AddMaterial(std::shared_ptr<IMaterial> material, std::string& name, uint index) 
         { 
             m_indexToMaterials[index] = material;
             m_stringToMaterial[name] = index;
         }
-        UINT GetMaterialIndex(std::string& name) { return m_stringToMaterial[name]; }
-        std::shared_ptr<IMaterial> GetMaterial(UINT pos) { return m_indexToMaterials[pos]; }
-        CONST util::Vec4& GetSpecular(UINT pos) { return m_indexToMaterials[pos]->VGetSpecular(); }
-        CONST util::Vec4& GetDiffuse(UINT pos) { return m_indexToMaterials[pos]->VGetDiffuse(); }
-        CONST util::Vec4& GetAmbient(UINT pos) { return m_indexToMaterials[pos]->VGetAmbient(); }
-        FLOAT VGetSpecularExpo(UINT pos) { return m_indexToMaterials[pos]->VGetSpecularExpo(); }
-        FLOAT GetReflectance(UINT pos) { return m_indexToMaterials[pos]->VGetReflectance(); }
-        FLOAT GetTextureScale(UINT pos) { return m_indexToMaterials[pos]->VGetTextureScale(); }
-        CONST chimera::CMResource& GetTexture(UINT pos) { return m_indexToMaterials[pos]->VGetTextureDiffuse(); }
-        CONST chimera::CMResource& GetTextureNormal(UINT pos) { return m_indexToMaterials[pos]->VGetTextureNormal(); }
+        uint GetMaterialIndex(std::string& name) { return m_stringToMaterial[name]; }
+        std::shared_ptr<IMaterial> GetMaterial(uint pos) { return m_indexToMaterials[pos]; }
+        const util::Vec4& GetSpecular(uint pos) { return m_indexToMaterials[pos]->VGetSpecular(); }
+        const util::Vec4& GetDiffuse(uint pos) { return m_indexToMaterials[pos]->VGetDiffuse(); }
+        const util::Vec4& GetAmbient(uint pos) { return m_indexToMaterials[pos]->VGetAmbient(); }
+        float VGetSpecularExpo(uint pos) { return m_indexToMaterials[pos]->VGetSpecularExpo(); }
+        float GetReflectance(uint pos) { return m_indexToMaterials[pos]->VGetReflectance(); }
+        float GetTextureScale(uint pos) { return m_indexToMaterials[pos]->VGetTextureScale(); }
+        const chimera::CMResource& GetTexture(uint pos) { return m_indexToMaterials[pos]->VGetTextureDiffuse(); }
+        const chimera::CMResource& GetTextureNormal(uint pos) { return m_indexToMaterials[pos]->VGetTextureNormal(); }
     };
 };

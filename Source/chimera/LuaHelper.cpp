@@ -7,64 +7,64 @@ namespace chimera
 {
     namespace script
     {
-        BOOL CheckForFieldAsNumber(LuaPlus::LuaObject& obj, LPCSTR field)
+        bool CheckForFieldAsNumber(LuaPlus::LuaObject& obj, LPCSTR field)
         {
             return obj[field].IsConvertibleToNumber();
         }
 
-        BOOL CheckForFieldsAsNumbers(LuaPlus::LuaObject& obj, INT fieldCnt, ...)
+        bool CheckForFieldsAsNumbers(LuaPlus::LuaObject& obj, int fieldCnt, ...)
         {
             va_list list;
             va_start(list, fieldCnt);
-            TBD_FOR_INT((UINT)fieldCnt)
+            TBD_FOR_INT((uint)fieldCnt)
             {
                 if(!CheckForFieldAsNumber(obj, va_arg(list, LPCSTR)))
                 {
                     va_end(list);
-                    return FALSE;
+                    return false;
                 }
             }
             va_end(list);
-            return TRUE;
+            return true;
         }
 
-        BOOL ConvertTableToVec3(util::Vec3& vec, LuaPlus::LuaObject& obj)
+        bool ConvertTableToVec3(util::Vec3& vec, LuaPlus::LuaObject& obj)
         {
             if(CheckForFieldsAsNumbers(obj, 3, "x" ,"y", "z"))
             {
                 vec.x = obj["x"].GetFloat();
                 vec.y = obj["y"].GetFloat();
                 vec.z = obj["z"].GetFloat();
-                return TRUE;
+                return true;
             }
             else 
             {
-                return FALSE;
+                return false;
             }
         }
 
-        LuaPlus::LuaObject GetIntegerObject(INT i)
+        LuaPlus::LuaObject GetIntegerObject(int i)
         {
             LuaPlus::LuaObject obj;
             obj.AssignInteger(chimera::g_pApp->GetScript()->GetState(), i);
             return obj;
         }
 
-        LuaPlus::LuaObject GetFloatObject(FLOAT f)
+        LuaPlus::LuaObject GetFloatObject(float f)
         {
             LuaPlus::LuaObject obj;
             obj.AssignNumber(chimera::g_pApp->GetScript()->GetState(), (DOUBLE)f);
             return obj;
         }
 
-        LuaPlus::LuaObject GetStringObject(CONST std::string& s)
+        LuaPlus::LuaObject GetStringObject(const std::string& s)
         {
             LuaPlus::LuaObject obj;
             obj.AssignString(chimera::g_pApp->GetScript()->GetState(), s.c_str());
             return obj;
         }
 
-        LuaPlus::LuaObject GetVec3Object(CONST util::Vec3& vec)
+        LuaPlus::LuaObject GetVec3Object(const util::Vec3& vec)
         {
             LuaPlus::LuaObject obj;
             obj.AssignNewTable(chimera::g_pApp->GetScript()->GetState());
@@ -74,7 +74,7 @@ namespace chimera
             return obj;
         }
 
-        VOID ConvertAndCheckTableToVec3(util::Vec3& vec, LuaPlus::LuaObject& obj)
+        void ConvertAndCheckTableToVec3(util::Vec3& vec, LuaPlus::LuaObject& obj)
         {
             if(!ConvertTableToVec3(vec, obj))
             {

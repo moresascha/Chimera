@@ -6,7 +6,7 @@ namespace chimera
     class DefaultParams : public IEffectParmaters
     {
     public:
-        VOID VApply(VOID) {  }
+        void VApply(void) {  }
     };
 
     class Effect : public IEffect
@@ -15,42 +15,42 @@ namespace chimera
         IRenderTarget* m_source;
         IRenderTarget* m_target;
         std::unique_ptr<IRenderTarget> m_ownedTarget;
-        BOOL m_created, m_isProcessed;
+        bool m_created, m_isProcessed;
         IShader* m_pPixelShader;
-        FLOAT m_w, m_h;
+        float m_w, m_h;
         IEffectParmaters* m_params; //TODO
         std::vector<IEffect*> m_requirements;
         CMShaderDescription m_shaderDesc;
         EffectDrawMethod m_pfDraw;
 
     public:
-        Effect(VOID);
+        Effect(void);
 
-        VOID VCreate(CONST CMShaderDescription& shaderDesc, FLOAT w, FLOAT h);
+        void VCreate(const CMShaderDescription& shaderDesc, float w, float h);
 
-        VOID VSetParameters(IEffectParmaters* params);
+        void VSetParameters(IEffectParmaters* params);
 
-        VOID VSetDrawMethod(EffectDrawMethod dm);
+        void VSetDrawMethod(EffectDrawMethod dm);
 
-        VOID VAddRequirement(IEffect* e);
+        void VAddRequirement(IEffect* e);
 
-        VOID VReset(VOID);
+        void VReset(void);
 
-        VOID VSetSource(IRenderTarget* src);
+        void VSetSource(IRenderTarget* src);
 
-        FLOAT2 VGetViewPort(VOID);
+        float2 VGetViewPort(void);
 
-        VOID VProcess(VOID);
+        void VProcess(void);
 
-        VOID VSetTarget(IRenderTarget* target);
+        void VSetTarget(IRenderTarget* target);
 
-        VOID VSetTarget(std::unique_ptr<IRenderTarget> target);
+        void VSetTarget(std::unique_ptr<IRenderTarget> target);
 
-        IRenderTarget* VGetTarget(VOID);
+        IRenderTarget* VGetTarget(void);
 
-        BOOL VOnRestore(UINT w, UINT h, ErrorLog* log = NULL);
+        bool VOnRestore(uint w, uint h, ErrorLog* log = NULL);
 
-        ~Effect(VOID);
+        ~Effect(void);
     };
 
     class EffectChain : public IEffectChain
@@ -59,7 +59,7 @@ namespace chimera
         std::vector<std::unique_ptr<IEffect>> m_effects;
         IRenderTarget* m_pSrc;
         IRenderTarget* m_pTarget;
-        UINT m_w, m_h;
+        uint m_w, m_h;
         IEffect* m_leaf;
         IEffectFactory* m_pEffectFactory;
         IShader* m_pVertexShader;
@@ -68,30 +68,30 @@ namespace chimera
 
         EffectChain(IEffectFactory* factroy);
 
-        IEffect* VCreateEffect(CONST CMShaderDescription& desc, FLOAT percentofw = 1.0f, FLOAT percentofh = 1.0f);
+        IEffect* VCreateEffect(const CMShaderDescription& desc, float percentofw = 1.0f, float percentofh = 1.0f);
 
-        VOID VProcess(VOID);
+        void VProcess(void);
 
-        VOID VSetSource(IRenderTarget* src);
+        void VSetSource(IRenderTarget* src);
 
-        VOID VSetTarget(IRenderTarget* target);
+        void VSetTarget(IRenderTarget* target);
 
-        IRenderTarget* VGetResult(VOID);
+        IRenderTarget* VGetResult(void);
 
-        VOID VOnRestore(UINT w, UINT h);
+        void VOnRestore(uint w, uint h);
 
-        ~EffectChain(VOID);
+        ~EffectChain(void);
     };
 
     class EffectFactroy : public IEffectFactory
     {
     public:
-        IEffect* VCreateEffect(VOID)
+        IEffect* VCreateEffect(void)
         {
             return new Effect();
         }
 
-        IEffectChain* VCreateEffectChain(VOID)
+        IEffectChain* VCreateEffectChain(void)
         {
             return new EffectChain(CmGetApp()->VGetHumanView()->VGetEffectFactory());
         }

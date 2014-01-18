@@ -8,7 +8,7 @@ Ks 0.000000 0.000000 0.00000
 Ni 1.000000
 d 1.000000
 illum 0
-scale 6000
+scale 1000
 
 map_Kd floor0.jpg
 map_Kn normal/floor0N.jpg

@@ -6,129 +6,131 @@ namespace chimera
     class IResHandle
     {
     public:
-        virtual CHAR* VBuffer(VOID) = 0;
+        virtual char* VBuffer(void) = 0;
 
-        virtual UINT VSize(VOID) = 0;
+        virtual uint VSize(void) = 0;
 
-        virtual VOID VSetSize(UINT size) = 0;
+        virtual void VSetSize(uint size) = 0;
 
-        virtual std::string VGetRelativeFilePath(VOID) CONST = 0;
+        virtual std::string VGetRelativeFilePath(void) const = 0;
 
-        virtual VOID VSetBuffer(CHAR* buffer) = 0; //dont use this
+        virtual void VSetBuffer(char* buffer) = 0; //dont use this
 
-        virtual IResourceCache* VGetResourceCache(VOID) = 0;
+        virtual IResourceCache* VGetResourceCache(void) = 0;
 
-        virtual VOID VSetResourceCache(IResourceCache* cache) = 0;
+        virtual void VSetResourceCache(IResourceCache* cache) = 0;
 
-        virtual VOID VSetResource(CONST CMResource& res) = 0;
+        virtual void VSetResource(const CMResource& res) = 0;
 
-        virtual CONST CMResource& VGetResource(VOID) = 0;
+        virtual const CMResource& VGetResource(void) = 0;
 
-        virtual IExtraRessourceData* VGetExtraData(VOID) CONST = 0;
+        virtual IExtraRessourceData* VGetExtraData(void) const = 0;
 
-        virtual VOID VSetExtraData(std::unique_ptr<IExtraRessourceData> extraData) = 0;
+        virtual void VSetExtraData(std::unique_ptr<IExtraRessourceData> extraData) = 0;
 
-        virtual BOOL VIsReady(VOID) CONST = 0;
+        virtual bool VIsReady(void) const = 0;
 
-        virtual VOID VSetReady(BOOL ready) = 0;
+        virtual void VSetReady(bool ready) = 0;
 
-        virtual ~IResHandle(VOID) {}
+        virtual ~IResHandle(void) {}
     };
+
+    typedef void (*OnResourceLoadedCallback)(std::shared_ptr<IResHandle>& handle);
 
     class IMaterial 
     {
     public:
-        virtual CONST util::Vec4& VGetSpecular(VOID) CONST = 0;
+        virtual const util::Vec4& VGetSpecular(void) const = 0;
 
-        virtual CONST util::Vec4& VGetDiffuse(VOID) CONST = 0;
+        virtual const util::Vec4& VGetDiffuse(void) const = 0;
 
-        virtual CONST util::Vec4& VGetAmbient(VOID) CONST = 0;
+        virtual const util::Vec4& VGetAmbient(void) const = 0;
 
-        virtual FLOAT VGetSpecularExpo(VOID) = 0;
+        virtual float VGetSpecularExpo(void) = 0;
 
-        virtual FLOAT VGetReflectance(VOID) = 0;
+        virtual float VGetReflectance(void) = 0;
 
-        virtual FLOAT VGetTextureScale(VOID) = 0;
+        virtual float VGetTextureScale(void) = 0;
 
-        virtual CONST CMResource& VGetTextureDiffuse(VOID) CONST = 0;
+        virtual const CMResource& VGetTextureDiffuse(void) const = 0;
 
-        virtual CONST CMResource& VGetTextureNormal(VOID) CONST = 0;
+        virtual const CMResource& VGetTextureNormal(void) const = 0;
 
-        virtual ~IMaterial(VOID) {}
+        virtual ~IMaterial(void) {}
     };
 
     class IResourceCache
     {
     public:
-        virtual BOOL VInit(UINT mbSize, IResourceFile* resFile) = 0;
+        virtual bool VInit(uint mbSize, IResourceFile* resFile) = 0;
 
-        virtual FLOAT VGetWorkload(VOID) CONST = 0;
+        virtual float VGetWorkload(void) const = 0;
 
-        virtual size_t VGetNumHandles(VOID) CONST = 0;
+        virtual size_t VGetNumHandles(void) const = 0;
 
-        virtual IResourceFile& VGetFile(VOID) = 0;
+        virtual IResourceFile& VGetFile(void) = 0;
 
-        virtual VOID VRegisterLoader(std::unique_ptr<IResourceLoader> loader) = 0;
+        virtual void VRegisterLoader(std::unique_ptr<IResourceLoader> loader) = 0;
 
-        virtual VOID VRegisterDecompressor(std::unique_ptr<IResourceDecompressor> decomp) = 0;
+        virtual void VRegisterDecompressor(std::unique_ptr<IResourceDecompressor> decomp) = 0;
 
         virtual std::shared_ptr<IResHandle> VGetHandle(CMResource& r) = 0;
 
-        virtual BOOL VHasResource(CMResource& r) = 0;
+        virtual bool VHasResource(CMResource& r) = 0;
 
-        virtual VOID VAppendHandle(std::unique_ptr<IResHandle> handle) = 0;
+        virtual void VAppendHandle(std::unique_ptr<IResHandle> handle) = 0;
 
-        virtual std::shared_ptr<IResHandle> VGetHandleAsync(CMResource& r) = 0;
+        virtual void VGetHandleAsync(CMResource& r, OnResourceLoadedCallback cb = NULL) = 0;
 
-        virtual BOOL VIsLoaded(CMResource& r) = 0;
+        virtual bool VIsLoaded(CMResource& r) = 0;
 
-        virtual VOID VFlush(VOID) = 0;
+        virtual void VFlush(void) = 0;
 
-        virtual ~IResourceCache(VOID) {}
+        virtual ~IResourceCache(void) {}
     };
 
     class IResourceDecompressor 
     {
     public:
-        virtual std::string VGetPattern(VOID) = 0;
+        virtual std::string VGetPattern(void) = 0;
 
-        virtual BOOL VUseRawFile(VOID) = 0;
+        virtual bool VUseRawFile(void) = 0;
 
-        virtual INT VDecompressRessource(CHAR* buffer, INT size, CHAR** dst) = 0;
+        virtual int VDecompressRessource(char* buffer, int size, char** dst) = 0;
 
-        virtual ~IResourceDecompressor(VOID) {} 
+        virtual ~IResourceDecompressor(void) {} 
     };
 
     class IResourceLoader 
     {
     public:
-        virtual CONST std::string& VGetPattern(VOID) = 0;
+        virtual const std::string& VGetPattern(void) = 0;
 
-        virtual INT VLoadRessource(CHAR* source, UINT size, std::shared_ptr<IResHandle> handle) = 0;
+        virtual int VLoadRessource(char* source, uint size, std::shared_ptr<IResHandle>& handle) = 0;
 
-        virtual std::unique_ptr<IResHandle> VCreateHandle(VOID) = 0;
+        virtual std::unique_ptr<IResHandle> VCreateHandle(void) = 0;
 
-        virtual CONST std::string& VSubFolder(VOID) = 0;
+        virtual const std::string& VSubFolder(void) = 0;
 
-        virtual ~IResourceLoader(VOID) {}
+        virtual ~IResourceLoader(void) {}
     };
 
     class IResourceFile
     {
     public:
-        virtual BOOL VOpen(VOID) = 0;
+        virtual bool VOpen(void) = 0;
 
-        virtual INT VGetRawRessource(CONST CMResource&  r, CHAR** buffer) = 0;
+        virtual int VGetRawRessource(const CMResource&  r, char** buffer) = 0;
 
-        virtual std::string VGetRessourceName(INT num) = 0;
+        virtual std::string VGetRessourceName(int num) = 0;
 
-        virtual std::string& VGetName(VOID) = 0;
+        virtual std::string& VGetName(void) = 0;
 
-        virtual INT VGetNumFiles(VOID) = 0;
+        virtual int VGetNumFiles(void) = 0;
 
-        virtual BOOL VIsCompressed(VOID) = 0;
+        virtual bool VIsCompressed(void) = 0;
 
-        virtual BOOL VHasFile(CONST CMResource& r) = 0;
+        virtual bool VHasFile(const CMResource& r) = 0;
 
         virtual ~IResourceFile() {}
     };
@@ -136,68 +138,68 @@ namespace chimera
     class IExtraRessourceData 
     {
     public:
-        virtual ~IExtraRessourceData(VOID) {}
+        virtual ~IExtraRessourceData(void) {}
     };
 
     class IResourceFactory
     {
     public:
-        virtual IResourceCache* VCreateCache(VOID) = 0;
+        virtual IResourceCache* VCreateCache(void) = 0;
     };
 
     class ResHandle : public IResHandle
     {
     protected:
         CMResource m_resource;
-        CHAR* m_data;
+        char* m_data;
         std::unique_ptr<IExtraRessourceData> m_extraData;
         IResourceCache* m_cache;
-        BOOL m_isReady;
-        UINT m_size;
+        bool m_isReady;
+        uint m_size;
 
     public:
-        ResHandle(VOID) : m_cache(NULL), m_data(NULL), m_size(0), m_isReady(FALSE) {}
+        ResHandle(void) : m_cache(NULL), m_data(NULL), m_size(0), m_isReady(false) {}
 
-        CHAR* VBuffer(VOID) { return m_data; }
+        char* VBuffer(void) { return m_data; }
 
-        UINT VSize(VOID) { return m_size; }
+        uint VSize(void) { return m_size; }
 
-        VOID VSetSize(UINT size) { m_size = size; }
+        void VSetSize(uint size) { m_size = size; }
 
-        VOID VSetReady(BOOL ready) { m_isReady = ready; }
+        void VSetReady(bool ready) { m_isReady = ready; }
 
-        std::string VGetRelativeFilePath(VOID) CONST { return m_cache->VGetFile().VGetName() + "/" + m_resource.m_name; }
+        std::string VGetRelativeFilePath(void) const { return m_cache->VGetFile().VGetName() + "/" + m_resource.m_name; }
 
         //critical only for intern usage //TODO
-        VOID VSetBuffer(CHAR* buffer) { m_data = buffer; }
+        void VSetBuffer(char* buffer) { m_data = buffer; }
 
-        IResourceCache* VGetResourceCache(VOID) { return m_cache; }
+        IResourceCache* VGetResourceCache(void) { return m_cache; }
 
-        CMResource& VGetResource(VOID) { return m_resource; }
+        CMResource& VGetResource(void) { return m_resource; }
 
-        VOID VSetResource(CONST CMResource& res) { return m_resource = res; }
+        void VSetResource(const CMResource& res) { return m_resource = res; }
 
-        VOID VSetResourceCache(IResourceCache* cache) { m_cache = cache; }
+        void VSetResourceCache(IResourceCache* cache) { m_cache = cache; }
 
-        IExtraRessourceData* VGetExtraData(VOID) CONST { return m_extraData.get(); }
+        IExtraRessourceData* VGetExtraData(void) const { return m_extraData.get(); }
 
-        VOID VSetExtraData(std::unique_ptr<IExtraRessourceData> extraData) { m_extraData = std::move(extraData); }
+        void VSetExtraData(std::unique_ptr<IExtraRessourceData> extraData) { m_extraData = std::move(extraData); }
 
-        BOOL VIsReady(VOID) CONST { return m_isReady; }
+        bool VIsReady(void) const { return m_isReady; }
 
-        virtual ~ResHandle(VOID);
+        virtual ~ResHandle(void);
     };
 
     struct Triple 
     {
-        UINT position;
-        UINT texCoord;
-        UINT normal;
-        ULONG hash;
-        UINT index;
+        uint position;
+        uint texCoord;
+        uint normal;
+        ulong hash;
+        uint index;
         Triple() : position(0), texCoord(0), normal(0), hash(0), index(0) { }
 
-        BOOL Triple::operator==(const Triple& t0)
+        bool Triple::operator==(const Triple& t0)
         {
             return t0.position == position && t0.texCoord == texCoord && t0.normal == normal;
         }
@@ -220,39 +222,55 @@ namespace chimera
 
     struct IndexBufferInterval 
     {
-        UINT start;
-        UINT count;
-        UINT material;
+        uint start;
+        uint count;
+        uint material;
         GeometryTopology topo;
-        IndexBufferInterval(VOID) : start(0), count(0), material(0), topo(eTopo_Triangles) {}
+        IndexBufferInterval(void) : start(0), count(0), material(0), topo(eTopo_Triangles) {}
     };
 
-    class IMesh : public ResHandle
+    class IMesh
     {
     public:
-        virtual CMResource& VGetMaterials(VOID) = 0;
+        virtual CMResource& VGetMaterials(void) = 0;
 
-        virtual VOID VAddIndexBufferInterval(UINT start, UINT count, UINT material, GeometryTopology topo) = 0;
+        virtual void VAddIndexBufferInterval(uint start, uint count, uint material, GeometryTopology topo) = 0;
 
-        virtual UINT VGetIndexCount(VOID) CONST = 0;
+        virtual uint VGetIndexCount(void) const = 0;
 
-        virtual UINT VGetVertexCount(VOID) CONST = 0;
+        virtual uint VGetVertexCount(void) const = 0;
 
-        virtual UINT VGetVertexStride(VOID) CONST = 0;
+        virtual uint VGetVertexStride(void) const = 0;
 
-        virtual CONST FLOAT* VGetVertices(VOID) CONST = 0;
+        virtual const float* VGetVertices(void) const = 0;
 
-        virtual CONST std::list<Face>& VGetFaces(VOID) CONST = 0;
+        virtual const std::list<Face>& VGetFaces(void) const = 0;
 
-        virtual util::AxisAlignedBB& VGetAABB(VOID) = 0;
+        virtual util::AxisAlignedBB& VGetAABB(void) = 0;
 
-        virtual CONST UINT* VGetIndices(VOID) CONST = 0;
+        virtual const uint* VGetIndices(void) const = 0;
 
-        virtual VOID VSetIndices(UINT* indices, UINT count) = 0;
+        virtual void VSetIndices(uint* indices, uint count) = 0;
 
-        virtual VOID VSetVertices(FLOAT* vertices, UINT count, UINT stride) = 0;
+        virtual void VSetVertices(float* vertices, uint count, uint stride) = 0;
 
-        virtual std::vector<IndexBufferInterval>& VGetIndexBufferIntervals(VOID) = 0;
+        virtual std::vector<IndexBufferInterval>& VGetIndexBufferIntervals(void) = 0;
+    };
+
+    class IMeshSet : public ResHandle
+    {
+    public:
+        typedef std::map<std::string, std::shared_ptr<IMesh>>::iterator MeshIterator;
+
+        virtual uint VGetMeshCount(void) = 0;
+
+        virtual IMesh* VGetMesh(const std::string& name) = 0;
+
+        virtual IMesh* VGetMesh(uint i) = 0;
+
+        virtual MeshIterator VBegin(void) = 0;
+
+        virtual MeshIterator VEnd(void) = 0;
     };
 
     //vram
@@ -260,94 +278,95 @@ namespace chimera
     class IVRamHandle
     {
     public:
-        virtual BOOL VCreate(VOID) = 0;
+        virtual bool VCreate(void) = 0;
 
-        virtual VOID VDestroy(VOID) = 0;
+        virtual void VDestroy(void) = 0;
 
-        virtual UINT VGetByteCount(VOID) CONST = 0;
+        virtual uint VGetByteCount(void) const = 0;
 
-        virtual BOOL VIsReady(VOID) CONST = 0;
+        virtual bool VIsReady(void) const = 0;
 
-        virtual VOID VUpdate(VOID) = 0;
+        virtual void VUpdate(void) = 0;
 
-        virtual VOID VSetResource(CONST VRamResource& res) = 0;
+        virtual void VSetResource(const VRamResource& res) = 0;
 
-        virtual VOID VSetReady(BOOL ready) = 0;
+        virtual void VSetReady(bool ready) = 0;
 
-        virtual LONG VGetLastUsageTime(VOID) CONST = 0;
+        virtual LONG VGetLastUsageTime(void) const = 0;
 
-        virtual CONST VRamResource& VGetResource(VOID) = 0;
+        virtual const VRamResource& VGetResource(void) = 0;
 
-        virtual ~IVRamHandle(VOID) {}
+        virtual ~IVRamHandle(void) {}
     };
 
     class IVRamHandleCreator
     {
     public:
-        virtual IVRamHandle* VGetHandle(VOID) = 0;
-        virtual VOID VCreateHandle(IVRamHandle* handle) = 0;
+        virtual IVRamHandle* VGetHandle(void) = 0;
+
+        virtual void VCreateHandle(IVRamHandle* handle) = 0;
     };
 
     class VRamHandle : public IVRamHandle
     {
     protected:
         LONG m_lastUsage;
-        BOOL m_ready;
+        bool m_ready;
         VRamResource m_resource;
 
     public:
-        VRamHandle(VOID) : m_lastUsage(0), m_ready(FALSE) { }
+        VRamHandle(void) : m_lastUsage(0), m_ready(false) { }
         
-        virtual BOOL VCreate(VOID) = 0;
+        virtual bool VCreate(void) = 0;
 
-        virtual VOID VDestroy() = 0;
+        virtual void VDestroy() = 0;
 
-        virtual UINT VGetByteCount(VOID) CONST = 0;
+        virtual uint VGetByteCount(void) const = 0;
 
-        VOID VSetResource(CONST VRamResource& res) { m_resource = res; }
+        void VSetResource(const VRamResource& res) { m_resource = res; }
 
-        BOOL VIsReady(VOID) CONST { return m_ready; }
+        bool VIsReady(void) const { return m_ready; }
 
-        VOID VSetReady(BOOL ready) { m_ready = ready; };
+        void VSetReady(bool ready) { m_ready = ready; };
 
-        VOID VUpdate(VOID) { m_lastUsage = clock(); }
+        void VUpdate(void) { m_lastUsage = clock(); }
 
-        LONG VGetLastUsageTime() CONST { return m_lastUsage; }
+        LONG VGetLastUsageTime() const { return m_lastUsage; }
 
-        VRamResource& VGetResource(VOID) { return m_resource; }
+        VRamResource& VGetResource(void) { return m_resource; }
 
-        virtual ~VRamHandle(VOID) {}
+        virtual ~VRamHandle(void) {}
     };
 
     class IVRamManager
     {
     public:
-        virtual UINT VGetCurrentSize(VOID) CONST = 0;
+        virtual uint VGetCurrentSize(void) const = 0;
 
-        virtual UINT VGetMaxSize(VOID) CONST = 0;
+        virtual uint VGetMaxSize(void) const = 0;
 
-        virtual FLOAT VGetWorkload(VOID) CONST = 0;
+        virtual float VGetWorkload(void) const = 0;
 
-        virtual VOID VUpdate(ULONG millis) = 0;
+        virtual void VUpdate(ulong millis) = 0;
 
-        virtual VOID VFlush(VOID) = 0;
+        virtual void VFlush(void) = 0;
 
-        virtual VOID VFree(std::shared_ptr<IVRamHandle> ressource) = 0;
+        virtual void VFree(std::shared_ptr<IVRamHandle> ressource) = 0;
 
-        virtual std::shared_ptr<IVRamHandle> VGetHandle(CONST VRamResource& ressource) = 0;
+        virtual std::shared_ptr<IVRamHandle> VGetHandle(const VRamResource& ressource) = 0;
 
-        virtual VOID VRegisterHandleCreator(LPCSTR suffix, IVRamHandleCreator* creator) = 0;
+        virtual void VRegisterHandleCreator(LPCSTR suffix, IVRamHandleCreator* creator) = 0;
 
-        virtual std::shared_ptr<IVRamHandle> VGetHandleAsync(CONST VRamResource& ressource) = 0;
+        virtual std::shared_ptr<IVRamHandle> VGetHandleAsync(const VRamResource& ressource) = 0;
 
-        virtual VOID VAppendAndCreateHandle(std::shared_ptr<IVRamHandle> handle) = 0;
+        virtual void VAppendAndCreateHandle(std::shared_ptr<IVRamHandle> handle) = 0;
 
-        virtual ~IVRamManager(VOID) {}
+        virtual ~IVRamManager(void) {}
     };
 
     class IVRamManagerFactory
     {
     public:
-        virtual IVRamManager* VCreateVRamManager(VOID) = 0;
+        virtual IVRamManager* VCreateVRamManager(void) = 0;
     };
 }

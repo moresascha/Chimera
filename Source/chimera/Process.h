@@ -16,13 +16,13 @@ namespace chimera
         {
 
         }
-        VOID VOnUpdate(ULONG deltaMillis)
+        void VOnUpdate(ulong deltaMillis)
         {
             m_pF(deltaMillis);
         }
     };
 
-    typedef fastdelegate::FastDelegate2<ULONG, IActor*> _AFDelegate;
+    typedef fastdelegate::FastDelegate2<ulong, IActor*> _AFDelegate;
     class ActorDelegateProcess : public IProcess
     {
     private:
@@ -33,7 +33,7 @@ namespace chimera
         {
 
         }
-        VOID VOnUpdate(ULONG deltaMillis)
+        void VOnUpdate(ulong deltaMillis)
         {
             m_pF(deltaMillis, m_actor);
         }
@@ -43,7 +43,7 @@ namespace chimera
     {
         friend class ProcessManager;
     private:
-        VOID WaitComplete(VOID);
+        void WaitComplete(void);
 
     protected:
         HANDLE m_pThreadHandle;
@@ -51,38 +51,38 @@ namespace chimera
         DWORD m_threadId;
         int m_priority;
 
-        virtual VOID VOnInit(VOID);
-        virtual VOID VOnUpdate(ULONG deltaMillis) {}
-        virtual VOID VThreadProc(VOID) = 0;
+        virtual void VOnInit(void);
+        virtual void VOnUpdate(ulong deltaMillis) {}
+        virtual void VThreadProc(void) = 0;
 
-        virtual VOID VOnAbort(VOID);
-        virtual VOID VOnSuccess(VOID);
-        virtual VOID VOnFail(VOID);
+        virtual void VOnAbort(void);
+        virtual void VOnSuccess(void);
+        virtual void VOnFail(void);
 
-        virtual ProcessType VGetType(VOID) { return eProcessType_Realtime; }
-        VOID SetPriority(int priority) { m_priority = priority; }
+        virtual ProcessType VGetType(void) { return eProcessType_Realtime; }
+        void SetPriority(int priority) { m_priority = priority; }
 
     public:
         RealtimeProcess(int priority = THREAD_PRIORITY_NORMAL);
-        virtual ~RealtimeProcess(VOID);
+        virtual ~RealtimeProcess(void);
         static DWORD WINAPI ThreadProc(LPVOID lpParam);
     };
 
     class ActorProcess : public IProcess
     {
     private:
-        VOID ActorCreatedDelegate(IEventPtr data);
-        VOID DeleteActorDelegate(IEventPtr data);
+        void ActorCreatedDelegate(IEventPtr data);
+        void DeleteActorDelegate(IEventPtr data);
         
     protected:
         IActor* m_actor;
-        BOOL m_isCreated;
+        bool m_isCreated;
     public:
         ActorProcess(IActor* actor);
-        virtual VOID VOnInit(VOID);
-        virtual VOID VOnActorCreate(VOID) { };
-        virtual VOID VOnActorDelete(VOID) { };
-        virtual ~ActorProcess(VOID);
+        virtual void VOnInit(void);
+        virtual void VOnActorCreate(void) { };
+        virtual void VOnActorDelete(void) { };
+        virtual ~ActorProcess(void);
     };
 
     class ActorRealtimeProcess : public RealtimeProcess
@@ -90,14 +90,14 @@ namespace chimera
     protected:
         IActor* m_actor;
         HANDLE m_event;
-        VOID VThreadProc(VOID);
-        ProcessType VGetType(VOID) { return eProcessType_Actor_Realtime; }
+        void VThreadProc(void);
+        ProcessType VGetType(void) { return eProcessType_Actor_Realtime; }
     public:
         ActorRealtimeProcess(IActor* actor);
-        VOID ActorCreatedDelegate(IEventPtr data);
-        VOID DeleteActorDelegate(IEventPtr data);
-        virtual VOID _VThreadProc(VOID) = 0;
-        virtual ~ActorRealtimeProcess(VOID);
+        void ActorCreatedDelegate(IEventPtr data);
+        void DeleteActorDelegate(IEventPtr data);
+        virtual void _VThreadProc(void) = 0;
+        virtual ~ActorRealtimeProcess(void);
     };
 
     /*class RotationProcess : public ActorRealtimeProcess
@@ -115,40 +115,40 @@ namespace chimera
     class WatchDirModifacationProcess : public RealtimeProcess
     {
     private:
-        VOID Close();
+        void Close();
     protected:
         std::wstring m_dir;
         HANDLE m_fileHandle;
         HANDLE m_closeHandle;
-        VOID VThreadProc(VOID);
+        void VThreadProc(void);
 
-        virtual VOID VOnInit(VOID);
+        virtual void VOnInit(void);
         
-        virtual VOID VOnAbort(VOID);
-        virtual VOID VOnFail(VOID);
-        virtual VOID VOnSuccess(VOID);
+        virtual void VOnAbort(void);
+        virtual void VOnFail(void);
+        virtual void VOnSuccess(void);
     public:
-        virtual VOID VOnDirModification(VOID) = 0;
+        virtual void VOnDirModification(void) = 0;
 
     public:
         WatchDirModifacationProcess(LPCTSTR dir);
-        virtual ~WatchDirModifacationProcess(VOID);
+        virtual ~WatchDirModifacationProcess(void);
     };
 
     class WatchFileModificationProcess : public WatchDirModifacationProcess
     {
     protected:
-        BOOL m_update;
+        bool m_update;
         std::wstring m_file;
         time_t m_lastModification;
-        virtual VOID VOnInit(VOID);
-        time_t GetTime(VOID);
-        VOID VOnUpdate(ULONG deltaMillis);
-        VOID VOnFail(VOID);
+        virtual void VOnInit(void);
+        time_t GetTime(void);
+        void VOnUpdate(ulong deltaMillis);
+        void VOnFail(void);
     public:
         WatchFileModificationProcess(LPCTSTR file, LPCTSTR dir);
-        VOID VOnDirModification(VOID);
-        virtual VOID VOnFileModification(VOID) = 0;
+        void VOnDirModification(void);
+        virtual void VOnFileModification(void) = 0;
     };
 
     class FileWatcherProcess : public WatchFileModificationProcess
@@ -156,7 +156,7 @@ namespace chimera
     public:
         FileWatcherProcess(LPCTSTR file, LPCTSTR dir);
         FileWatcherProcess(LPCSTR file, LPCSTR dir);
-        VOID VOnFileModification(VOID);
+        void VOnFileModification(void);
     };
 
     class WatchShaderFileModificationProcess : public WatchFileModificationProcess
@@ -165,7 +165,7 @@ namespace chimera
         IShader* m_shader;
     public:
         WatchShaderFileModificationProcess(IShader* shader, LPCTSTR file, LPCTSTR dir);
-        VOID VOnFileModification(VOID);
+        void VOnFileModification(void);
     };
 
     /*class WatchCudaFileModificationProcess : public WatchFileModificationProcess
@@ -182,56 +182,56 @@ namespace chimera
     protected:
         std::shared_ptr<IResHandle> m_pHandle;
         ISoundBuffer* m_pSoundBuffer;
-        INT m_soundType;
-        INT m_volume;
-        INT m_pan;
-        BOOL m_loop;
+        int m_soundType;
+        int m_volume;
+        int m_pan;
+        bool m_loop;
 
-        virtual VOID VOnInit(VOID);
-        virtual VOID VOnAbort(VOID);
-        virtual VOID VOnFail(VOID);
-        virtual VOID VOnSuccess(VOID);
-        virtual VOID VOnUpdate(ULONG deltaMillis);
+        virtual void VOnInit(void);
+        virtual void VOnAbort(void);
+        virtual void VOnFail(void);
+        virtual void VOnSuccess(void);
+        virtual void VOnUpdate(ulong deltaMillis);
 
-        VOID ComputeVolumeFromDistance(CONST util::Vec3& soundPosition, ICamera* camera, FLOAT radius);
+        void ComputeVolumeFromDistance(const util::Vec3& soundPosition, ICamera* camera, float radius);
     public:
-        SoundProcess(std::shared_ptr<IResHandle> handle, INT soundType = 0/*SOUND_FX*/, INT volume = 100, BOOL loop = FALSE);
-        ISoundBuffer* GetSoundBuffer(VOID) { return m_pSoundBuffer; }
-        virtual ~SoundProcess(VOID) {}
+        SoundProcess(std::shared_ptr<IResHandle> handle, int soundType = 0/*SOUND_FX*/, int volume = 100, bool loop = false);
+        ISoundBuffer* GetSoundBuffer(void) { return m_pSoundBuffer; }
+        virtual ~SoundProcess(void) {}
     };
 
     class SoundEmitterProcess : public SoundProcess
     {
     private:
         TransformComponent* m_transform;
-        FLOAT m_radius;
+        float m_radius;
     protected:
-        VOID VOnUpdate(ULONG deltaMillis);
+        void VOnUpdate(ulong deltaMillis);
 
     public:
         SoundEmitterProcess(
             IActor* actor, 
             TransformComponent* transCmp, 
             std::shared_ptr<IResHandle> handle,
-            FLOAT radius,
-            INT soundType = 0/*SOUND_FX*/, INT volume = 100, BOOL loop = FALSE);
+            float radius,
+            int soundType = 0/*SOUND_FX*/, int volume = 100, bool loop = false);
 
-        VOID VOnActorDelete(VOID);
+        void VOnActorDelete(void);
     };
 
     class StaticSoundEmitterProcess : public SoundProcess
     {
     private:
         util::Vec3 m_position;
-        FLOAT m_radius;
+        float m_radius;
     public:
         StaticSoundEmitterProcess(
-            CONST util::Vec3& position,
+            const util::Vec3& position,
             std::shared_ptr<IResHandle> handle,
-            FLOAT radius,
-            INT soundType = 0/*SOUND_FX*/, INT volume = 100, BOOL loop = FALSE);
-        VOID VOnUpdate(ULONG deltaMillis);
-        VOID VOnInit(VOID);
+            float radius,
+            int soundType = 0/*SOUND_FX*/, int volume = 100, bool loop = false);
+        void VOnUpdate(ulong deltaMillis);
+        void VOnInit(void);
     };
 };
 

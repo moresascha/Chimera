@@ -6,31 +6,31 @@ namespace chimera
     class ISoundBuffer
     {
     public:
-        virtual BOOL VInit(VOID) = 0;
+        virtual bool VInit(void) = 0;
 
-        virtual VOID VPlay(BOOL loop = FALSE) = 0;
+        virtual void VPlay(bool loop = false) = 0;
 
-        virtual VOID VStop(VOID) = 0;
+        virtual void VStop(void) = 0;
 
-        virtual VOID VPause(VOID) = 0;
+        virtual void VPause(void) = 0;
 
-        virtual VOID VSetVolume(LONG volume) = 0;
+        virtual void VSetVolume(LONG volume) = 0;
 
-        virtual VOID VResume(VOID) = 0;
+        virtual void VResume(void) = 0;
 
-        virtual INT VGetVolume(VOID) = 0;
+        virtual int VGetVolume(void) = 0;
 
-        virtual BOOL VIsPlaying(VOID) = 0;
+        virtual bool VIsPlaying(void) = 0;
 
-        virtual BOOL VRestore(VOID) = 0;
+        virtual bool VRestore(void) = 0;
 
-        virtual VOID VSetPan(FLOAT pan) = 0; //-1 left 0 middle 1 right
+        virtual void VSetPan(float pan) = 0; //-1 left 0 middle 1 right
 
-        virtual BOOL VIsLooping(VOID) = 0;
+        virtual bool VIsLooping(void) = 0;
 
-        virtual FLOAT VGetProgress(VOID) = 0;
+        virtual float VGetProgress(void) = 0;
 
-        virtual ~ISoundBuffer(VOID) {}
+        virtual ~ISoundBuffer(void) {}
     };
 
     class ISoundEngine
@@ -41,24 +41,24 @@ namespace chimera
     class ISoundSystem
     {
     public:
-        virtual BOOL VInit(VOID) = 0;
+        virtual bool VInit(void) = 0;
 
         virtual ISoundBuffer* VCreateSoundBuffer(std::shared_ptr<IResHandle> handle) = 0;
 
-        virtual VOID VReleaseSoundBuffer(ISoundBuffer* buffer) = 0;
+        virtual void VReleaseSoundBuffer(ISoundBuffer* buffer) = 0;
 
-        virtual VOID VStopAll(VOID) = 0;
+        virtual void VStopAll(void) = 0;
 
-        virtual VOID VResumeAll(VOID) = 0;
+        virtual void VResumeAll(void) = 0;
 
-        virtual VOID VPauseAll(VOID) = 0;
+        virtual void VPauseAll(void) = 0;
 
-        virtual ~ISoundSystem(VOID) {}
+        virtual ~ISoundSystem(void) {}
     };
 
     class ISoundFactory
     {
     public:
-        virtual ISoundSystem* VCreateSoundSystem(VOID) = 0;
+        virtual ISoundSystem* VCreateSoundSystem(void) = 0;
     };
 }

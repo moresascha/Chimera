@@ -22,10 +22,10 @@ namespace chimera
             XMFLOAT4 m_ambient;
             XMFLOAT4 m_specular;
             XMFLOAT4 m_diffuse;
-            FLOAT m_specularExpo;
-            FLOAT m_illum;
-            FLOAT m_textureSCale;
-            FLOAT unused;
+            float m_specularExpo;
+            float m_illum;
+            float m_textureSCale;
+            float unused;
         };
 
         struct _ProjectionMatrixBuffer 
@@ -69,24 +69,24 @@ namespace chimera
 
             ID3D11RenderTargetView* m_views[Diff_SamplersCnt];
 
-            UINT m_width, m_height;
+            uint m_width, m_height;
 
             D3D11_VIEWPORT m_viewPort;
 
         public:
-            AlbedoBuffer(UINT w, UINT h);
+            AlbedoBuffer(uint w, uint h);
 
-            VOID VClearAndBindRenderTargets(VOID);
+            void VClearAndBindRenderTargets(void);
 
-            VOID VUnbindRenderTargets(VOID);
+            void VUnbindRenderTargets(void);
 
-            VOID VOnRestore(UINT w, UINT h);
+            void VOnRestore(uint w, uint h);
 
             IRenderTarget* VGetRenderTarget(Diff_RenderTarget stage);
 
-            IRenderTarget* VGetDepthStencilTarget(VOID);
+            IRenderTarget* VGetDepthStencilTarget(void);
 
-            ~AlbedoBuffer(VOID);
+            ~AlbedoBuffer(void);
         };
 
         class Renderer : public IRenderer
@@ -102,9 +102,9 @@ namespace chimera
 
             std::unique_ptr<IShaderCache> m_pShaderCache;
 
-            FLOAT m_backColor[4];
+            float m_backColor[4];
 
-            VOID Delete(VOID);
+            void Delete(void);
 
             IMaterial* m_pDefaultMaterial;
 
@@ -125,18 +125,18 @@ namespace chimera
 
             IShaderProgram* m_screenQuadProgram;
 
-            VOID SetSampler(TextureSlot startSlot, ID3D11ShaderResourceView** view, UINT count, UINT stage);
+            void SetSampler(TextureSlot startSlot, ID3D11ShaderResourceView** view, uint count, uint stage);
 
-            VOID CreateDefaultShader(VOID);
+            void CreateDefaultShader(void);
 
         public:
-            Renderer(VOID);
+            Renderer(void);
 
-            BOOL VCreate(CM_WINDOW_CALLBACK cb, CM_INSTANCE instance, LPCWSTR wndTitle, UINT width, UINT height);
+            bool VCreate(CM_WINDOW_CALLBACK cb, CM_INSTANCE instance, LPCWSTR wndTitle, uint width, uint height);
 
-            VOID VDestroy(VOID);
+            void VDestroy(void);
 
-            VOID VSetBackground(FLOAT r, FLOAT g, FLOAT b, FLOAT a) 
+            void VSetBackground(float r, float g, float b, float a) 
             {
                 m_backColor[0] = r;
                 m_backColor[1] = g;
@@ -144,109 +144,109 @@ namespace chimera
                 m_backColor[3] = a;
             }
 
-            CM_HWND VGetWindowHandle(VOID);
+            CM_HWND VGetWindowHandle(void);
 
-            UINT VGetHeight(VOID);
+            uint VGetHeight(void);
 
-            UINT VGetWidth(VOID);
+            uint VGetWidth(void);
 
-            VOID VResize(UINT w, UINT h);
+            void VResize(uint w, uint h);
 
-            VOID VSetFullscreen(BOOL fullscreen);
+            void VSetFullscreen(bool fullscreen);
 
-            BOOL VOnRestore(VOID);
+            bool VOnRestore(void);
 
-            VOID* VGetDevice(VOID);
+            void* VGetDevice(void);
 
-            VOID VPreRender(VOID);
+            void VPreRender(void);
 
-            VOID VPresent(VOID);
+            void VPresent(void);
 
-            VOID VPushAlphaBlendState(VOID);
+            void VPushAlphaBlendState(void);
 
-            IShaderCache* VGetShaderCache(VOID) { return m_pShaderCache.get(); }
+            IShaderCache* VGetShaderCache(void) { return m_pShaderCache.get(); }
 
-            VOID VPostRender(VOID);
+            void VPostRender(void);
 
-            VOID VPushRasterState(IRasterState* state);
+            void VPushRasterState(IRasterState* state);
 
-            VOID VPopRasterState(VOID);
+            void VPopRasterState(void);
 
-            VOID VPushBlendState(IBlendState* state);
+            void VPushBlendState(IBlendState* state);
 
-            VOID VPopBlendState(VOID);
+            void VPopBlendState(void);
 
-            VOID VPushDepthStencilState(IDepthStencilState* rstate, UINT stencilRef = 0);
+            void VPushDepthStencilState(IDepthStencilState* rstate, uint stencilRef = 0);
 
-            VOID VPopDepthStencilState(VOID);
+            void VPopDepthStencilState(void);
 
-            VOID VSetViewPort(UINT w, UINT h);
+            void VSetViewPort(uint w, uint h);
 
-            IAlbedoBuffer* VGetAlbedoBuffer(VOID);
+            IAlbedoBuffer* VGetAlbedoBuffer(void);
 
-            VOID VSetViewTransform(CONST util::Mat4& mat, CONST util::Mat4& invMat, CONST util::Vec3& eyePos);
+            void VSetViewTransform(const util::Mat4& mat, const util::Mat4& invMat, const util::Vec3& eyePos);
 
-            VOID VSetProjectionTransform(CONST util::Mat4& mat, FLOAT distance);
+            void VSetProjectionTransform(const util::Mat4& mat, float distance);
 
-            VOID VSetWorldTransform(CONST util::Mat4& mat);
+            void VSetWorldTransform(const util::Mat4& mat);
 
-            VOID VPushWorldTransform(CONST util::Mat4& mat);
+            void VPushWorldTransform(const util::Mat4& mat);
 
-            VOID VPopWorldTransform(VOID);
+            void VPopWorldTransform(void);
 
-            VOID VPushViewTransform(CONST util::Mat4& mat, CONST util::Mat4& invMat, CONST util::Vec3& eyePos);
+            void VPushViewTransform(const util::Mat4& mat, const util::Mat4& invMat, const util::Vec3& eyePos);
 
-            VOID VPopViewTransform(VOID);
+            void VPopViewTransform(void);
 
-            VOID VPushProjectionTransform(CONST util::Mat4& mat, FLOAT distance);
+            void VPushProjectionTransform(const util::Mat4& mat, float distance);
 
-            VOID VPopProjectionTransform(VOID);
+            void VPopProjectionTransform(void);
 
-            VOID VPushMaterial(IMaterial& mat);
+            void VPushMaterial(IMaterial& mat);
 
-            VOID VPopMaterial(VOID);
+            void VPopMaterial(void);
 
-            VOID VSetDefaultMaterial(VOID);
+            void VSetDefaultMaterial(void);
 
-            VOID VSetDefaultTexture(VOID);
+            void VSetDefaultTexture(void);
 
-            VOID VClearAndBindBackBuffer(VOID);
+            void VClearAndBindBackBuffer(void);
 
-            VOID VBindBackBuffer(VOID);
+            void VBindBackBuffer(void);
 
-            VOID VPushCurrentRenderTarget(IRenderTarget* rt);
+            void VPushCurrentRenderTarget(IRenderTarget* rt);
 
-            VOID VPopCurrentRenderTarget(VOID);
+            void VPopCurrentRenderTarget(void);
 
-            IRenderTarget* VGetCurrentRenderTarget(VOID);
+            IRenderTarget* VGetCurrentRenderTarget(void);
 
-            VOID VSetDiffuseTexture(IDeviceTexture* texture);
+            void VSetDiffuseTexture(IDeviceTexture* texture);
 
-            VOID VSetTexture(TextureSlot slot, IDeviceTexture* texture);
+            void VSetTexture(TextureSlot slot, IDeviceTexture* texture);
 
-            VOID VSetTextures(TextureSlot startSlot, IDeviceTexture** texture, UINT count);
+            void VSetTextures(TextureSlot startSlot, IDeviceTexture** texture, uint count);
 
-            VOID SetPointLightShadowCubeMapSampler(ID3D11ShaderResourceView* view);
+            void SetPointLightShadowCubeMapSampler(ID3D11ShaderResourceView* view);
 
-            VOID VSetNormalMapping(BOOL map);
+            void VSetNormalMapping(bool map);
 
-            VOID SetCubeMapViews(CONST util::Mat4 mats[6]);
+            void SetCubeMapViews(const util::Mat4 mats[6]);
 
-            VOID VSetLightSettings(CONST util::Vec4& color, CONST util::Vec3& position, FLOAT radius, BOOL castShadow);
+            void VSetLightSettings(const util::Vec4& color, const util::Vec3& position, float radius, bool castShadow);
 
-            VOID VSetLightSettings(CONST util::Vec4& color, CONST util::Vec3& position, CONST util::Vec3& viewDir, FLOAT radius, FLOAT angel, FLOAT intensity, BOOL castShadow);
+            void VSetLightSettings(const util::Vec4& color, const util::Vec3& position, const util::Vec3& viewDir, float radius, float angel, float intensity, bool castShadow);
 
-            VOID SetCSMSettings(CONST util::Mat4& view, CONST util::Mat4& iView, CONST util::Mat4 projection[3], CONST util::Vec3& lightPos, CONST FLOAT distances[3]);
+            void SetCSMSettings(const util::Mat4& view, const util::Mat4& iView, const util::Mat4 projection[3], const util::Vec3& lightPos, const float distances[3]);
 
             IConstShaderBuffer* VGetConstShaderBuffer(ConstShaderBufferSlot slot);
 
-            VOID VDrawScreenQuad(INT x, INT y, INT w, INT h);
+            void VDrawScreenQuad(int x, int y, int w, int h);
 
-            VOID VDrawScreenQuad(VOID);
+            void VDrawScreenQuad(void);
 
-            VOID VDrawLine(INT x, INT y, INT w, INT h);
+            void VDrawLine(int x, int y, int w, int h);
 
-            ~Renderer(VOID);
+            ~Renderer(void);
         };
     }
 }

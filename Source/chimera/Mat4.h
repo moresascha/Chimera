@@ -19,9 +19,9 @@ namespace chimera
         public:
             XMFLOAT4X4 m_m;
 
-            CM_INLINE Mat4(VOID);
+            CM_INLINE Mat4(void);
 
-            CM_INLINE Mat4(CONST Mat4& mat) 
+            CM_INLINE Mat4(const Mat4& mat) 
             {
                 memcpy(&this->m_m, &mat.m_m , sizeof(mat.m_m));
                 m_rotation = mat.GetRotation();
@@ -29,99 +29,99 @@ namespace chimera
                 m_translation = mat.GetTranslation();
             }
 
-            CM_INLINE Mat4(CONST XMFLOAT4X4 v)
+            CM_INLINE Mat4(const XMFLOAT4X4 v)
             {
                 m_m = v;
             }
 
-            CM_INLINE Vec3 GetPYR(VOID) CONST;
+            CM_INLINE Vec3 GetPYR(void) const;
 
-            CM_INLINE VOID RotateX(FLOAT deltaAngle);
+            CM_INLINE void RotateX(float deltaAngle);
 
-            CM_INLINE VOID RotateY(FLOAT deltaAngle);
+            CM_INLINE void RotateY(float deltaAngle);
 
-            CM_INLINE VOID RotateZ(FLOAT deltaAngle);
+            CM_INLINE void RotateZ(float deltaAngle);
 
-            CM_INLINE VOID Rotate(CONST util::Vec3& axis, FLOAT angel);
+            CM_INLINE void Rotate(const util::Vec3& axis, float angel);
 
-            CM_INLINE VOID SetRotateX(FLOAT angle);
+            CM_INLINE void SetRotateX(float angle);
 
-            CM_INLINE VOID SetRotateY(FLOAT angle);
+            CM_INLINE void SetRotateY(float angle);
 
-            CM_INLINE VOID SetRotateZ(FLOAT angle);
+            CM_INLINE void SetRotateZ(float angle);
 
-            CM_INLINE VOID SetRotation(CONST util::Vec3& axis, FLOAT angel);
+            CM_INLINE void SetRotation(const util::Vec3& axis, float angel);
 
-            CM_INLINE VOID RotateQuat(CONST util::Vec4& quat);
+            CM_INLINE void RotateQuat(const util::Vec4& quat);
 
-            CM_INLINE VOID SetRotateQuat(CONST util::Vec4& quat);
+            CM_INLINE void SetRotateQuat(const util::Vec4& quat);
 
-            CM_INLINE VOID SetRotateQuat(FLOAT x, FLOAT y, FLOAT z, FLOAT w);
+            CM_INLINE void SetRotateQuat(float x, float y, float z, float w);
 
-            CM_INLINE VOID SetTranslate(FLOAT x, FLOAT y, FLOAT z) 
+            CM_INLINE void SetTranslate(float x, float y, float z) 
             {
                 m_translation.Set(x, y, z);
                 Update();
                 //this->m_m = GetFromMat4x4(XMMatrixTranslation(x, y, z));
             }
 
-            CM_INLINE VOID SetTranslate(CONST util::Vec3& pos) 
+            CM_INLINE void SetTranslate(const util::Vec3& pos) 
             {
                 SetTranslate(pos.x, pos.y, pos.z);
             }
 
-            CM_INLINE VOID Translate(FLOAT x, FLOAT y, FLOAT z) 
+            CM_INLINE void Translate(float x, float y, float z) 
             {
                 m_translation.Add(x, y, z);
                 Update();
             }
 
-            CM_INLINE VOID Translate(CONST util::Vec3& t) 
+            CM_INLINE void Translate(const util::Vec3& t) 
             {
                 Translate(t.x, t.y, t.z);
             }
 
-            CM_INLINE VOID Scale(FLOAT scale)
+            CM_INLINE void Scale(float scale)
             {
                 SetScale(GetScale().x * scale, GetScale().z * scale, GetScale().y * scale);
             }
 
-            CM_INLINE VOID Scale(CONST util::Vec3& s)
+            CM_INLINE void Scale(const util::Vec3& s)
             {
                 SetScale(GetScale().x * s.x, GetScale().z * s.y, GetScale().y * s.z);
             }
 
-            CM_INLINE VOID SetScale(FLOAT scale) {
+            CM_INLINE void SetScale(float scale) {
                 SetScale(scale, scale, scale);
                 //this->m_m = GetFromMat4x4(XMMatrixScaling(x, y ,z));
             }
 
-            CM_INLINE VOID SetScale(FLOAT sx, FLOAT sy, FLOAT sz)
+            CM_INLINE void SetScale(float sx, float sy, float sz)
             {
                 this->m_scale.Set(sx, sy, sz);
                 Update();
             }
 
-            CM_INLINE CONST Vec3& GetTranslation(VOID) CONST 
+            CM_INLINE const Vec3& GetTranslation(void) const 
             {
                 return m_translation;
             }
 
-            CM_INLINE CONST Vec4& GetRotation(VOID) CONST 
+            CM_INLINE const Vec4& GetRotation(void) const 
             {
                 return m_rotation;
             }
 
-            CM_INLINE CONST util::Vec3& GetScale(VOID) CONST 
+            CM_INLINE const util::Vec3& GetScale(void) const 
             {
                 return m_scale;
             }
 
-            CM_INLINE util::Vec3 GetPhiTheta(VOID) CONST;
+            CM_INLINE util::Vec3 GetPhiTheta(void) const;
 
-            CM_INLINE VOID Update(VOID);
+            CM_INLINE void Update(void);
 
-            CM_INLINE VOID Print() CONST 
+            CM_INLINE void Print() const 
             {
                 char buff[2048];
                 sprintf_s(buff, "\n%f, %f, %f, %f \n%f, %f, %f, %f \n%f, %f, %f, %f \n%f, %f, %f, %f \n",
@@ -132,7 +132,7 @@ namespace chimera
                 OutputDebugStringA(buff);
             }
 
-            CM_INLINE Mat4& operator= (CONST Mat4& mat)
+            CM_INLINE Mat4& operator= (const Mat4& mat)
             {
                 if(this == &mat) return *this;
                 memcpy(&this->m_m, &mat.m_m , sizeof(mat.m_m));
@@ -142,18 +142,18 @@ namespace chimera
                 return *this;
             }
 
-            CM_INLINE ~Mat4(VOID) {}
+            CM_INLINE ~Mat4(void) {}
 
             //static stuff
 
-            CM_INLINE static XMFLOAT4X4 GetFromMat4x4(CONST XMMATRIX& v)
+            CM_INLINE static XMFLOAT4X4 GetFromMat4x4(const XMMATRIX& v)
             {
                 XMFLOAT4X4 _v;
                 XMStoreFloat4x4(&_v, v);
                 return _v;
             }
 
-            CM_INLINE static XMMATRIX GetFromFloat4x4(CONST XMFLOAT4X4& v)
+            CM_INLINE static XMMATRIX GetFromFloat4x4(const XMFLOAT4X4& v)
             {
                 return XMLoadFloat4x4(&v);
             }
@@ -166,7 +166,7 @@ namespace chimera
                 return mat;
             }
 
-            CM_INLINE static util::Vec3 Transform(CONST util::Mat4& mat, CONST util::Vec3& vec)
+            CM_INLINE static util::Vec3 Transform(const util::Mat4& mat, const util::Vec3& vec)
             {
                 util::Vec4 tmp(vec.x, vec.y, vec.z, 1);
                 XMVECTOR v = XMLoadFloat4(&tmp.m_v);
@@ -177,7 +177,7 @@ namespace chimera
                 return util::Vec3(_res.x, _res.y, _res.z);
             }
 
-            CM_INLINE static util::Vec4 Transform(CONST util::Mat4& mat, CONST util::Vec4& vec)
+            CM_INLINE static util::Vec4 Transform(const util::Mat4& mat, const util::Vec4& vec)
             {
                 XMVECTOR v = XMLoadFloat4(&vec.m_v);
                 XMMATRIX m = util::Mat4::GetFromFloat4x4(mat.m_m);
@@ -186,7 +186,7 @@ namespace chimera
                 return _res;
             }
 
-            CM_INLINE static util::Mat4 Mul(CONST util::Mat4& left, CONST util::Mat4& right)
+            CM_INLINE static util::Mat4 Mul(const util::Mat4& left, const util::Mat4& right)
             {
                 XMMATRIX _m0 = util::Mat4::GetFromFloat4x4(left.m_m);
                 XMMATRIX _m1 = util::Mat4::GetFromFloat4x4(right.m_m);
@@ -195,7 +195,7 @@ namespace chimera
                 return res;
             }
 
-            CM_INLINE static util::Mat4 CreatePerspectiveLH(FLOAT fov, FLOAT aspect, FLOAT zNear, FLOAT zFar)
+            CM_INLINE static util::Mat4 CreatePerspectiveLH(float fov, float aspect, float zNear, float zFar)
             {
                 util::Mat4 projection;
                 float invTan = 1.0f / tan(fov * 0.5f);
@@ -224,7 +224,7 @@ namespace chimera
             }
         };
 
-        Mat4::Mat4(VOID)
+        Mat4::Mat4(void)
         {
             m_scale.Set(1, 1, 1);
 
@@ -251,12 +251,12 @@ namespace chimera
             m_rotation.w = -1;
         }
 
-        VOID Mat4::SetRotateQuat(CONST util::Vec4& quat)
+        void Mat4::SetRotateQuat(const util::Vec4& quat)
         {
             SetRotateQuat(quat.x, quat.y, quat.z, quat.w);
         }
 
-        VOID Mat4::SetRotateQuat(FLOAT x, FLOAT y, FLOAT z, FLOAT w)
+        void Mat4::SetRotateQuat(float x, float y, float z, float w)
         {
             m_rotation.m_v.x = x;
             m_rotation.m_v.y = y;
@@ -265,11 +265,11 @@ namespace chimera
             Update();
         }
 
-        Vec3 Mat4::GetPYR(VOID) CONST
+        Vec3 Mat4::GetPYR(void) const
         {
-            FLOAT roll = 0;
-            FLOAT pitch = 0;
-            FLOAT yaw = 0;
+            float roll = 0;
+            float pitch = 0;
+            float yaw = 0;
             DOUBLE test = m_rotation.x * m_rotation.y + m_rotation.z * m_rotation.w;
 
             /*
@@ -287,10 +287,10 @@ namespace chimera
             } 
             else */
             {
-                FLOAT sqx = m_rotation.x * m_rotation.x;
-                FLOAT sqy = m_rotation.y * m_rotation.y;
-                FLOAT sqz = m_rotation.z * m_rotation.z;
-                FLOAT sqw = m_rotation.w * m_rotation.w;
+                float sqx = m_rotation.x * m_rotation.x;
+                float sqy = m_rotation.y * m_rotation.y;
+                float sqz = m_rotation.z * m_rotation.z;
+                float sqw = m_rotation.w * m_rotation.w;
                 roll  = atan2(2 * m_rotation.x * m_rotation.y + 2 * m_rotation.z * m_rotation.w, 1 - 2 * sqy - 2 * sqz);
                 pitch = asin(2 * m_rotation.x * m_rotation.z - 2 * m_rotation.w * m_rotation.y);
                 yaw   = atan2(2 * m_rotation.x * m_rotation.w + 2 * m_rotation.y * m_rotation.z, 1 - 2 * sqz - 2 * sqw);
@@ -302,7 +302,7 @@ namespace chimera
             return pyr;
         }
 
-        util::Vec3 Mat4::GetPhiTheta(VOID) CONST
+        util::Vec3 Mat4::GetPhiTheta(void) const
         {
             util::Vec4 t = m_rotation;
             t.w = 0;
@@ -334,7 +334,7 @@ namespace chimera
             }
         }
 
-        VOID Mat4::RotateQuat(CONST util::Vec4& quat)
+        void Mat4::RotateQuat(const util::Vec4& quat)
         {
             XMVECTOR q0 = XMLoadFloat4(&quat.m_v);
             XMVECTOR q1 = XMLoadFloat4(&m_rotation.m_v);
@@ -347,7 +347,7 @@ namespace chimera
             SetRotateQuat(sq.x, sq.y, sq.z, sq.w);
         }
 
-        VOID Mat4::Rotate(CONST util::Vec3& axis, FLOAT angel) 
+        void Mat4::Rotate(const util::Vec3& axis, float angel) 
         {
             XMVECTOR q = XMQuaternionRotationNormal(XMLoadFloat3(&axis.m_v), angel);
             XMVECTOR result = XMQuaternionMultiply(XMLoadFloat4(&m_rotation.m_v), q);
@@ -356,7 +356,7 @@ namespace chimera
             SetRotateQuat(sq.x, sq.y, sq.z, sq.w);
         }
 
-        VOID Mat4::SetRotation(CONST util::Vec3& axis, FLOAT angel)
+        void Mat4::SetRotation(const util::Vec3& axis, float angel)
         {
             XMVECTOR q = XMQuaternionRotationNormal(XMLoadFloat3(&axis.m_v), angel);
             XMFLOAT4 sq;
@@ -364,43 +364,43 @@ namespace chimera
             SetRotateQuat(sq.x, sq.y, sq.z, sq.w);
         }
 
-        VOID Mat4::RotateX(FLOAT deltaAngle)
+        void Mat4::RotateX(float deltaAngle)
         {
             static Vec3 X_AXIS(1,0,0);
             Rotate(X_AXIS, deltaAngle);
         }
 
-        VOID Mat4::RotateY(FLOAT deltaAngle)
+        void Mat4::RotateY(float deltaAngle)
         {
             static Vec3 Y_AXIS(0,1,0);
             Rotate(Y_AXIS, deltaAngle);
         }
 
-        VOID Mat4::RotateZ(FLOAT deltaAngle)
+        void Mat4::RotateZ(float deltaAngle)
         {
             static Vec3 Z_AXIS(0,0,1);
             Rotate(Z_AXIS, deltaAngle);
         }
 
-        VOID Mat4::SetRotateX(FLOAT angle)
+        void Mat4::SetRotateX(float angle)
         {
             static Vec3 X_AXIS(1,0,0);
             SetRotation(X_AXIS, angle);
         }
 
-        VOID Mat4::SetRotateY(FLOAT angle)
+        void Mat4::SetRotateY(float angle)
         {
             static Vec3 Y_AXIS(0,1,0);
             SetRotation(Y_AXIS, angle);
         }
 
-        VOID Mat4::SetRotateZ(FLOAT angle)
+        void Mat4::SetRotateZ(float angle)
         {
             static Vec3 Z_AXIS(0,0,1);
             SetRotation(Z_AXIS, angle);
         }
 
-        VOID Mat4::Update(VOID)
+        void Mat4::Update(void)
         {
             XMStoreFloat4x4(
                 &m_m, 

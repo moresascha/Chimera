@@ -5,15 +5,15 @@ namespace chimera
 {
     namespace geometryfactroy
     {
-        CM_DLL_API IGeometry* CreateScreenQuad(BOOL cpuWrite = FALSE);
+        CM_DLL_API IGeometry* CreateScreenQuad(bool cpuWrite = false);
 
-        CM_DLL_API IGeometry* GetGlobalScreenQuad(VOID);
+        CM_DLL_API IGeometry* GetGlobalScreenQuad(void);
 
-        CM_DLL_API IGeometry* GetGlobalScreenQuadCPU(VOID);
+        CM_DLL_API IGeometry* GetGlobalScreenQuadCPU(void);
 
-        CM_DLL_API IGeometry* GetGlobalLineCPU(VOID);
+        CM_DLL_API IGeometry* GetGlobalLineCPU(void);
 
-        CM_DLL_API VOID Destroy(VOID);
+        CM_DLL_API void Destroy(void);
 /*
 
         CM_DLL_API FLOAT* GetSerpent(UINT xtiles, UINT ztiles, FLOAT scale = 1);

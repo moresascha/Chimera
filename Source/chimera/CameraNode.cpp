@@ -12,7 +12,7 @@ namespace chimera
         VSetRenderPaths(0);
     }
 
-    VOID CameraNode::_VRender(ISceneGraph* graph, RenderPath& path)
+    void CameraNode::_VRender(ISceneGraph* graph, RenderPath& path)
     {
         /*if(m_pCamera != graph->GetCamera())
         {

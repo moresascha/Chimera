@@ -32,41 +32,41 @@ namespace chimera
         std::map<UCHAR, CMCharMetric> m_metrics;
         CMFontStyle m_style;
         chimera::IDeviceTexture* m_pFontTexture;
-        BOOL m_initialized;
+        bool m_initialized;
     public:
-        BMFont(VOID);
+        BMFont(void);
 
-        BOOL VCreate(CONST std::string& file);
+        bool VCreate(const std::string& file);
 
-        VOID VDestroy(VOID);
+        void VDestroy(void);
 
-        VOID VActivate(VOID);
+        void VActivate(void);
 
-        BOOL VIsBold(VOID) CONST;
+        bool VIsBold(void) const;
 
-        BOOL VIsItalic(VOID) CONST;
+        bool VIsItalic(void) const;
 
-        UINT VGetLineHeight(VOID);
+        uint VGetLineHeight(void);
 
-        UINT VGetLineHeight(VOID) CONST;
+        uint VGetLineHeight(void) const;
 
-        UINT VGetSize(VOID) CONST;
+        uint VGetSize(void) const;
 
-        UINT VGetCharCount (VOID) CONST;
+        uint VGetCharCount (void) const;
 
-        UINT VGetBase(VOID) CONST;
+        uint VGetBase(void) const;
 
-        LPCSTR VGetFileName(VOID) CONST;
+        LPCSTR VGetFileName(void) const;
 
-        UINT VGetTextureWidth(VOID) CONST;
+        uint VGetTextureWidth(void) const;
 
-        UINT VGetTextureHeight(VOID) CONST;
+        uint VGetTextureHeight(void) const;
 
-        CONST CMFontStyle& VGetStyle(VOID) CONST;
+        const CMFontStyle& VGetStyle(void) const;
 
-        CONST CMCharMetric* VGetCharMetric(UCHAR c) CONST;
+        const CMCharMetric* VGetCharMetric(UCHAR c) const;
 
-        ~BMFont(VOID);
+        ~BMFont(void);
     };
 
     class FontRenderer : public IFontRenderer
@@ -74,15 +74,15 @@ namespace chimera
         IShaderProgram* m_program;
         IGeometry* m_quad;
     public:
-        FontRenderer(VOID);
+        FontRenderer(void);
 
-        VOID VRenderText(CONST std::string& text, IFont* font, FLOAT x, FLOAT y, chimera::Color* color = NULL);
+        void VRenderText(const std::string& text, IFont* font, float x, float y, chimera::Color* color = NULL);
 
-        BOOL VOnRestore(VOID);
+        bool VOnRestore(void);
 
-        VOID Destroy(VOID);
+        void Destroy(void);
 
-        ~FontRenderer(VOID);
+        ~FontRenderer(void);
     };
 
     class FontManager : public IFontManager
@@ -92,26 +92,26 @@ namespace chimera
         IFont* m_pCurrentFont;
         IFontRenderer* m_pCurrentRenderer;
     public:
-        FontManager(VOID);
+        FontManager(void);
 
-        BOOL VOnRestore(VOID);
+        bool VOnRestore(void);
 
-        VOID VSetFontRenderer(IFontRenderer* renderer);
+        void VSetFontRenderer(IFontRenderer* renderer);
 
-        VOID VRenderText(std::string& text, FLOAT x, FLOAT y, chimera::Color* color = NULL);
+        void VRenderText(std::string& text, float x, float y, chimera::Color* color = NULL);
 
-        VOID VRenderText(LPCSTR text, FLOAT x, FLOAT y, chimera::Color* color = NULL);
+        void VRenderText(LPCSTR text, float x, float y, chimera::Color* color = NULL);
 
-        VOID VAddFont(CONST std::string& name, IFont* font);
+        void VAddFont(const std::string& name, IFont* font);
 
-        VOID VActivateFont(CONST std::string& name);
+        void VActivateFont(const std::string& name);
 
-        VOID VRemoveFont(CONST std::string& name);
+        void VRemoveFont(const std::string& name);
 
-        IFont* VGetCurrentFont(VOID);
+        IFont* VGetCurrentFont(void);
 
-        IFont* VGetFont(CONST std::string& name) CONST;
+        IFont* VGetFont(const std::string& name) const;
 
-        ~FontManager(VOID);
+        ~FontManager(void);
     };
 }

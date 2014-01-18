@@ -8,19 +8,19 @@
 
 namespace chimera
 {
-    VRamHandle* ParticleQuadGeometryHandleCreator::VGetHandle(VOID)
+    VRamHandle* ParticleQuadGeometryHandleCreator::VGetHandle(void)
     {
-        return new chimera::Geometry(FALSE);
+        return new chimera::Geometry(false);
     }
 
-    VOID ParticleQuadGeometryHandleCreator::VCreateHandle(VRamHandle* handle)
+    void ParticleQuadGeometryHandleCreator::VCreateHandle(VRamHandle* handle)
     {
 
         chimera::Geometry* geo = (chimera::Geometry*)handle;
 
-        FLOAT qscale = 0.01f;
+        float qscale = 0.01f;
 
-        FLOAT quad[32] = 
+        float quad[32] = 
         {
             -1 * qscale, -1 * qscale, 0, 0,1,0, 0, 0, 
             +1 * qscale, -1 * qscale, 0, 0,1,0, 1, 0,
@@ -28,7 +28,7 @@ namespace chimera
             +1 * qscale, +1 * qscale, 0, 0,1,0, 1, 1
         };
 
-        UINT indices[4] = 
+        uint indices[4] = 
         {
             0, 1, 2, 3
         };
@@ -38,28 +38,27 @@ namespace chimera
         geo->VCreate();
     }
 
-    std::shared_ptr<chimera::Geometry> ParticleSystem::GetGeometry(VOID)
+    IGeometry* ParticleSystem::VGetGeometry(void)
     {
         if(!m_geometry->VIsReady())
         {
-            m_geometry = std::static_pointer_cast<chimera::Geometry>(chimera::g_pApp->GetHumanView()->GetVRamManager()->GetHandle(chimera::VRamResource(".ParticleQuadGeometry")));
+            m_geometry = std::static_pointer_cast<Geometry>(CmGetApp()->VGetVRamManager()->VGetHandle(VRamResource(".ParticleQuadGeometry")));
         }
-        return m_geometry;
+        return m_geometry.get();
     }
 
-    ParticleSystem::ParticleSystem(BaseEmitter* emitter, IRandomGenerator* generator) :
-        m_randomValues(NULL), m_pCuda(NULL), m_acceleration(NULL), m_pEmitter(emitter), m_pRandGenerator(generator), m_pParticleBuffer(NULL), m_time(0), m_updateInterval(16) //60 fps
-            , m_localWorkSize(256)
+    ParticleSystem::ParticleSystem(RNG generator) :
+        m_fpRandGenerator(generator), m_time(0), m_updateInterval(16), m_localWorkSize(256), m_updateInterval(16)
     {
     }
 
-    VOID ParticleSystem::AddModifier(BaseModifier* mod)
+    void ParticleSystem::AddModifier(BaseModifier* mod)
     {
         m_mods.push_back(mod);
         mod->SetAABB(m_aabb);
     }
 
-    VOID ParticleSystem::RemoveModifier(BaseModifier* mod)
+    void ParticleSystem::RemoveModifier(BaseModifier* mod)
     {
         auto it = std::find(m_mods.begin(), m_mods.end(), mod);
         if(it != m_mods.end())
@@ -70,80 +69,75 @@ namespace chimera
         }
     }
 
-    VOID ParticleSystem::SetTranslation(CONST util::Vec3& translation)
-    {
-        m_position = translation;
-    }
-
-    CONST util::Vec3& ParticleSystem::GetTranslation(VOID)
+    const util::Vec3& ParticleSystem::GetTranslation(void)
     {
         return m_position;
     }
 
-    cudah::cudah* ParticleSystem::GetCuda(VOID)
+    void ParticleSystem::VUpdateTick(ulong time, ulong dt)
     {
-        return m_pCuda;
-    }
+        //m_pCuda->MapGraphicsResource(m_particles);
+        nutty::MappedPtr<float4> ptr = m_particles->Bind();
 
-    VOID ParticleSystem::UpdateTick(ULONG time, ULONG dt)
-    {
-        m_pCuda->MapGraphicsResource(m_particles);
         //assert((INT)timer->GetTime() - (INT)m_startTime > 0);
         dt = CLAMP(dt, dt, m_updateInterval);
         m_time += dt;
-        FLOAT dtt = (FLOAT)(dt * 1e-3f);
-        FLOAT tf = m_time * 1e-3f;
-        m_pEmitter->VUpdate(this, tf, dtt);
+        float dtt = (float)(dt * 1e-3f);
+        float tf = m_time * 1e-3f;
+        //m_pEmitter->VUpdate(this, tf, dtt);
 
         for(auto it = m_mods.begin(); it != m_mods.end(); ++it)
         {
-            BaseModifier* mod = *it;
+            IParticleModifier* mod = *it;
             mod->VUpdate(this, tf, dtt);
         }
 
-        VOID *args[] = { &m_particles->ptr, &m_acceleration->ptr, &m_velocities->ptr, &dtt };
+        void *args[] = { &m_particles->ptr, &m_acceleration->ptr, &m_velocities->ptr, &dtt };
 
         m_kernel->m_ppArgs = args;
 
-        m_pCuda->CallKernel(m_kernel);
+        m_kernel->Call();
+        //m_pCuda->CallKernel(m_kernel);
         //integrate((float4*)m_particles->ptr, (float3*)m_acceleration->ptr, (float3*)m_velocities->ptr, (float)(dt * 1e-3f), GetParticlesCount(), GetLocalWorkSize());
 
         //DEBUG_OUT_A("Count=%d Lws=%u Blocks=%u", GetParticlesCount(), GetLocalWorkSize(), GetParticlesCount() / GetLocalWorkSize());
 
-        m_pCuda->UnmapGraphicsResource(m_particles);
+        //m_pCuda->UnmapGraphicsResource(m_particles);
+
+        m_particles->Unbind();
     }
 
-    cudah::cuda_buffer ParticleSystem::GetRandomValues(VOID)
+    LPCGPUDEVMEM ParticleSystem::VGetDeviceRNGArray(void)
     {
-        return m_randomValues;
+        return &m_randomValues;
     }
 
-    cudah::cuda_buffer ParticleSystem::GetAcceleration(VOID)
+    LPCGPUDEVMEM ParticleSystem::VGetDeviceAccelerationArray(void)
     {
-        return m_acceleration;
+        return &m_acceleration;
     }
 
-    cudah::cuda_buffer ParticleSystem::GetVelocities(VOID)
+    LPCGPUDEVMEM ParticleSystem::VGetDeviceVelocitiesArray(void)
     {
-        return m_velocities;
+        return &m_velocities;
     }
 
-    cudah::cuda_buffer ParticleSystem::GetParticles(VOID)
+    cudah::cuda_buffer ParticleSystem::GetParticles(void)
     {
         return m_particles;
     }
 
-    UINT ParticleSystem::GetParticlesCount(VOID)
+    uint ParticleSystem::GetParticlesCount(void)
     {
         return m_pEmitter->GetParticleCount();
     }
 
-    BOOL ParticleSystem::HasRandBuffer(VOID)
+    bool ParticleSystem::HasRandBuffer(void)
     {
         return m_randomValues != NULL;
     }
 
-    VOID ParticleSystem::SetAxisAlignedBB(util::AxisAlignedBB& aabb)
+    void ParticleSystem::SetAxisAlignedBB(util::AxisAlignedBB& aabb)
     {
         m_aabb = aabb;
         for(auto it = m_mods.begin(); it != m_mods.end(); ++it)
@@ -156,23 +150,23 @@ namespace chimera
         }
     }
 
-    util::AxisAlignedBB& ParticleSystem::GetAxisAlignedBB(VOID)
+    util::AxisAlignedBB& ParticleSystem::GetAxisAlignedBB(void)
     {
         return m_aabb;
     }
 
-    chimera::VertexBuffer* ParticleSystem::GetParticleBuffer(VOID)
+    chimera::VertexBuffer* ParticleSystem::GetParticleBuffer(void)
     {
         return m_pParticleBuffer;
     }
 
-    UINT ParticleSystem::GetLocalWorkSize(VOID)
+    uint ParticleSystem::GetLocalWorkSize(void)
     {
         return m_localWorkSize;
     }
 
     //vram interface
-    BOOL ParticleSystem::VCreate(VOID)
+    bool ParticleSystem::VCreate(void)
     {
         SAFE_DELETE(m_pCuda);
 
@@ -180,7 +174,7 @@ namespace chimera
 
         m_kernel = m_pCuda->GetKernel("_integrate");
 
-        INT blockSize = 256;//todo cudah::cudah::GetMaxThreadsPerSM() / cudah::cudah::GetMaxBlocksPerSM();
+        int blockSize = 256;//todo cudah::cudah::GetMaxThreadsPerSM() / cudah::cudah::GetMaxBlocksPerSM();
         m_localWorkSize = blockSize;
 
         if(m_pEmitter->GetParticleCount() % m_localWorkSize != 0)
@@ -189,7 +183,7 @@ namespace chimera
         }
         
         ParticlePosition* positions = m_pEmitter->CreateParticles();
-        FLOAT* rands = NULL;
+        float* rands = NULL;
 
         if(m_pRandGenerator)
         {
@@ -197,7 +191,7 @@ namespace chimera
             m_randomValues = m_pCuda->CreateBuffer(std::string("randoms"), m_pRandGenerator->GetValuesCount() * 4, rands, 4);
         }
 
-        FLOAT* parts = (FLOAT*)positions;
+        float* parts = (float*)positions;
 
         SAFE_DELETE(m_pParticleBuffer);
 
@@ -218,7 +212,7 @@ namespace chimera
         m_pEmitter->SetAABB(m_aabb);
 
         float3* veloAccInit = new float3[m_pEmitter->GetParticleCount()];
-        for(UINT i = 0; i < m_pEmitter->GetParticleCount(); ++i)
+        for(uint i = 0; i < m_pEmitter->GetParticleCount(); ++i)
         {
             veloAccInit[i].x = 0;
             veloAccInit[i].y = 0;
@@ -232,7 +226,7 @@ namespace chimera
         m_geometry = std::static_pointer_cast<chimera::Geometry>(chimera::g_pApp->GetHumanView()->GetVRamManager()->GetHandle(chimera::VRamResource(".ParticleQuadGeometry")));
 
         //integrate((float4*)m_particles->ptr, (float3*)m_acceleration->ptr, (float3*)m_velocities->ptr, (float)(dt * 1e-3f), GetParticlesCount(), GetLocalWorkSize());
-        INT threads = cudahu::GetThreadCount(GetParticlesCount(), GetLocalWorkSize());
+        int threads = cudahu::GetThreadCount(GetParticlesCount(), GetLocalWorkSize());
         m_kernel->m_blockDim.x = GetLocalWorkSize();
         m_kernel->m_gridDim.x = threads / m_kernel->m_blockDim.x;
 
@@ -242,10 +236,10 @@ namespace chimera
 
         m_time = 0;
 
-        return TRUE;
+        return true;
     }
 
-    VOID ParticleSystem::VDestroy(VOID)
+    void ParticleSystem::VDestroy(void)
     {
         for(auto it = m_mods.begin(); it != m_mods.end(); ++it)
         {
@@ -258,56 +252,56 @@ namespace chimera
         SAFE_DELETE(m_pRandGenerator);
     }
 
-    UINT ParticleSystem::VGetByteCount(VOID) CONST
+    uint ParticleSystem::VGetByteCount(void) const
     {
         //TODO modifier
         //per particle
         //acceleration 3 * 4 byte
         //velocity 3 * 4 byte
         //position 4 * 4 byte
-        UINT modBytes = 0;
+        uint modBytes = 0;
         TBD_FOR(m_mods)
         {
             modBytes += (*it)->VGetByteCount();
         }
-        UINT particles = m_pEmitter->GetParticleCount();
-        UINT byte = sizeof(FLOAT);
+        uint particles = m_pEmitter->GetParticleCount();
+        uint byte = sizeof(float);
         return particles * (3 + 3 + 4) * byte + modBytes;
     }
 
-    ParticleSystem::~ParticleSystem(VOID)
+    ParticleSystem::~ParticleSystem(void)
     {
 
     }
 
-    PositiveNormalizedUniformValueGenerator::PositiveNormalizedUniformValueGenerator(UINT count, INT seed) : IRandomGenerator(count), m_seed(seed)
+    PositiveNormalizedUniformValueGenerator::PositiveNormalizedUniformValueGenerator(uint count, int seed) : IRandomGenerator(count), m_seed(seed)
     {
 
     }
 
-    FLOAT* PositiveNormalizedUniformValueGenerator::CreateRandomValues(VOID)
+    float* PositiveNormalizedUniformValueGenerator::CreateRandomValues(void)
     {
         srand(m_seed);
-        FLOAT* rands = new FLOAT[m_count];
-        for(UINT i = 0; i < m_count; ++i)
+        float* rands = new float[m_count];
+        for(uint i = 0; i < m_count; ++i)
         {
-            rands[i] = rand() / (FLOAT)RAND_MAX;
+            rands[i] = rand() / (float)RAND_MAX;
         }
         return rands;
     }
 
-    NormalizedUniformValueGenerator::NormalizedUniformValueGenerator(UINT count, INT seed, FLOAT scale) : IRandomGenerator(count), m_seed(seed), m_scale(scale)
+    NormalizedUniformValueGenerator::NormalizedUniformValueGenerator(uint count, int seed, float scale) : IRandomGenerator(count), m_seed(seed), m_scale(scale)
     {
 
     }
 
-    FLOAT* NormalizedUniformValueGenerator::CreateRandomValues(VOID)
+    float* NormalizedUniformValueGenerator::CreateRandomValues(void)
     {
         srand(m_seed);
-        FLOAT* rands = new FLOAT[m_count];
-        for(UINT i = 0; i < m_count; ++i)
+        float* rands = new float[m_count];
+        for(uint i = 0; i < m_count; ++i)
         {
-            float v = rand() / (FLOAT)RAND_MAX;
+            float v = rand() / (float)RAND_MAX;
             rands[i] = (2 * v - 1) * m_scale;
         }
         return rands;

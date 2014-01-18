@@ -19,18 +19,18 @@ namespace chimera
             friend class OrthographicHandler;
             friend class OrthographicOffCenterHandler;
         protected:
-            FLOAT m_Aspect;
-            FLOAT m_FoV;
-            FLOAT m_Near;
-            FLOAT m_Far;
-            FLOAT m_Phi;
-            FLOAT m_Theta;
-            FLOAT m_width;
-            FLOAT m_height;
-            FLOAT m_left;
-            FLOAT m_right;
-            FLOAT m_up;
-            FLOAT m_down;
+            float m_Aspect;
+            float m_FoV;
+            float m_Near;
+            float m_Far;
+            float m_Phi;
+            float m_Theta;
+            float m_width;
+            float m_height;
+            float m_left;
+            float m_right;
+            float m_up;
+            float m_down;
             Mat4 m_view;
             Mat4 m_iview;
             Mat4 m_projection;
@@ -40,161 +40,161 @@ namespace chimera
             Vec3 m_upDir;
             Vec3 m_viewDir;
             Vec3 m_lastSetPostition;
-            VOID ComputeProjection(VOID);
-            VOID ComputeView(VOID);
+            void ComputeProjection(void);
+            void ComputeView(void);
             IProjectionTypeHandler* m_handler;
             chimera::Frustum m_frustum;
 
         public:
-            Camera(UINT width, UINT height, FLOAT zNear, FLOAT zFar);
+            Camera(uint width, uint height, float zNear, float zFar);
 
-            CONST Mat4& GetView(VOID) 
+            const Mat4& GetView(void) 
             {
                 return this->m_view;
             }
 
-            CONST Mat4& GetIView(VOID)
+            const Mat4& GetIView(void)
             {
                 return m_iview;
             }
 
-            CONST Mat4& GetProjection(VOID) 
+            const Mat4& GetProjection(void) 
             {
                 return this->m_projection;
             }
 
-            CONST Mat4& GetViewProjection(VOID)
+            const Mat4& GetViewProjection(void)
             {
                 return this->m_viewProjection;
             }
 
-            CONST Vec3& GetEyePos(VOID) 
+            const Vec3& GetEyePos(void) 
             {
                 return this->m_eyePos;
             }
 
-            CONST Vec3& GetViewDir(VOID) 
+            const Vec3& GetViewDir(void) 
             {
                 return this->m_viewDir;
             }
 
-            virtual CONST Vec3& GetViewDirXZ(VOID) 
+            virtual const Vec3& GetViewDirXZ(void) 
             {
                 return this->m_viewDir;
             }
 
-            CONST Vec3& GetSideDir(VOID)
+            const Vec3& GetSideDir(void)
             {
                 return m_sideDir;
             }
 
-            CONST Vec3& GetUpDir(VOID)
+            const Vec3& GetUpDir(void)
             {
                 return m_upDir;
             }
 
-            FLOAT GetPhi(VOID) CONST
+            float GetPhi(void) const
             {
                 return m_Phi;
             }
 
-            FLOAT GetTheta(VOID) CONST
+            float GetTheta(void) const
             {
                 return m_Theta;
             }
 
-            virtual VOID Move(FLOAT dx, FLOAT dy, FLOAT dz);
+            virtual void Move(float dx, float dy, float dz);
 
-            virtual VOID Move(CONST Vec3& dt);
+            virtual void Move(const Vec3& dt);
 
-            virtual VOID Rotate(FLOAT dPhi, FLOAT dTheta);
+            virtual void Rotate(float dPhi, float dTheta);
 
-            virtual VOID LookAt(CONST util::Vec3& eyePos, CONST util::Vec3& at);
+            virtual void LookAt(const util::Vec3& eyePos, const util::Vec3& at);
 
-            VOID FromViewUp(CONST util::Vec3& viewDir, CONST util::Vec3& viewUp);
+            void FromViewUp(const util::Vec3& viewDir, const util::Vec3& viewUp);
 
-            VOID SetPerspectiveProjection(FLOAT aspect, FLOAT fov, FLOAT fnear, FLOAT ffar);
+            void SetPerspectiveProjection(float aspect, float fov, float fnear, float ffar);
 
-            VOID SetOrthographicProjection(FLOAT width, FLOAT height, FLOAT fnear, FLOAT ffar);
+            void SetOrthographicProjection(float width, float height, float fnear, float ffar);
 
-            VOID SetOrthographicProjectionOffCenter(FLOAT left, FLOAT right, FLOAT down, FLOAT up, FLOAT fNear, FLOAT fFar);
+            void SetOrthographicProjectionOffCenter(float left, float right, float down, float up, float fNear, float fFar);
 
-            VOID SetAspect(UINT width, UINT height) 
+            void SetAspect(uint width, uint height) 
             {
-                m_Aspect = width / (FLOAT) height;
-                m_height = (FLOAT)height;
-                m_width = (FLOAT)width;
+                m_Aspect = width / (float) height;
+                m_height = (float)height;
+                m_width = (float)width;
                 ComputeProjection();
             }
 
-            FLOAT GetAspect(VOID)
+            float GetAspect(void)
             {
                 return m_Aspect;
             }
 
-            VOID SetFoV(FLOAT foV) {
+            void SetFoV(float foV) {
                 m_FoV = foV;
                 ComputeProjection();
             }
 
-            FLOAT GetFoV(VOID)
+            float GetFoV(void)
             {
                 return m_FoV;
             }
 
-            VOID SetFar(FLOAT f) 
+            void SetFar(float f) 
             {
                 this->m_Far = f;
                 this->ComputeProjection();
             }
 
-            FLOAT GetFar(VOID)
+            float GetFar(void)
             {
                 return m_Far;
             }
 
-            VOID SetNear(FLOAT n) 
+            void SetNear(float n) 
             {
                 this->m_Near = n;
                 this->ComputeProjection();
             }
 
-            FLOAT GetNear(VOID)
+            float GetNear(void)
             {
                 return m_Near;
             }
 
-            virtual VOID MoveToPosition(CONST util::Vec3& pos);
+            virtual void MoveToPosition(const util::Vec3& pos);
 
-            virtual VOID SetEyePos(CONST util::Vec3& pos);
+            virtual void SetEyePos(const util::Vec3& pos);
 
-            VOID SetRotation(FLOAT phi, FLOAT theta);
+            void SetRotation(float phi, float theta);
 
-            VOID SetProjectionType(ProjectionType type);
+            void SetProjectionType(ProjectionType type);
 
-            chimera::Frustum& GetFrustum(VOID);
+            chimera::Frustum& GetFrustum(void);
 
-            virtual ~Camera(VOID);
+            virtual ~Camera(void);
         };
 
         class FPSCamera : public Camera
         {
         public:
-            FPSCamera(UINT width, UINT height, FLOAT zNear, FLOAT zFar);
-            virtual VOID Rotate(FLOAT dPhi, FLOAT dTheta);
+            FPSCamera(uint width, uint height, float zNear, float zFar);
+            virtual void Rotate(float dPhi, float dTheta);
             virtual ~FPSCamera();
         };
 
         class CharacterCamera : public FPSCamera
         {
         private:
-            FLOAT m_yOffset;
+            float m_yOffset;
         public:
-            CharacterCamera(UINT width, UINT height, FLOAT zNear, FLOAT zFar);
-            VOID VSetYOffset(FLOAT offset) { m_yOffset = offset; }
-            VOID SetEyePos(CONST util::Vec3& pos);
-            VOID LookAt(CONST util::Vec3& eyePos, CONST util::Vec3& at);
-            virtual VOID MoveToPosition(CONST util::Vec3& pos);
+            CharacterCamera(uint width, uint height, float zNear, float zFar);
+            void VSetYOffset(float offset) { m_yOffset = offset; }
+            void SetEyePos(const util::Vec3& pos);
+            void LookAt(const util::Vec3& eyePos, const util::Vec3& at);
+            virtual void MoveToPosition(const util::Vec3& pos);
         };
 
         class CharacterHeadShake : public CharacterCamera
@@ -205,10 +205,10 @@ namespace chimera
             util::Vec3 m_lastPos;
             util::Vec3 m_modViewDir;
         public:
-            CharacterHeadShake(UINT width, UINT height, FLOAT zNear, FLOAT zFar);
-            VOID MoveToPosition(CONST util::Vec3& pos);
-            CONST Vec3& GetViewDirXZ(VOID);
-            VOID Rotate(FLOAT dPhi, FLOAT dTheta);
+            CharacterHeadShake(uint width, uint height, float zNear, float zFar);
+            void MoveToPosition(const util::Vec3& pos);
+            const Vec3& GetViewDirXZ(void);
+            void Rotate(float dPhi, float dTheta);
         };
 
         class StaticCamera : public FPSCamera
@@ -216,15 +216,15 @@ namespace chimera
 
         public:
 
-            StaticCamera(UINT width, UINT height, FLOAT zNear, FLOAT zFar);
+            StaticCamera(uint width, uint height, float zNear, float zFar);
 
-            VOID Move(FLOAT dx, FLOAT dy, FLOAT dz);
+            void Move(float dx, float dy, float dz);
 
-            VOID Move(CONST Vec3& dt);
+            void Move(const Vec3& dt);
 
-            VOID Rotate(FLOAT dPhi, FLOAT dTheta);
+            void Rotate(float dPhi, float dTheta);
 
-            VOID SetView(CONST util::Mat4& view, CONST util::Mat4& iview);
+            void SetView(const util::Mat4& view, const util::Mat4& iview);
         };
     }
 }

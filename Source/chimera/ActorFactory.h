@@ -8,7 +8,7 @@ namespace chimera
     {
     private:
         ActorId m_lastActorId;
-        ActorId GetNextActorId(VOID) { return ++m_lastActorId; }
+        ActorId GetNextActorId(void) { return ++m_lastActorId; }
     protected:
         std::map<std::string, ActorComponentCreator> m_creators;
         std::map<ComponentId, ActorComponentCreator> m_creatorsId;
@@ -16,11 +16,11 @@ namespace chimera
         std::map<std::string, ActorComponentInitializer> m_initializerId;
 
     public:
-        ActorFactory(VOID);
+        ActorFactory(void);
 
         std::unique_ptr<IActorComponent> VCreateComponent(ICMStream* stream);
 
-        IActor* VCreateActor(CONST CMResource& resource, std::vector<std::unique_ptr<IActor>>& actors);
+        IActor* VCreateActor(const CMResource& resource, std::vector<std::unique_ptr<IActor>>& actors);
 
         IActor* VCreateActor(ICMStream* stream, std::vector<std::unique_ptr<IActor>>& actors);
 
@@ -30,15 +30,15 @@ namespace chimera
 
         std::unique_ptr<IActorComponent> VCreateComponent(ComponentId id);
 
-        std::unique_ptr<ActorDescription> VCreateActorDescription(VOID) { return std::unique_ptr<ActorDescription>(new ActorDescription(this)); }
+        std::unique_ptr<ActorDescription> VCreateActorDescription(void) { return std::unique_ptr<ActorDescription>(new ActorDescription(this)); }
 
-        VOID VAddComponentCreator(ActorComponentCreator creator, LPCSTR name, ComponentId id);
+        void VAddComponentCreator(ActorComponentCreator creator, LPCSTR name, ComponentId id);
 
-        VOID VAddComponentSerializer(ActorComponentSerializer serializer, LPCSTR name, ComponentId id);
+        void VAddComponentSerializer(ActorComponentSerializer serializer, LPCSTR name, ComponentId id);
 
-        VOID VAddComponentInitializer(ActorComponentInitializer serializer, LPCSTR name, ComponentId id);
+        void VAddComponentInitializer(ActorComponentInitializer serializer, LPCSTR name, ComponentId id);
 
-        virtual ~ActorFactory(VOID) { }
+        virtual ~ActorFactory(void) { }
     };
 };
 

@@ -9,21 +9,21 @@ namespace chimera
     class IGuiComponent : virtual public IScreenElement, public InputAdapter
     {
     public:
-        virtual VOID VSetEffect(LPCSTR ps) = 0;
+        virtual void VSetEffect(LPCSTR ps) = 0;
 
-        virtual VOID VSetFocus(BOOL focus) = 0;
+        virtual void VSetFocus(bool focus) = 0;
 
-        virtual VOID VSetEnabled(BOOL enable) = 0;
+        virtual void VSetEnabled(bool enable) = 0;
 
-        virtual ~IGuiComponent(VOID) { }
+        virtual ~IGuiComponent(void) { }
     };
 
     class IGui : public virtual IScreenElementContainer, public InputAdapter
     {
     public:
-        virtual VOID VAddComponent(IGuiComponent* cmp) = 0;
+        virtual void VAddComponent(IGuiComponent* cmp) = 0;
 
-        virtual ~IGui(VOID) {}
+        virtual ~IGui(void) {}
     };
 
     class IGuiRectangle : public virtual IGuiComponent
@@ -34,68 +34,68 @@ namespace chimera
     class IGuiTextureComponent : public virtual IGuiComponent
     {
     public:
-        virtual VOID VSetTexture(LPCSTR texture) = 0;
+        virtual void VSetTexture(LPCSTR texture) = 0;
 
-        virtual ~IGuiTextureComponent(VOID) { }
+        virtual ~IGuiTextureComponent(void) { }
     };
 
     class IGuiTextComponent : public virtual IGuiComponent
     {
     public:
-        virtual VOID VSetAlignment(Alignment e) = 0;
+        virtual void VSetAlignment(Alignment e) = 0;
 
-        virtual VOID VSetTextAppendDirection(AppendDirection dir) = 0;
+        virtual void VSetTextAppendDirection(AppendDirection dir) = 0;
 
-        virtual VOID VAppendText(CONST std::string& text) = 0;
+        virtual void VAppendText(const std::string& text) = 0;
 
-        virtual VOID VAppendText(LPCSTR text) { VAppendText(std::string(text)); }
+        virtual void VAppendText(LPCSTR text) { VAppendText(std::string(text)); }
 
-        virtual CONST std::vector<TextLine>& VGetTextLines(VOID) CONST = 0;
+        virtual const std::vector<TextLine>& VGetTextLines(void) const = 0;
 
-        virtual VOID VSetTextColor(CONST Color& c) = 0;
+        virtual void VSetTextColor(const Color& c) = 0;
 
-        virtual VOID VClearText(VOID) = 0;
+        virtual void VClearText(void) = 0;
 
-        virtual ~IGuiTextComponent(VOID) { }
+        virtual ~IGuiTextComponent(void) { }
     };
 
     class IGuiTextInputComponent : public virtual IGuiComponent
     {
     public:
-        virtual VOID VAddChar(CHAR c) = 0;
+        virtual void VAddChar(char c) = 0;
 
-        virtual VOID VRemoveChar(VOID) = 0;
+        virtual void VRemoveChar(void) = 0;
 
-        virtual CONST std::string& VGetText(VOID) = 0;
+        virtual const std::string& VGetText(void) = 0;
 
-        virtual VOID VSetText(CONST std::string& text) = 0;
+        virtual void VSetText(const std::string& text) = 0;
 
-        virtual VOID VSetTextColor(CONST Color& c) = 0;
+        virtual void VSetTextColor(const Color& c) = 0;
 
-        virtual VOID VClearText(VOID) = 0;
+        virtual void VClearText(void) = 0;
     };
 
     class IGuiFactory
     {
     public:
-        virtual IGuiRectangle* VCreateRectangle(VOID) = 0;
+        virtual IGuiRectangle* VCreateRectangle(void) = 0;
 
-        virtual IGuiTextureComponent* VCreateTextureComponent(VOID) = 0;
+        virtual IGuiTextureComponent* VCreateTextureComponent(void) = 0;
 
-        virtual IGuiTextComponent* VCreateTextComponent(VOID) = 0;
+        virtual IGuiTextComponent* VCreateTextComponent(void) = 0;
 
-        virtual IGuiTextInputComponent* VCreateTextInputComponent(VOID) = 0;
+        virtual IGuiTextInputComponent* VCreateTextInputComponent(void) = 0;
 
-        virtual IGui* VCreateGui(VOID) = 0;
+        virtual IGui* VCreateGui(void) = 0;
     };
 
     class IGuiLookAndFeel
     {
     public:
-        virtual Color VGetBackgroundColor(VOID) = 0;
+        virtual Color VGetBackgroundColor(void) = 0;
         
-        virtual Color VGetForegroundColor(VOID) = 0;
+        virtual Color VGetForegroundColor(void) = 0;
 
-        virtual Color VGetFontColor(VOID) = 0;
+        virtual Color VGetFontColor(void) = 0;
     };
 }

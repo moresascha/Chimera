@@ -3,7 +3,7 @@
 
 namespace chimera
 {  
-    VOID DrawAlbedo(IShaderProgram* prog, IShaderProgram* instancedProg)
+    void DrawAlbedo(IShaderProgram* prog, IShaderProgram* instancedProg)
     {
         instancedProg->VBind();
         CmGetApp()->VGetHumanView()->VGetSceneGraph()->VOnRender(CM_RENDERPATH_ALBEDO_INSTANCED);
@@ -35,47 +35,47 @@ namespace chimera
 
     }
 
-    BOOL ShaderPathSetting::VOnRestore(UINT w, UINT h)
+    bool ShaderPathSetting::VOnRestore(uint w, uint h)
     {
         if(!m_pProgram)
         {
             m_pProgram = CmGetApp()->VGetHumanView()->VGetRenderer()->VGetShaderCache()->VCreateShaderProgram(m_programName.c_str(), &m_desc);
 
         }
-        return TRUE;
+        return true;
     }
 
-    VOID ShaderPathSetting::VRender(VOID)
+    void ShaderPathSetting::VRender(void)
     {
         m_pProgram->VBind();
         CmGetApp()->VGetHumanView()->VGetSceneGraph()->VOnRender((RenderPath)m_renderPath);
     }
 
-    AlbedoSetting::AlbedoSetting(VOID) : ShaderPathSetting(CM_RENDERPATH_ALBEDO, DEFERRED_SHADER_NAME, DEFERRED_SHADER_NAME), m_pInstanced(NULL)
+    AlbedoSetting::AlbedoSetting(void) : ShaderPathSetting(CM_RENDERPATH_ALBEDO, DEFERRED_SHADER_NAME, DEFERRED_SHADER_NAME), m_pInstanced(NULL)
     {
         m_pInstanced = new ShaderPathSetting(CM_RENDERPATH_ALBEDO_INSTANCED, "DefShadingInstanced", "Instanced");
     }
 
-    BOOL AlbedoSetting::VOnRestore(UINT w, UINT h)
+    bool AlbedoSetting::VOnRestore(uint w, uint h)
     {
         VGetProgramDescription()->vs.file = DEFERRED_SHADER_FILE;
         VGetProgramDescription()->vs.function = DEFERRED_SHADER_VS_FUNCTION;
 
         VGetProgramDescription()->vs.layoutCount = 3;
 
-        VGetProgramDescription()->vs.inputLayout[0].instanced = FALSE;
+        VGetProgramDescription()->vs.inputLayout[0].instanced = false;
         VGetProgramDescription()->vs.inputLayout[0].name = "POSITION";
         VGetProgramDescription()->vs.inputLayout[0].position = 0;
         VGetProgramDescription()->vs.inputLayout[0].slot = 0;
         VGetProgramDescription()->vs.inputLayout[0].format = eFormat_R32G32B32_FLOAT;
 
-        VGetProgramDescription()->vs.inputLayout[1].instanced = FALSE;
+        VGetProgramDescription()->vs.inputLayout[1].instanced = false;
         VGetProgramDescription()->vs.inputLayout[1].name = "NORMAL";
         VGetProgramDescription()->vs.inputLayout[1].position = 1;
         VGetProgramDescription()->vs.inputLayout[1].slot = 0;
         VGetProgramDescription()->vs.inputLayout[1].format = eFormat_R32G32B32_FLOAT;
 
-        VGetProgramDescription()->vs.inputLayout[2].instanced = FALSE;
+        VGetProgramDescription()->vs.inputLayout[2].instanced = false;
         VGetProgramDescription()->vs.inputLayout[2].name = "TEXCOORD";
         VGetProgramDescription()->vs.inputLayout[2].position = 2;
         VGetProgramDescription()->vs.inputLayout[2].slot = 0;
@@ -90,25 +90,25 @@ namespace chimera
 
         m_pInstanced->VGetProgramDescription()->vs.layoutCount = 4;
 
-        m_pInstanced->VGetProgramDescription()->vs.inputLayout[0].instanced = FALSE;
+        m_pInstanced->VGetProgramDescription()->vs.inputLayout[0].instanced = false;
         m_pInstanced->VGetProgramDescription()->vs.inputLayout[0].name = "POSITION";
         m_pInstanced->VGetProgramDescription()->vs.inputLayout[0].position = 0;
         m_pInstanced->VGetProgramDescription()->vs.inputLayout[0].slot = 0;
         m_pInstanced->VGetProgramDescription()->vs.inputLayout[0].format = eFormat_R32G32B32_FLOAT;
 
-        m_pInstanced->VGetProgramDescription()->vs.inputLayout[1].instanced = FALSE;
+        m_pInstanced->VGetProgramDescription()->vs.inputLayout[1].instanced = false;
         m_pInstanced->VGetProgramDescription()->vs.inputLayout[1].name = "NORMAL";
         m_pInstanced->VGetProgramDescription()->vs.inputLayout[1].position = 1;
         m_pInstanced->VGetProgramDescription()->vs.inputLayout[1].slot = 0;
         m_pInstanced->VGetProgramDescription()->vs.inputLayout[1].format = eFormat_R32G32B32_FLOAT;
 
-        m_pInstanced->VGetProgramDescription()->vs.inputLayout[2].instanced = FALSE;
+        m_pInstanced->VGetProgramDescription()->vs.inputLayout[2].instanced = false;
         m_pInstanced->VGetProgramDescription()->vs.inputLayout[2].name = "TEXCOORD";
         m_pInstanced->VGetProgramDescription()->vs.inputLayout[2].position = 2;
         m_pInstanced->VGetProgramDescription()->vs.inputLayout[2].slot = 0;
         m_pInstanced->VGetProgramDescription()->vs.inputLayout[2].format = eFormat_R32G32_FLOAT;
 
-        m_pInstanced->VGetProgramDescription()->vs.inputLayout[3].instanced = TRUE;
+        m_pInstanced->VGetProgramDescription()->vs.inputLayout[3].instanced = true;
         m_pInstanced->VGetProgramDescription()->vs.inputLayout[3].name = "TANGENT";
         m_pInstanced->VGetProgramDescription()->vs.inputLayout[3].position = 3;
         m_pInstanced->VGetProgramDescription()->vs.inputLayout[3].slot = 1;
@@ -122,23 +122,23 @@ namespace chimera
         return ShaderPathSetting::VOnRestore(w, h);
     }
 
-    VOID AlbedoSetting::VRender(VOID)
+    void AlbedoSetting::VRender(void)
     {
         ShaderPathSetting::VRender();
         m_pInstanced->VRender();
     }
 
-    AlbedoSetting::~AlbedoSetting(VOID)
+    AlbedoSetting::~AlbedoSetting(void)
     {
         SAFE_DELETE(m_pInstanced);
     }
 
-    GloablLightingSetting::GloablLightingSetting(VOID) : ShaderPathSetting(CM_RENDERPATH_LIGHTING, GLOBAL_LIGHTING_SHADER_NAME, GLOBAL_LIGHTING_SHADER_NAME)
+    GloablLightingSetting::GloablLightingSetting(void) : ShaderPathSetting(CM_RENDERPATH_LIGHTING, GLOBAL_LIGHTING_SHADER_NAME, GLOBAL_LIGHTING_SHADER_NAME)
     {
 
     }
 
-    BOOL GloablLightingSetting::VOnRestore(UINT w, UINT h)
+    bool GloablLightingSetting::VOnRestore(uint w, uint h)
     {
         m_desc.fs.file = GLOBAL_LIGHTING_SHADER_FILE;
         m_desc.fs.function = GLOBAL_LIGHTING_SHADER_FS_FUNCTION;
@@ -146,13 +146,13 @@ namespace chimera
         m_desc.vs.layoutCount = 2;
 
         m_desc.vs.inputLayout[0].format = eFormat_R32G32B32_FLOAT;
-        m_desc.vs.inputLayout[0].instanced = FALSE;
+        m_desc.vs.inputLayout[0].instanced = false;
         m_desc.vs.inputLayout[0].name = "POSITION";
         m_desc.vs.inputLayout[0].position = 0;
         m_desc.vs.inputLayout[0].slot = 0;
 
         m_desc.vs.inputLayout[1].format = eFormat_R32G32_FLOAT;
-        m_desc.vs.inputLayout[1].instanced = FALSE;
+        m_desc.vs.inputLayout[1].instanced = false;
         m_desc.vs.inputLayout[1].name = "TEXCOORD";
         m_desc.vs.inputLayout[1].position = 1;
         m_desc.vs.inputLayout[1].slot = 0;
@@ -163,7 +163,7 @@ namespace chimera
         return ShaderPathSetting::VOnRestore(w, h);
     }
 
-    VOID GloablLightingSetting::VRender(VOID)
+    void GloablLightingSetting::VRender(void)
     {
         /*CmGetApp()->VGetHumanView()->VGetRenderer()->VGetCurrentRenderTarget()->VClear();
         CmGetApp()->VGetHumanView()->VGetRenderer()->VGetCurrentRenderTarget()->VBind();*/
@@ -177,39 +177,39 @@ namespace chimera
         CmGetApp()->VGetHumanView()->VGetRenderer()->VDrawScreenQuad();
     }
 
-    BOOL CSMSetting::VOnRestore(UINT w, UINT h)
+    bool CSMSetting::VOnRestore(uint w, uint h)
     {
         if(!m_pCSM)
         {
             m_pCSM = new CascadedShadowMapper(3);
         }
         m_pCSM->VOnRestore();
-        return TRUE;
+        return true;
     }
 
-    VOID CSMSetting::VRender(VOID)
+    void CSMSetting::VRender(void)
     {
         m_pCSM->VRender(CmGetApp()->VGetHumanView()->VGetSceneGraph());
     }
 
-    CSMSetting::~CSMSetting(VOID)
+    CSMSetting::~CSMSetting(void)
     {
         SAFE_DELETE(m_pCSM);
     }
 
-	WireFrameSettings::WireFrameSettings(VOID) : ShaderPathSetting(CM_RENDERPATH_ALBEDO_WIRE, DEFERRED_WIREFRAME_SHADER_NAME, DEFERRED_WIREFRAME_SHADER_NAME)
+	WireFrameSettings::WireFrameSettings(void) : ShaderPathSetting(CM_RENDERPATH_ALBEDO_WIRE, DEFERRED_WIREFRAME_SHADER_NAME, DEFERRED_WIREFRAME_SHADER_NAME)
 	{
 		m_pWireFrameState = NULL;
 	}
 
-	VOID WireFrameSettings::VRender(VOID) 
+	void WireFrameSettings::VRender(void) 
 	{
 		CmGetApp()->VGetHumanView()->VGetRenderer()->VPushRasterState(m_pWireFrameState.get());
 		ShaderPathSetting::VRender();
 		CmGetApp()->VGetHumanView()->VGetRenderer()->VPopRasterState();
 	}
 
-	BOOL WireFrameSettings::VOnRestore(UINT w, UINT h)
+	bool WireFrameSettings::VOnRestore(uint w, uint h)
 	{
 		std::unique_ptr<IGraphicsStateFactroy> factory = CmGetApp()->VGetHumanView()->VGetGraphicsFactory()->VCreateStateFactory();
 
@@ -217,29 +217,29 @@ namespace chimera
 		ZeroMemory(&rasterDesc, sizeof(RasterStateDesc));
 		rasterDesc.CullMode = eCullMode_None;
 		rasterDesc.FillMode = eFillMode_Wire;
-		rasterDesc.DepthClipEnable = TRUE;
-		rasterDesc.FrontCounterClockwise = TRUE;
-		rasterDesc.MultisampleEnable = FALSE;
-		rasterDesc.AntialiasedLineEnable = FALSE;
+		rasterDesc.DepthClipEnable = true;
+		rasterDesc.FrontCounterClockwise = true;
+		rasterDesc.MultisampleEnable = false;
+		rasterDesc.AntialiasedLineEnable = false;
 
         VGetProgramDescription()->vs.file = DEFERRED_WIREFRAME_SHADER_FILE;
         VGetProgramDescription()->vs.function = DEFERRED_WIREFRAME_SHADER_VS_FUNCTION;
 
         VGetProgramDescription()->vs.layoutCount = 3;
 
-        VGetProgramDescription()->vs.inputLayout[0].instanced = FALSE;
+        VGetProgramDescription()->vs.inputLayout[0].instanced = false;
         VGetProgramDescription()->vs.inputLayout[0].name = "POSITION";
         VGetProgramDescription()->vs.inputLayout[0].position = 0;
         VGetProgramDescription()->vs.inputLayout[0].slot = 0;
         VGetProgramDescription()->vs.inputLayout[0].format = eFormat_R32G32B32_FLOAT;
 
-        VGetProgramDescription()->vs.inputLayout[1].instanced = FALSE;
+        VGetProgramDescription()->vs.inputLayout[1].instanced = false;
         VGetProgramDescription()->vs.inputLayout[1].name = "NORMAL";
         VGetProgramDescription()->vs.inputLayout[1].position = 1;
         VGetProgramDescription()->vs.inputLayout[1].slot = 0;
         VGetProgramDescription()->vs.inputLayout[1].format = eFormat_R32G32B32_FLOAT;
 
-        VGetProgramDescription()->vs.inputLayout[2].instanced = FALSE;
+        VGetProgramDescription()->vs.inputLayout[2].instanced = false;
         VGetProgramDescription()->vs.inputLayout[2].name = "TEXCOORD";
         VGetProgramDescription()->vs.inputLayout[2].position = 2;
         VGetProgramDescription()->vs.inputLayout[2].slot = 0;
@@ -255,32 +255,32 @@ namespace chimera
 		return ShaderPathSetting::VOnRestore(w, h);
 	}
 
-    LightingSetting::LightingSetting(VOID) : IGraphicSetting("Lighting")
+    LightingSetting::LightingSetting(void) : IGraphicSetting("Lighting")
     {
 
     }
 
-    VOID LightingSetting::VRender(VOID)
+    void LightingSetting::VRender(void)
     {
         CmGetApp()->VGetHumanView()->VGetSceneGraph()->VOnRender(CM_RENDERPATH_LIGHTING);
     }
 
-    BOOL LightingSetting::VOnRestore(UINT w, UINT h)
+    bool LightingSetting::VOnRestore(uint w, uint h)
     {
-        return TRUE;
+        return true;
     }
     
-    VOID PostFXSetting::VSetTarget(IRenderTarget* target)
+    void PostFXSetting::VSetTarget(IRenderTarget* target)
     {
         m_pTarget = target;
     }
 
-    VOID PostFXSetting::VSetSource(IRenderTarget* src)
+    void PostFXSetting::VSetSource(IRenderTarget* src)
     {
         m_pSource = src;
     }
 
-    BOOL PostFXSetting::VOnRestore(UINT w, UINT h)
+    bool PostFXSetting::VOnRestore(uint w, uint h)
     {
         if(!m_pEffectChain)
         {
@@ -300,9 +300,9 @@ namespace chimera
             
             IEffect* e = NULL;
             
-            for(INT i = w / 2; i > 1; i = i >> 1)
+            for(int i = w / 2; i > 1; i = i >> 1)
             {
-                FLOAT s = (FLOAT)i / (FLOAT)w;
+                float s = (float)i / (float)w;
                 if(e == NULL)
                 {
                     desc.function = "Sample";
@@ -324,7 +324,7 @@ namespace chimera
             ds->VAddRequirement(e);
             e = ds;
 
-            FLOAT brightPathSize = 0.25f;
+            float brightPathSize = 0.25f;
 
             desc.function = "Brightness";
 
@@ -350,25 +350,25 @@ namespace chimera
         {
             m_pEffectChain->VOnRestore(w, h);
         }
-        return TRUE;
+        return true;
     }
 
-    VOID PostFXSetting::VRender(VOID)
+    void PostFXSetting::VRender(void)
     {
         m_pEffectChain->VProcess();
     }
 
-    PostFXSetting::~PostFXSetting(VOID)
+    PostFXSetting::~PostFXSetting(void)
     {
         SAFE_DELETE(m_pEffectChain);
     }
 
-    BoundingGeoSetting::BoundingGeoSetting(VOID) : ShaderPathSetting(CM_RENDERPATH_BOUNDING, "BoundingGeo", "bgeo")
+    BoundingGeoSetting::BoundingGeoSetting(void) : ShaderPathSetting(CM_RENDERPATH_BOUNDING, "BoundingGeo", "bgeo")
     {
          //CmGetApp()->VGetHumanView()->VGetGraphicsFactory()->VCreateStateFactory()->VCreateRasterState()
     }
 
-    VOID BoundingGeoSetting::VRender(VOID)
+    void BoundingGeoSetting::VRender(void)
     {
         //CmGetApp()->VGetRenderer()->VPushRasterState(chimera::g_pRasterizerStateWrireframe);
         ShaderPathSetting::VRender();
@@ -429,24 +429,24 @@ namespace chimera
         }
     }*/
 
-    EditModeSetting::EditModeSetting(VOID) : IGraphicSetting("edit")
+    EditModeSetting::EditModeSetting(void) : IGraphicSetting("edit")
     {
 
     }
 
-    VOID EditModeSetting::VRender(VOID)
+    void EditModeSetting::VRender(void)
     {
         CmGetApp()->VGetHumanView()->VGetSceneGraph()->VOnRender(CM_RENDERPATH_EDITOR);
     }
     
     //Settings...
 
-    GraphicsSettings::GraphicsSettings(VOID) : m_lastW(0), m_lastH(0)
+    GraphicsSettings::GraphicsSettings(void) : m_lastW(0), m_lastH(0)
     {
 
     }
 
-    VOID GraphicsSettings::VAddSetting(std::unique_ptr<IGraphicSetting> setting, GraphicsSettingType type)
+    void GraphicsSettings::VAddSetting(std::unique_ptr<IGraphicSetting> setting, GraphicsSettingType type)
     {
         setting->VOnRestore(m_lastW, m_lastH);
         if(type == eGraphicsSetting_Albedo)
@@ -459,7 +459,7 @@ namespace chimera
         }
     }
 
-    VOID GraphicsSettings::VSetPostFX(std::unique_ptr<IPostFXSetting> setting)
+    void GraphicsSettings::VSetPostFX(std::unique_ptr<IPostFXSetting> setting)
     {
         m_pPostFX = std::move(setting);
 
@@ -469,7 +469,7 @@ namespace chimera
         } */
     }
 
-    GraphicsSettings::~GraphicsSettings(VOID)
+    GraphicsSettings::~GraphicsSettings(void)
     {
         /*
         m_pPostFX.reset();
@@ -485,12 +485,12 @@ namespace chimera
         }*/
     }
 
-    IRenderTarget* GraphicsSettings::VGetResult(VOID)
+    IRenderTarget* GraphicsSettings::VGetResult(void)
     {
         return m_pScene.get();
     }
 
-    BOOL GraphicsSettings::VOnRestore(UINT w, UINT h)
+    bool GraphicsSettings::VOnRestore(uint w, uint h)
     {
         m_lastW = w;
         m_lastH = h;
@@ -528,20 +528,20 @@ namespace chimera
         ZeroMemory(&rasterDesc, sizeof(RasterStateDesc));
         rasterDesc.CullMode = eCullMode_Back;
         rasterDesc.FillMode = eFillMode_Solid;
-        rasterDesc.DepthClipEnable = TRUE;
-        rasterDesc.FrontCounterClockwise = TRUE;
-        rasterDesc.MultisampleEnable = FALSE;
-        rasterDesc.AntialiasedLineEnable = FALSE;
+        rasterDesc.DepthClipEnable = true;
+        rasterDesc.FrontCounterClockwise = true;
+        rasterDesc.MultisampleEnable = false;
+        rasterDesc.AntialiasedLineEnable = false;
 
         m_pRasterizerStateFrontFaceSolid.reset();
         m_pRasterizerStateFrontFaceSolid = std::unique_ptr<IRasterState>(factory->VCreateRasterState(&rasterDesc));
 
         DepthStencilStateDesc dDesc;
         ZeroMemory(&dDesc, sizeof(DepthStencilStateDesc));
-        dDesc.DepthEnable = TRUE;
+        dDesc.DepthEnable = true;
         dDesc.DepthWriteMask = eDepthWriteMask_All;
         dDesc.DepthFunc = eCompareFunc_Less_Equal;
-        dDesc.StencilEnable = FALSE;
+        dDesc.StencilEnable = false;
 
         m_pDepthNoStencilState.reset();
         m_pDepthNoStencilState = std::unique_ptr<IDepthStencilState>(factory->VCreateDepthStencilState(&dDesc));
@@ -549,12 +549,12 @@ namespace chimera
         DepthStencilStateDesc dsDesc;
         ZeroMemory(&dsDesc, sizeof(DepthStencilStateDesc));
 
-        dsDesc.DepthEnable = TRUE;
+        dsDesc.DepthEnable = true;
         dsDesc.DepthWriteMask = eDepthWriteMask_All;
         dsDesc.DepthFunc = eCompareFunc_Less_Equal;
-        dsDesc.StencilEnable = FALSE;
+        dsDesc.StencilEnable = false;
 
-        dsDesc.StencilEnable = TRUE;
+        dsDesc.StencilEnable = true;
         dsDesc.StencilWriteMask = 0xFF;
         dsDesc.StencilReadMask = 0xFF;
 
@@ -571,10 +571,10 @@ namespace chimera
         m_pDepthWriteStencilState.reset();
         m_pDepthWriteStencilState = std::unique_ptr<IDepthStencilState>(factory->VCreateDepthStencilState(&dsDesc));
 
-        return TRUE;
+        return true;
     }
 
-    VOID GraphicsSettings::VOnActivate(VOID)
+    void GraphicsSettings::VOnActivate(void)
     {
         /*if(m_pPreResult)
         {
@@ -586,7 +586,7 @@ namespace chimera
         }
     }
 
-    VOID GraphicsSettings::VRender(VOID)
+    void GraphicsSettings::VRender(void)
     {
         CmGetApp()->VGetHumanView()->VGetRenderer()->VPushDepthStencilState(m_pDepthWriteStencilState.get(), -1);
 
@@ -654,7 +654,7 @@ namespace chimera
         return NULL;
     } */
 
-    DefaultGraphicsSettings::DefaultGraphicsSettings(VOID)
+    DefaultGraphicsSettings::DefaultGraphicsSettings(void)
     {
         VAddSetting(std::unique_ptr<IGraphicSetting>(new AlbedoSetting()), eGraphicsSetting_Albedo);
 		VAddSetting(std::unique_ptr<IGraphicSetting>(new WireFrameSettings()), eGraphicsSetting_Albedo);
@@ -668,13 +668,13 @@ namespace chimera
 
         skySettings->VGetProgramDescription()->vs.layoutCount = 2;
         skySettings->VGetProgramDescription()->vs.inputLayout[0].format = eFormat_R32G32B32_FLOAT;
-        skySettings->VGetProgramDescription()->vs.inputLayout[0].instanced = FALSE;
+        skySettings->VGetProgramDescription()->vs.inputLayout[0].instanced = false;
         skySettings->VGetProgramDescription()->vs.inputLayout[0].name = "POSITION";
         skySettings->VGetProgramDescription()->vs.inputLayout[0].position = 0;
         skySettings->VGetProgramDescription()->vs.inputLayout[0].slot = 0;
 
         skySettings->VGetProgramDescription()->vs.inputLayout[1].format = eFormat_R32G32_FLOAT;
-        skySettings->VGetProgramDescription()->vs.inputLayout[1].instanced = FALSE;
+        skySettings->VGetProgramDescription()->vs.inputLayout[1].instanced = false;
         skySettings->VGetProgramDescription()->vs.inputLayout[1].name = "TEXCOORD";
         skySettings->VGetProgramDescription()->vs.inputLayout[1].position = 1;
         skySettings->VGetProgramDescription()->vs.inputLayout[1].slot = 0;

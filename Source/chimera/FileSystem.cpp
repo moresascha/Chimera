@@ -3,7 +3,7 @@
 #include "EventManager.h"
 namespace chimera
 {
-    bool operator<(CONST _File o, CONST _File o1)
+    bool operator<(const _File o, const _File o1)
     {
         return o.m_name < o.m_name;
     }
@@ -21,7 +21,7 @@ namespace chimera
         }
     }
 
-    DLL::~DLL(VOID)
+    DLL::~DLL(void)
     {
         if(m_instance)
         {
@@ -34,7 +34,7 @@ namespace chimera
     {
     }
 
-    VOID FileSystem::RegisterCallback(LPCSTR fileName, LPCSTR path, OnFileChangedCallback cb)
+    void FileSystem::RegisterCallback(LPCSTR fileName, LPCSTR path, OnFileChangedCallback cb)
     {
         _File f(fileName);
         auto it = m_callBackMap.find(f);
@@ -59,7 +59,7 @@ namespace chimera
         }
     }
 
-    VOID FileSystem::OnFileChanged(std::shared_ptr<chimera::IEvent> data)
+    void FileSystem::OnFileChanged(std::shared_ptr<chimera::IEvent> data)
     {
         std::shared_ptr<chimera::FileChangedEvent> fce = std::static_pointer_cast<chimera::FileChangedEvent>(data);
         auto list = m_callBackMap.find(fce->m_file);

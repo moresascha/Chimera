@@ -13,7 +13,7 @@ namespace chimera
 
         }
 
-        VOID PixelShader::VBind(VOID)
+        void PixelShader::VBind(void)
         {
             if(PixelShader::m_sCurrent == this)
             {
@@ -23,13 +23,13 @@ namespace chimera
             PixelShader::m_sCurrent = this;
         }
 
-        VOID PixelShader::VUnbind(VOID)
+        void PixelShader::VUnbind(void)
         {
             chimera::d3d::GetContext()->PSSetShader(NULL, NULL, 0);
             PixelShader::m_sCurrent = NULL;
         }
 
-        BOOL PixelShader::VCompile(ErrorLog* errorLog)
+        bool PixelShader::VCompile(ErrorLog* errorLog)
         {
             ID3D11PixelShader* pixelShader = NULL;
             ID3DBlob* errorMessage = NULL;
@@ -45,7 +45,7 @@ namespace chimera
                     std::string s(sf.begin(), sf.end());
                     *errorLog = "File not found: " + s;
                 }
-                return FALSE;
+                return false;
             }
             else if(errorMessage != NULL)
             {
@@ -53,7 +53,7 @@ namespace chimera
                 {
                     *errorLog = chimera::d3d::GetShaderError(errorMessage);
                 }
-                return FALSE;
+                return false;
             }
 
             hr = chimera::d3d::GetDevice()->CreatePixelShader(shaderCode->GetBufferPointer(), shaderCode->GetBufferSize(), NULL, &pixelShader);
@@ -66,7 +66,7 @@ namespace chimera
                 {
                     *errorLog = "Failed to create Pixelshader";
                 }
-                return FALSE;
+                return false;
             }
 
             SAFE_RELEASE(shaderCode);
@@ -76,10 +76,10 @@ namespace chimera
 
             SAFE_RELEASE(errorMessage);
 
-            return TRUE;
+            return true;
         }
 
-        PixelShader::~PixelShader(VOID)
+        PixelShader::~PixelShader(void)
         {
             SAFE_RELEASE(m_pShader);
         }
@@ -89,7 +89,7 @@ namespace chimera
 
         }
 
-        VOID VertexShader::VBind(VOID)
+        void VertexShader::VBind(void)
         {
             if(m_sCurrent == this)
             {
@@ -100,14 +100,14 @@ namespace chimera
             m_sCurrent = this;
         }
 
-        VOID VertexShader::VUnbind(VOID)
+        void VertexShader::VUnbind(void)
         {
             chimera::d3d::GetContext()->IASetInputLayout(NULL);
             chimera::d3d::GetContext()->VSSetShader(NULL, NULL, 0);
             m_sCurrent = NULL;
         }
 
-        BOOL VertexShader::VCompile(ErrorLog* errorLog)
+        bool VertexShader::VCompile(ErrorLog* errorLog)
         {
             ID3D11VertexShader* vertexShader = NULL;
             ID3DBlob* errorMessage = NULL;
@@ -123,7 +123,7 @@ namespace chimera
                     std::string s(sf.begin(), sf.end());
                     *errorLog = "File not found: " + s;
                 }
-                return FALSE;
+                return false;
             }
             else if(errorMessage != NULL)
             {
@@ -131,7 +131,7 @@ namespace chimera
                 {
                     *errorLog = chimera::d3d::GetShaderError(errorMessage);
                 }
-                return FALSE;
+                return false;
             }
 
             hr = chimera::d3d::GetDevice()->CreateVertexShader(vsShaderCode->GetBufferPointer(), vsShaderCode->GetBufferSize(), NULL, &vertexShader);
@@ -144,7 +144,7 @@ namespace chimera
                 {
                     *errorLog = "Failed to create Vertexshader";
                 }
-                return FALSE;
+                return false;
             }
 
             SAFE_RELEASE(m_pVertexShaderCode);
@@ -155,10 +155,10 @@ namespace chimera
 
             SAFE_RELEASE(errorMessage);
 
-            return TRUE;
+            return true;
         }
 
-        VOID VertexShader::SetInputAttr(LPCSTR name, UINT position, UINT slot, UINT offset, DXGI_FORMAT format)
+        void VertexShader::SetInputAttr(LPCSTR name, uint position, uint slot, uint offset, DXGI_FORMAT format)
         {
             ZeroMemory(&m_layouts[position], sizeof(D3D11_INPUT_ELEMENT_DESC));
             m_layouts[position].AlignedByteOffset = offset;
@@ -169,7 +169,7 @@ namespace chimera
             m_numInputElemens++;
         }
 
-        VOID VertexShader::SetInputAttr(LPCSTR name, UINT position, UINT slot, DXGI_FORMAT format) 
+        void VertexShader::SetInputAttr(LPCSTR name, uint position, uint slot, DXGI_FORMAT format) 
         {
             ZeroMemory(&m_layouts[position], sizeof(D3D11_INPUT_ELEMENT_DESC));
             m_layouts[position].AlignedByteOffset = m_numInputElemens == 0 ? 0 : D3D11_APPEND_ALIGNED_ELEMENT;
@@ -180,7 +180,7 @@ namespace chimera
             m_numInputElemens++;
         }
 
-        VOID VertexShader::SetInputAttrInstanced(LPCSTR name, UINT position, UINT slot, DXGI_FORMAT format) 
+        void VertexShader::SetInputAttrInstanced(LPCSTR name, uint position, uint slot, DXGI_FORMAT format) 
         {
             ZeroMemory(&this->m_layouts[position], sizeof(D3D11_INPUT_ELEMENT_DESC));
             m_layouts[position].AlignedByteOffset = 0; //TODO allow more attributes per instance
@@ -192,18 +192,18 @@ namespace chimera
             m_numInputElemens++;
         }
 
-        ID3D11InputLayout* VertexShader::GetInputLayout(VOID)
+        ID3D11InputLayout* VertexShader::GetInputLayout(void)
         {
             return m_pLayout;
         }
 
-        VOID VertexShader::GenerateLayout(VOID) 
+        void VertexShader::GenerateLayout(void) 
         {
             SAFE_RELEASE(m_pLayout);
             D3D_SAVE_CALL(chimera::d3d::GetDevice()->CreateInputLayout(m_layouts, m_numInputElemens, m_pVertexShaderCode->GetBufferPointer(), m_pVertexShaderCode->GetBufferSize(), &this->m_pLayout));
         }
 
-        VertexShader::~VertexShader(VOID)
+        VertexShader::~VertexShader(void)
         {
             SAFE_RELEASE(m_pShader);
             SAFE_RELEASE(m_pVertexShaderCode);
@@ -215,7 +215,7 @@ namespace chimera
 
         }
 
-        BOOL GeometryShader::VCompile(ErrorLog* errorLog)
+        bool GeometryShader::VCompile(ErrorLog* errorLog)
         {
             ID3D11GeometryShader* geometryShader = NULL;
             ID3DBlob* errorMessage = NULL;
@@ -229,7 +229,7 @@ namespace chimera
                 {
                     *errorLog = chimera::d3d::GetShaderError(errorMessage);
                 }
-                return FALSE;
+                return false;
             }
 
             hr = chimera::d3d::GetDevice()->CreateGeometryShader(shaderCode->GetBufferPointer(), shaderCode->GetBufferSize(), NULL, &geometryShader);
@@ -242,7 +242,7 @@ namespace chimera
                 {
                     *errorLog = "Failed to create GeometryShader";
                 }
-                return FALSE;
+                return false;
             }
 
             SAFE_RELEASE(m_pShader);
@@ -250,10 +250,10 @@ namespace chimera
 
             m_pShader = geometryShader;
 
-            return TRUE;
+            return true;
         }
 
-        VOID GeometryShader::VBind(VOID)
+        void GeometryShader::VBind(void)
         {
             if(GeometryShader::m_sCurrent == this)
             {
@@ -263,18 +263,18 @@ namespace chimera
             GeometryShader::m_sCurrent = this;
         }
 
-        VOID GeometryShader::VUnbind(VOID)
+        void GeometryShader::VUnbind(void)
         {
             chimera::d3d::GetContext()->GSSetShader(NULL, NULL, 0);
             GeometryShader::m_sCurrent = NULL;
         }
 
-        GeometryShader::~GeometryShader(VOID)
+        GeometryShader::~GeometryShader(void)
         {
             SAFE_RELEASE(m_pShader);
         }
 
-        ShaderProgram::ShaderProgram(VOID) :
+        ShaderProgram::ShaderProgram(void) :
             m_pPixelShader(NULL),
             m_pVertexShader(NULL),
             m_pGeometryShader(NULL)
@@ -282,18 +282,18 @@ namespace chimera
 
         }
 
-        BOOL ShaderProgram::VCompile(ErrorLog* errorLog /* = NULL */)
+        bool ShaderProgram::VCompile(ErrorLog* errorLog /* = NULL */)
         {
             if(!m_pVertexShader->VCompile(errorLog))
             {
-                return FALSE;
+                return false;
             }
 
             if(m_pPixelShader)
             {
                 if(!m_pPixelShader->VCompile(errorLog))
                 {
-                    return FALSE;
+                    return false;
                 }
             }
 
@@ -302,14 +302,14 @@ namespace chimera
 
                 if(!m_pGeometryShader->VCompile(errorLog))
                 {
-                    return FALSE;
+                    return false;
                 }
             }
 
-            return TRUE;
+            return true;
         }
 
-        VOID ShaderProgram::VBind(VOID) 
+        void ShaderProgram::VBind(void) 
         {
             m_pVertexShader->VBind();
             m_pPixelShader->VBind();
@@ -324,7 +324,7 @@ namespace chimera
             }
         }
 
-        VOID ShaderProgram::VUnbind(VOID) 
+        void ShaderProgram::VUnbind(void) 
         {
             m_pVertexShader->VBind();
             if(m_pPixelShader)
@@ -337,7 +337,7 @@ namespace chimera
             }
         }
 
-        VOID ShaderProgram::VAddShader(IShader* shader)
+        void ShaderProgram::VAddShader(IShader* shader)
         {
             if(shader->VGetType() == eShaderType_FragmentShader)
             {
@@ -353,7 +353,7 @@ namespace chimera
             }
         }
 
-        ShaderProgram::~ShaderProgram(VOID) 
+        ShaderProgram::~ShaderProgram(void) 
         {
             SAFE_DELETE(m_pPixelShader);
             SAFE_DELETE(m_pVertexShader);
