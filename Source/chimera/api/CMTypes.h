@@ -322,14 +322,14 @@ namespace chimera
     {
         Fillmode FillMode;
         CullMode CullMode;
-        bool FrontCounterClockwise;
+        BOOL FrontCounterClockwise;
         int DepthBias;
         float DepthBiasClamp;
         float SlopeScaledDepthBias;
-        bool DepthClipEnable;
-        bool ScissorEnable;
-        bool MultisampleEnable;
-        bool AntialiasedLineEnable;
+        BOOL DepthClipEnable;
+        BOOL ScissorEnable;
+        BOOL MultisampleEnable;
+        BOOL AntialiasedLineEnable;
     };
 
     enum Blend
@@ -353,7 +353,7 @@ namespace chimera
 
     struct RenderTargetBlendDesc
     {
-        bool BlendEnable;
+        BOOL BlendEnable;
         Blend SrcBlend;
         Blend DestBlend;
         BlendOP BlendOp;
@@ -365,8 +365,8 @@ namespace chimera
 
     struct BlendStateDesc
     {
-        bool AlphaToCoverageEnable;
-        bool IndependentBlendEnable;
+        BOOL AlphaToCoverageEnable;
+        BOOL IndependentBlendEnable;
         RenderTargetBlendDesc RenderTarget[8];
     } ;
 
@@ -419,10 +419,10 @@ namespace chimera
 
     struct DepthStencilStateDesc
     {
-        bool DepthEnable;
+        BOOL DepthEnable;
         DepthWriteMask DepthWriteMask;
         ComparisonFunc DepthFunc;
-        bool StencilEnable;
+        BOOL StencilEnable;
         UINT8 StencilReadMask;
         UINT8 StencilWriteMask;
         DepthStencilOperationDesc FrontFace;
@@ -474,7 +474,7 @@ namespace chimera
     struct CMFontMetrics
     {
         float leftU;
-        float rightU;
+        float rightU; 
         uint pixelWidth;
     };
 
@@ -534,7 +534,7 @@ namespace chimera
         uint position;
         uint slot;
         GraphicsFormat format;
-        bool instanced;
+        BOOL instanced;
     };
 
     struct CMVertexShaderDescription : public CMShaderDescription

@@ -319,6 +319,8 @@ namespace chimera
                     subMeshData.m_triplesCount = 0;
                 }
 
+                lastIndexStart = 0;
+
                 currentMesh = m;
             }
             else if(ShrdPtrStrCmp(flag, "usemtl"))
@@ -333,7 +335,7 @@ namespace chimera
                 }
                 std::shared_ptr<MaterialSet> materials = std::static_pointer_cast<MaterialSet>(CmGetApp()->VGetCache()->VGetHandle(currentMesh->VGetMaterials()));
                 currentMesh->VAddIndexBufferInterval(lastIndexStart, subMeshData.m_trianglesCount * 3, materials->GetMaterialIndex(matName), currentTopo);
-                lastIndexStart = subMeshData.m_trianglesCount * 3;
+                lastIndexStart += subMeshData.m_trianglesCount * 3;
                 matName.clear();
                 ShrdCharPtr mat;
                 ss >> mat;
@@ -393,6 +395,10 @@ namespace chimera
         }
 
         uint stride = 8;
+        if(currentMesh == NULL)
+        {
+            LOG_CRITICAL_ERROR_A("%s", "Can't parse obj file!");
+        }
         InitMesh(currentMesh, rawData, lastIndexStart, subMeshData, &indexCount, &vertexCount, currentTopo, matName);
 
         delete[] source;

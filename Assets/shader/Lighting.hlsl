@@ -98,7 +98,7 @@ void computeCSMContr(out in float4 color, in float2 texCoords, in float3 normal)
         return;
     }
 
-    float4 colorMask = 4 * float4(index == 0, index == 1, index == 2, 1);
+    //float4 colorMask = 4 * float4(index == 0, index == 1, index == 2, 1);
     //color *= colorMask;
 
     float4 gs[3];
@@ -379,8 +379,8 @@ PixelOutput SpotLighting_PS(PixelInput input)
 
     float distSquared = dot(d, d);
 
-    float3 dir = normalize(g_lightViewDirAngel.xyz);
-    float angel = g_lightViewDirAngel.w;
+    float3 dir = normalize(g_lightViewDirAngle.xyz);
+    float angle = g_lightViewDirAngle.w;
 
     if(distSquared > length*length) 
     {
@@ -391,7 +391,7 @@ PixelOutput SpotLighting_PS(PixelInput input)
     float lpd = max(dot(lightToPos, dir), 0);
     float a = acos(lpd);
 
-    if(a > angel * 0.5)
+    if(a > angle * 0.5)
     {
         discard;
     }
@@ -429,7 +429,7 @@ PixelOutput SpotLighting_PS(PixelInput input)
     specularMat = float3(dmsmr.w, amsmg.w, dcsmb.w);
     diffuseColor = dcsmb.xyz;
 
-    float intensity = (angel * 0.5 - a) * (1  - distSquared / (length * length));
+    float intensity = (angle * 0.5 - a) * (1  - distSquared / (length * length));
     float3 lightColor = g_lightColorRadius.xyz;
 
     /*if(!hasNormal)

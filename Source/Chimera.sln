@@ -12,6 +12,9 @@ EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Nutty", "..\..\Nutty\Nutty.vcxproj", "{E6494453-E6C8-4316-ABD8-7A0B7E3523CE}"
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "ChristophDemo", "..\..\ChristophDemo\ChristophDemo.vcxproj", "{C4A038C3-FFCD-4970-9F49-119DCBD97EF1}"
+	ProjectSection(ProjectDependencies) = postProject
+		{528B376B-7ED9-449B-8FCD-365684CC6C67} = {528B376B-7ED9-449B-8FCD-365684CC6C67}
+	EndProjectSection
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -68,9 +71,13 @@ Global
 		{C4A038C3-FFCD-4970-9F49-119DCBD97EF1}.Release|Mixed Platforms.Build.0 = Release|Win32
 		{C4A038C3-FFCD-4970-9F49-119DCBD97EF1}.Release|Win32.ActiveCfg = Release|Win32
 		{C4A038C3-FFCD-4970-9F49-119DCBD97EF1}.Release|Win32.Build.0 = Release|Win32
-		{C4A038C3-FFCD-4970-9F49-119DCBD97EF1}.Release|x64.ActiveCfg = Release|Win32
+		{C4A038C3-FFCD-4970-9F49-119DCBD97EF1}.Release|x64.ActiveCfg = Release|x64
+		{C4A038C3-FFCD-4970-9F49-119DCBD97EF1}.Release|x64.Build.0 = Release|x64
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(Performance) = preSolution
+		HasPerformanceSessions = true
 	EndGlobalSection
 EndGlobal

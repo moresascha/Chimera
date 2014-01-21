@@ -4,7 +4,7 @@
         <Scale x="100.0" y="100.0" z="100.0" />
     </TransformComponent>
     <RenderComponent>
-		<Resource>CITY.obj</Resource>
+		<Resource>city_test.obj</Resource>
     </RenderComponent>
 	<!--<PhysicComponent>
 		<ShapeStyle>mesh</ShapeStyle>

@@ -382,7 +382,7 @@ namespace chimera
             };
 
 #ifdef _DEBUG
-           //flags |= D3D11_CREATE_DEVICE_DEBUG;
+          // flags |= D3D11_CREATE_DEVICE_DEBUG;
 #endif
             D3D_SAVE_CALL(D3D11CreateDeviceAndSwapChain(NULL,
                 D3D_DRIVER_TYPE_HARDWARE,
@@ -727,9 +727,9 @@ namespace chimera
 
         bool GetFullscreenState(void)
         {
-            bool state;
+            BOOL state;
             D3D_SAVE_CALL(g_pSwapChain->GetFullscreenState(&state, NULL));
-            return state;
+            return state != 0;
         }
 
         void SetFullscreenState(bool fs, uint width, uint height)

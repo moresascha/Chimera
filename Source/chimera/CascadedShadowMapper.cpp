@@ -48,6 +48,7 @@ namespace chimera
 
         util::Vec3 lightPos(1.0f,0.3f,-0.2f);
         lightPos.Normalize();
+        lightPos.Scale(util::Vec3(1000.0f, 1000.0f, 1000.0f));
         tc->GetTransformation()->SetTranslate(lightPos.x, lightPos.y, lightPos.z);
         cc->GetCamera()->MoveToPosition(tc->GetTransformation()->GetTranslation());
         m_lightActorCamera->SetName("cascadeLightCamera");
@@ -137,7 +138,7 @@ namespace chimera
         m_pCascadesSettings[1].end = 55;
 
         m_pCascadesSettings[2].start = m_pCascadesSettings[1].end - cuttOffset;
-        m_pCascadesSettings[2].end = 120;
+        m_pCascadesSettings[2].end = 500;
 
         /*m_cascadesSettings[3].start = 256;
         m_cascadesSettings[3].end = 1000; */

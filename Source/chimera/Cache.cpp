@@ -435,7 +435,7 @@ namespace chimera
     bool ResourceFolder::VOpen(void) 
     {
         DWORD att = GetFileAttributesW(util::string2wstring(this->m_folder).c_str());
-        return att & FILE_ATTRIBUTE_DIRECTORY;
+        return (att & FILE_ATTRIBUTE_DIRECTORY) != 0;
     }
 
     int ResourceFolder::VGetRawRessource(const CMResource&  r, char** buffer)

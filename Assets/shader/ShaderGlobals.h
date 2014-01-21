@@ -51,7 +51,7 @@ cbuffer LightSettingsBuffer : register(b5)
 {
     float4 g_lightColorRadius;
     float4 g_lightPos;
-    float4 g_lightViewDirAngel;
+    float4 g_lightViewDirAngle;
     int4 g_castShadow;
 }
 

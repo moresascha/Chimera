@@ -245,6 +245,10 @@ namespace chimera
                     IActor* child = VCreateActor(r, actors);
                     std::unique_ptr<ParentComponent> pcmp = std::unique_ptr<ParentComponent>(new ParentComponent());
                     pcmp->m_parentId = pActor->GetId();
+                    if(pNode->Attribute("name"))
+                    {
+                        child->SetName(std::string(pNode->Attribute("name")));
+                    }
                     pcmp->VSetOwner(child);
                     child->VAddComponent(std::move(pcmp));
                 }

@@ -14,5 +14,5 @@
 	<PhysicComponent>
 		<ShapeStyle>character</ShapeStyle>
 	</PhysicComponent>
-    <Actor name="flashlight" file="spotlight.xml" />
+    <Actor name="FlashLight" file="spotlight.xml" />
 </Actor>
