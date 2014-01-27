@@ -8,6 +8,7 @@
 #include "SceneNode.h"
 #include "PointLightNode.h"
 #include "SpotLightNode.h"
+#include "Picker.h"
 
 namespace chimera
 {
@@ -93,6 +94,7 @@ namespace chimera
         m_pFontManager = NULL;
         m_pGuiFactroy = NULL;
         m_isFullscreen = false;
+        m_pActorPicker = NULL;
     }
 
     bool HumanGameView::VInitialise(FactoryPtr* facts)
@@ -113,7 +115,7 @@ namespace chimera
         IEffectFactoryFactory* eff = FindFactory<IEffectFactoryFactory>(facts, CM_FACTORY_EFFECT);
         RETURN_IF_FAILED(eff);
 
-        m_pEffectFactory = eff->VCreateEffectFactroy();
+        m_pEffectFactory = eff->VCreateEffectFactory();
 
         IFontFactory* ff = FindFactory<IFontFactory>(facts, CM_FACTORY_FONT);
         RETURN_IF_FAILED(ff);
@@ -133,7 +135,11 @@ namespace chimera
 
         ADD_EVENT_LISTENER(this, &HumanGameView::SetParentDelegate, CM_EVENT_SET_PARENT_ACTOR);
 
+        ADD_EVENT_LISTENER(this, &HumanGameView::ReleaseChildDelegate, CM_EVENT_RELEASE_CHILD_ACTOR);
+
         ADD_EVENT_LISTENER((VRamManager*)m_pVramManager, &VRamManager::OnResourceChanged, CM_EVENT_RESOURCE_CHANGED);
+
+        ADD_EVENT_LISTENER(this, &HumanGameView::DeleteComponentDelegate, CM_EVENT_DELETE_COMPONENT);
 
         VAddSceneNodeCreator(CreateRenderNode, CM_CMP_RENDERING);
         VAddSceneNodeCreator(CreateLightNode, CM_CMP_LIGHT);
@@ -155,8 +161,11 @@ namespace chimera
             VGetRenderer()->VSetViewTransform(m_pSceneGraph->VGetCamera()->GetView(), m_pSceneGraph->VGetCamera()->GetIView(), m_pSceneGraph->VGetCamera()->GetEyePos());
         }
 
-        std::string fontFile = CmGetApp()->VGetConfig()->VGetString("sFontPath") + std::string("font_16.fnt");
-        VGetFontManager()->VGetCurrentFont()->VCreate(fontFile);
+        std::string fontFile = CmGetApp()->VGetConfig()->VGetString("sResCache") + CmGetApp()->VGetConfig()->VGetString("sFontPath") + std::string("font_16.fnt");
+        if(!VGetFontManager()->VGetCurrentFont()->VCreate(fontFile))
+        {
+            return false;
+        }
 
         if(!VGetFontManager()->VOnRestore())
         {
@@ -177,6 +186,16 @@ namespace chimera
         {
             m_pGui->VOnRestore();
         } */
+
+        if(m_pActorPicker)
+        {
+            SAFE_DELETE(m_pActorPicker);
+        }
+
+        m_pActorPicker = new ActorPicker();
+
+        RETURN_IF_FAILED(m_pActorPicker->VOnRestore());
+        
 
         return true;
     }
@@ -237,97 +256,21 @@ namespace chimera
 
         std::unique_ptr<ISceneNode> node(it->second(this, actor));
 
+        if(actor->VHasComponent(CM_CMP_PICKABLE))
+        {
+            node->VSetRenderPaths(node->VGetRenderPaths() | CM_RENDERPATH_EDITOR | CM_RENDERPATH_PICK);
+        }
+
         if(node)
         {
             node->VOnRestore(m_pSceneGraph);
 
-            m_pSceneGraph->VAddChild(pCastEventData->m_actorId, std::move(node));
+            m_pSceneGraph->VAddNode(pCastEventData->m_actorId, std::move(node));
         }
         else
         {
             LOG_CRITICAL_ERROR_A("%s", "hmm");
         }
-
-        //if(pCastEventData->m_id == CM_CMP_RENDERING)
-        {
-            //
-            /*
-            if(comp->m_sceneNode)
-            {
-                node = comp->m_sceneNode;
-                comp->m_sceneNode = NULL; //this prevents memory leaks
-                node->VSetActor(pCastEventData->m_actorId);
-            }
-            else if(comp->m_type == "anchor")
-            {
-                node = std::shared_ptr<chimera::AnchorNode>(
-                    new chimera::AnchorNode(eSPHERE, actor->GetId(), comp->m_info.c_str(), comp->m_anchorRadius, comp->m_drawType == "solid" ? eSolid : eWire));
-            }
-            else if(comp->m_type == "skydome")
-            {
-                node = std::shared_ptr<chimera::SkyDomeNode>(new chimera::SkyDomeNode(actor->GetId(), comp->m_info));
-            }
-            else if(!comp->m_instances.empty())
-            {
-                node = std::shared_ptr<chimera::InstancedMeshNode>(new chimera::InstancedMeshNode(actor->GetId(), comp->m_meshFile));
-            }
-            else
-            {
-                
-            }*/
-
-            //
-            
-        }
-
-        /*
-        else if(pCastEventData->m_id == chimera::LightComponent::COMPONENT_ID)
-        {
-            std::shared_ptr<chimera::LightComponent> comp = actor->GetComponent<chimera::LightComponent>(chimera::LightComponent::COMPONENT_ID).lock();
-
-            std::shared_ptr<chimera::ISceneNode> node;
-
-            if(comp->m_type == "point")
-            {
-                node = std::shared_ptr<chimera::PointlightNode>(new chimera::PointlightNode(actor->GetId()));
-            }
-            else if(comp->m_type == "spot")
-            {
-                node = std::shared_ptr<chimera::SpotlightNode>(new chimera::SpotlightNode(actor->GetId()));
-            }
-            else
-            {
-                LOG_CRITICAL_ERROR_A("Unknown lighttype: %s", comp->m_type.c_str());
-            }
-
-            m_pSceneGraph->VAddChild(pCastEventData->m_actorId, node);
-
-            node->VOnRestore(m_pSceneGraph);
-
-            comp->VSetHandled();
-        }
-
-        else if(pCastEventData->m_id == chimera::ParticleComponent::COMPONENT_ID)
-        {
-            std::shared_ptr<chimera::ParticleComponent> comp = actor->GetComponent<chimera::ParticleComponent>(chimera::ParticleComponent::COMPONENT_ID).lock();
-
-            std::shared_ptr<chimera::ParticleNode> node = std::shared_ptr<chimera::ParticleNode>(new chimera::ParticleNode(actor->GetId()));
-
-            m_pSceneGraph->VAddChild(pCastEventData->m_actorId, node);
-
-            node->VOnRestore(m_pSceneGraph);
-
-            comp->VSetHandled();
-        }
-        else if(pCastEventData->m_id == chimera::CameraComponent::COMPONENT_ID)
-        {
-            std::shared_ptr<chimera::SceneNode> node = std::shared_ptr<chimera::CameraNode>(new chimera::CameraNode(actor->GetId()));
-
-            m_pSceneGraph->VAddChild(pCastEventData->m_actorId, node);
-
-            node->VOnRestore(m_pSceneGraph);
-        }
-        */
     }
 
     void HumanGameView::VAddSceneNodeCreator(SceneNodeCreator nc, ComponentId cmpid)
@@ -370,11 +313,13 @@ namespace chimera
         return NULL;
     }
 
-    void HumanGameView::DeleteActorDelegate(IEventPtr pEventData)
+    void HumanGameView::DeleteComponentDelegate(IEventPtr pEventData)
     {
-        std::shared_ptr<ActorDeletedEvent> pCastEventData = std::static_pointer_cast<ActorDeletedEvent>(pEventData);
-
-        m_pSceneGraph->VRemoveChild(pCastEventData->m_id);
+        std::shared_ptr<DeleteComponentEvent> pCastEventData = std::static_pointer_cast<DeleteComponentEvent>(pEventData);
+        if(pCastEventData->m_cmpId == CM_CMP_RENDERING)
+        {
+            m_pSceneGraph->VRemoveNode(pCastEventData->m_actor->GetId());
+        }
     }
 
     void HumanGameView::LevelLoadedDelegate(IEventPtr pEventData)
@@ -399,11 +344,32 @@ namespace chimera
             ISceneNode* a = m_pSceneGraph->VFindActorNode(actor);
             if(p)
             {
-                p->VAddChild(m_pSceneGraph->VReleaseNode(actor));
+                //p->VAddChild(m_pSceneGraph->VReleaseNode(actor));
+                m_pSceneGraph->VSetParent(a, p);
             }
             else
             {
                 LOG_CRITICAL_ERROR("SetParentFailed - No Actor found");
+            }
+        }
+    }
+
+    void HumanGameView::ReleaseChildDelegate(IEventPtr pEventData)
+    {
+        //if(pEventData->VGetEventType() == event::SetParentActorEvent::TYPE) needed?
+        {
+            std::shared_ptr<ReleaseChildEvent> e = std::static_pointer_cast<ReleaseChildEvent>(pEventData);
+            ActorId actor = e->m_actor;
+
+            ISceneNode* a = m_pSceneGraph->VFindActorNode(actor);
+            ISceneNode* p = a->VGetParent();
+            if(p)
+            {
+                m_pSceneGraph->VReleaseParent(a, p);
+            }
+            else
+            {
+                //LOG_CRITICAL_ERROR("ReleaseChildDelegate - No Actor found");
             }
         }
     }
@@ -578,7 +544,11 @@ namespace chimera
 
         REMOVE_EVENT_LISTENER(this, &HumanGameView::SetParentDelegate, CM_EVENT_SET_PARENT_ACTOR);
 
+        REMOVE_EVENT_LISTENER(this, &HumanGameView::ReleaseChildDelegate, CM_EVENT_RELEASE_CHILD_ACTOR);
+
         REMOVE_EVENT_LISTENER((VRamManager*)m_pVramManager, &VRamManager::OnResourceChanged, CM_EVENT_RESOURCE_CHANGED);
+
+        REMOVE_EVENT_LISTENER(this, &HumanGameView::DeleteComponentDelegate, CM_EVENT_DELETE_COMPONENT);
         /*
         if(chimera::IEventManager::Get())
         {
@@ -605,6 +575,8 @@ namespace chimera
 
             
         } */
+
+        SAFE_DELETE(m_pActorPicker);
 
         TBD_FOR(m_screenElements)
         {

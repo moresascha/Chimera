@@ -3,11 +3,12 @@
 #include <fstream>
 #include "Event.h"
 #include "Components.h"
+#include "GuiComponent.h"
 
 namespace chimera
 {
 
-    bool CheckForError(std::list<std::string> toCheck)
+    bool CheckForError(std::list<std::string>& toCheck)
     {
         return toCheck.size() == 0;
     }
@@ -358,7 +359,11 @@ namespace chimera
 
         bool Print(ICommand& cmd)
         {
-            CmGetApp()->VGetHumanView()->VGetScreenElementByName(VIEW_CONSOLE_NAME);
+            GuiConsole* console = dynamic_cast<GuiConsole*>(CmGetApp()->VGetHumanView()->VGetScreenElementByName(VIEW_CONSOLE_NAME));
+            if(console)
+            {
+                console->AppendText(cmd.VGetRemainingString());
+            }
             return true;
         }
 
@@ -485,7 +490,7 @@ namespace chimera
 
             free(szCmdline);
 
-            return exitCode;
+            return exitCode > 0;
         }
 
         bool SpawnActor(chimera::ICommand& cmd)
@@ -493,6 +498,11 @@ namespace chimera
             std::string file = cmd.VGetNextCharStr();
 
             CHECK_COMMAND(cmd);
+
+            if(!CmGetApp()->VGetCache()->VHasResource(CmGetApp()->VGetConfig()->VGetString("sActorPath") + chimera::CMResource(file)))
+            {
+                throw "File not found";
+            }
 
             IActor* actor = CmGetApp()->VGetLogic()->VCreateActor(file.c_str());
 
@@ -517,7 +527,7 @@ namespace chimera
             }
 
             actor->VQueryComponent(CM_CMP_TRANSFORM, (chimera::IActorComponent**)&cmp);
-            cmp->GetTransformation()->SetTranslate(util::Vec3(x, y, z));
+            cmp->GetTransformation()->SetTranslation(util::Vec3(x, y, z));
 
             return true;
         }
@@ -530,6 +540,251 @@ namespace chimera
             chimera::MoveActorEvent* me = new chimera::MoveActorEvent(id, util::Vec3(0, height, 0));
             me->m_isJump = true;
             QUEUE_EVENT(me);
+            return true;
+        }
+
+        bool SetRenderMode(chimera::ICommand& cmd)
+        {
+            std::string mode = cmd.VGetNextCharStr();
+
+            if(cmd.VIsError())
+            {
+                return false;
+            }
+
+            CmGetApp()->VGetHumanView()->VActivateScene(mode.c_str());
+            return true;
+        }
+
+        ActorId lastActor = CM_INVALID_ACTOR_ID;
+        IActorComponent* tmpCmp = NULL;
+        void callBack(ActorId id)
+        {
+            IActor* playerActor = CmGetApp()->VGetHumanView()->VGetTarget();
+
+            CameraComponent* cameraCmp;
+            playerActor->VQueryComponent(CM_CMP_CAMERA, (IActorComponent**)&cameraCmp);
+
+            util::Vec3 eyePos;
+            util::Vec3 offset(0, 0, 5);
+            if(cameraCmp)
+            {
+                eyePos = cameraCmp->GetCamera()->GetEyePos();
+                offset.y = cameraCmp->GetCamera()->GetYOffset();
+            }
+
+            if(lastActor != CM_INVALID_ACTOR_ID)
+            {
+                ReleaseChildEvent* pe = new ReleaseChildEvent();
+                pe->m_actor = lastActor;
+                QUEUE_EVENT(pe);
+
+                TransformComponent* tCmp;
+                IActor* targetActor = CmGetApp()->VGetLogic()->VFindActor(lastActor);
+                TRIGGER_EVENT(new MoveActorEvent(lastActor, (cameraCmp->GetCamera()->GetViewDir() * 5) + eyePos, false));
+
+                if(tmpCmp)
+                {
+                    targetActor->VAddComponent(std::unique_ptr<IActorComponent>(tmpCmp));
+                    QUEUE_EVENT(new NewComponentCreatedEvent(tmpCmp->VGetComponentId(), targetActor->GetId()));
+                }
+
+                lastActor = CM_INVALID_ACTOR_ID;
+                return;
+            }
+
+            if(id != CM_INVALID_ACTOR_ID && id != lastActor)
+            {
+                SetParentActorEvent* pe = new SetParentActorEvent();
+                pe->m_actor = id;
+                pe->m_parentActor = CmGetApp()->VGetHumanView()->VGetTarget()->GetId();
+                QUEUE_EVENT(pe);
+                IActor* targetActor = CmGetApp()->VGetLogic()->VFindActor(id);
+
+                TransformComponent* tCmp;
+                targetActor->VQueryComponent(CM_CMP_TRANSFORM, (IActorComponent**)&tCmp);
+                tCmp->GetTransformation()->SetTranslation(offset);
+                QUEUE_EVENT(new ActorMovedEvent(CmGetApp()->VGetLogic()->VFindActor(id)));
+
+                tmpCmp = targetActor->VReleaseComponent(CM_CMP_PHX).release();
+                if(tmpCmp)
+                {
+                    QUEUE_EVENT(new DeleteComponentEvent(targetActor, tmpCmp));
+                }
+            }
+
+            lastActor = id;
+        }
+
+        bool PickActor(chimera::ICommand& cmd)
+        {
+            IEventPtr event(new PickActorEvent(callBack));
+            TRIGGER_EVENT(event);
+            return true;
+        }
+
+        bool DeleteSelectedActor(chimera::ICommand& cmd)
+        {
+            ActorId id = lastActor;
+            lastActor = CM_INVALID_ACTOR_ID;
+            if(id == CM_INVALID_ACTOR_ID)
+            {
+                return false;
+            }
+
+            DeleteActorEvent* e = new DeleteActorEvent(id);
+            QUEUE_EVENT(e);
+            return true;
+        }
+
+        bool DeleteActor(chimera::ICommand& cmd)
+        {
+            ActorId id = (ActorId)cmd.VGetNextInt();
+            CHECK_COMMAND(cmd);
+            DeleteActorEvent* e = new DeleteActorEvent(id);
+            QUEUE_EVENT(e);
+            return true;
+        }
+
+        bool ApplyPlayerForce(ICommand& cmd)
+        {
+            IActor* playerActor = CmGetApp()->VGetHumanView()->VGetTarget();
+
+            CameraComponent* cameraCmp;
+            playerActor->VQueryComponent(CM_CMP_CAMERA, (IActorComponent**)&cameraCmp);
+
+            const util::Vec3& dir = cameraCmp->GetCamera()->GetViewDir();
+
+            if(lastActor != CM_INVALID_ACTOR_ID)
+            {
+                ReleaseChildEvent* pe = new ReleaseChildEvent();
+                pe->m_actor = lastActor;
+                TRIGGER_EVENT(pe);
+
+                TransformComponent* tCmp;
+                IActor* targetActor = CmGetApp()->VGetLogic()->VFindActor(lastActor);
+                TRIGGER_EVENT(new MoveActorEvent(lastActor, (cameraCmp->GetCamera()->GetViewDir() * 5) + cameraCmp->GetCamera()->GetEyePos(), false));
+
+                if(tmpCmp)
+                {
+                    targetActor->VAddComponent(std::unique_ptr<IActorComponent>(tmpCmp));
+                    TRIGGER_EVENT(new NewComponentCreatedEvent(tmpCmp->VGetComponentId(), targetActor->GetId()));
+                }
+            }
+
+            util::Vec3 tdir = dir;
+            tdir.Scale(0.25f);
+            std::stringstream ss;
+            ss << "force ";
+            ss << tdir.x << " ";
+            ss << tdir.y << " ";
+            ss << tdir.z;
+            CmGetApp()->VGetLogic()->VGetCommandInterpreter()->VCallCommand(ss.str().c_str());
+
+            ss.str("");
+            ss << "torque ";
+            ss << dir.x << " ";
+            ss << dir.y << " ";
+            ss << dir.z;
+            CmGetApp()->VGetLogic()->VGetCommandInterpreter()->VCallCommand(ss.str().c_str());
+
+            return true;
+        }
+
+        bool ApplyForce(ICommand& cmd)
+        {
+            if(lastActor == CM_INVALID_ACTOR_ID)
+            {
+                return true;
+            }
+
+            float x = cmd.VGetNextFloat();
+            float y = cmd.VGetNextFloat();
+            float z = cmd.VGetNextFloat();
+            CHECK_COMMAND(cmd);
+
+            float n = cmd.VGetNextFloat();
+
+            n = n == 0 ? 1 : n;
+
+            util::Vec3 dir(x, y, z);
+
+            ApplyForceEvent* ev = new ApplyForceEvent();
+            ev->m_actor = CmGetApp()->VGetLogic()->VFindActor(lastActor);
+            ev->m_dir = dir;
+            ev->m_newtons = 100000;
+
+            QUEUE_EVENT(ev);
+
+            lastActor = CM_INVALID_ACTOR_ID;
+
+            return true;
+        }
+
+        bool ApplyTorque(ICommand& cmd)
+        {
+            if(lastActor == CM_INVALID_ACTOR_ID)
+            {
+                return true;
+            }
+
+            float x = cmd.VGetNextFloat();
+            float y = cmd.VGetNextFloat();
+            float z = cmd.VGetNextFloat();
+            CHECK_COMMAND(cmd);
+
+            float n = cmd.VGetNextFloat();
+
+            n = n == 0 ? 1 : n;
+
+            util::Vec3 dir(x, y, z);
+
+            ApplyTorqueEvent* ev = new ApplyTorqueEvent();
+            ev->m_actor = CmGetApp()->VGetLogic()->VFindActor(lastActor);
+            ev->m_torque = dir;
+            ev->m_newtons = 100000;
+
+            QUEUE_EVENT(ev);
+
+            //m_toModify = CM_INVALID_ACTOR_ID;
+            lastActor = CM_INVALID_ACTOR_ID;
+
+            //m_bMovePicked = false;
+
+            return true;
+        }
+
+        util::Vec3 sunIntensity(1,1,1);
+        bool IncSunIntensity(ICommand& cmd)
+        {
+            sunIntensity = sunIntensity + util::Vec3(0.1f, 0.1f, 0.1f);
+            SetSunIntensityEvent* e = new SetSunIntensityEvent(sunIntensity.x, sunIntensity.y, sunIntensity.z);
+            QUEUE_EVENT(e);
+            return true;
+        }
+
+        bool DecSunIntensity(ICommand& cmd)
+        {
+            sunIntensity = sunIntensity - util::Vec3(0.1f, 0.1f, 0.1f);
+            SetSunIntensityEvent* e = new SetSunIntensityEvent(sunIntensity.x, sunIntensity.y, sunIntensity.z);
+            QUEUE_EVENT(e);
+            return true;
+        }
+
+        util::Vec3 sunAmbient(0.1f,0.1f,0.1f);
+        bool IncSunAmbient(ICommand& cmd)
+        {
+            sunAmbient = sunAmbient + util::Vec3(0.1f, 0.1f, 0.1f);
+            SetSunAmbient* e = new SetSunAmbient(sunAmbient.x, sunAmbient.y, sunAmbient.z);
+            QUEUE_EVENT(e);
+            return true;
+        }
+
+        bool DecSunAmbient(ICommand& cmd)
+        {
+            sunAmbient = sunAmbient - util::Vec3(0.1f, 0.1f, 0.1f);
+            SetSunAmbient* e = new SetSunAmbient(sunAmbient.x, sunAmbient.y, sunAmbient.z);
+            QUEUE_EVENT(e);
             return true;
         }
 
@@ -547,7 +802,18 @@ namespace chimera
             interpreter.VRegisterCommand("savelevel", commands::SaveLevel, "savelevel [levelname]");
             interpreter.VRegisterCommand("loadlevel", commands::LoadLevel, "loadLevel [levelname]");
             interpreter.VRegisterCommand("spawnactor", commands::SpawnActor, "spawnactor [filename]");
+            interpreter.VRegisterCommand("deleteactor", commands::DeleteActor, "deleteactor [id]");
+            interpreter.VRegisterCommand("deleteselectedactor", commands::DeleteSelectedActor, "deleteselectedactor");
+            interpreter.VRegisterCommand("r_setmode", commands::SetRenderMode, "r_setmode [mode]");
             interpreter.VRegisterCommand("jump", commands::Jump, "jump");
+            interpreter.VRegisterCommand("pick", commands::PickActor, "pick");
+            interpreter.VRegisterCommand("pforce", commands::ApplyPlayerForce, "pforce");
+            interpreter.VRegisterCommand("force", commands::ApplyForce, "force [id x y z]");
+            interpreter.VRegisterCommand("inc_sun_i", commands::IncSunIntensity);
+            interpreter.VRegisterCommand("dec_sun_i", commands::DecSunIntensity);
+            interpreter.VRegisterCommand("inc_sun_a", commands::IncSunAmbient);
+            interpreter.VRegisterCommand("dec_sun_a", commands::DecSunAmbient);
+            interpreter.VRegisterCommand("torque", commands::ApplyTorque, "torque [id x y z]");
             interpreter.VRegisterCommand("exit", commands::End);
         }
     }

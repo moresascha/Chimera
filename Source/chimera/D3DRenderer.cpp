@@ -235,12 +235,19 @@ namespace chimera
 
             m_pDefaultTexture = std::static_pointer_cast<IDeviceTexture>(CmGetApp()->VGetHumanView()->VGetVRamManager()->VGetHandle(m_pDefaultMaterial->VGetTextureDiffuse()));
      
+            VSetActorId(-1);
+
             return true;
         }
 
         void* Renderer::VGetDevice(void)
         {
             return (void*)chimera::d3d::GetDevice();
+        }
+
+        void* Renderer::VGetContext(void)
+        {
+            return (void*)chimera::d3d::GetContext();
         }
 
         void Renderer::VSetFullscreen(bool fullscreen)
@@ -488,14 +495,14 @@ namespace chimera
             chimera::CmGetApp()->VGetHumanView()->VGetSceneGraph()->VResetVisibility();
         }
 
-        /*VOID D3DRenderer::SetActorId(UINT id)
+        void Renderer::VSetActorId(ActorId id)
         {
-            chimera::ConstBuffer* buffer = GetBuffer(chimera::eActorIdBuffer);
-            UINT* i = (UINT*)buffer->Map();
+            IConstShaderBuffer* buffer = VGetConstShaderBuffer(chimera::eActorIdBuffer);
+            uint* i = (uint*)buffer->VMap();
             i[0] = id;
             i[1] = i[2] = i[3] = 0;
-            buffer->Unmap();
-        } */
+            buffer->VUnmap();
+        }
 
         void Renderer::SetPointLightShadowCubeMapSampler(ID3D11ShaderResourceView* view)
         {

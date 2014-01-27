@@ -1,5 +1,13 @@
 #include "ShaderGlobals.h"
 
+#define HIGHLIGHT_PICKED \
+    {\
+        float scale = 1; \
+        op.ambientMaterialSpecG += half4((g_selectedActorId.x == g_actorId.x) * scale, 0, 0, 0); \
+        op.diffuseColorSpecB += half4((g_selectedActorId.x == g_actorId.x) * scale, 0, 0, 0); \
+    }
+
+
 struct PixelInput 
 {
     float2 texCoords : TEXCOORD0;
@@ -145,9 +153,7 @@ PixelOutput DefShading_PS(PixelInput input)
     
     op.reflectionStr = (half)g_reflectanceMaterial;
 
-    //float scale = 0.1;
-    //op.ambientMaterialSpecG += half4((g_selectedActorId.x == g_actorId.x) * scale, 0, 0, 0);
-    //op.diffuseColorSpecB += half4((g_selectedActorId.x == g_actorId.x) * scale, 0, 0, 0);
+    //HIGHLIGHT_PICKED
 
     return op;
 }
@@ -172,6 +178,25 @@ PixelOutput DefShadingWire_PS(PixelInput input)
     op.diffuseColorSpecB = half4(tex.x, tex.y, tex.z, g_specularMaterial.z);
 
     op.reflectionStr = (half)g_reflectanceMaterial;
+
+    return op;
+}
+
+PixelOutput DefEditor_PS(PixelInput input)
+{
+    PixelOutput op;
+    
+    op.worldPosDepth.xyz = input.position.xyz;
+    op.worldPosDepth.w = input.position.w;
+
+    op.normal = float4(input.normal,0);
+    op.diffMaterialSpecR = half4(1,1,1,0);
+    op.ambientMaterialSpecG = half4(.1,.1,.1,0);
+    op.diffuseColorSpecB = half4(.5,.1,.1,0);
+
+    op.reflectionStr = g_selectedActorId.x == g_actorId.x;
+
+    HIGHLIGHT_PICKED
 
     return op;
 }

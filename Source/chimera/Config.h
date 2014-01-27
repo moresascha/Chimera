@@ -84,6 +84,8 @@ namespace chimera
                 return GetValue<bool>(value);
             }
 
+            void VCreateDefaults(void);
+
             ~Config(void);
         };
     }

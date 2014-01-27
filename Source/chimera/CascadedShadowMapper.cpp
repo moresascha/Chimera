@@ -2,6 +2,7 @@
 #include "Frustum.h"
 #include "Camera.h"
 #include "Components.h"
+#include "Event.h"
 
 namespace chimera
 {
@@ -19,6 +20,8 @@ namespace chimera
         XMFLOAT4X4 m_iView;
         XMFLOAT4X4 m_projection[3]; //TODO
         XMFLOAT4 m_lightPos;
+        XMFLOAT4 m_intensity;
+        XMFLOAT4 m_ambient;
         XMFLOAT4 m_distances;
     };
 
@@ -38,6 +41,9 @@ namespace chimera
         }
 #endif
         */
+        m_intensity = util::Vec3(1,1,1);
+
+        m_ambient = util::Vec3(0.1f, 0.1f, 0.1f);
 
         std::unique_ptr<ActorDescription> desc = CmGetApp()->VGetLogic()->VGetActorFactory()->VCreateActorDescription();
         CameraComponent* cc = desc->AddComponent<CameraComponent>(CM_CMP_CAMERA);
@@ -49,7 +55,7 @@ namespace chimera
         util::Vec3 lightPos(1.0f,0.3f,-0.2f);
         lightPos.Normalize();
         lightPos.Scale(util::Vec3(1000.0f, 1000.0f, 1000.0f));
-        tc->GetTransformation()->SetTranslate(lightPos.x, lightPos.y, lightPos.z);
+        tc->GetTransformation()->SetTranslation(lightPos.x, lightPos.y, lightPos.z);
         cc->GetCamera()->MoveToPosition(tc->GetTransformation()->GetTranslation());
         m_lightActorCamera->SetName("cascadeLightCamera");
 
@@ -61,7 +67,9 @@ namespace chimera
             m_viewActor->GetComponent<chimera::TransformComponent>(chimera::TransformComponent::COMPONENT_ID).lock()->GetTransformation()->GetTranslation());
 
         */
-        //ADD_EVENT_LISTENER(this, &CascadedShadowMapper::SetSunPositionDelegate, SetSunPositionEvent::TYPE);
+        ADD_EVENT_LISTENER(this, &CascadedShadowMapper::SetSunPositionDelegate, CM_EVENT_SET_SUN_POSITION);
+        ADD_EVENT_LISTENER(this, &CascadedShadowMapper::SetSunIntensityDelegate, CM_EVENT_SET_SUN_INTENSITY);
+        ADD_EVENT_LISTENER(this, &CascadedShadowMapper::SetSunAmbientDelegate, CM_EVENT_SET_SUN_AMBIENT);
     }
 
     bool CascadedShadowMapper::VOnRestore(void)
@@ -86,12 +94,12 @@ namespace chimera
                 CMShaderDescription desc;
                 desc.file = L"Effects.hlsl";
                 desc.function = "VSMBlurH";
-                IEffect* e0 = m_ppBlurChain[i]->VCreateEffect(desc);
+                IEffect* e0 = m_ppBlurChain[i]->VAppendEffect(desc);
                 e0->VSetSource(m_ppTargets[i]);
 
                 desc.function = "VSMBlurV";
-                IEffect* e1 = m_ppBlurChain[i]->VCreateEffect(desc);
-                e1->VAddRequirement(e0);
+                IEffect* e1 = m_ppBlurChain[i]->VAppendEffect(desc);
+                //e1->VAddRequirement(e0);
                 e1->VSetTarget(m_ppBlurredTargets[i]);
 
                 m_ppBlurChain[i]->VOnRestore(dim, dim);
@@ -372,6 +380,12 @@ namespace chimera
         _lb->m_lightPos.x = lcc->GetCamera()->GetEyePos().x;
         _lb->m_lightPos.y = lcc->GetCamera()->GetEyePos().y;
         _lb->m_lightPos.z = lcc->GetCamera()->GetEyePos().z;
+        _lb->m_intensity.x = m_intensity.x;
+        _lb->m_intensity.y = m_intensity.y;
+        _lb->m_intensity.z = m_intensity.z;
+        _lb->m_ambient.x = m_ambient.x;
+        _lb->m_ambient.y = m_ambient.y;
+        _lb->m_ambient.z = m_ambient.z;
         _lb->m_distances.x = distances[0];
         _lb->m_distances.y = distances[1];
         _lb->m_distances.z = distances[2];
@@ -390,6 +404,18 @@ namespace chimera
         util::Vec3 u(0,1,0);
         util::Mat4 m;
         XMStoreFloat4x4(&m.m_m, XMMatrixLookAtLH(XMLoadFloat3(&newPos.m_v), XMLoadFloat3(&(f.m_v)), XMLoadFloat3(&u.m_v)));*/
+    }
+
+    void CascadedShadowMapper::SetSunIntensityDelegate(chimera::IEventPtr data)
+    {
+        std::shared_ptr<SetSunIntensityEvent> event = std::static_pointer_cast<SetSunIntensityEvent>(data);
+        m_intensity = event->m_intensity;
+    }
+
+    void CascadedShadowMapper::SetSunAmbientDelegate(chimera::IEventPtr data)
+    {
+        std::shared_ptr<SetSunAmbient> event = std::static_pointer_cast<SetSunAmbient>(data);
+        m_ambient = event->m_ambient;
     }
 
     void CascadedShadowMapper::Destroy(void)
@@ -412,7 +438,9 @@ namespace chimera
 
     CascadedShadowMapper::~CascadedShadowMapper(void)
     {
-        //REMOVE_EVENT_LISTENER(this, &CascadedShadowMapper::SetSunPositionDelegate, chimera::SetSunPositionEvent::TYPE);
+        REMOVE_EVENT_LISTENER(this, &CascadedShadowMapper::SetSunPositionDelegate, CM_EVENT_SET_SUN_POSITION);
+        REMOVE_EVENT_LISTENER(this, &CascadedShadowMapper::SetSunIntensityDelegate, CM_EVENT_SET_SUN_INTENSITY);
+        REMOVE_EVENT_LISTENER(this, &CascadedShadowMapper::SetSunAmbientDelegate, CM_EVENT_SET_SUN_AMBIENT);
         Destroy();
     }
 };

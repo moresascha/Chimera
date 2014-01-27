@@ -11,7 +11,7 @@
 
 #define CM_INLINE __inline
 
-#define CM_INVALID_ACTOR_ID 0xFFFFFFFF
+#define CM_INVALID_ACTOR_ID 0
 
 #define CM_CONFIG_FILE "config.ini"
 #define CM_CONTROLS_FILE "controls.ini"
@@ -128,7 +128,8 @@
 #define CM_RENDERPATH_SKY 0x80
 #define CM_RENDERPATH_ALBEDO_WIRE 0x100
 #define CM_RENDERPATH_SHADOWMAP_INSTANCED 0x200
-#define CM_RENDERPATH_CNT 10
+#define CM_RENDERPATH_PICK 0x400
+#define CM_RENDERPATH_CNT 11
 
 /*RenderPath_DrawToAlbedo = 1,
     eRenderPath_DrawToShadowMap = 1 << 1,
@@ -173,6 +174,12 @@
     { \
     chimera::IEventPtr event(_eventPtr); \
     chimera::CmGetApp()->VGetEventManager()->VQueueEvent(event); \
+    }
+
+#define TRIGGER_EVENT(_eventPtr) \
+    { \
+    chimera::IEventPtr event(_eventPtr); \
+    chimera::CmGetApp()->VGetEventManager()->VTriggetEvent(event); \
     }
 
 #define QUEUE_EVENT_TSAVE(_eventPtr) \

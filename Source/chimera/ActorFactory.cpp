@@ -140,19 +140,25 @@ namespace chimera
         return new ControllerComponent;
     }
 
-    bool InitiaizeTransformComponent(IActorComponent* cmp, ICMStream* stream);
+    bool InitializeTransformComponent(IActorComponent* cmp, ICMStream* stream);
 
-    bool InitiaizeRenderingComponent(IActorComponent* cmp, ICMStream* stream);
+    bool InitializeRenderingComponent(IActorComponent* cmp, ICMStream* stream);
 
-    bool InitiaizeCameraComponent(IActorComponent* cmp, ICMStream* stream);
+    bool InitializeCameraComponent(IActorComponent* cmp, ICMStream* stream);
 
-    bool InitiaizeControllerComponent(IActorComponent* cmp, ICMStream* stream);
+    bool InitializeControllerComponent(IActorComponent* cmp, ICMStream* stream);
 
-    bool InitiaizePhysicsComponent(IActorComponent* cmp, ICMStream* stream);
+    bool InitializePhysicsComponent(IActorComponent* cmp, ICMStream* stream);
 
-    bool InitiaizeLightComponent(IActorComponent* cmp, ICMStream* stream);
+    bool InitializeLightComponent(IActorComponent* cmp, ICMStream* stream);
 
-    ActorFactory::ActorFactory(void) : m_lastActorId(0)
+    bool InitializeNothing(IActorComponent* cmp, ICMStream* stream)
+    {
+
+        return true;
+    }
+
+    ActorFactory::ActorFactory(void) : m_lastActorId(CM_INVALID_ACTOR_ID + 1)
     {
         VAddComponentCreator(CreateTransformComponent, "TransformComponent", CM_CMP_TRANSFORM);
         VAddComponentCreator(CreateRenderComponent, "RenderComponent", CM_CMP_RENDERING);
@@ -162,13 +168,14 @@ namespace chimera
         VAddComponentCreator(CreateSoundEmitterComponent, "SoundComponent", CM_CMP_SOUND);
         VAddComponentCreator(CreateParentComponent, "ParentComponent", CM_CMP_PARENT_ACTOR);
         VAddComponentCreator(CreateControllerComponent, "ControllerComponent", CM_CMP_CONTROLLER);
+        VAddComponentCreator(CreatePickableComponent, "PickableComponent", CM_CMP_PICKABLE);
 
-        VAddComponentInitializer(InitiaizeTransformComponent, "TransformComponent", CM_CMP_TRANSFORM);
-        VAddComponentInitializer(InitiaizeRenderingComponent, "RenderComponent", CM_CMP_RENDERING);
-        VAddComponentInitializer(InitiaizeCameraComponent, "CameraComponent", CM_CMP_CAMERA);
-        VAddComponentInitializer(InitiaizeControllerComponent, "ControllerComponent", CM_CMP_CONTROLLER);
-        VAddComponentInitializer(InitiaizePhysicsComponent, "PhysicComponent", CM_CMP_PHX);
-        VAddComponentInitializer(InitiaizeLightComponent, "LightComponent", CM_CMP_LIGHT);
+        VAddComponentInitializer(InitializeTransformComponent, "TransformComponent", CM_CMP_TRANSFORM);
+        VAddComponentInitializer(InitializeRenderingComponent, "RenderComponent", CM_CMP_RENDERING);
+        VAddComponentInitializer(InitializeCameraComponent, "CameraComponent", CM_CMP_CAMERA);
+        VAddComponentInitializer(InitializeControllerComponent, "ControllerComponent", CM_CMP_CONTROLLER);
+        VAddComponentInitializer(InitializePhysicsComponent, "PhysicComponent", CM_CMP_PHX);
+        VAddComponentInitializer(InitializeLightComponent, "LightComponent", CM_CMP_LIGHT);
     }
 
     void ActorFactory::VAddComponentCreator(ActorComponentCreator creator, LPCSTR name, ComponentId id)
@@ -239,23 +246,26 @@ namespace chimera
             std::string name(pNode->Value());
             if(name == "Actor")
             {
+                IActor* child = NULL;
                 if(pNode->Attribute("file"))
                 {
                     CMResource r = pNode->Attribute("file");
-                    IActor* child = VCreateActor(r, actors);
-                    std::unique_ptr<ParentComponent> pcmp = std::unique_ptr<ParentComponent>(new ParentComponent());
-                    pcmp->m_parentId = pActor->GetId();
-                    if(pNode->Attribute("name"))
-                    {
-                        child->SetName(std::string(pNode->Attribute("name")));
-                    }
-                    pcmp->VSetOwner(child);
-                    child->VAddComponent(std::move(pcmp));
+                    child = VCreateActor(r, actors);
+   
                 }
                 else
                 {
-                    LOG_CRITICAL_ERROR("No Actor file specified!");
+                    child = VCreateActor((ICMStream*)pNode, actors);
                 }
+
+                std::unique_ptr<ParentComponent> pcmp = std::unique_ptr<ParentComponent>(new ParentComponent());
+                pcmp->m_parentId = pActor->GetId();
+                if(pNode->Attribute("name"))
+                {
+                    child->SetName(std::string(pNode->Attribute("name")));
+                }
+                pcmp->VSetOwner(child);
+                child->VAddComponent(std::move(pcmp));
             }
             else
             {

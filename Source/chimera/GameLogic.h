@@ -50,7 +50,7 @@ namespace chimera
 
         void VOnUpdate(ulong millis);
 
-        IActor* VCreateActor(LPCSTR resource, bool appendToLevel = false);
+        IActor* VCreateActor(LPCSTR resource, std::vector<IActor*>* children = NULL, bool appendToLevel = false);
 
         IActor* VCreateActor(std::unique_ptr<ActorDescription> desc, bool appendToLevel = false);
    
@@ -81,6 +81,8 @@ namespace chimera
         void CreateActorDelegate(IEventPtr eventData);
 
         void DeleteActorDelegate(IEventPtr eventData);
+
+        void DeleteActorComponentDelegate(IEventPtr eventData);
 
         void ActorCreatedDelegate(IEventPtr eventData);
 

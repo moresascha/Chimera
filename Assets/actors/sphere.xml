@@ -5,7 +5,7 @@
     <RenderComponent>
 		<Resource>sphere.obj</Resource>
     </RenderComponent>
-	<PhysicComponent>
+	<!--<PhysicComponent>
 		<ShapeStyle>sphere</ShapeStyle>
-	</PhysicComponent>
+	</PhysicComponent>-->
 </Actor>

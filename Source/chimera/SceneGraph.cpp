@@ -6,6 +6,7 @@ namespace chimera
 {
     SceneGraph::SceneGraph() : m_visibiltyReset(true), m_visbibilityCheckTime(0), m_root(std::unique_ptr<ISceneNode>(new SceneNode(CM_INVALID_ACTOR_ID)))
     {
+        m_actorIdToNode[CM_INVALID_ACTOR_ID] = m_root.get();
     }
 
     bool SceneGraph::VOnUpdate(ulong millis) 
@@ -44,32 +45,28 @@ namespace chimera
         return m_visibiltyReset;
     }
 
-    void SceneGraph::VAddChild(ActorId actorId, std::unique_ptr<ISceneNode> node) 
+    void SceneGraph::AddToRenderPaths(ISceneNode* node)
     {
+        if(VFindActorNode(node->VGetActorId()))
+        {
+            return;
+        }
+
         for(uint i = 0; i <= CM_RENDERPATH_CNT; ++i)
         {
             RenderPath path = (RenderPath)(1 << i);
             if(node->VGetRenderPaths() & (path))
             {
-                m_pathToNode[path].push_back(node.get());
+                m_pathToNode[path].push_back(node);
             }
         }
-        
-        m_root->VAddChild(std::move(node));
     }
 
-    std::unique_ptr<ISceneNode> SceneGraph::VReleaseNode(ActorId id)
+    void SceneGraph::RemoveFromRenderPaths(ISceneNode* node)
     {
-        return m_root->VRemoveChild(id);
-    }
-
-    void SceneGraph::VRemoveChild(ActorId actorid) {
-
-        ISceneNode* node = m_root->VFindActor(actorid);
-
-        if(!node)
+        if(!VFindActorNode(node->VGetActorId()))
         {
-            LOG_CRITICAL_ERROR("No actor node found");
+            return;
         }
 
         for(uint i = 0; i < CM_RENDERPATH_CNT; ++i)
@@ -80,8 +77,53 @@ namespace chimera
                 m_pathToNode[path].remove(node);
             }
         }
+    }
 
-        m_root->VRemoveChild(actorid);
+    void SceneGraph::VAddNode(ActorId actorId, std::unique_ptr<ISceneNode> node) 
+    {
+        AddToRenderPaths(node.get());
+        m_actorIdToNode[actorId] = node.get();
+        m_root->VAddChild(std::move(node));
+    }
+
+    void SceneGraph::VSetParent(ISceneNode* child, ISceneNode* parent)
+    {
+        std::unique_ptr<ISceneNode> node = m_root->VRemoveChild(child->VGetActorId());
+        child->VSetParent(parent);
+        parent->VAddChild(std::move(node));
+    }
+
+    void SceneGraph::VReleaseParent(ISceneNode* child, ISceneNode* parent)
+    {
+        std::unique_ptr<ISceneNode> node = parent->VRemoveChild(child);
+        //child->VSetParent(m_root.get());
+        m_root->VAddChild(std::move(node));
+    }
+
+    void SceneGraph::VRemoveNode(ActorId id) 
+    {
+        auto it = m_actorIdToNode.find(id);
+        if(it == m_actorIdToNode.end())
+        {
+            return;
+        }
+
+        std::vector<std::unique_ptr<ISceneNode>>& c = it->second->VGetChilds();
+        TBD_FOR(c)
+        {
+            VRemoveNode((*it)->VGetActorId());
+        }
+
+        ISceneNode* node = it->second;
+
+        if(!node)
+        {
+            LOG_CRITICAL_ERROR("No actor node found");
+        }
+
+        RemoveFromRenderPaths(node);
+
+        m_actorIdToNode.erase(it);
     }
 
     void SceneGraph::VSetCamera(std::shared_ptr<ICamera> camera)
@@ -125,7 +167,12 @@ namespace chimera
 
     ISceneNode* SceneGraph::VFindActorNode(ActorId id)
     {
-        return m_root->VFindActor(id);
+        auto it = m_actorIdToNode.find(id);
+        if(it == m_actorIdToNode.end())
+        {
+            return NULL;
+        }
+        return it->second;
     }
 
     SceneGraph::~SceneGraph(void) 

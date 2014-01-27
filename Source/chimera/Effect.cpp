@@ -57,6 +57,7 @@ namespace chimera
         float2 vp = e->VGetViewPort();
         e->VGetTarget()->VOnRestore((uint)(vp.x * (float)CmGetApp()->VGetWindowWidth()), (uint)(vp.y * (float)CmGetApp()->VGetWindowHeight()), eFormat_R32G32B32A32_FLOAT, false);
         m_requirements.push_back(e);
+        VSetSource(e->VGetTarget());
     }
 
     void Effect::VSetParameters(IEffectParmaters* params)
@@ -72,6 +73,11 @@ namespace chimera
     IRenderTarget* Effect::VGetTarget(void)
     {
         return m_target;
+    }
+
+    IRenderTarget* Effect::VGetSource(void)
+    {
+        return m_source;
     }
 
     void Effect::VSetTarget(IRenderTarget* target)
@@ -150,16 +156,16 @@ namespace chimera
     {
     }
 
-    EffectChain::EffectChain(IEffectFactory* factory) : m_w(0), m_h(0), m_pEffectFactory(factory), m_pVertexShader(NULL)
+    EffectChain::EffectChain(IEffectFactory* factory) : m_w(0), m_h(0), m_pEffectFactory(factory), m_pVertexShader(NULL), m_leaf(NULL)
     {
     }
 
     IRenderTarget* EffectChain::VGetResult(void)
     {
-        return m_pTarget;
+        return m_leaf->VGetSource();
     }
 
-    IEffect* EffectChain::VCreateEffect(const CMShaderDescription& shaderDesc, float w, float h)
+    IEffect* EffectChain::VAppendEffect(const CMShaderDescription& shaderDesc, float w, float h)
     {
         std::unique_ptr<IEffect> e(m_pEffectFactory->VCreateEffect());
 
@@ -169,6 +175,12 @@ namespace chimera
         if(!e->VOnRestore(CmGetApp()->VGetWindowWidth(), CmGetApp()->VGetWindowHeight(), &log))
         {
             LOG_CRITICAL_ERROR(log.c_str());
+        }
+
+        if(m_leaf)
+        {
+            e->VAddRequirement(m_leaf);
+            m_pTarget = m_leaf->VGetTarget();
         }
 
         m_leaf = e.get();
@@ -217,7 +229,7 @@ namespace chimera
 
     void EffectChain::VSetTarget(IRenderTarget* target)
     {
-        m_pTarget = target;
+        //m_pTarget = target;
     }
 
     EffectChain::~EffectChain(void)
@@ -227,33 +239,13 @@ namespace chimera
 
     void EffectChain::VProcess(void)
     {
-        
-        //ID3D11VertexShader* tmp;
-        //d3d::GetContext()->VSGetShader(&tmp, NULL, 0);
-
         m_pVertexShader->VBind();
 
         m_leaf->VProcess();
-
-        /*
-        for(auto it = m_effects.begin(); it != m_effects.end(); ++it)
-        {
-            Effect* e = *it;
-            for(auto it2 = e->m_requirements.begin(); it2 != e->m_requirements.end(); ++it2)
-            {
-                if(!e->m_isProcessed)
-                {
-                    e->Process();
-                }
-            }
-            (*it)->Process();
-        } */
 
         for(auto it = m_effects.begin(); it != m_effects.end(); ++it)
         {
             (*it)->VReset();
         }
-
-        //d3d::GetContext()->VSSetShader(tmp, NULL, 0);
     }
 }

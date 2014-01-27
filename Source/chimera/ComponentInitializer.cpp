@@ -6,7 +6,7 @@
 
 namespace chimera
 {
-    bool InitiaizeTransformComponent(IActorComponent* cmp, ICMStream* stream)
+    bool InitializeTransformComponent(IActorComponent* cmp, ICMStream* stream)
     {
         TransformComponent* transformation = (TransformComponent*)cmp;
         tinyxml2::XMLElement* pData = (tinyxml2::XMLElement*)stream;
@@ -33,6 +33,18 @@ namespace chimera
             transformation->GetTransformation()->SetRotateQuat(x, y, z, w);
         }
 
+        rot = pData->FirstChildElement("AxisAngle");
+
+        if(rot)
+        {
+            float x, y, z, w;
+            RETURN_IF_FAILED(tinyxml2::XML_NO_ATTRIBUTE != rot->QueryFloatAttribute("x", &x));
+            RETURN_IF_FAILED(tinyxml2::XML_NO_ATTRIBUTE != rot->QueryFloatAttribute("y", &y));
+            RETURN_IF_FAILED(tinyxml2::XML_NO_ATTRIBUTE != rot->QueryFloatAttribute("z", &z));
+            RETURN_IF_FAILED(tinyxml2::XML_NO_ATTRIBUTE != rot->QueryFloatAttribute("w", &w));
+            transformation->GetTransformation()->SetRotation(util::Vec3(x, y, z), w);
+        }
+
         tinyxml2::XMLElement* scale = pData->FirstChildElement("Scale");
 
         if(scale)
@@ -47,7 +59,7 @@ namespace chimera
         return true;
     }
 
-    bool InitiaizeRenderingComponent(IActorComponent* cmp, ICMStream* stream)
+    bool InitializeRenderingComponent(IActorComponent* cmp, ICMStream* stream)
     {
         RenderComponent* rendering = (RenderComponent*)cmp;
         tinyxml2::XMLElement* pData = (tinyxml2::XMLElement*)stream;
@@ -76,7 +88,7 @@ namespace chimera
         return true;
     }
 
-    bool InitiaizeCameraComponent(IActorComponent* cmp, ICMStream* stream)
+    bool InitializeCameraComponent(IActorComponent* cmp, ICMStream* stream)
     {
         CameraComponent* cameraCmp = (CameraComponent*)cmp;
         tinyxml2::XMLElement* pData = (tinyxml2::XMLElement*)stream;
@@ -152,7 +164,7 @@ namespace chimera
         return false;
     }
 
-    bool InitiaizeControllerComponent(IActorComponent* cmp, ICMStream* stream)
+    bool InitializeControllerComponent(IActorComponent* cmp, ICMStream* stream)
     {
         ControllerComponent* controllerCmp = (ControllerComponent*)cmp;
         tinyxml2::XMLElement* pData = (tinyxml2::XMLElement*)stream;
@@ -183,7 +195,7 @@ namespace chimera
         return true;
     }
 
-    bool InitiaizePhysicsComponent(IActorComponent* cmp, ICMStream* stream)
+    bool InitializePhysicsComponent(IActorComponent* cmp, ICMStream* stream)
     {
         PhysicComponent* phxCmp = (PhysicComponent*)cmp;
         tinyxml2::XMLElement* pData = (tinyxml2::XMLElement*)stream;
@@ -220,7 +232,7 @@ namespace chimera
         return true;
     }
 
-    bool InitiaizeLightComponent(IActorComponent* cmp, ICMStream* stream)
+    bool InitializeLightComponent(IActorComponent* cmp, ICMStream* stream)
     {
         LightComponent* lightComp = (LightComponent*)cmp;
         tinyxml2::XMLElement* pData = (tinyxml2::XMLElement*)stream;
@@ -246,19 +258,25 @@ namespace chimera
         tinyxml2::XMLElement* intensity = pData->FirstChildElement("Intensity");
         if(intensity)
         {
-            lightComp->m_intensity = atof(intensity->GetText());
+            lightComp->m_intensity = (float)atof(intensity->GetText());
         }
 
         tinyxml2::XMLElement* angle = pData->FirstChildElement("Angle");
         if(angle)
         {
-            lightComp->m_angle = atof(angle->GetText());
+            lightComp->m_angle = (float)atof(angle->GetText());
         }
 
         tinyxml2::XMLElement* texture = pData->FirstChildElement("Texture");
         if(texture)
         {
             lightComp->m_projTexture = texture->GetText();
+        }
+
+        tinyxml2::XMLElement* radius = pData->FirstChildElement("Radius");
+        if(radius)
+        {
+            lightComp->m_radius = (float)atof(radius->GetText());
         }
 
         tinyxml2::XMLElement* activate = pData->FirstChildElement("Activate");

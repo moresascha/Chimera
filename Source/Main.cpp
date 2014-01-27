@@ -20,7 +20,7 @@ void createSpheres(void)
             chimera::IActor* actor = chimera::CmGetApp()->VGetLogic()->VCreateActor("sphere.xml");
             chimera::TransformComponent* cmp;
             actor->VQueryComponent(CM_CMP_TRANSFORM, (chimera::IActorComponent**)&cmp);
-            cmp->GetTransformation()->SetTranslate(2.0f*i, 5.0f, 2.0f*j);
+            cmp->GetTransformation()->SetTranslation(2.0f*i, 5.0f, 2.0f*j);
         }
     }
 }
@@ -56,7 +56,7 @@ void createLights(void)
             chimera::IActor* actor = chimera::CmGetApp()->VGetLogic()->VCreateActor("pointlight.xml");
             chimera::TransformComponent* cmp;
             actor->VQueryComponent(CM_CMP_TRANSFORM, (chimera::IActorComponent**)&cmp);
-            cmp->GetTransformation()->SetTranslate(10*i, 5, 10*j);
+            cmp->GetTransformation()->SetTranslation(10*i, 5, 10*j);
 
             chimera::LightComponent* lightCmp;
             actor->VQueryComponent(CM_CMP_LIGHT, (chimera::IActorComponent**)&lightCmp);
@@ -68,13 +68,8 @@ void createLights(void)
 void run(HINSTANCE hInstance)
 {
     chimera::CM_APP_DESCRIPTION desc;
-    desc.facts = NULL;
+    ZeroMemory(&desc, sizeof(chimera::CM_APP_DESCRIPTION));
     desc.hInstance = hInstance;
-    desc.titel = L"Yummy Stuff N so";
-    desc.ival = 60;
-    desc.cachePath = "../Assets/";
-    desc.logFile = "log.log";
-    desc.args = "-console";
 
     chimera::CmCreateApplication(&desc);
 

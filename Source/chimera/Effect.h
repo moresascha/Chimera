@@ -36,6 +36,8 @@ namespace chimera
 
         void VReset(void);
 
+        IRenderTarget* VGetSource(void);
+
         void VSetSource(IRenderTarget* src);
 
         float2 VGetViewPort(void);
@@ -65,10 +67,9 @@ namespace chimera
         IShader* m_pVertexShader;
 
     public:
-
         EffectChain(IEffectFactory* factroy);
 
-        IEffect* VCreateEffect(const CMShaderDescription& desc, float percentofw = 1.0f, float percentofh = 1.0f);
+        IEffect* VAppendEffect(const CMShaderDescription& desc, float percentofw = 1.0f, float percentofh = 1.0f);
 
         void VProcess(void);
 

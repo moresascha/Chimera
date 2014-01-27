@@ -64,6 +64,10 @@ PixelOutput GuiTexture_PS(VertexOutput input)
 {
     PixelOutput op;
     float4 color = g_guiTexture.Sample(g_samplerClamp, input.texCoord);
+    if(color.w < 0.5)
+    {
+        discard;
+    }
     op.color = color * g_color;
     return op;
 }

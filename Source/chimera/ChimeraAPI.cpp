@@ -65,7 +65,7 @@ namespace chimera
     class DefaultEffectFactoryFactory : public IEffectFactoryFactory
     {
     public:
-        IEffectFactory* VCreateEffectFactroy(void)
+        IEffectFactory* VCreateEffectFactory(void)
         {
             return new EffectFactroy();
         }
@@ -77,7 +77,7 @@ namespace chimera
         IResourceCache* VCreateCache(void)
         {
             IResourceCache* cache = new ResourceCache();
-            cache->VInit(1024, new ResourceFolder(CmGetDescription()->cachePath));
+            cache->VInit(1024, new ResourceFolder(CmGetApp()->VGetConfig()->VGetString("sResCache").c_str()));
             IConfig* cfg = CmGetApp()->VGetConfig();
             cache->VRegisterLoader(std::unique_ptr<IResourceLoader>(new ImageLoader("png", cfg->VGetString("sTexturePath"))));
             cache->VRegisterLoader(std::unique_ptr<IResourceLoader>(new ImageLoader("jpg", cfg->VGetString("sTexturePath"))));
@@ -160,12 +160,8 @@ namespace chimera
     void CopyDescription(CM_APP_DESCRIPTION* desc)
     {
         pDescription = new CM_APP_DESCRIPTION();
-        pDescription->cachePath = desc->cachePath;
-        pDescription->logFile = desc->logFile;
         pDescription->facts = desc->facts;
-        pDescription->ival = desc->ival;
         pDescription->hInstance = desc->hInstance;
-        pDescription->titel = desc->titel;
     }
 
     IApplication* CmGetApp(void)
@@ -230,17 +226,7 @@ namespace chimera
 
         Application* app = new Application();
 
-        Logger::Init(std::string(desc->logFile));
-
-        if(desc->cachePath == std::string(""))
-        {
-            LOG_WARNING("Cachepath not set!");
-        }
-
-        if(desc->logFile == std::string(""))
-        {
-            desc->logFile = "log.log";
-        }
+        Logger::Init(std::string("log.txt"));
         
         app->g_hInstance = desc->hInstance;
 
@@ -258,8 +244,9 @@ namespace chimera
 
         int w = app->VGetConfig()->VGetInteger("iWidth");
         int h = app->VGetConfig()->VGetInteger("iHeight");
-
-        if(!app->VGetHumanView()->VGetRenderer()->VCreate(chimera::WndProc, desc->hInstance, desc->titel.c_str(), w, h))
+        std::string titel = app->VGetConfig()->VGetString("sTitel");
+        std::wstring wTitel(titel.begin(), titel.end());
+        if(!app->VGetHumanView()->VGetRenderer()->VCreate(chimera::WndProc, desc->hInstance, wTitel.c_str(), w, h))
         {
             APISetError(eErrorCode_InvalidValue);
             return NULL;
@@ -268,12 +255,13 @@ namespace chimera
         if(!app->VGetHumanView()->VOnRestore())
         {
             APISetError(eErrorCode_InvalidValue);
+            LOG_CRITICAL_ERROR("Failed to create HumanView!");
             return NULL;
         }
 
         //load init scene
         std::stringstream ss;
-        ss << CmGetDescription()->cachePath << INIT_XML;
+        ss << CmGetApp()->VGetConfig()->VGetString("sResCache") << INIT_XML;
         std::ifstream initXml(ss.str());
         if(initXml)
         {
@@ -291,8 +279,14 @@ namespace chimera
         screen->VSetName("main");
         app->VGetHumanView()->VAddScene(std::move(std::unique_ptr<IRenderScreen>(screen)));
 
+        //editor gfx settings
+        std::unique_ptr<IGraphicsSettings> editorSettings(new EditorGraphicsSettings());
+        screen = new RenderScreen(std::move(editorSettings));
+        screen->VSetName("editor");
+        app->VGetHumanView()->VAddScene(std::move(std::unique_ptr<IRenderScreen>(screen)));
+
         //console
-        if(desc->args.find("-console") != std::string::npos)
+        if(CmGetApp()->VGetConfig()->VGetString("sArgs").find("-console") != std::string::npos)
         {
             IScreenElement* rect = new GuiConsole();
             rect->VSetName(VIEW_CONSOLE_NAME);

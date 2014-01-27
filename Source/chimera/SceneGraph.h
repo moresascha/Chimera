@@ -8,6 +8,7 @@ namespace util
 {
     class ICamera;
 }
+
 namespace chimera 
 {
     class ISceneNode;
@@ -20,15 +21,19 @@ namespace chimera
         std::shared_ptr<ICamera> m_camera;
         util::tbdStack<Frustum*> m_frustumStack;
         std::map<uint, std::list<ISceneNode*>> m_pathToNode;
+        std::map<ActorId, ISceneNode*> m_actorIdToNode;
         ulong m_visbibilityCheckTime;
         bool m_visibiltyReset;
+
+        void AddToRenderPaths(ISceneNode* node);
+        void RemoveFromRenderPaths(ISceneNode* node);
 
     public:
         SceneGraph(void);
 
-        void VAddChild(ActorId actorid, std::unique_ptr<ISceneNode> child);
+        void VAddNode(ActorId actorid, std::unique_ptr<ISceneNode> child);
 
-        void VRemoveChild(ActorId actorid);
+        void VRemoveNode(ActorId actorid);
 
         bool VOnRender(RenderPath path);
 
@@ -46,11 +51,13 @@ namespace chimera
 
         void VResetVisibility(void);
 
+        void VSetParent(ISceneNode* child, ISceneNode* parent);
+
+        void VReleaseParent(ISceneNode* child, ISceneNode* parentchild);
+
         bool VIsVisibilityReset(void);
 
         ISceneNode* VFindActorNode(ActorId id);
-
-        std::unique_ptr<ISceneNode> VReleaseNode(ActorId id);
 
         void VSetCamera(std::shared_ptr<ICamera> camera);
 

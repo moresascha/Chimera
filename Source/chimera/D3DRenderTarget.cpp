@@ -205,7 +205,7 @@ namespace chimera
                 chimera::d3d::GetContext()->ClearRenderTargetView(m_pRenderTargetView, m_clearColor);
             }
 
-            if(this->m_pDepthStencilView)
+            if(m_pDepthStencilView)
             {
                 chimera::d3d::GetContext()->ClearDepthStencilView(m_pDepthStencilView, D3D11_CLEAR_STENCIL | D3D11_CLEAR_DEPTH, 1, 0);
             }

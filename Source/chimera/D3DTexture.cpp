@@ -82,24 +82,9 @@ namespace chimera
                     pSubData = &subData;
 
                 }
-                //if(FAILED(d3d::GetDevice()->CreateTexture2D(&m_texDesc, &subData, &m_pTexture))) return FALSE;
-                //LOG_ERROR("asdasd");
-                if(FAILED(chimera::d3d::GetDevice()->CreateTexture2D(&m_texDesc, pSubData, &m_pTexture))) return false;
+                D3D_SAVE_CALL(chimera::d3d::GetDevice()->CreateTexture2D(&m_texDesc, pSubData, &m_pTexture));
             }
-    
-            /*
-            D3DX11_IMAGE_LOAD_INFO info;
-            ZeroMemory(&info, sizeof(info));
-            info.Format = m_texDesc.Format;
-            info.Width = m_texDesc.Width;
-            info.Height = m_texDesc.Height;
-            info.BindFlags = m_texDesc.BindFlags;
-            info.MipLevels = m_texDesc.MipLevels;
-            info.MiscFlags = m_texDesc.MiscFlags;
-            info.Usage = m_texDesc.Usage;
-            if(FAILED(D3DX11CreateTextureFromMemory(
-                d3d::GetDevice(), m_rawData, m_texDesc.Width * m_texDesc.Width * 4, &info, NULL, (ID3D11Resource**)&m_pTexture, NULL))) return FALSE;
-            */
+
             if(GetBindflags() & D3D11_BIND_SHADER_RESOURCE)
             {
                 D3D11_SHADER_RESOURCE_VIEW_DESC viewDesc;

@@ -4,7 +4,7 @@
 
 namespace chimera
 {
-    ScreenElement::ScreenElement(void) : m_color(Color(0,0,0,1)), m_isActive(false), m_isEnable(true), m_name("unknown")
+    ScreenElement::ScreenElement(void) : m_color(Color(1,1,1,1)), m_isActive(false), m_isEnable(true), m_name("unknown")
     {
 
     }

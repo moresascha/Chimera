@@ -240,6 +240,8 @@ namespace chimera
 
         virtual CM_HWND VGetWindowHandle(void) = 0;
 
+        virtual void VSetActorId(ActorId id) = 0;
+
         virtual void VDrawScreenQuad(int x, int y, int w, int h) = 0;
 
         virtual void VDrawScreenQuad(void) = 0;
@@ -247,6 +249,8 @@ namespace chimera
         virtual void VDrawLine(int x, int y, int w, int h) = 0;
 
         virtual void* VGetDevice(void) = 0;
+
+        virtual void* VGetContext(void) = 0;
 
         virtual void VSetFullscreen(bool fullscreen) = 0;
 
@@ -306,15 +310,11 @@ namespace chimera
     class IPicker
     {
     public:
-        virtual bool VCreate(void) = 0;
-
-        virtual void VPostRender(void) = 0;
-
-        virtual void VRender(void) = 0;
-
         virtual bool VHasPicked(void) const  = 0;
 
-        virtual ActorId VPick(void) const = 0;
+        virtual ActorId VPick(void) = 0;
+
+        virtual bool VOnRestore(void) = 0;
 
         virtual ~IPicker(void) {}
     };

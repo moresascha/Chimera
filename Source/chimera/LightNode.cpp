@@ -153,13 +153,13 @@ namespace chimera
         m_drawShadowInstanced = CmGetApp()->VGetHumanView()->VGetRenderer()->VGetShaderCache()->VGetShaderProgram("PointLightShadowMapInstanced");
         m_drawLighting = CmGetApp()->VGetHumanView()->VGetRenderer()->VGetShaderCache()->VGetShaderProgram("PointLight");
 
-        VSetRenderPaths(CM_RENDERPATH_LIGHTING);
+        VSetRenderPaths(CM_RENDERPATH_LIGHTING |CM_RENDERPATH_EDITOR);
     }
 
     void PointlightNode::VOnActorMoved(void)
     {
         SceneNode::VOnActorMoved();
-        XMMATRIX mat = XMMatrixPerspectiveFovLH(XM_PIDIV2, 1.0f, 0.01f, VGetTransformation()->GetScale().x);
+        XMMATRIX mat = XMMatrixPerspectiveFovLH(XM_PIDIV2, 1.0f, 0.01f, m_lightComponent->m_radius);
         XMStoreFloat4x4(&m_projection.m_m, mat);
     }
 
@@ -178,7 +178,7 @@ namespace chimera
 
         m_mats[5] = util::Mat4::createLookAtLH(lightPos, util::Vec3(0,0,-1), util::Vec3(0,1,0)); //back
 
-        XMMATRIX mat = XMMatrixPerspectiveFovLH(XM_PIDIV2, 1.0f, 0.01f, VGetTransformation()->GetScale().x);
+        XMMATRIX mat = XMMatrixPerspectiveFovLH(XM_PIDIV2, 1.0f, 0.01f, m_lightComponent->m_radius);
         XMStoreFloat4x4(&m_projection.m_m, mat);
 
         std::unique_ptr<IGraphicsStateFactroy> factroy = CmGetApp()->VGetHumanView()->VGetGraphicsFactory()->VCreateStateFactory();
@@ -227,7 +227,7 @@ namespace chimera
 
     bool PointlightNode::VIsVisible(ISceneGraph* graph)
     {
-        return graph->VGetFrustum()->IsInside(VGetTransformation()->GetTranslation(), VGetTransformation()->GetScale().x);
+        return graph->VGetFrustum()->IsInside(VGetTransformation()->GetTranslation(), m_lightComponent->m_radius);
     }
 
     void PointlightNode::_VRender(ISceneGraph* graph, RenderPath& path)
@@ -254,7 +254,7 @@ namespace chimera
 
                 m_drawShadow->VBind();
                 IRenderer* renderer = CmGetApp()->VGetHumanView()->VGetRenderer();
-                renderer->VPushProjectionTransform(m_projection, VGetTransformation()->GetScale().x);
+                renderer->VPushProjectionTransform(m_projection, m_lightComponent->m_radius);
 
                 IConstShaderBuffer* lb = renderer->VGetConstShaderBuffer(eCubeMapViewsBuffer);
                 XMFLOAT4X4* buffer = (XMFLOAT4X4*)lb->VMap();
@@ -264,13 +264,13 @@ namespace chimera
                 }
                 lb->VUnmap();
 
-                renderer->VSetLightSettings(m_lightComponent->m_color, VGetTransformation()->GetTranslation(), util::Vec3(), VGetTransformation()->GetScale().x, 0, m_lightComponent->m_intensity, 1);
+                renderer->VSetLightSettings(m_lightComponent->m_color, VGetTransformation()->GetTranslation(), util::Vec3(), m_lightComponent->m_radius, 0, m_lightComponent->m_intensity, 1);
 
                 renderer->VSetTexture(ePointLightShadowCubeMapSampler, NULL);
 
                 cubeMapRT->VBind();
                 cubeMapRT->VClear();
-                m_frustum.SetParams(VGetTransformation()->GetScale().x, VGetTransformation()->GetTranslation());
+                m_frustum.SetParams(m_lightComponent->m_radius, VGetTransformation()->GetTranslation());
                 graph->VPushFrustum(&m_frustum);
                
                 graph->VOnRender(CM_RENDERPATH_SHADOWMAP);
@@ -296,6 +296,32 @@ namespace chimera
                 renderer->VDrawScreenQuad();
                 renderer->VPopBlendState();
                 renderer->VPopDepthStencilState();
+
+            } break;
+
+        case CM_RENDERPATH_EDITOR :
+            {
+                util::Mat4 m = *VGetTransformation();
+                m.SetScale(1);
+                CmGetApp()->VGetHumanView()->VGetRenderer()->VPushWorldTransform(m);
+                std::shared_ptr<IGeometry> sphere = std::static_pointer_cast<IGeometry>(CmGetApp()->VGetHumanView()->VGetVRamManager()->VGetHandle("sphere.obj"));
+                CmGetApp()->VGetRenderer()->VSetActorId(m_actorId);
+                sphere->VBind();
+                sphere->VDraw();
+                CmGetApp()->VGetHumanView()->VGetRenderer()->VPopWorldTransform();
+
+            } break;
+
+        case CM_RENDERPATH_PICK :
+            {
+                util::Mat4 m = *VGetTransformation();
+                m.SetScale(1);
+                CmGetApp()->VGetHumanView()->VGetRenderer()->VPushWorldTransform(m);
+                std::shared_ptr<IGeometry> sphere = std::static_pointer_cast<IGeometry>(CmGetApp()->VGetHumanView()->VGetVRamManager()->VGetHandle("sphere.obj"));
+                CmGetApp()->VGetRenderer()->VSetActorId(m_actorId);
+                sphere->VBind();
+                sphere->VDraw();
+                CmGetApp()->VGetHumanView()->VGetRenderer()->VPopWorldTransform();
 
             } break;
 /*

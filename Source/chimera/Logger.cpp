@@ -74,8 +74,10 @@ namespace Logger
 
     void LogManager::CriticalError(const std::string& tag, const std::string& message, const char* funcName, const char* file, const uint line) 
     {
+#ifdef _DEBUG
         std::string data;
         GetString(data, tag, message, funcName, file, line);
+
         int id = MessageBoxA(NULL, data.c_str(), tag.c_str(), MB_ABORTRETRYIGNORE|MB_ICONERROR|MB_DEFBUTTON3);
         if(IDABORT == id)
         {
@@ -89,6 +91,11 @@ namespace Logger
         {
             exit(-1);
         }
+#else
+        Log(std::string("FATAL ERROR"), message, funcName, file, line);
+        WriteTo(std::string("closing app..."));
+        exit(-1);
+#endif
     }
 
     void LogManager::GetString(std::string& dest, const std::string& tag, const std::string& message, const char* funcName, const char* file, const uint line) 

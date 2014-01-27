@@ -191,7 +191,8 @@ namespace chimera
             float m_yOffset;
         public:
             CharacterCamera(uint width, uint height, float zNear, float zFar);
-            void VSetYOffset(float offset) { m_yOffset = offset; }
+            void SetYOffset(float offset) { m_yOffset = offset; }
+            float GetYOffset(void) const { return m_yOffset; }
             void SetEyePos(const util::Vec3& pos);
             void LookAt(const util::Vec3& eyePos, const util::Vec3& at);
             virtual void MoveToPosition(const util::Vec3& pos);

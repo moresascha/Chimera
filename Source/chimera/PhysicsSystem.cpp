@@ -297,6 +297,7 @@ namespace chimera
         ADD_EVENT_LISTENER(this, &PhysX::NewComponentDelegate, CM_EVENT_COMPONENT_CREATED);
         ADD_EVENT_LISTENER(this, &PhysX::ApplyForceTorqueDelegate, CM_EVENT_APPLY_FORCE);
         ADD_EVENT_LISTENER(this, &PhysX::ApplyForceTorqueDelegate, CM_EVENT_APPLY_TORQUE);
+        ADD_EVENT_LISTENER(this, &PhysX::DeleteComponentDelegate, CM_EVENT_DELETE_COMPONENT);
 
     #if 0
         // DEBUGGING
@@ -615,7 +616,12 @@ namespace chimera
         }
         else
         {
-            physx::PxActor* a = m_actorIdToPxActorMap[actor->GetId()].front(); //Todo: Fix instanced actors? or should they remain static anyway
+            auto it = m_actorIdToPxActorMap.find(actor->GetId());
+            if(it == m_actorIdToPxActorMap.end())
+            {
+                return;
+            }
+            physx::PxActor* a = it->second.front(); //Todo: Fix instanced actors? or should they remain static anyway
             if(a)
             {
                 if(a->isRigidDynamic())
@@ -752,7 +758,7 @@ namespace chimera
 
             TransformComponent* comp = GetActorCompnent<TransformComponent>(actor, CM_CMP_TRANSFORM);
 
-            comp->GetTransformation()->SetTranslate(t.actor2World.p.x, t.actor2World.p.y, t.actor2World.p.z);
+            comp->GetTransformation()->SetTranslation(t.actor2World.p.x, t.actor2World.p.y, t.actor2World.p.z);
             //comp->GetTransformation()->GetTranslation().Print();
             auto controller = m_controller.find(actorid);
 
@@ -870,9 +876,18 @@ namespace chimera
             else if(physComp->m_shapeStyle == "mesh")
             {
                 std::shared_ptr<IMeshSet> meshSet = std::static_pointer_cast<IMeshSet>(CmGetApp()->VGetCache()->VGetHandle(physComp->m_meshFile));
-                IMesh* mesh = meshSet->VGetMesh(0);
+                IMesh* mesh = NULL;
+                if(physComp->m_subMesh != "")
+                {
+                    mesh = meshSet->VGetMesh(physComp->m_subMesh);
+                }
+                else
+                {
+                    mesh = meshSet->VGetMesh(0);
+                }
+
                 VCreateTriangleMesh(actor, mesh, util::Vec3(), physComp->m_material, physComp->m_shapeType);
-                m_resourceToActor[meshSet->VGetResource().m_name] = actor->GetId();
+                m_resourceToActor[meshSet->VGetResource().m_name + physComp->m_subMesh] = actor->GetId();
             }
             else if(physComp->m_shapeStyle == "trigger")
             {
@@ -885,10 +900,19 @@ namespace chimera
         }
     }
 
-    void PhysX::NewComponentDelegate(chimera::IEventPtr pEventData) 
+    void PhysX::DeleteComponentDelegate(IEventPtr pEventData)
     {
+        std::shared_ptr<DeleteComponentEvent> pCastEventData = std::static_pointer_cast<DeleteComponentEvent>(pEventData);
+        if(pCastEventData->m_cmpId == CM_CMP_PHX)
+        {
+            IActor* actor = pCastEventData->m_actor;
+            VRemoveActor(actor->GetId());
+        }
+    }
 
-        std::shared_ptr<chimera::NewComponentCreatedEvent> pCastEventData = std::static_pointer_cast<chimera::NewComponentCreatedEvent>(pEventData);
+    void PhysX::NewComponentDelegate(IEventPtr pEventData) 
+    {
+        std::shared_ptr<NewComponentCreatedEvent> pCastEventData = std::static_pointer_cast<NewComponentCreatedEvent>(pEventData);
 
         if(pCastEventData->m_id == CM_CMP_PHX)
         {
@@ -915,6 +939,7 @@ namespace chimera
         REMOVE_EVENT_LISTENER(this, &PhysX::NewComponentDelegate, CM_EVENT_COMPONENT_CREATED);
         REMOVE_EVENT_LISTENER(this, &PhysX::ApplyForceTorqueDelegate, CM_EVENT_APPLY_FORCE);
         REMOVE_EVENT_LISTENER(this, &PhysX::ApplyForceTorqueDelegate, CM_EVENT_APPLY_TORQUE);
+        REMOVE_EVENT_LISTENER(this, &PhysX::DeleteComponentDelegate, CM_EVENT_DELETE_COMPONENT);
 
         m_actorIdToPxActorMap.clear();
 

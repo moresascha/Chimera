@@ -101,6 +101,11 @@ namespace chimera
             return true;
         }
 
+        void Config::VCreateDefaults(void)
+        {
+            //todo
+        }
+
         Config::~Config(void)
         {
             for(auto it = m_values.begin(); it != m_values.end(); ++it)

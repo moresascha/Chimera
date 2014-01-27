@@ -5,21 +5,11 @@
 
 namespace chimera
 {
-    LevelManager::LevelManager(void)
+    bool SaveLevel(ILevel* level, LPCSTR file)
     {
-        m_formatSaver[0] = new SaveXMLLevel();
-    }
+        LOG_CRITICAL_ERROR("doesn't work bro");
+        return false;
 
-    LevelManager::~LevelManager(void)
-    {
-        TBD_FOR_INT(eCNT)
-        {
-            SAFE_DELETE(m_formatSaver[i]);
-        }
-    }
-
-    bool SaveXMLLevel::VSaveLevel(ILevel* level, LPCSTR file)
-    {
         tinyxml2::XMLDocument doc;
 
         tinyxml2::XMLDeclaration* version = doc.NewDeclaration("1.0.0");
@@ -171,8 +161,7 @@ namespace chimera
 
     bool XMLLevel::VSave(LPCSTR file /* = NULL */)
     {
-
-        return true;
+        return SaveLevel(this, file);
     }
 
     bool XMLLevel::VLoad(bool block)

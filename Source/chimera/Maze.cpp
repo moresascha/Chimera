@@ -157,7 +157,7 @@ namespace packman
         chimera::ActorDescription desc = chimera::g_pApp->GetLogic()->GetActorFactory()->CreateActorDescription();
 
         chimera::TransformComponent* comp = desc->AddComponent<chimera::TransformComponent>("TransformComponent");
-        comp->GetTransformation()->SetTranslate(pos.x, pos.y, pos.z);
+        comp->GetTransformation()->SetTranslation(pos.x, pos.y, pos.z);
 
         chimera::RenderComponent* renderComp = desc->AddComponent<chimera::RenderComponent>("RenderComponent");
         renderComp->m_resource = "sphere.obj";
@@ -284,7 +284,7 @@ namespace packman
 
         desc = m_pActorFactory->CreateActorDescription();
         comp = desc->AddComponent<chimera::TransformComponent>(chimera::TransformComponent::COMPONENT_ID);
-        comp->GetTransformation()->SetTranslate(0,0,0);
+        comp->GetTransformation()->SetTranslation(0,0,0);
 
         renderComp = desc->AddComponent<chimera::RenderComponent>(chimera::RenderComponent::COMPONENT_ID);
         renderComp->m_type = "skydome";

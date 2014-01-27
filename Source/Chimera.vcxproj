@@ -79,9 +79,11 @@
     <ClInclude Include="chimera\Mesh.h" />
     <ClInclude Include="chimera\ParticleSystem.h" />
     <ClInclude Include="chimera\PhysicsSystem.h" />
+    <ClInclude Include="chimera\Picker.h" />
     <ClInclude Include="chimera\PointLightNode.h" />
     <ClInclude Include="chimera\Process.h" />
     <ClInclude Include="chimera\ProcessManager.h" />
+    <ClInclude Include="chimera\Quat.h" />
     <ClInclude Include="chimera\ResourceLoader.h" />
     <ClInclude Include="chimera\SceneGraph.h" />
     <ClInclude Include="chimera\SceneNode.h" />
@@ -264,8 +266,8 @@
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">false</ExcludedFromBuild>
     </ClCompile>
     <ClCompile Include="chimera\Picker.cpp">
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">false</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">false</ExcludedFromBuild>
     </ClCompile>
     <ClCompile Include="chimera\Process.cpp">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">false</ExcludedFromBuild>
@@ -403,7 +405,7 @@
     <PlatformToolset>v110</PlatformToolset>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="Configuration">
-    <ConfigurationType>Application</ConfigurationType>
+    <ConfigurationType>DynamicLibrary</ConfigurationType>
     <UseDebugLibraries>false</UseDebugLibraries>
     <WholeProgramOptimization>true</WholeProgramOptimization>
     <CharacterSet>Unicode</CharacterSet>
@@ -465,6 +467,7 @@
       <PreprocessorDefinitions>__COMPILING_DLL;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <AdditionalOptions>/MP %(AdditionalOptions)</AdditionalOptions>
       <AdditionalUsingDirectories>%(AdditionalUsingDirectories)</AdditionalUsingDirectories>
+      <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
     </ClCompile>
     <Link>
       <GenerateDebugInformation>true</GenerateDebugInformation>

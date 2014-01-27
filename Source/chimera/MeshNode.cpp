@@ -23,21 +23,21 @@ namespace chimera
         ss << "pos= (" << p.x << ", " << p.y << ", " << p.z << ")\n";
         app::g_pApp->GetFontManager()->RenderText(ss.str(), pos.x, pos.y); */
     }
-    /*
-    VOID DrawPicking(std::shared_ptr<chimera::Actor> actor, CONST util::Mat4* matrix, std::shared_ptr<chimera::Mesh> mesh, std::shared_ptr<chimera::Geometry> geo)
+    
+    void DrawPicking(IActor* actor, const util::Mat4* matrix, IMesh* mesh, std::shared_ptr<IGeometry> geo)
     {
-        if(actor->HasComponent<chimera::PickableComponent>(chimera::PickableComponent::COMPONENT_ID))
+        if(actor->VHasComponent(CM_CMP_PICKABLE))
         {
-            chimera::g_pApp->GetHumanView()->GetRenderer()->VPushWorldTransform(*matrix);
-            chimera::g_pApp->GetHumanView()->GetRenderer()->SetActorId(actor->GetId());
-            geo->Bind();
-            for(auto it = mesh->GetIndexBufferIntervals().begin(); it != mesh->GetIndexBufferIntervals().end(); ++it)
+            CmGetApp()->VGetHumanView()->VGetRenderer()->VPushWorldTransform(*matrix);
+            CmGetApp()->VGetHumanView()->VGetRenderer()->VSetActorId(actor->GetId());
+            geo->VBind();
+            for(auto it = mesh->VGetIndexBufferIntervals().begin(); it != mesh->VGetIndexBufferIntervals().end(); ++it)
             {
-                geo->Draw(it->start, it->count);
+                geo->VDraw(it->start, it->count);
             }
         }
     }
-    */
+    
     void DrawToShadowMap(std::shared_ptr<IGeometry> geo, IMesh* mesh, const util::Mat4* matrix)
     {
         CmGetApp()->VGetHumanView()->VGetRenderer()->VPushWorldTransform(*matrix);
@@ -145,16 +145,14 @@ namespace chimera
                     {
                         DrawToAlbedo();
                     } break;
+                case CM_RENDERPATH_PICK :
+                    {
+                        DrawPicking(m_actor, VGetTransformation(), m_mesh, m_pGeometry);
+                    } break;
                 /*case eRenderPath_DrawBounding :
                     {
                         DrawSphere(GetTransformation(), m_mesh->GetAABB());
                     } break;
-
-                case eRenderPath_DrawPicking :
-                    {
-                        DrawPicking(m_actor, GetTransformation(), m_mesh, m_pGeometry);
-                    } break;
-
                 case eRenderPath_DrawDebugInfo : 
                     {
                         chimera::DrawActorInfos(m_actor, GetTransformation(), graph->GetCamera());
@@ -176,7 +174,7 @@ namespace chimera
     {
         CmGetApp()->VGetHumanView()->VGetRenderer()->VPushWorldTransform(*VGetTransformation());
         m_pGeometry->VBind();
-        //CmGetApp()->VGetHumanView()->VGetRenderer()->VSetActorId(this->m_actor->GetId());
+        CmGetApp()->VGetHumanView()->VGetRenderer()->VSetActorId(m_actor->GetId());
 
         uint texPos = 0;
         for(auto it = m_mesh->VGetIndexBufferIntervals().begin(); it != m_mesh->VGetIndexBufferIntervals().end(); ++it)

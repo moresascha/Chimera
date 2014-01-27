@@ -16,11 +16,6 @@ extern "C"
     {
         struct CM_APP_DESCRIPTION
         {
-            UCHAR ival;
-            std::wstring titel;
-            std::string logFile;
-            std::string cachePath;
-            std::string args;
             HINSTANCE hInstance;
             FactoryPtr* facts;
         };

@@ -27,7 +27,7 @@ namespace chimera
 
         m_style.metricFile = file;
 
-        m_initialized = true;
+        m_initialized = true; 
 
         std::ifstream metricsStream(file);
         if(!metricsStream.good())
@@ -49,7 +49,7 @@ namespace chimera
                 m_style.size = atoi((util::split(ss[2], '=')[1]).c_str());
                 m_style.name = util::split(ss[1], '=')[1];
                 m_style.bold = atoi((util::split(ss[3], '=')[1]).c_str()) != 0;
-                m_style.italic = atoi((util::split(ss[4], '=')[1]).c_str());
+                m_style.italic = atoi((util::split(ss[4], '=')[1]).c_str()) != 0;
             }
             else if(ss[0].compare("common") == 0)
             {   
@@ -89,7 +89,8 @@ namespace chimera
             }
         }
         metricsStream.close();
-        Gdiplus::Bitmap* map = util::GetBitmapFromFile(util::string2wstring(VGetStyle().textureFile).c_str());
+        std::string texFile = CmGetApp()->VGetConfig()->VGetString("sResCache") + VGetStyle().textureFile;
+        Gdiplus::Bitmap* map = util::GetBitmapFromFile(util::string2wstring(texFile).c_str());
         if(map->GetLastStatus())
         {
             return false;
@@ -103,6 +104,7 @@ namespace chimera
         desc.format = eFormat_R8G8B8A8_UNORM;
         desc.width = map->GetWidth();
         desc.height = map->GetHeight();
+        desc.miscflags = eTextureMiscFlags_BindShaderResource;
 
         m_pFontTexture = CmGetApp()->VGetHumanView()->VGetGraphicsFactory()->VCreateTexture(&desc).release();
 

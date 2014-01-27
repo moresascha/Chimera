@@ -45,6 +45,8 @@ namespace chimera
 
         virtual IActorComponent* VGetComponent(ComponentId id) = 0;
 
+        virtual std::unique_ptr<IActorComponent> VReleaseComponent(ComponentId id) = 0;
+
         virtual void VQueryComponent(ComponentId id, IActorComponent** cmp) = 0;
 
         virtual bool VHasComponent(ComponentId id) = 0;

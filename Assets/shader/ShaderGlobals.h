@@ -95,6 +95,8 @@ cbuffer CSMLightingBuffer : register(b12)
     matrix g_IlightView;
     matrix g_lightProjection[CASCADES_COUNT];
     float4 g_CSMlightPos;
+    float4 g_lightIntensity;
+    float4 g_ambient;
     float4 g_distances;
 }
 

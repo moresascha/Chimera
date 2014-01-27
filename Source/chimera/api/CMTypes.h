@@ -468,7 +468,8 @@ namespace chimera
 
     enum TextureMiscFlags
     {
-        eTextureMiscFlags_GenerateMipMaps
+        eTextureMiscFlags_GenerateMipMaps = 1 << 0,
+        eTextureMiscFlags_BindShaderResource = 1 << 1
     };
 
     struct CMFontMetrics
@@ -514,7 +515,7 @@ namespace chimera
         uint usage;
         uint cpuAccess;
         GraphicsFormat format;
-        TextureMiscFlags miscflags;
+        uint miscflags;
         void* data;
     };
 

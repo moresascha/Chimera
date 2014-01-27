@@ -1,17 +1,19 @@
 #pragma once
 #include "stdafx.h"
 #include <D3D11.h>
+
+#ifdef _DEBUG
+#define D3D_SAVE_CALL(__error) chimera::d3d::__CheckError(__error);
+#else
+#define D3D_SAVE_CALL(__error) __error
+#endif
+
 namespace chimera
 {
     namespace d3d
     {
 
         void __CheckError(HRESULT __error);
-#ifdef _DEBUG
-#define D3D_SAVE_CALL(__error) __CheckError(__error);
-#else
-#define D3D_SAVE_CALL(__error) __error
-#endif
 
         extern ID3D11Texture2D *g_pBackBuffer;
         extern ID3D11Texture2D *g_pDepthStencilBuffer;

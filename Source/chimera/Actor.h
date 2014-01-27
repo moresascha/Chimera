@@ -51,6 +51,18 @@ namespace chimera
           m_components.insert(std::pair<ComponentId, std::unique_ptr<IActorComponent>>(pComponent->VGetComponentId(), std::move(pComponent)));
       }
 
+      std::unique_ptr<IActorComponent> VReleaseComponent(ComponentId id)
+      {
+          auto it = m_components.find(id);
+          if(it == m_components.end())
+          {
+              return NULL;
+          }
+          IActorComponent* cmp = it->second.release();
+          m_components.erase(it);
+          return std::unique_ptr<IActorComponent>(cmp);
+      }
+
       bool VHasComponent(ComponentId id)
       {
           return VGetComponent(id) != NULL;

@@ -45,6 +45,8 @@ namespace chimera
 
         ADD_EVENT_LISTENER(this, &BaseGameLogic::LoadLevelDelegate, CM_EVENT_LOAD_LEVEL);
 
+        ADD_EVENT_LISTENER(this, &BaseGameLogic::DeleteActorComponentDelegate, CM_EVENT_DELETE_COMPONENT);
+
         m_pPhysics = new PhysX();
         m_pPhysics->VInit();
 
@@ -52,6 +54,7 @@ namespace chimera
 
         //m_pLevelManager = new chimera::LevelManager();
 
+        m_pLevel = new BaseLevel(std::string("default_level"), m_pActorFactory);
         return true;
     }
 
@@ -230,7 +233,7 @@ namespace chimera
         }
     }
 
-    IActor* BaseGameLogic::VCreateActor(const char* resource, bool appendToLevel) 
+    IActor* BaseGameLogic::VCreateActor(const char* resource, std::vector<IActor*>* children, bool appendToLevel) 
     {
         if(!resource) 
         {
@@ -245,6 +248,8 @@ namespace chimera
 
         IActor* root = std::move(m_pActorFactory->VCreateActor(res, actors));
 
+        //m_pLevel->
+
         if(!root)
         {
             LOG_CRITICAL_ERROR_A("Failed to create actor: %s", resource);
@@ -252,6 +257,13 @@ namespace chimera
 
         TBD_FOR(actors)
         {
+            if(children)
+            {
+                if(it->get() != root)
+                {
+                    children->push_back(it->get());
+                }
+            }
             m_actors[(*it)->GetId()] = std::move(*it);
         }
 
@@ -415,7 +427,7 @@ namespace chimera
                         if(data->m_hasTranslation)
                         {
                             util::Vec3& translation = data->m_translation;
-                            transformation->SetTranslate(translation.x, translation.y, translation.z);
+                            transformation->SetTranslation(translation.x, translation.y, translation.z);
                         }
                     }
                 }
@@ -436,6 +448,16 @@ namespace chimera
         event::IEventManager::Get()->VQueueEvent(actorCreatedEvent); */
     }
 
+    void BaseGameLogic::DeleteActorComponentDelegate(IEventPtr eventData)
+    {
+        std::shared_ptr<DeleteComponentEvent> data = std::static_pointer_cast<DeleteComponentEvent>(eventData);
+        IActor* actor = data->m_actor;
+        if(actor)
+        {
+            //actor->VReleaseComponent(data->m_cmpId);
+        }
+    }
+
     void BaseGameLogic::DeleteActorDelegate(IEventPtr eventData)
     {
         std::shared_ptr<DeleteActorEvent> data = std::static_pointer_cast<DeleteActorEvent>(eventData);
@@ -445,11 +467,10 @@ namespace chimera
         {
             for(auto cmps = actor->VGetComponents().begin(); cmps != actor->VGetComponents().end(); ++cmps)
             {
-                //TODO extra event for components
+                TRIGGER_EVENT(new DeleteComponentEvent(actor, cmps->second.get()));
             }
-            //m_actors.erase(it);
+
             VRemoveActor(id);
-            m_pPhysics->VRemoveActor(id);
             QUEUE_EVENT(new ActorDeletedEvent(id));
         }
     }
@@ -462,7 +483,7 @@ namespace chimera
 
     void BaseGameLogic::LevelLoadedDelegate(IEventPtr eventData)
     {
-        m_gameState = eProcessState_Running;
+        m_gameState = CM_STATE_RUNNING;
     }
 
     void BaseGameLogic::CreateProcessDelegate(IEventPtr eventData)
@@ -490,6 +511,8 @@ namespace chimera
         REMOVE_EVENT_LISTENER(this, &BaseGameLogic::DeleteActorDelegate, CM_EVENT_DELETE_ACTOR);
 
         REMOVE_EVENT_LISTENER(this, &BaseGameLogic::CreateProcessDelegate, CM_EVENT_CREATE_PROCESS);
+
+        REMOVE_EVENT_LISTENER(this, &BaseGameLogic::DeleteActorComponentDelegate, CM_EVENT_DELETE_COMPONENT);
     
         SAFE_DELETE(m_pLevel);
 

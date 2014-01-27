@@ -194,6 +194,8 @@ namespace chimera
 
         void NewComponentDelegate(IEventPtr data);
 
+        void DeleteComponentDelegate(IEventPtr data);
+
         void ApplyForceTorqueDelegate(IEventPtr data);
 
         void OnResourceChanged(IEventPtr data);

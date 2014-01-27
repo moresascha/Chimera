@@ -245,7 +245,7 @@ namespace chimera
         IResourceDecompressor* decomp = NULL;
         std::shared_ptr<IResHandle> handle = NULL;
 
-        DEBUG_OUT_A("Loading '%s' ... \n", r.m_name.c_str());
+        //DEBUG_OUT_A("Loading '%s' ... \n", r.m_name.c_str());
 
         std::vector<std::string> elems = util::split(r.m_name, '.');
 
@@ -397,11 +397,15 @@ namespace chimera
 
         auto it = m_loader.find(pattern);
 
-        if(it == m_loader.end())
+        std::string subFolder("");
+
+        if(it != m_loader.end())
         {
-            return false;
+            //return false;
+            subFolder = it->second->VSubFolder();
         }
-        std::string fileName = m_pFile->VGetName() + "/" + it->second->VSubFolder() + r.m_name;
+
+        std::string fileName = m_pFile->VGetName() + "/" + subFolder + r.m_name;
         std::ifstream file(fileName, std::ios::in | std::ios::binary);
         bool good = file.good();
         file.close();

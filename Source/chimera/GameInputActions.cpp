@@ -54,7 +54,7 @@ namespace gameinput
         pos = pos + dir * 3;
 
         chimera::TransformComponent* comp = desc->AddComponent<chimera::TransformComponent>("TransformComponent");
-        comp->GetTransformation()->SetTranslate(pos);
+        comp->GetTransformation()->SetTranslation(pos);
 
         chimera::RenderComponent * renderComp = desc->AddComponent<chimera::RenderComponent>("RenderComponent");
         renderComp->m_resource = "spottwotest.obj";
@@ -320,7 +320,7 @@ namespace gameinput
         util::Vec3 dir = cameraComp->GetCamera()->GetViewDir();
         dir.Scale(6.0f);
         pos = cameraComp->GetCamera()->GetEyePos() + dir;
-        comp->GetTransformation()->SetTranslate(pos.x, pos.y, pos.z);
+        comp->GetTransformation()->SetTranslation(pos.x, pos.y, pos.z);
 
         chimera::RenderComponent* renderComp = desc->AddComponent<chimera::RenderComponent>("RenderComponent");
         renderComp->m_resource = meshFile;
@@ -354,7 +354,7 @@ namespace gameinput
         util::Vec3 dir = cameraComp->GetCamera()->GetViewDir();
         dir.Scale(6.0f);
         pos = cameraComp->GetCamera()->GetEyePos() + dir;
-        comp->GetTransformation()->SetTranslate(pos.x, pos.y, pos.z);    
+        comp->GetTransformation()->SetTranslation(pos.x, pos.y, pos.z);    
         comp->GetTransformation()->SetScale(10.0f);
 
         if(!m_kinematicPhysical)
@@ -537,7 +537,7 @@ namespace gameinput
                 chimera::g_pApp->GetHumanView()->GetTarget()->GetComponent<chimera::TransformComponent>(
                 chimera::TransformComponent::COMPONENT_ID).lock()->GetTransformation()->GetTranslation();
 
-            comp->GetTransformation()->SetTranslate(pos.x, pos.y, pos.z);
+            comp->GetTransformation()->SetTranslation(pos.x, pos.y, pos.z);
 
             chimera::RenderComponent* renderComp = desc->AddComponent<chimera::RenderComponent>("RenderComponent");
             renderComp->m_resource = "torus.obj";
@@ -572,7 +572,7 @@ namespace gameinput
             float dy = rand() / (float)RAND_MAX;
 
             chimera::TransformComponent* comp = desc->AddComponent<chimera::TransformComponent>("TransformComponent");
-            comp->GetTransformation()->SetTranslate(scale * x, 40 + 10 * dy, 20 + scale * z);
+            comp->GetTransformation()->SetTranslation(scale * x, 40 + 10 * dy, 20 + scale * z);
 
             float disDas = rand() / (float)RAND_MAX;
 

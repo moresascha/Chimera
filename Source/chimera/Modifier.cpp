@@ -328,7 +328,7 @@ namespace chimera
 
         chimera::TransformComponent* tc = desc->AddComponent<chimera::TransformComponent>(chimera::TransformComponent::COMPONENT_ID);
 
-        tc->GetTransformation()->SetTranslate(pos.x, pos.y, pos.z);
+        tc->GetTransformation()->SetTranslation(pos.x, pos.y, pos.z);
 
         tc->GetTransformation()->SetScale(scale);
 

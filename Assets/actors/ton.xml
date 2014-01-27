@@ -1,4 +1,4 @@
-<Actor name = "StaticPlane">
+<Actor name = "Ton">
     <TransformComponent>
         <Position x="-10.0" y="3.0" z="0.0" />
     </TransformComponent>
@@ -11,4 +11,5 @@
         <MeshFile>ton.obj</MeshFile>
         <Material>dynamic</Material>
 	</PhysicComponent>
+    <PickableComponent />
 </Actor>

@@ -53,7 +53,8 @@ namespace chimera
 
         TransformComponent(void);
 
-        util::Mat4* GetTransformation(void) {
+        util::Mat4* GetTransformation(void) 
+        {
             return &m_transformation;
         }
 
@@ -117,6 +118,7 @@ namespace chimera
         std::string m_material;
 
         chimera::CMResource m_meshFile;
+        std::string m_subMesh;
 
         float m_radius;
         util::Vec3 m_dim;
@@ -142,8 +144,9 @@ namespace chimera
         bool m_activated;
         std::string m_projTexture;
         bool m_castShadow;
+        float m_radius;
 
-        LightComponent(void) : m_angle(0), m_activated(true), m_intensity(1), m_color(1,1,1,1), m_projTexture("white.png"), m_castShadow(1)
+        LightComponent(void) : m_angle(0), m_activated(true), m_intensity(1), m_color(1,1,1,1), m_projTexture("white.png"), m_castShadow(1), m_radius(20)
         {
 
         }

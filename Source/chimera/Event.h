@@ -17,11 +17,17 @@
 #define CM_EVENT_APPLY_TORQUE 0x1d17f65
 #define CM_EVENT_TRIGGER 0xa25e9d66
 #define CM_EVENT_SET_PARENT_ACTOR 0xa5fd2f77
+#define CM_EVENT_RELEASE_CHILD_ACTOR 0xfb3ce4a6
 #define CM_EVENT_LEVEL_LOADED 0x2d40e793
 #define CM_EVENT_RESOURCE_CHANGED 0xec7c39db
 #define CM_EVENT_FILE_CHANGED 0x8a985188
 #define CM_EVENT_CREATE_PROCESS 0xd3f662bb
 #define CM_EVENT_PRE_RESTORE 0x29845e71
+#define CM_EVENT_ACTOR_PICKED 0xc43c9ea3
+#define CM_EVENT_PICK_ACTOR 0xdda5ceec
+#define CM_EVENT_DELETE_COMPONENT 0xdab24554
+#define CM_EVENT_SET_SUN_INTENSITY 0x130d2b31
+#define CM_EVENT_SET_SUN_AMBIENT 0xa8882b58
 
 #define CM_CREATE_EVENT_HEADER(__type, __name) \
     EventType VGetEventType(VOID) CONST { return __type; } \
@@ -37,6 +43,25 @@ namespace chimera
         CM_INLINE SetSunPositionEvent(float x, float y, float z);
 
         CM_CREATE_EVENT_HEADER(CM_EVENT_SET_SUN_POSITION, SetSunPositionEvent);
+    };
+
+    class SetSunAmbient : public Event
+    {
+    public:
+        util::Vec3 m_ambient;
+
+        CM_INLINE SetSunAmbient(float x, float y, float z);
+
+        CM_CREATE_EVENT_HEADER(CM_EVENT_SET_SUN_AMBIENT, SetSunAmbient);
+    };
+
+    class SetSunIntensityEvent : public Event
+    {
+    public:
+        util::Vec3 m_intensity;
+        CM_INLINE SetSunIntensityEvent(float x, float y, float z);
+
+        CM_CREATE_EVENT_HEADER(CM_EVENT_SET_SUN_INTENSITY, SetSunIntensityEvent);
     };
 
     class PreRestoreEvent : public Event
@@ -95,6 +120,21 @@ namespace chimera
         NewComponentCreatedEvent(ComponentId id, ActorId actorId) : m_id(id), m_actorId(actorId) {}
 
         CM_CREATE_EVENT_HEADER(CM_EVENT_COMPONENT_CREATED, NewComponentCreatedEvent);
+    };
+
+    class DeleteComponentEvent : public Event
+    {
+    public:
+        IActorComponent* m_component;
+        IActor* m_actor;
+        ComponentId m_cmpId;
+
+        DeleteComponentEvent(IActor* actor, IActorComponent* cmp) : m_component(cmp), m_actor(actor)
+        {
+            m_cmpId = cmp->VGetComponentId();
+        }
+
+        CM_CREATE_EVENT_HEADER(CM_EVENT_DELETE_COMPONENT, DeleteComponentEvent);
     };
 
     class CreateActorEvent : public Event 
@@ -225,6 +265,14 @@ namespace chimera
         CM_CREATE_EVENT_HEADER(CM_EVENT_SET_PARENT_ACTOR, SetParentActorEvent);
     };
 
+    class ReleaseChildEvent : public Event
+    {
+    public:
+        ActorId m_actor;
+
+        CM_CREATE_EVENT_HEADER(CM_EVENT_RELEASE_CHILD_ACTOR, ReleaseChildEvent);
+    };
+
     class ResourceChangedEvent : public Event
     {
     public:
@@ -251,12 +299,46 @@ namespace chimera
         CM_CREATE_EVENT_HEADER(CM_EVENT_CREATE_PROCESS, CreateProcessEvent);
     };
 
+    class PickActorEvent : public Event
+    {
+    public:
+        typedef void(*FunctionCallback)(ActorId actor);
+        FunctionCallback m_cb;
+        
+        PickActorEvent(FunctionCallback cb = NULL) : m_cb(cb)
+        {
+
+        }
+
+        void CallCallBack(ActorId actor)
+        {
+            if(m_cb)
+            {
+                m_cb(actor);
+            }
+        }
+        CM_CREATE_EVENT_HEADER(CM_EVENT_PICK_ACTOR, PickActorEvent);
+    };
 
     SetSunPositionEvent::SetSunPositionEvent(float x, float y, float z)
     {
         m_position.x = x;
         m_position.y = y;
         m_position.z = z;
+    }
+
+    SetSunIntensityEvent::SetSunIntensityEvent(float x, float y, float z)
+    {
+        m_intensity.x = x;
+        m_intensity.y = y;
+        m_intensity.z = z;
+    }
+
+    SetSunAmbient::SetSunAmbient(float x, float y, float z)
+    {
+        m_ambient.x = x;
+        m_ambient.y = y;
+        m_ambient.z = z;
     }
 
     MoveActorEvent::MoveActorEvent(ActorId id, util::Vec3 translation, util::Vec4 quat, bool isDeltaMove) 

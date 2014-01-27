@@ -60,7 +60,7 @@ namespace packman
         std::shared_ptr<chimera::PhysicComponent> phxComp = camera->GetComponent<chimera::PhysicComponent>(chimera::PhysicComponent::COMPONENT_ID).lock();
         if(phxComp)
         {
-            cameraComp->GetCamera()->VSetYOffset(1.6f);
+            cameraComp->GetCamera()->SetYOffset(1.6f);
         }
 
         std::shared_ptr<chimera::Actor> freeLook = m_pLogic->VCreateActor("freeLookCamera.xml");

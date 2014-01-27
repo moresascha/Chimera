@@ -26,6 +26,8 @@ namespace chimera
         IActor* m_cascadeCameraActor[3];
         IActor* m_lightActorCamera;
         IActor* m_viewActor;
+        util::Vec3 m_intensity;
+        util::Vec3 m_ambient;
 
         void Destroy(void);
 
@@ -42,6 +44,10 @@ namespace chimera
         IRenderTarget** VGetTargets(void) { return m_ppTargets; }
 
         void SetSunPositionDelegate(IEventPtr data);
+
+        void SetSunIntensityDelegate(IEventPtr data);
+
+        void SetSunAmbientDelegate(IEventPtr data);
 
         ~CascadedShadowMapper(void);
     };

@@ -58,16 +58,16 @@ namespace chimera
 
             CM_INLINE void SetRotateQuat(float x, float y, float z, float w);
 
-            CM_INLINE void SetTranslate(float x, float y, float z) 
+            CM_INLINE void SetTranslation(float x, float y, float z) 
             {
                 m_translation.Set(x, y, z);
                 Update();
                 //this->m_m = GetFromMat4x4(XMMatrixTranslation(x, y, z));
             }
 
-            CM_INLINE void SetTranslate(const util::Vec3& pos) 
+            CM_INLINE void SetTranslation(const util::Vec3& pos) 
             {
-                SetTranslate(pos.x, pos.y, pos.z);
+                SetTranslation(pos.x, pos.y, pos.z);
             }
 
             CM_INLINE void Translate(float x, float y, float z) 
@@ -94,6 +94,11 @@ namespace chimera
             CM_INLINE void SetScale(float scale) {
                 SetScale(scale, scale, scale);
                 //this->m_m = GetFromMat4x4(XMMatrixScaling(x, y ,z));
+            }
+
+            CM_INLINE void SetScale(const util::Vec3& scale)
+            {
+                SetScale(scale.x, scale.y, scale.z);
             }
 
             CM_INLINE void SetScale(float sx, float sy, float sz)
@@ -193,6 +198,14 @@ namespace chimera
                 XMMATRIX _res = XMMatrixMultiply(_m1, _m0);
                 util::Mat4 res = util::Mat4::GetFromMat4x4(_res);
                 return res;
+            }
+
+            CM_INLINE static void Mul(const util::Mat4& left, const util::Mat4& right, util::Mat4& dst)
+            {
+                XMMATRIX _m0 = util::Mat4::GetFromFloat4x4(left.m_m);
+                XMMATRIX _m1 = util::Mat4::GetFromFloat4x4(right.m_m);
+                XMMATRIX _res = XMMatrixMultiply(_m1, _m0);
+                dst.m_m = util::Mat4::GetFromMat4x4(_res);
             }
 
             CM_INLINE static util::Mat4 CreatePerspectiveLH(float fov, float aspect, float zNear, float zFar)

@@ -10,7 +10,7 @@
 
 #ifdef _DEBUG
 #define ADD_SHADER_WATCHER \
-    std::string __P = CmGetApp()->VGetConfig()->VGetString("sShaderPath"); \
+    std::string __P = CmGetApp()->VGetConfig()->VGetString("sResCache") + CmGetApp()->VGetConfig()->VGetString("sShaderPath"); \
     std::wstring _PP(__P.begin(), __P.end()); \
     CmGetApp()->VGetLogic()->VGetProcessManager()->VAttach(std::shared_ptr<IProcess>(new WatchShaderFileModificationProcess(s, desc->file, _PP.c_str())))
 #else
@@ -124,7 +124,7 @@ namespace chimera
         template <class T>
         T* CreateShader(LPCTSTR file, LPCSTR function)
         {
-            std::string path = CmGetApp()->VGetConfig()->VGetString(SHADER_PATH);
+            std::string path = CmGetApp()->VGetConfig()->VGetString("sResCache") + CmGetApp()->VGetConfig()->VGetString(SHADER_PATH);
             std::wstring wpath = std::wstring(path.begin(), path.end()) + file;
             T* shader = new T(wpath.c_str(), function);
 
@@ -204,15 +204,16 @@ namespace chimera
         {
             chimera::d3d::Texture2D* texture = new chimera::d3d::Texture2D();
 
-            texture->SetBindflags(D3D11_BIND_SHADER_RESOURCE);
+            if(desc->miscflags & eTextureMiscFlags_BindShaderResource)
+            {
+                texture->SetBindflags(D3D11_BIND_SHADER_RESOURCE);
+            }
 
-            texture->SetFormat(DXGI_FORMAT_R8G8B8A8_UNORM);
+            texture->SetFormat((DXGI_FORMAT)desc->format);
 
             texture->SetWidth(desc->width);
 
             texture->SetHeight(desc->height);
-
-            texture->SetMipMapLevels(0);
 
             texture->SetSamplerCount(1);
 
@@ -220,9 +221,17 @@ namespace chimera
 
             texture->SetArraySize(1);
 
-            texture->SetMicsFlags(D3D11_RESOURCE_MISC_GENERATE_MIPS);
+            if(desc->miscflags & eTextureMiscFlags_GenerateMipMaps)
+            {
+                texture->SetMipMapLevels(0);
+                texture->SetMicsFlags(D3D11_RESOURCE_MISC_GENERATE_MIPS);
+            }
+
+            texture->SetUsage((D3D11_USAGE)desc->usage);
 
             texture->SetData(desc->data);
+
+            texture->SetCPUAccess((D3D11_CPU_ACCESS_FLAG)desc->cpuAccess);
 
             return std::unique_ptr<IDeviceTexture>(texture);
         }

@@ -382,7 +382,7 @@ namespace chimera
             };
 
 #ifdef _DEBUG
-          // flags |= D3D11_CREATE_DEVICE_DEBUG;
+           //flags |= D3D11_CREATE_DEVICE_DEBUG;
 #endif
             D3D_SAVE_CALL(D3D11CreateDeviceAndSwapChain(NULL,
                 D3D_DRIVER_TYPE_HARDWARE,
@@ -933,7 +933,6 @@ namespace chimera
 
                 SAFE_RELEASE(g_pDevice);
                 
-/*
                 typedef HRESULT(__stdcall *fPtr)(const IID&, void**); 
                 HMODULE hDll = GetModuleHandleW(L"dxgidebug.dll"); 
                 fPtr DXGIGetDebugInterface = (fPtr)GetProcAddress(hDll, "DXGIGetDebugInterface");
@@ -941,7 +940,6 @@ namespace chimera
                 DXGIGetDebugInterface(__uuidof(IDXGIDebug), (void**)&dxgidebug); 
                 dxgidebug->ReportLiveObjects(DXGI_DEBUG_DXGI, DXGI_DEBUG_RLO_SUMMARY);
                 SAFE_RELEASE(dxgidebug);
-*/
             }
             else
             {

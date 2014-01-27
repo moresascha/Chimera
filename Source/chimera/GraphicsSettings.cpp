@@ -40,7 +40,6 @@ namespace chimera
         if(!m_pProgram)
         {
             m_pProgram = CmGetApp()->VGetHumanView()->VGetRenderer()->VGetShaderCache()->VCreateShaderProgram(m_programName.c_str(), &m_desc);
-
         }
         return true;
     }
@@ -293,7 +292,7 @@ namespace chimera
             desc.file = L"Effects.hlsl";
             desc.function = "Luminance";
 
-            IEffect* lumi = m_pEffectChain->VCreateEffect(desc);
+            IEffect* lumi = m_pEffectChain->VAppendEffect(desc);
             lumi->VSetSource(m_pSource);
 
             //lumi->SetParameters(std::shared_ptr<LuminanceParameter>(new LuminanceParameter(1.0f)));
@@ -306,43 +305,43 @@ namespace chimera
                 if(e == NULL)
                 {
                     desc.function = "Sample";
-                    IEffect* ds = m_pEffectChain->VCreateEffect(desc, s, s);
-                    ds->VAddRequirement(lumi);
+                    IEffect* ds = m_pEffectChain->VAppendEffect(desc, s, s);
+                    //ds->VAddRequirement(lumi);
                     e = ds;
                 }
                 else
                 {
                     desc.function = "Sample";
-                    IEffect* ds = m_pEffectChain->VCreateEffect(desc, s, s);
-                    ds->VAddRequirement(e);
+                    IEffect* ds = m_pEffectChain->VAppendEffect(desc, s, s);
+                    //ds->VAddRequirement(e);
                     e = ds;
                 }
             }
           
             desc.function = "Sample";
-            IEffect* ds = m_pEffectChain->VCreateEffect(desc, 1.0f / w, 1.0f / h);
-            ds->VAddRequirement(e);
+            IEffect* ds = m_pEffectChain->VAppendEffect(desc, 1.0f / w, 1.0f / h);
+            //ds->VAddRequirement(e);
             e = ds;
 
             float brightPathSize = 0.25f;
 
             desc.function = "Brightness";
 
-            IEffect* bright = m_pEffectChain->VCreateEffect(desc, brightPathSize, brightPathSize);
+            IEffect* bright = m_pEffectChain->VAppendEffect(desc, brightPathSize, brightPathSize);
             bright->VSetSource(m_pSource);
 
             desc.function = "BlurH";
-            IEffect* e0 = m_pEffectChain->VCreateEffect(desc, brightPathSize, brightPathSize);
-            e0->VAddRequirement(bright);
+            IEffect* e0 = m_pEffectChain->VAppendEffect(desc, brightPathSize, brightPathSize);
+            //e0->VAddRequirement(bright);
 
             desc.function = "BlurV";
-            IEffect* e1 = m_pEffectChain->VCreateEffect(desc, brightPathSize, brightPathSize);
-            e1->VAddRequirement(e0);
+            IEffect* e1 = m_pEffectChain->VAppendEffect(desc, brightPathSize, brightPathSize);
+            //e1->VAddRequirement(e0);
 
             desc.function = "ToneMap";
-            IEffect* e2 = m_pEffectChain->VCreateEffect(desc);
+            IEffect* e2 = m_pEffectChain->VAppendEffect(desc);
             e2->VSetSource(m_pSource);
-            e2->VAddRequirement(e1);
+            //e2->VAddRequirement(e1);
 
             m_pEffectChain->VOnRestore(w, h);
         }
@@ -429,14 +428,51 @@ namespace chimera
         }
     }*/
 
-    EditModeSetting::EditModeSetting(void) : IGraphicSetting("edit")
+    EditModeSetting::EditModeSetting(void) : ShaderPathSetting(CM_RENDERPATH_EDITOR, "EditorSettingsProgram", "EditorSettings")
     {
 
     }
 
-    void EditModeSetting::VRender(void)
+    bool EditModeSetting::VOnRestore(uint w, uint h)
     {
-        CmGetApp()->VGetHumanView()->VGetSceneGraph()->VOnRender(CM_RENDERPATH_EDITOR);
+        VGetProgramDescription()->vs.file = DEFERRED_SHADER_FILE;
+        VGetProgramDescription()->vs.function = DEFERRED_SHADER_VS_FUNCTION;
+
+        VGetProgramDescription()->vs.layoutCount = 3;
+
+        VGetProgramDescription()->vs.inputLayout[0].instanced = false;
+        VGetProgramDescription()->vs.inputLayout[0].name = "POSITION";
+        VGetProgramDescription()->vs.inputLayout[0].position = 0;
+        VGetProgramDescription()->vs.inputLayout[0].slot = 0;
+        VGetProgramDescription()->vs.inputLayout[0].format = eFormat_R32G32B32_FLOAT;
+
+        VGetProgramDescription()->vs.inputLayout[1].instanced = false;
+        VGetProgramDescription()->vs.inputLayout[1].name = "NORMAL";
+        VGetProgramDescription()->vs.inputLayout[1].position = 1;
+        VGetProgramDescription()->vs.inputLayout[1].slot = 0;
+        VGetProgramDescription()->vs.inputLayout[1].format = eFormat_R32G32B32_FLOAT;
+
+        VGetProgramDescription()->vs.inputLayout[2].instanced = false;
+        VGetProgramDescription()->vs.inputLayout[2].name = "TEXCOORD";
+        VGetProgramDescription()->vs.inputLayout[2].position = 2;
+        VGetProgramDescription()->vs.inputLayout[2].slot = 0;
+        VGetProgramDescription()->vs.inputLayout[2].format = eFormat_R32G32_FLOAT;
+
+        VGetProgramDescription()->fs.file = DEFERRED_SHADER_FILE;
+        VGetProgramDescription()->fs.function = "DefEditor_PS";
+
+        return ShaderPathSetting::VOnRestore(w, h);
+    }
+
+    void GuiSetting::VRender(void)
+    {
+       // CmGetApp()->VGetHumanView()->VGetGui()->VRender();
+    }
+
+    bool GuiSetting::VOnRestore(uint w, uint h)
+    {
+       // CmGetApp()->VGetHumanView()->VGetGui()->VOnRestore();
+        return true;
     }
     
     //Settings...
@@ -630,30 +666,6 @@ namespace chimera
         CmGetApp()->VGetRenderer()->VPopRasterState();
     }
 
-    /*
-    IGraphicSetting* GraphicsSettings::GetSetting(LPCSTR name)
-    {
-        TBD_FOR(m_lightSettings)
-        {
-            if((*it)->GetName() == name)
-            {
-                return *it;
-            }
-        }
-        TBD_FOR(m_albedoSettings)
-        {
-            if((*it)->GetName() == name)
-            {
-                return *it;
-            }
-        }
-        if(m_pPostFX->GetName() == name)
-        {
-            return m_pPostFX;
-        }
-        return NULL;
-    } */
-
     DefaultGraphicsSettings::DefaultGraphicsSettings(void)
     {
         VAddSetting(std::unique_ptr<IGraphicSetting>(new AlbedoSetting()), eGraphicsSetting_Albedo);
@@ -689,6 +701,11 @@ namespace chimera
         VAddSetting(std::unique_ptr<IGraphicSetting>(new LightingSetting()), eGraphicsSetting_Lighting);
 
         VSetPostFX(std::unique_ptr<IPostFXSetting>(new PostFXSetting()));
+    }
+
+    EditorGraphicsSettings::EditorGraphicsSettings(void)
+    {
+        VAddSetting(std::unique_ptr<IGraphicSetting>(new EditModeSetting()), eGraphicsSetting_Albedo);
     }
 
     /*

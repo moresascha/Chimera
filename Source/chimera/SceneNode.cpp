@@ -1,6 +1,7 @@
 #include "SceneNode.h"
 #include "Event.h"
 #include "Components.h"
+#include "Quat.h"
 
 namespace chimera 
 {
@@ -8,6 +9,16 @@ namespace chimera
     {
         uint x, y, z, w;
     };
+
+    void SetActorId(const IActor* id)
+    {
+        
+    }
+
+    void SetActorId(ActorId id)
+    {
+
+    }
 
     /*
 
@@ -215,6 +226,15 @@ namespace chimera
 
     }
 
+    ISceneNode* SceneNode::VGetParent(void)
+    {
+        if(HasParent())
+        {
+            return m_parent;
+        }
+        return NULL;
+    }
+
     void SceneNode::VQueryGeometry(IGeometry** geo)
     {
         *geo = m_pGeometry.get();
@@ -294,37 +314,12 @@ namespace chimera
         m_parent = parent;
     }
 
-    std::unique_ptr<ISceneNode> SceneNode::VRemoveChild(ActorId actorId) 
+    void SceneNode::VOnActorMoved(void)
     {
-        if(m_actorId == actorId)
+        TBD_FOR(m_childs)
         {
-            for(auto it = m_childs.begin(); it != m_childs.end(); ++it)
-            {
-                (*it)->VSetParent(m_parent);
-                m_parent->VAddChild(std::move(*it));
-            }
-
-            for(auto i = m_parent->VGetChilds().begin(); i != m_parent->VGetChilds().end(); ++i)
-            {
-                if(i->get() == this)
-                {
-                    i->release();
-                    m_parent->VGetChilds().erase(i);
-                    break;
-                }
-            }
-            return std::unique_ptr<ISceneNode>(this);
+            VOnParentChanged();
         }
-
-        for(auto it = m_childs.begin(); it != m_childs.end(); ++it)
-        {
-            std::unique_ptr<ISceneNode> n = (*it)->VRemoveChild(actorId);
-            if(n)
-            {
-                return n;
-            }
-        }
-        return NULL;
     }
 
     bool SceneNode::VIsVisible(ISceneGraph* graph) 
@@ -350,8 +345,6 @@ namespace chimera
             VPreRender(graph);
             _VRender(graph, path);
             VPostRender(graph);
-
-            VRenderChildren(graph, path);
         }
     }
 
@@ -380,17 +373,43 @@ namespace chimera
         return m_actorId;
     }
 
+    std::unique_ptr<ISceneNode> SceneNode::VRemoveChild(ActorId actorId) 
+    {
+        if(m_actorId == actorId)
+        {
+            /*for(auto it = m_childs.begin(); it != m_childs.end(); ++it)
+            {
+                (*it)->VSetParent(m_parent);
+                m_parent->VAddChild(std::move(*it));
+            }*/
+
+            //todo: use map?
+            for(auto i = m_parent->VGetChilds().begin(); i != m_parent->VGetChilds().end(); ++i)
+            {
+                if(i->get() == this)
+                {
+                    i->release();
+                    m_parent->VGetChilds().erase(i);
+                    break;
+                }
+            }
+            return std::unique_ptr<ISceneNode>(this);
+        }
+
+        for(auto it = m_childs.begin(); it != m_childs.end(); ++it)
+        {
+            std::unique_ptr<ISceneNode> n = (*it)->VRemoveChild(actorId);
+            if(n)
+            {
+                return n;
+            }
+        }
+        return NULL;
+    }
+
     std::unique_ptr<ISceneNode> SceneNode::VRemoveChild(ISceneNode* child) 
     {
         return std::move(VRemoveChild(child->VGetActorId()));
-    }
-
-    void SceneNode::VRenderChildren(ISceneGraph* graph, RenderPath& path)
-    {
-        for(auto it = m_childs.begin(); it != m_childs.end(); ++it)
-        {
-            (*it)->VRender(graph, path);
-        } 
     }
 
     void SceneNode::ActorMovedDelegate(chimera::IEventPtr pEventData)
@@ -428,37 +447,27 @@ namespace chimera
 
             *pwt = *pt;
 
+            pwt->SetRotateQuat(pt->GetRotation());
             pwt->RotateQuat(t->GetRotation());
 
-            pwt->Translate(t->GetTranslation());
+            util::Quat q(pt->GetRotation());
+            util::Vec3 v = t->GetTranslation();
 
-            pwt->Scale(t->GetScale());
+            q.Transform(v);
+
+            pwt->SetTranslation(pt->GetTranslation());
+
+            pwt->Translate(v);
+
+            pwt->SetScale(t->GetScale() * pt->GetScale());
 
             VOnActorMoved();
         }
-        TBD_FOR(m_childs)
-        {
-            VOnParentChanged();
-        }
-    }
-
-    ISceneNode* SceneNode::VFindActor(ActorId id)
-    {
-        if(id == m_actorId)
-        {
-            return this;
-        }
 
         TBD_FOR(m_childs)
         {
-            ISceneNode* node = (*it)->VFindActor(id);
-            if(node)
-            {
-                return node;
-            }
+            (*it)->VOnParentChanged();
         }
-
-        return NULL;
     }
 
     SceneNode::~SceneNode(void)

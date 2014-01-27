@@ -152,17 +152,17 @@ namespace chimera
 
         uint wh = CmGetApp()->VGetConfig()->VGetInteger("iSpotLightSMSize");
 
-        m_pCamera = new util::Camera(wh, wh, 1e-2f, VGetTransformation()->GetScale().x);
+        m_pCamera = new util::Camera(wh, wh, 1e-2f, m_lightComponent->m_radius);
         
         VOnActorMoved();
 
-        VSetRenderPaths(CM_RENDERPATH_LIGHTING);
+        VSetRenderPaths(CM_RENDERPATH_LIGHTING | CM_RENDERPATH_EDITOR);
     }
 
     void SpotlightNode::VOnActorMoved(void)
     {
         SceneNode::VOnActorMoved();
-        m_pCamera->SetPerspectiveProjection(1.0f, DEGREE_TO_RAD(m_lightComponent->m_angle), 0.01f, VGetTransformation()->GetScale().x);
+        m_pCamera->SetPerspectiveProjection(1.0f, DEGREE_TO_RAD(m_lightComponent->m_angle), 0.01f, m_lightComponent->m_radius);
         
         util::Vec4 up(0,1,0,0);
         util::Vec4 dir(0,0,1,0);
@@ -178,7 +178,7 @@ namespace chimera
         
         m_middle = VGetTransformation()->GetTranslation();
         float c = cos(m_pCamera->GetFoV() / 2.0f); //Todo: need a tighter bb here
-        float h = VGetTransformation()->GetScale().x / c;
+        float h = m_lightComponent->m_radius / c;
         m_distance = h / 2.0f;
         m_middle = m_middle + (m_pCamera->GetViewDir() * m_distance);
     }
@@ -236,11 +236,11 @@ namespace chimera
 
                 IRenderer* renderer = CmGetApp()->VGetHumanView()->VGetRenderer();
                 renderer->VPushViewTransform(m_pCamera->GetView(), m_pCamera->GetIView(), m_pCamera->GetEyePos());
-                renderer->VPushProjectionTransform(m_pCamera->GetProjection(), VGetTransformation()->GetScale().x);
+                renderer->VPushProjectionTransform(m_pCamera->GetProjection(), m_lightComponent->m_radius);
 
                 renderer->VSetLightSettings(m_lightComponent->m_color, VGetTransformation()->GetTranslation(), 
                     m_pCamera->GetViewDir(),
-                    VGetTransformation()->GetScale().x, DEGREE_TO_RAD(m_lightComponent->m_angle), m_lightComponent->m_intensity, m_lightComponent->m_castShadow);
+                    m_lightComponent->m_radius, DEGREE_TO_RAD(m_lightComponent->m_angle), m_lightComponent->m_intensity, m_lightComponent->m_castShadow);
 
                 if(m_lightComponent->m_castShadow)
                 {
@@ -273,7 +273,7 @@ namespace chimera
 
                     renderer->VGetCurrentRenderTarget()->VBind();
 
-                    renderer->VSetTexture(chimera::eDiffuseColorSampler, shadowRT->VGetTexture()); //todo
+                    renderer->VSetTexture(chimera::eDiffuseColorSampler, shadowRT->VGetTexture());
                 }
 
                 if(m_lightComponent->m_projTexture.c_str())

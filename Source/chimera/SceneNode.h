@@ -20,6 +20,9 @@ namespace chimera
     VOID DrawInfoTextOnScreen(chimera::ICamera* camera, CONST util::Mat4* model, CONST std::string& text);
     VOID DrawFrustum(chimera::Frustum& frustum); */
 
+    void SetActorId(ActorId id);
+    void SetActorId(const IActor* id);
+
     class SceneNode : public ISceneNode 
     {
     private:
@@ -48,6 +51,8 @@ namespace chimera
 
         util::Mat4* VGetTransformation(void);
 
+        ISceneNode* VGetParent(void);
+
         void VSetActor(ActorId id);
 
         void VSetParent(ISceneNode* parent);
@@ -74,8 +79,6 @@ namespace chimera
 
         virtual void _VRender(ISceneGraph* graph, RenderPath& path) {}
 
-        void VRenderChildren(ISceneGraph* graph, RenderPath& path);
-
         virtual bool VIsVisible(ISceneGraph* graph);
 
         void VAddChild(std::unique_ptr<ISceneNode> child);
@@ -90,13 +93,11 @@ namespace chimera
 
         void ActorMovedDelegate(chimera::IEventPtr pEventData);
 
-        virtual void VOnActorMoved(void) {}
+        virtual void VOnActorMoved(void);
 
         uint VGetRenderPaths(void);
 
         void VSetRenderPaths(RenderPath paths);
-
-        ISceneNode* VFindActor(ActorId id);
 
         virtual ~SceneNode(void);
     };

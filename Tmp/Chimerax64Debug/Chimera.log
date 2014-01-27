@@ -1,4 +1,4 @@
-﻿Build started 18.01.2014 18:04:07.
+﻿Build started 27.01.2014 20:57:29.
      1>Project "E:\Dropbox\VisualStudio\Chimera\Source\Chimera.vcxproj" on node 2 (Build target(s)).
      1>InitializeBuildStatus:
          Creating "E:\Dropbox\VisualStudio\Chimera\Source\..\Tmp\Chimerax64Debug\Chimera.unsuccessfulbuild" because "AlwaysCreate" was specified.
@@ -10,7 +10,7 @@
        Skipping target "CudaBuild" because all output files are up-to-date with respect to the input files.
        ClCompile:
          All outputs are up-to-date.
-         C:\Program Files (x86)\Microsoft Visual Studio 11.0\VC\bin\x86_amd64\CL.exe /c /I../Cudah/Source /I../Include /I./Source/Chimera /I../Include/physx/foundation /I../Include/physx/Source/foundation/include /I../Include/physx/physxprofilesdk /I../Include/physx/physxvisualdebuggersdk /I../Include/physx/common /I../Include/physx/geometry /I../Include/physx/pvd /I../Include/physx/particles /I../Include/physx/cooking /I../Include/physx/extensions /I../Include/physx/characterdynamic /I../Include/physx/vehicle /I../Include/physx/RepX /I../Include/physx/RepXUpgrader /I../Include/physx/Source/GeomUtils/headers /I"C:\Program Files\NVIDIA GPU Computing Toolkit\CUDA\v5.5\include" /Zi /nologo /W3 /WX- /MP /Od /D __COMPILING_DLL /D _WINDLL /D _UNICODE /D UNICODE /Gm /EHsc /RTC1 /MDd /GS /fp:precise /Zc:wchar_t /Zc:forScope /Fo"E:\Dropbox\VisualStudio\Chimera\Source\..\Tmp\Chimerax64Debug\\" /Fd"E:\Dropbox\VisualStudio\Chimera\Source\..\Tmp\Chimerax64Debug\vc110.pdb" /Gd /TP /errorReport:prompt /MP chimera\Actor.cpp chimera\ActorFactory.cpp chimera\AxisAlignedBB.cpp chimera\Camera.cpp chimera\CameraNode.cpp chimera\CascadedShadowMapper.cpp chimera\ChimeraAPI.cpp chimera\Commands.cpp chimera\Components.cpp chimera\Config.cpp chimera\Controller.cpp chimera\Effect.cpp chimera\Event.cpp chimera\EventManager.cpp chimera\Frustum.cpp chimera\GameLogic.cpp chimera\GameView.cpp chimera\GeometryFactory.cpp chimera\GeometryNode.cpp chimera\GraphicsSettings.cpp chimera\GuiComponent.cpp chimera\Input.cpp chimera\InstancedMeshNode.cpp chimera\LevelManager.cpp chimera\Logger.cpp chimera\MeshNode.cpp chimera\PhysicsSystem.cpp chimera\Process.cpp chimera\ProcessManager.cpp chimera\SceneGraph.cpp chimera\SceneNode.cpp chimera\Scheduler.cpp chimera\SkyDomeNode.cpp chimera\SpotlightNode.cpp chimera\tbdFont.cpp chimera\Timer.cpp chimera\util.cpp chimera\VRamManager.cpp
+         C:\Program Files (x86)\Microsoft Visual Studio 11.0\VC\bin\x86_amd64\CL.exe /c /I../Cudah/Source /I../Include /I./Source/Chimera /I../Include/physx/foundation /I../Include/physx/Source/foundation/include /I../Include/physx/physxprofilesdk /I../Include/physx/physxvisualdebuggersdk /I../Include/physx/common /I../Include/physx/geometry /I../Include/physx/pvd /I../Include/physx/particles /I../Include/physx/cooking /I../Include/physx/extensions /I../Include/physx/characterdynamic /I../Include/physx/vehicle /I../Include/physx/RepX /I../Include/physx/RepXUpgrader /I../Include/physx/Source/GeomUtils/headers /I"C:\Program Files\NVIDIA GPU Computing Toolkit\CUDA\v5.5\include" /Zi /nologo /W3 /WX- /MP /Od /D __COMPILING_DLL /D _WINDLL /D _UNICODE /D UNICODE /Gm /EHsc /RTC1 /MDd /GS /fp:precise /Zc:wchar_t /Zc:forScope /Fo"E:\Dropbox\VisualStudio\Chimera\Source\..\Tmp\Chimerax64Debug\\" /Fd"E:\Dropbox\VisualStudio\Chimera\Source\..\Tmp\Chimerax64Debug\vc110.pdb" /Gd /TP /errorReport:prompt /MP chimera\Actor.cpp chimera\ActorFactory.cpp chimera\AxisAlignedBB.cpp chimera\Camera.cpp chimera\CameraNode.cpp chimera\CascadedShadowMapper.cpp chimera\ChimeraAPI.cpp chimera\Commands.cpp chimera\Components.cpp chimera\Config.cpp chimera\Controller.cpp chimera\Effect.cpp chimera\Event.cpp chimera\EventManager.cpp chimera\Frustum.cpp chimera\GameLogic.cpp chimera\GameView.cpp chimera\GeometryFactory.cpp chimera\GeometryNode.cpp chimera\GraphicsSettings.cpp chimera\GuiComponent.cpp chimera\Input.cpp chimera\InstancedMeshNode.cpp chimera\LevelManager.cpp chimera\Logger.cpp chimera\MeshNode.cpp chimera\PhysicsSystem.cpp chimera\Picker.cpp chimera\Process.cpp chimera\ProcessManager.cpp chimera\SceneGraph.cpp chimera\SceneNode.cpp chimera\Scheduler.cpp chimera\SkyDomeNode.cpp chimera\SpotlightNode.cpp chimera\tbdFont.cpp chimera\Timer.cpp chimera\util.cpp chimera\VRamManager.cpp
      1>cl : Command line warning D9030: '/Gm' is incompatible with multiprocessing; ignoring /MP switch
          Skipping... (no relevant changes detected)
          VRamManager.cpp
@@ -24,6 +24,7 @@
          SceneGraph.cpp
          ProcessManager.cpp
          Process.cpp
+         Picker.cpp
          PhysicsSystem.cpp
          MeshNode.cpp
          Logger.cpp
@@ -103,6 +104,7 @@
          E:\Dropbox\VisualStudio\Chimera\Source\..\Tmp\Chimerax64Debug\Logger.obj
          E:\Dropbox\VisualStudio\Chimera\Source\..\Tmp\Chimerax64Debug\MeshNode.obj
          E:\Dropbox\VisualStudio\Chimera\Source\..\Tmp\Chimerax64Debug\PhysicsSystem.obj
+         E:\Dropbox\VisualStudio\Chimera\Source\..\Tmp\Chimerax64Debug\Picker.obj
          E:\Dropbox\VisualStudio\Chimera\Source\..\Tmp\Chimerax64Debug\Process.obj
          E:\Dropbox\VisualStudio\Chimera\Source\..\Tmp\Chimerax64Debug\ProcessManager.obj
          E:\Dropbox\VisualStudio\Chimera\Source\..\Tmp\Chimerax64Debug\SceneGraph.obj
@@ -139,4 +141,4 @@
 
 Build succeeded.
 
-Time Elapsed 00:00:01.99
+Time Elapsed 00:00:03.18

@@ -181,7 +181,7 @@ PixelOutput GlobalLighting_PS(PixelInput input)
 
     float3 sunposition = normalize(g_CSMlightPos.xyz);
 
-    float3 sunIntensity = float3(1,1,1); //todo
+    float3 sunIntensity = float3(g_lightIntensity.x, g_lightIntensity.y, g_lightIntensity.z); //todo
 
     float4 worldDepth = g_worldPosDepth.Sample(g_samplerClamp, input.texCoord);
     float d = worldDepth.w;
@@ -226,7 +226,7 @@ PixelOutput GlobalLighting_PS(PixelInput input)
             computeCSMContr(op.color, input.texCoord, normal);
         }
 
-        op.color += float4(ambientMat.xyz * diffuse.xyz, 0);
+        op.color += g_ambient * diffuse;//float4(g_ambient.xyz * ambientMat.xyz, 0); // * diffuse.xyz
     } 
     else
     {
@@ -244,7 +244,6 @@ PixelOutput GlobalLighting_PS(PixelInput input)
         op.color = 0.802*diffuse;//lerp(sky, tex, l);
         //op.color += sun * powa;
     }
-    //op.color *= 0.7;
     return op;
 }
 
@@ -462,6 +461,7 @@ PixelOutput SpotLighting_PS(PixelInput input)
 
     op.color = !hasNormal * float4(intensity * lightColor * diffuseColor, 1) 
         + hasNormal * !shadow * float4(color, 1);
+
     return op;
 }
 

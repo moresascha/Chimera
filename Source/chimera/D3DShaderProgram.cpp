@@ -19,7 +19,7 @@ namespace chimera
             {
                 return;
             }
-            chimera::d3d::GetContext()->PSSetShader(this->m_pShader, NULL, 0);
+            chimera::d3d::GetContext()->PSSetShader(m_pShader, NULL, 0);
             PixelShader::m_sCurrent = this;
         }
 

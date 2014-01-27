@@ -1,9 +1,5 @@
 #pragma once
 #include "stdafx.h"
-#include "Actor.h"
-#include "RenderTarget.h"
-#include "ShaderProgram.h"
-#include "Texture.h"
 #include "Mat4.h"
 
 namespace chimera
@@ -12,28 +8,33 @@ namespace chimera
     {
     private:
         ActorId m_currentActor;
-        chimera::RenderTarget* m_renderTarget;
-        chimera::ShaderProgram* m_shaderProgram;
-        chimera::D3DTexture2D* m_texture;
-        BOOL m_created;
-        util::Mat4 m_projection;
+        IRenderTarget* m_pRenderTarget;
+        IShaderProgram* m_pShaderProgram;
+        IDeviceTexture* m_pTexture;
+        bool m_created;
+        chimera::util::Mat4 m_projection;
+
+        bool Create(VOID);
+
+        IRenderTarget* GetTarget(void);
+
+        void Render(void);
+
+        void PostRender(void);
+
     public:
-        ActorPicker(VOID) : m_currentActor(INVALID_ACTOR_ID), m_created(FALSE)
-        {
-        }
-        
-        BOOL VCreate(VOID);
+        ActorPicker(void);
 
-        chimera::RenderTarget* GetTarget(VOID);
+        bool VHasPicked(void) const;
         
-        VOID VPostRender(VOID);
+        ActorId VPick(void);
 
-        VOID VRender(VOID);
+        bool VOnRestore(void);
+
+        void PickActorDelegate(IEventPtr ptr);
+
+        void ActorDeletedDelegate(IEventPtr ptr);
         
-        BOOL VHasPicked(VOID) CONST;
-        
-        ActorId VPick(VOID) CONST;
-        
-        ~ActorPicker(VOID);
+        ~ActorPicker(void);
     };
 }

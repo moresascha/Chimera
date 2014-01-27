@@ -12,7 +12,7 @@ namespace chimera
 
         virtual void VOnUpdate(ulong millis) = 0;
 
-        virtual IActor* VCreateActor(LPCSTR resource, bool appendToLevel = false) = 0;
+        virtual IActor* VCreateActor(LPCSTR resource, std::vector<IActor*>* children = NULL, bool appendToLevel = false) = 0;
 
         virtual IActor* VCreateActor(std::unique_ptr<ActorDescription> desc, bool appendToLevel = false) = 0;
 

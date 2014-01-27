@@ -22,6 +22,7 @@ namespace chimera
         IGraphicsFactory* m_pGraphicsFactory;
         IEffectFactory* m_pEffectFactory;
         IGuiFactory* m_pGuiFactroy;
+        IPicker* m_pActorPicker;
         bool m_isFullscreen;
 
     public:
@@ -101,11 +102,15 @@ namespace chimera
 
         void DeleteActorDelegate(IEventPtr pEventData);
 
+        void DeleteComponentDelegate(IEventPtr pEventData);
+
         void LoadingLevelDelegate(IEventPtr pEventData);
 
         void LevelLoadedDelegate(IEventPtr pEventData);
 
         void SetParentDelegate(IEventPtr pEventData);
+
+        void ReleaseChildDelegate(IEventPtr pEventData);
 
         void VOnResize(uint w, uint h);
 
@@ -200,6 +205,7 @@ namespace chimera
 
         bool VOnMouseButtonPressed(int x, int y, int button);
         bool VOnMouseMoved(int x, int y, int dx, int dy);
+        bool VOnMouseDragged(int x, int y, int dx, int dy, int button);
         void VOnUpdate(ulong millis);
         bool VOnKeyDown(uint const code);
         void VOnAttach(ViewId viewId, IActor* actor);

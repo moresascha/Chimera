@@ -224,6 +224,28 @@ namespace chimera
 
     }
 
+    bool CharacterController::VOnMouseDragged(int x, int y, int dx, int dy, int button) 
+    {
+        TransformComponent* comp = GetActorCompnent<TransformComponent>(m_actor, CM_CMP_TRANSFORM);
+        comp->m_phi -= -2 * dx * 1e-3f;
+        comp->m_theta += 2 * dy * 1e-3f;
+
+        float t = CLAMP(comp->m_theta, -XM_PIDIV2, XM_PIDIV2);
+
+        util::Mat4 m;
+        m.SetRotateX(t);
+
+        util::Mat4 m1;
+        m1.SetRotateY(comp->m_phi);
+
+        XMVECTOR q = XMQuaternionMultiply(XMLoadFloat4(&m.GetRotation().m_v), XMLoadFloat4(&m1.GetRotation().m_v));        
+        comp->GetTransformation()->SetRotateQuat(q.m128_f32[0], q.m128_f32[1], q.m128_f32[2], q.m128_f32[3]);
+
+        QUEUE_EVENT(new ActorMovedEvent(m_actor));
+
+        return true;
+    }
+
     bool CharacterController::VOnMouseMoved(int x, int y, int dx, int dy) 
     {
         if(!CmGetApp()->VGetInputHandler()->VIsMouseGrabbed())
@@ -296,7 +318,7 @@ namespace chimera
             //deltaX.Add(deltaY);
             deltaX.Add(deltaZ);
 
-            QUEUE_EVENT(new chimera::MoveActorEvent(this->m_actor->GetId(), deltaX));
+            QUEUE_EVENT(new chimera::MoveActorEvent(m_actor->GetId(), deltaX));
         }
 
         return true;
@@ -316,7 +338,7 @@ namespace chimera
     bool CharacterController::VOnMouseButtonPressed(int x, int y, int button)
     {
         ActorController::VOnMouseButtonPressed(x, y, button);
-        if(!CmGetApp()->VGetInputHandler()->VGrabMouse(button & MOUSE_BTN_RIGHT))
+        if(!CmGetApp()->VGetInputHandler()->VGrabMouse((button & MOUSE_BTN_RIGHT) != 0))
         {
             LOG_CRITICAL_ERROR("failed to grab mouse...");
         }

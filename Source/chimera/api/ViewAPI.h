@@ -100,9 +100,9 @@ namespace chimera
     class ISceneGraph
     {
     public:
-        virtual void VAddChild(ActorId actorid, std::unique_ptr<ISceneNode> node) = 0;
+        virtual void VAddNode(ActorId actorid, std::unique_ptr<ISceneNode> node) = 0;
 
-        virtual void VRemoveChild(ActorId actorid) = 0;
+        virtual void VRemoveNode(ActorId actorid) = 0;
 
         virtual bool VOnRender(RenderPath path) = 0;
 
@@ -116,11 +116,13 @@ namespace chimera
 
         virtual ISceneNode* VFindActorNode(ActorId actorid) = 0;
 
-        virtual std::unique_ptr<ISceneNode> VReleaseNode(ActorId id) = 0;
-
         virtual const Frustum* VGetFrustum(void) = 0;
 
         virtual void VPushFrustum(Frustum* f) = 0;
+
+        virtual void VSetParent(ISceneNode* parent, ISceneNode* child) = 0;
+
+        virtual void VReleaseParent(ISceneNode* parent, ISceneNode* child) = 0;
 
         virtual void VPopFrustum(void) = 0;
 
@@ -140,6 +142,8 @@ namespace chimera
 
         virtual void VSetActor(ActorId id) = 0;
 
+        virtual ISceneNode* VGetParent(void) = 0;
+
         virtual bool VWasVisibleOnLastTraverse(void) = 0;
 
         virtual void VForceVisibilityCheck(void) = 0;
@@ -151,8 +155,6 @@ namespace chimera
         virtual void VRender(ISceneGraph* graph, RenderPath& path) = 0;
 
         virtual void _VRender(ISceneGraph* graph, RenderPath& path) = 0;
-
-        virtual void VRenderChildren(ISceneGraph* graph, RenderPath& path) = 0;
 
         virtual void VPostRender(ISceneGraph* graph) = 0;
 
@@ -177,8 +179,6 @@ namespace chimera
         virtual std::vector<std::unique_ptr<ISceneNode>>& VGetChilds(void) = 0;
 
         virtual void VOnUpdate(ulong millis, ISceneGraph* graph) = 0;
-
-        virtual ISceneNode* VFindActor(ActorId id) = 0;
 
         virtual const util::AxisAlignedBB& VGetAABB(void) const = 0;
 
@@ -246,7 +246,9 @@ namespace chimera
 
         virtual void FromViewUp(const util::Vec3& up, const util::Vec3& dir) {}
 
-        virtual void VSetYOffset(float offset) { }
+        virtual void SetYOffset(float offset) { }
+
+        virtual float GetYOffset(void) const { return 0; }
 
         virtual void SetPerspectiveProjection(float aspect, float fov, float fnear, float ffar) {}
 
@@ -323,6 +325,8 @@ namespace chimera
 
         virtual void VReset(void) = 0;
 
+        virtual IRenderTarget* VGetSource(void) = 0;
+
         virtual float2 VGetViewPort(void) = 0;
 
         virtual void VSetTarget(IRenderTarget* target) = 0;
@@ -345,7 +349,7 @@ namespace chimera
 
         virtual void VSetTarget(IRenderTarget* target) = 0;
 
-        virtual IEffect* VCreateEffect(const CMShaderDescription& shaderDesc, float percentofw = 1.0f, float percentofh = 1.0f) = 0;
+        virtual IEffect* VAppendEffect(const CMShaderDescription& shaderDesc, float percentofw = 1.0f, float percentofh = 1.0f) = 0;
 
         virtual IRenderTarget* VGetResult(void) = 0;
 
@@ -367,7 +371,7 @@ namespace chimera
     class IEffectFactoryFactory
     {
     public:
-        virtual IEffectFactory* VCreateEffectFactroy(void) = 0;
+        virtual IEffectFactory* VCreateEffectFactory(void) = 0;
     };
 
     class IGraphicSetting
@@ -400,6 +404,8 @@ namespace chimera
 
         virtual void VSetTarget(IRenderTarget* target) = 0;
 
+        virtual IEffectChain* VGetEffectChain(void) = 0;
+
         virtual ~IPostFXSetting(void) {}
     };
 
@@ -415,6 +421,8 @@ namespace chimera
         virtual bool VOnRestore(uint w, uint h) = 0;
 
         virtual void VOnActivate(void) = 0;
+
+        virtual IPostFXSetting* VGetPostFX(void) = 0;
 
         virtual IRenderTarget* VGetResult(void) = 0;
 

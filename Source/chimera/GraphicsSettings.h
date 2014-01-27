@@ -47,6 +47,7 @@ namespace chimera
         bool VOnRestore(uint w, uint h);
         void VRender(void);
     };
+
     //todo settings for all lightsources?
     class LightingSetting : public IGraphicSetting
     {   
@@ -87,6 +88,8 @@ namespace chimera
 
         bool VOnRestore(uint w, uint h);
 
+        IEffectChain* VGetEffectChain(void) { return m_pEffectChain; }
+
         CMShaderProgramDescription* VGetProgramDescription(void) { return NULL; }
 
         ~PostFXSetting(void);
@@ -99,12 +102,21 @@ namespace chimera
         void VRender(void);
     };
 
-    class EditModeSetting : public IGraphicSetting
+    class EditModeSetting : public ShaderPathSetting
     {
     public:
         EditModeSetting(void);
+        bool VOnRestore(uint w, uint h);
+    };
+
+    class GuiSetting : public IGraphicSetting
+    {
+    public:
+        GuiSetting(void) : IGraphicSetting("GUI") {}
         void VRender(void);
-        bool VOnRestore(uint w, uint h) { return true; }
+        bool VOnRestore(uint w, uint h);
+        CMShaderProgramDescription* VGetProgramDescription(void) { return NULL; }
+        ~GuiSetting(void);
     };
 
     /*
@@ -145,6 +157,8 @@ namespace chimera
 
         void VSetPostFX(std::unique_ptr<IPostFXSetting> settings);
 
+        IPostFXSetting* VGetPostFX(void) { return m_pPostFX.get(); }
+
         void VOnActivate(void);
 
         virtual void VRender(void);
@@ -177,7 +191,6 @@ namespace chimera
     {
     public:
         EditorGraphicsSettings(void);
-        void VRender(void);
     };
 
     class BoundingGeoDebugSettings : public GraphicsSettings
@@ -187,28 +200,6 @@ namespace chimera
     };
 
     /*
-    class DebugGraphicsSettings : public GraphicsSettings
-    {
-    private:
-        d3d::ShaderProgram* m_pDeferredProgram;
-        d3d::ShaderProgram* m_pGlobalLight;
-        d3d::ShaderProgram* m_pParticlesProgram;
-    public:
-        DebugGraphicsSettings(VOID);
-        BOOL VOnRestore(VOID);
-        VOID VRender(VOID);
-    };
-
-    class EditorGraphicsSettings : public GraphicsSettings
-    {
-    private:
-        DefaultGraphicsSettings* m_settings;
-    public:
-        EditorGraphicsSettings(DefaultGraphicsSettings* deco) : m_settings(deco) {}
-        VOID VRender(VOID);
-        BOOL VOnRestore(VOID);
-        d3d::RenderTarget* VGetResult(VOID);
-    };
     class WireFrameFilledSettings : public GraphicsSettings
     {
     private:

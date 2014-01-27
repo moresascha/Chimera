@@ -23,6 +23,8 @@ namespace chimera
     {
         m_pConfig = new util::Config();
 
+        m_pConfig->VCreateDefaults();
+
         RETURN_IF_FAILED(m_pConfig->VLoadConfigFile(CM_CONFIG_FILE));
 
         chimera::util::InitGdiplus(); //TODO
@@ -49,6 +51,8 @@ namespace chimera
         m_timer0 = new chimera::util::Timer();
         m_pUpdateTimer = new chimera::util::Timer();
         m_pRenderingTimer = new chimera::util::Timer();
+
+        m_updateFreqMillis = 1000 / m_pConfig->VGetInteger("iTicks");
 
         return true;
     }

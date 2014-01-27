@@ -8,27 +8,6 @@ namespace tinyxml2
 
 namespace chimera
 {
-    class ISaveXLevel
-    {
-    public:
-        virtual bool VSaveLevel(ILevel* level, LPCSTR file) = 0;
-    };
-
-    class SaveXMLLevel : public ISaveXLevel
-    {
-    public:
-        bool VSaveLevel(ILevel* level, LPCSTR file);
-    };
-
-    class LevelManager
-    {
-    private:
-        ISaveXLevel* m_formatSaver[eCNT];
-    public:
-        LevelManager(void);
-        ~LevelManager(void);
-    };
-
     class BaseLevel : public ILevel
     {
     private:
@@ -41,7 +20,6 @@ namespace chimera
         IActorFactory* m_pActorFactory;
 
     public:
-
         BaseLevel::BaseLevel(const std::string& file, IActorFactory* factory);
 
         const std::string& VGetName(void)
@@ -81,6 +59,10 @@ namespace chimera
 
         void VUnload(void);
 
+        virtual bool VSave(LPCSTR file /* = NULL */) { return true; }
+
+        virtual bool VLoad(bool block) { return true; }
+
         IActor* VAddActor(std::unique_ptr<ActorDescription> desc);
 
         virtual ~BaseLevel(void);
@@ -114,7 +96,9 @@ namespace chimera
     {
     public:
         GroupedObjLevel(LPCSTR file, IActorFactory* factory);
+
         bool VLoad(bool block);
+
         bool VSave(LPCSTR file = NULL);
     };
 

@@ -58,6 +58,8 @@ namespace chimera
             XMFLOAT4X4 m_iView;
             XMFLOAT4X4 m_projection[3]; //TODO
             XMFLOAT4 m_lightPos;
+            XMFLOAT4 m_intensity;
+            XMFLOAT4 m_ambient;
             XMFLOAT4 m_distances;
         };
 
@@ -157,6 +159,10 @@ namespace chimera
             bool VOnRestore(void);
 
             void* VGetDevice(void);
+
+            void* VGetContext(void);
+
+            void VSetActorId(ActorId id);
 
             void VPreRender(void);
 

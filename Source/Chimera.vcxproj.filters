@@ -345,6 +345,12 @@
     <ClInclude Include="chimera\api\ParticleSystemAPI.h">
       <Filter>Header Files\api</Filter>
     </ClInclude>
+    <ClInclude Include="chimera\Picker.h">
+      <Filter>Header Files\view</Filter>
+    </ClInclude>
+    <ClInclude Include="chimera\Quat.h">
+      <Filter>Header Files\util</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="chimera\tinyxml2.cpp">
@@ -500,9 +506,6 @@
     <ClCompile Include="chimera\ParticleSystem.cpp">
       <Filter>Source Files\unused</Filter>
     </ClCompile>
-    <ClCompile Include="chimera\Picker.cpp">
-      <Filter>Source Files\unused</Filter>
-    </ClCompile>
     <ClCompile Include="chimera\Profiling.cpp">
       <Filter>Source Files\unused</Filter>
     </ClCompile>
@@ -592,6 +595,9 @@
     </ClCompile>
     <ClCompile Include="chimera\CameraNode.cpp">
       <Filter>Source Files\view\nodes</Filter>
+    </ClCompile>
+    <ClCompile Include="chimera\Picker.cpp">
+      <Filter>Source Files\view</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

@@ -84,6 +84,8 @@ namespace chimera
 
         virtual bool VGetBool(LPCSTR value) = 0;
 
+        virtual void VCreateDefaults(void) = 0;
+
         virtual std::string VGetString(LPCSTR value) = 0;
 
         virtual int VGetInteger(LPCSTR value) = 0;
