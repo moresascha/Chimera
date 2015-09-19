@@ -1,10 +1,12 @@
 #pragma once
 #include "stdafx.h"
 #include <ctime>
+
 namespace chimera
 {
     namespace util 
     {
+        
         class Timer : public ITimer
         {
         private:
@@ -33,17 +35,19 @@ namespace chimera
             ~Timer(void);
         };
 
-        class HTimer //todo: public ITimer
+        class HTimer : public ITimer
         {
         private:
             LARGE_INTEGER m_start;
+            LARGE_INTEGER m_lastTick;
             LARGE_INTEGER m_end;
             DOUBLE m_freq;
+
+            double m_timeMillis;
         public:
-            HTimer(void)
+            HTimer(void) : m_timeMillis(0)
             {
-                QueryPerformanceFrequency(&m_start);
-                m_freq = (DOUBLE)(m_start.QuadPart);
+                VReset();
             }
 
             void Start(void)
@@ -56,29 +60,67 @@ namespace chimera
                 QueryPerformanceCounter(&m_end);
             }
 
-            DOUBLE GetTime(DOUBLE multiplier)
+            double GetTime(double multiplier) const
             {
-                return (DOUBLE)((m_end.QuadPart - m_start.QuadPart) * multiplier) / m_freq;
+                return (double)((m_end.QuadPart - m_start.QuadPart) * multiplier) / m_freq;
             }
 
-            DOUBLE GetNanos(void)
+            double GetNanos(void) const
             {
                 return GetTime(1e9);
             }
 
-            DOUBLE GetMicros(void)
+            double GetMicros(void) const
             {
                 return GetTime(1e6);
             }
 
-            DOUBLE GetMillis(void)
+            double GetMillis(void) const
             {
                 return GetTime(1e3);
             }
 
-            DOUBLE GetSeconds(void)
+            double GetSeconds(void) const
             {
                 return GetTime(1);
+            }
+
+            void VTick(void)
+            {
+                Stop();
+                m_timeMillis = (double)((m_end.QuadPart - m_lastTick.QuadPart) * 1e3) / m_freq;
+                QueryPerformanceCounter(&m_lastTick);
+            }
+
+            void VReset(void)
+            {
+                Stop();
+                m_timeMillis = 0;
+                QueryPerformanceFrequency(&m_start);
+                QueryPerformanceCounter(&m_end);
+                QueryPerformanceCounter(&m_lastTick);
+                m_freq = (double)(m_start.QuadPart);
+                Start();
+            }
+
+            float VGetFPS(void) const
+            {
+                return 0;
+            }
+
+            ulong VGetTime(void) const
+            {
+                return (ulong)(GetMillis() + 0.5);
+            }
+
+            ulong VGetLastMillis(void) const
+            {
+                return (ulong)(m_timeMillis + 0.5);
+            }
+
+            ulong VGetLastMicros(void) const
+            {
+                return (ulong)(1000 * VGetLastMillis() + 0.5); //todo
             }
         };
     }

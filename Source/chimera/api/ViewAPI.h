@@ -306,12 +306,16 @@ namespace chimera
     {
     public:
         virtual void VApply(void) = 0;
+
+        virtual void VOnRestore(void) = 0;
+
+        virtual ~IEffectParmaters(void) { }
     };
 
     class IEffect
     {
     public:
-        virtual void VSetParameters(IEffectParmaters* params) = 0;
+        virtual IEffectParmaters* VSetParameters(std::unique_ptr<IEffectParmaters>& params) = 0;
 
         virtual void VCreate(const CMShaderDescription& shaderDesc, float w, float h) = 0;
 
@@ -319,13 +323,15 @@ namespace chimera
 
         virtual void VAddRequirement(IEffect* effect) = 0;
 
-        virtual void VSetSource(IRenderTarget* src) = 0;
+        virtual void VAddSource(IRenderTarget* src) = 0;
+
+        virtual void VAddSource(IDeviceTexture* src) = 0;
 
         virtual void VProcess(void) = 0;
 
         virtual void VReset(void) = 0;
 
-        virtual IRenderTarget* VGetSource(void) = 0;
+        virtual IRenderTarget* VGetSource(uint index = 0) = 0;
 
         virtual float2 VGetViewPort(void) = 0;
 
@@ -350,6 +356,8 @@ namespace chimera
         virtual void VSetTarget(IRenderTarget* target) = 0;
 
         virtual IEffect* VAppendEffect(const CMShaderDescription& shaderDesc, float percentofw = 1.0f, float percentofh = 1.0f) = 0;
+
+        virtual IEffect* VAppendEffect(std::unique_ptr<IEffect>& effect, float percentofw = 1.0f, float percentofh = 1.0f) = 0;
 
         virtual IRenderTarget* VGetResult(void) = 0;
 

@@ -65,7 +65,7 @@ namespace chimera
         ID3D11BlendState* g_pBlendStateNoBlending = 0;
         ID3D11BlendState* g_pBlendStateBlendAdd = 0;
         ID3D11BlendState* g_pBlendStateBlendAlpha = 0;
-        ID3D11SamplerState* g_pSamplerStates[4];
+        ID3D11SamplerState* g_pSamplerStates[5];
         LPCSTR g_vertexShaderMaxProfile;
         LPCSTR g_pixelShaderMaxProfile;
         LPCSTR g_geometryShaderMaxProfile;
@@ -384,7 +384,7 @@ namespace chimera
 #ifdef _DEBUG
            //flags |= D3D11_CREATE_DEVICE_DEBUG;
 #endif
-            D3D_SAVE_CALL(D3D11CreateDeviceAndSwapChain(NULL,
+           D3D_SAVE_CALL(D3D11CreateDeviceAndSwapChain(NULL,
                 D3D_DRIVER_TYPE_HARDWARE,
                 NULL,
                 flags,
@@ -568,7 +568,16 @@ namespace chimera
             sDesc.AddressW = D3D11_TEXTURE_ADDRESS_CLAMP;
             sDesc.MaxLOD = D3D11_FLOAT32_MAX;
 
+
             D3D_SAVE_CALL(chimera::d3d::GetDevice()->CreateSamplerState(&sDesc, &g_pSamplerStates[1]));
+
+            sDesc.Filter = D3D11_FILTER_MIN_MAG_MIP_LINEAR;
+            sDesc.AddressU = D3D11_TEXTURE_ADDRESS_MIRROR;
+            sDesc.AddressV = D3D11_TEXTURE_ADDRESS_MIRROR;
+            sDesc.AddressW = D3D11_TEXTURE_ADDRESS_MIRROR;
+            sDesc.MaxLOD = D3D11_FLOAT32_MAX;
+
+            D3D_SAVE_CALL(chimera::d3d::GetDevice()->CreateSamplerState(&sDesc, &g_pSamplerStates[2]));
 
             sDesc.Filter = D3D11_FILTER_ANISOTROPIC;
             sDesc.AddressU = D3D11_TEXTURE_ADDRESS_WRAP;
@@ -578,7 +587,7 @@ namespace chimera
             sDesc.ComparisonFunc = D3D11_COMPARISON_ALWAYS;
             sDesc.MaxLOD = D3D11_FLOAT32_MAX;
 
-            D3D_SAVE_CALL(chimera::d3d::GetDevice()->CreateSamplerState(&sDesc, &g_pSamplerStates[2]));
+            D3D_SAVE_CALL(chimera::d3d::GetDevice()->CreateSamplerState(&sDesc, &g_pSamplerStates[3]));
 
             sDesc.Filter = D3D11_FILTER_MIN_MAG_MIP_POINT;
             sDesc.AddressU = D3D11_TEXTURE_ADDRESS_CLAMP;
@@ -586,7 +595,7 @@ namespace chimera
             sDesc.AddressW = D3D11_TEXTURE_ADDRESS_CLAMP;
             sDesc.MaxLOD = D3D11_FLOAT32_MAX;
 
-            D3D_SAVE_CALL(chimera::d3d::GetDevice()->CreateSamplerState(&sDesc, &g_pSamplerStates[3]));
+            D3D_SAVE_CALL(chimera::d3d::GetDevice()->CreateSamplerState(&sDesc, &g_pSamplerStates[4]));
            
             SetDefaultStates();
 
@@ -714,8 +723,8 @@ namespace chimera
 
         void SetDefaultStates(void) 
         {
-            g_pContext->PSSetSamplers(0, 4, g_pSamplerStates);
-            g_pContext->VSSetSamplers(0, 4, g_pSamplerStates);
+            g_pContext->PSSetSamplers(0, 5, g_pSamplerStates);
+            g_pContext->VSSetSamplers(0, 5, g_pSamplerStates);
             //g_pContext->RSSetState(g_pRasterizerStateFrontFaceSolid);
             //g_pContext->OMSetDepthStencilState(m_pDepthWriteStencilState, 0);
             //g_pContext->OMSetBlendState(g_pBlendStateNoBlending, NULL, 0xffffff);
@@ -901,7 +910,7 @@ namespace chimera
 
             DestroyWindow(g_hWnd);
 
-            TBD_FOR_INT(4) { g_pSamplerStates[i]->Release(); }
+            TBD_FOR_INT(5) { g_pSamplerStates[i]->Release(); }
             SAFE_DELETE(g_adapterName);
             SAFE_RELEASE(g_pAdapter);
             SAFE_RELEASE(g_pDXGIFactory);

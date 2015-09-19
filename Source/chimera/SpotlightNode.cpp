@@ -235,7 +235,7 @@ namespace chimera
                 }
 
                 IRenderer* renderer = CmGetApp()->VGetHumanView()->VGetRenderer();
-                renderer->VPushViewTransform(m_pCamera->GetView(), m_pCamera->GetIView(), m_pCamera->GetEyePos());
+                renderer->VPushViewTransform(m_pCamera->GetView(), m_pCamera->GetIView(), m_pCamera->GetEyePos(), m_pCamera->GetViewDir());
                 renderer->VPushProjectionTransform(m_pCamera->GetProjection(), m_lightComponent->m_radius);
 
                 renderer->VSetLightSettings(m_lightComponent->m_color, VGetTransformation()->GetTranslation(), 

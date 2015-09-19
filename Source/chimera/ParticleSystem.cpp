@@ -1,277 +1,187 @@
 #include "ParticleSystem.h"
-#include <algorithm>
-#include "GameApp.h"
-#include "VRamManager.h"
-#include "GameView.h"
-#include "Geometry.h"
-#include "math.h"
+#include <Nutty.h>
+#include <Copy.h>
+
+#ifdef _DEBUG
+#pragma comment(lib, "Nuttyx64Debug.lib")
+#else
+#pragma comment(lib, "Nuttyx64Release.lib")
+#endif
 
 namespace chimera
 {
-    VRamHandle* ParticleQuadGeometryHandleCreator::VGetHandle(void)
-    {
-        return new chimera::Geometry(false);
-    }
-
-    void ParticleQuadGeometryHandleCreator::VCreateHandle(VRamHandle* handle)
-    {
-
-        chimera::Geometry* geo = (chimera::Geometry*)handle;
-
-        float qscale = 0.01f;
-
-        float quad[32] = 
-        {
-            -1 * qscale, -1 * qscale, 0, 0,1,0, 0, 0, 
-            +1 * qscale, -1 * qscale, 0, 0,1,0, 1, 0,
-            -1 * qscale, +1 * qscale, 0, 0,1,0, 0, 1,
-            +1 * qscale, +1 * qscale, 0, 0,1,0, 1, 1
-        };
-
-        uint indices[4] = 
-        {
-            0, 1, 2, 3
-        };
-
-        geo->SetVertexBuffer(quad, 4, 32);
-        geo->SetIndexBuffer(indices, 4, D3D11_PRIMITIVE_TOPOLOGY_TRIANGLESTRIP);
-        geo->VCreate();
-    }
-
-    IGeometry* ParticleSystem::VGetGeometry(void)
-    {
-        if(!m_geometry->VIsReady())
-        {
-            m_geometry = std::static_pointer_cast<Geometry>(CmGetApp()->VGetVRamManager()->VGetHandle(VRamResource(".ParticleQuadGeometry")));
-        }
-        return m_geometry.get();
-    }
-
-    ParticleSystem::ParticleSystem(RNG generator) :
-        m_fpRandGenerator(generator), m_time(0), m_updateInterval(16), m_localWorkSize(256), m_updateInterval(16)
+    ParticleSystem::ParticleSystem(uint particleCount, RNG generator) : 
+        m_fpRandGenerator(generator), m_time(0), m_updateInterval(16)
     {
     }
 
-    void ParticleSystem::AddModifier(BaseModifier* mod)
+    IParticleModifier* ParticleSystem::VAddModifier(std::unique_ptr<IParticleModifier>& mod)
     {
-        m_mods.push_back(mod);
-        mod->SetAABB(m_aabb);
+        IParticleModifier* m = mod.release();
+        m_mods.push_back(m);
+        m->VSetAABB(m_aabb);
+        return m;
     }
 
-    void ParticleSystem::RemoveModifier(BaseModifier* mod)
+    bool ParticleSystem::VRemoveModifier(IParticleModifier* mod)
     {
         auto it = std::find(m_mods.begin(), m_mods.end(), mod);
         if(it != m_mods.end())
         {
-            BaseModifier* mod = *it;
+            IParticleModifier* mod = *it;
             m_mods.erase(it);
             SAFE_DELETE(mod);
+            return true;
         }
+        return false;
     }
 
-    const util::Vec3& ParticleSystem::GetTranslation(void)
+    IParticleEmitter* ParticleSystem::VAddEmitter(std::unique_ptr<IParticleEmitter>& emitter)
     {
-        return m_position;
+        IParticleEmitter* m = emitter.release();
+        m_emitter.push_back(m);
+        m->VSetAABB(m_aabb);
+        return m;
     }
 
-    void ParticleSystem::VUpdateTick(ulong time, ulong dt)
+    bool ParticleSystem::VRemoveEmitter(IParticleEmitter* mod)
     {
-        //m_pCuda->MapGraphicsResource(m_particles);
-        nutty::MappedPtr<float4> ptr = m_particles->Bind();
+        auto it = std::find(m_emitter.begin(), m_emitter.end(), mod);
+        if(it != m_emitter.end())
+        {
+            IParticleEmitter* mod = *it;
+            m_emitter.erase(it);
+            SAFE_DELETE(mod);
+            return true;
+        }
+        return false;
+    }
 
-        //assert((INT)timer->GetTime() - (INT)m_startTime > 0);
+    void ParticleSystem::VUpdate(ulong time, uint dt)
+    {
+
         dt = CLAMP(dt, dt, m_updateInterval);
-        m_time += dt;
+        m_time += (ulong)dt;
         float dtt = (float)(dt * 1e-3f);
-        float tf = m_time * 1e-3f;
-        //m_pEmitter->VUpdate(this, tf, dtt);
+        float ftime = time * 1e-3f;
+        //DEBUG_OUT_A("%f %f %d\n", ftime, dtt, m_time);
 
-        for(auto it = m_mods.begin(); it != m_mods.end(); ++it)
+        for(auto& emitter = m_emitter.begin(); emitter != m_emitter.end(); ++emitter)
         {
-            IParticleModifier* mod = *it;
-            mod->VUpdate(this, tf, dtt);
+            IParticleEmitter* em = *emitter;
+            em->VMapArrays();
+
+            em->VUpdate(this, NULL, ftime, dtt);
+
+            for(auto& modifier = m_mods.begin(); modifier != m_mods.end(); ++modifier)
+            {
+                IParticleModifier* mod = *modifier;
+                mod->VUpdate(this, em, m_time * 1e-3f, dtt);
+            }
+
+            void* posPtr = em->VGetParticleArray();
+            void* accPtr = em->VGetAccelerationArray();
+            void* veloPtr = em->VGetVelocitiesArray();
+            m_kernel.SetRawKernelArg(0, &posPtr);
+            m_kernel.SetRawKernelArg(1, &accPtr);
+            m_kernel.SetRawKernelArg(2, &veloPtr);
+            m_kernel.SetKernelArg(3, dtt); 
+            uint N = em->VGetParticleCount();
+            m_kernel.SetKernelArg(4, N); 
+
+            uint grid = nutty::cuda::GetCudaGrid(N, CUDA_GROUP_SIZE);
+            m_kernel.SetDimension(grid, CUDA_GROUP_SIZE);
+
+            m_kernel.Call();
+
+            em->VUnmapArrays();
         }
 
-        void *args[] = { &m_particles->ptr, &m_acceleration->ptr, &m_velocities->ptr, &dtt };
-
-        m_kernel->m_ppArgs = args;
-
-        m_kernel->Call();
-        //m_pCuda->CallKernel(m_kernel);
-        //integrate((float4*)m_particles->ptr, (float3*)m_acceleration->ptr, (float3*)m_velocities->ptr, (float)(dt * 1e-3f), GetParticlesCount(), GetLocalWorkSize());
-
-        //DEBUG_OUT_A("Count=%d Lws=%u Blocks=%u", GetParticlesCount(), GetLocalWorkSize(), GetParticlesCount() / GetLocalWorkSize());
-
-        //m_pCuda->UnmapGraphicsResource(m_particles);
-
-        m_particles->Unbind();
+        CUDA_RT_SAFE_CALLING_NO_SYNC(cudaDeviceSynchronize());
     }
 
-    LPCGPUDEVMEM ParticleSystem::VGetDeviceRNGArray(void)
+    uint ParticleSystem::VGetParticleCount(void) const
     {
-        return &m_randomValues;
-    }
-
-    LPCGPUDEVMEM ParticleSystem::VGetDeviceAccelerationArray(void)
-    {
-        return &m_acceleration;
-    }
-
-    LPCGPUDEVMEM ParticleSystem::VGetDeviceVelocitiesArray(void)
-    {
-        return &m_velocities;
-    }
-
-    cudah::cuda_buffer ParticleSystem::GetParticles(void)
-    {
-        return m_particles;
-    }
-
-    uint ParticleSystem::GetParticlesCount(void)
-    {
-        return m_pEmitter->GetParticleCount();
-    }
-
-    bool ParticleSystem::HasRandBuffer(void)
-    {
-        return m_randomValues != NULL;
-    }
-
-    void ParticleSystem::SetAxisAlignedBB(util::AxisAlignedBB& aabb)
-    {
-        m_aabb = aabb;
-        for(auto it = m_mods.begin(); it != m_mods.end(); ++it)
+        uint count = 0;
+        for(auto& emitter = m_emitter.begin(); emitter != m_emitter.end(); ++emitter)
         {
-            (*it)->SetAABB(m_aabb);
+            count += (*emitter)->VGetParticleCount();
         }
-        if(m_pEmitter)
-        {
-            m_pEmitter->SetAABB(aabb);
-        }
+        return count;
     }
 
-    util::AxisAlignedBB& ParticleSystem::GetAxisAlignedBB(void)
+    const util::AxisAlignedBB& ParticleSystem::VGetAxisAlignedBB(void) const
     {
         return m_aabb;
     }
 
-    chimera::VertexBuffer* ParticleSystem::GetParticleBuffer(void)
+    void ParticleSystem::VOnRestore(void)
     {
-        return m_pParticleBuffer;
-    }
+        nutty::Init((ID3D11Device*)CmGetApp()->VGetHumanView()->VGetRenderer()->VGetDevice());
 
-    uint ParticleSystem::GetLocalWorkSize(void)
-    {
-        return m_localWorkSize;
-    }
+        m_cudaMod.Create(KERNEL_PTX);
 
-    //vram interface
-    bool ParticleSystem::VCreate(void)
-    {
-        SAFE_DELETE(m_pCuda);
-
-        m_pCuda = new cudah::cudah("./chimera/ptx/Particles.ptx");
-
-        m_kernel = m_pCuda->GetKernel("_integrate");
-
-        int blockSize = 256;//todo cudah::cudah::GetMaxThreadsPerSM() / cudah::cudah::GetMaxBlocksPerSM();
-        m_localWorkSize = blockSize;
-
-        if(m_pEmitter->GetParticleCount() % m_localWorkSize != 0)
-        {
-            LOG_CRITICAL_ERROR("particle count not supported");
-        }
+        m_kernel.Create(m_cudaMod.GetFunction("_integrate"));
         
-        ParticlePosition* positions = m_pEmitter->CreateParticles();
-        float* rands = NULL;
+        uint rngCount = 2048;
+        nutty::HostBuffer<float> rands(rngCount);
 
-        if(m_pRandGenerator)
+        if(m_fpRandGenerator)
         {
-            rands = m_pRandGenerator->CreateRandomValues();
-            m_randomValues = m_pCuda->CreateBuffer(std::string("randoms"), m_pRandGenerator->GetValuesCount() * 4, rands, 4);
+            float* ptr = rands.Begin()();
+            m_fpRandGenerator(rngCount, &ptr);
+            m_randomValues.Resize(rngCount);
         }
 
-        float* parts = (float*)positions;
-
-        SAFE_DELETE(m_pParticleBuffer);
-
-        m_pParticleBuffer = new chimera::VertexBuffer(parts, m_pEmitter->GetParticleCount(), 16);
-
-        m_pParticleBuffer->Create();
-
-        m_particles = m_pCuda->RegisterD3D11Buffer(std::string("emitterGeometry"), m_pParticleBuffer->GetBuffer(), cudaGraphicsMapFlagsNone);
-
-        for(auto it = m_mods.begin(); it != m_mods.end(); ++it)
+        for(auto& emitter = m_emitter.begin(); emitter != m_emitter.end(); ++emitter)
         {
-            BaseModifier* mod = *it;
-            mod->VOnRestore(this);
+            (*emitter)->VOnRestore(this, NULL);
+            for(auto it = m_mods.begin(); it != m_mods.end(); ++it)
+            {
+                IParticleModifier* mod = *it;
+                mod->VOnRestore(this, *emitter);
+            }
         }
-
-        m_pEmitter->VOnRestore(this);
-
-        m_pEmitter->SetAABB(m_aabb);
-
-        float3* veloAccInit = new float3[m_pEmitter->GetParticleCount()];
-        for(uint i = 0; i < m_pEmitter->GetParticleCount(); ++i)
-        {
-            veloAccInit[i].x = 0;
-            veloAccInit[i].y = 0;
-            veloAccInit[i].z = 0;
-        }
-
-        m_acceleration = m_pCuda->CreateBuffer(std::string("acc"), m_pEmitter->GetParticleCount() * 3 * 4, veloAccInit, 12);
-
-        m_velocities = m_pCuda->CreateBuffer(std::string("velo"), m_pEmitter->GetParticleCount() * 3 * 4, veloAccInit, 12);
-
-        m_geometry = std::static_pointer_cast<chimera::Geometry>(chimera::g_pApp->GetHumanView()->GetVRamManager()->GetHandle(chimera::VRamResource(".ParticleQuadGeometry")));
-
-        //integrate((float4*)m_particles->ptr, (float3*)m_acceleration->ptr, (float3*)m_velocities->ptr, (float)(dt * 1e-3f), GetParticlesCount(), GetLocalWorkSize());
-        int threads = cudahu::GetThreadCount(GetParticlesCount(), GetLocalWorkSize());
-        m_kernel->m_blockDim.x = GetLocalWorkSize();
-        m_kernel->m_gridDim.x = threads / m_kernel->m_blockDim.x;
-
-        SAFE_ARRAY_DELETE(veloAccInit);
-        SAFE_ARRAY_DELETE(rands);
-        SAFE_ARRAY_DELETE(positions);
 
         m_time = 0;
-
-        return true;
-    }
-
-    void ParticleSystem::VDestroy(void)
-    {
-        for(auto it = m_mods.begin(); it != m_mods.end(); ++it)
-        {
-            BaseModifier* mod = *it;
-            SAFE_DELETE(mod);
-        }
-        SAFE_DELETE(m_pParticleBuffer);
-        SAFE_DELETE(m_pCuda);
-        SAFE_DELETE(m_pEmitter);
-        SAFE_DELETE(m_pRandGenerator);
     }
 
     uint ParticleSystem::VGetByteCount(void) const
     {
-        //TODO modifier
-        //per particle
-        //acceleration 3 * 4 byte
-        //velocity 3 * 4 byte
-        //position 4 * 4 byte
         uint modBytes = 0;
         TBD_FOR(m_mods)
         {
             modBytes += (*it)->VGetByteCount();
         }
-        uint particles = m_pEmitter->GetParticleCount();
-        uint byte = sizeof(float);
-        return particles * (3 + 3 + 4) * byte + modBytes;
+        TBD_FOR(m_emitter)
+        {
+            modBytes += (*it)->VGetByteCount();
+        }
+        return modBytes;
+    }
+
+    void ParticleSystem::VRelease(void)
+    {
+        for(auto it = m_mods.begin(); it != m_mods.end(); ++it)
+        {
+            IParticleModifier* mod = *it;
+            mod->VRelease();
+            SAFE_DELETE(mod);
+        }
+
+        for(auto it = m_emitter.begin(); it != m_emitter.end(); ++it)
+        {
+            IParticleEmitter* emitter = *it;
+            emitter->VRelease();
+            SAFE_DELETE(emitter);
+        }
+        m_emitter.clear();
+        m_mods.clear();
     }
 
     ParticleSystem::~ParticleSystem(void)
     {
-
+        VRelease();
     }
 
     PositiveNormalizedUniformValueGenerator::PositiveNormalizedUniformValueGenerator(uint count, int seed) : IRandomGenerator(count), m_seed(seed)
@@ -279,15 +189,13 @@ namespace chimera
 
     }
 
-    float* PositiveNormalizedUniformValueGenerator::CreateRandomValues(void)
+    void PositiveNormalizedUniformValueGenerator::CreateRandomValues(float* rands)
     {
         srand(m_seed);
-        float* rands = new float[m_count];
         for(uint i = 0; i < m_count; ++i)
         {
             rands[i] = rand() / (float)RAND_MAX;
         }
-        return rands;
     }
 
     NormalizedUniformValueGenerator::NormalizedUniformValueGenerator(uint count, int seed, float scale) : IRandomGenerator(count), m_seed(seed), m_scale(scale)
@@ -295,15 +203,13 @@ namespace chimera
 
     }
 
-    float* NormalizedUniformValueGenerator::CreateRandomValues(void)
+    void NormalizedUniformValueGenerator::CreateRandomValues(float* rands)
     {
         srand(m_seed);
-        float* rands = new float[m_count];
         for(uint i = 0; i < m_count; ++i)
         {
             float v = rand() / (float)RAND_MAX;
             rands[i] = (2 * v - 1) * m_scale;
         }
-        return rands;
     }
 }

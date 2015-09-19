@@ -47,7 +47,7 @@ PixelOutput Sky_PS(PixelInput input)
     op.normal = float4(0,0,0,0);
     op.diffMaterialSpecR = half4(0,0,0,0);
     op.ambientMaterialSpecG = half4(0,0,0,0);
-    op.diffuseColorSpecB = 1.25 * half4(tex.xyz, 1);
+    op.diffuseColorSpecB = half4(tex.xyz, 1);
     op.reflectance = 0;
     return op;
 }

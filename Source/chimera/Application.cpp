@@ -79,11 +79,12 @@ namespace chimera
     void Application::Update(void) 
     {
         m_timer0->VTick();
-        ulong time = m_timer0->VGetTime();
+        double time = (double)(m_pRenderingTimer->VGetLastMillis() + m_timer0->VGetTime());
         if(time < m_updateFreqMillis)
         {
             return;
         }
+        //DEBUG_OUT_A("%d\n", time);
         m_timer0->VReset();
         //logic update
         m_pInput->VOnUpdate();

@@ -41,7 +41,7 @@ namespace chimera
         }
 #endif
         */
-        m_intensity = util::Vec3(1,1,1);
+        m_intensity = util::Vec3(2,2,2);
 
         m_ambient = util::Vec3(0.1f, 0.1f, 0.1f);
 
@@ -52,7 +52,7 @@ namespace chimera
 
         m_lightActorCamera = CmGetApp()->VGetLogic()->VCreateActor(std::move(desc));
 
-        util::Vec3 lightPos(1.0f,0.3f,-0.2f);
+        util::Vec3 lightPos(1.0f,1.3f,0.6f);
         lightPos.Normalize();
         lightPos.Scale(util::Vec3(1000.0f, 1000.0f, 1000.0f));
         tc->GetTransformation()->SetTranslation(lightPos.x, lightPos.y, lightPos.z);
@@ -89,13 +89,13 @@ namespace chimera
 
                 uint dim = startSize / (1 << i);
 
-                m_ppBlurChain[i] = CmGetApp()->VGetHumanView()->VGetEffectFactory()->VCreateEffectChain();// chimera::EffectChain(m_ppTargets[i], dim, dim);
+                m_ppBlurChain[i] = CmGetApp()->VGetHumanView()->VGetEffectFactory()->VCreateEffectChain();
 
                 CMShaderDescription desc;
                 desc.file = L"Effects.hlsl";
                 desc.function = "VSMBlurH";
                 IEffect* e0 = m_ppBlurChain[i]->VAppendEffect(desc);
-                e0->VSetSource(m_ppTargets[i]);
+                e0->VAddSource(m_ppTargets[i]);
 
                 desc.function = "VSMBlurV";
                 IEffect* e1 = m_ppBlurChain[i]->VAppendEffect(desc);
@@ -243,7 +243,7 @@ namespace chimera
 
         //std::shared_ptr<chimera::CameraComponent> vcc = m_viewActor->GetComponent<chimera::CameraComponent>(chimera::CameraComponent::COMPONENT_ID).lock();
         
-        renderer->VPushViewTransform(lcc->GetCamera()->GetView(), lcc->GetCamera()->GetIView(), lcc->GetCamera()->GetEyePos());
+        renderer->VPushViewTransform(lcc->GetCamera()->GetView(), lcc->GetCamera()->GetIView(), lcc->GetCamera()->GetEyePos(), lcc->GetCamera()->GetViewDir());
 
         ICamera* lightCamera = lcc->GetCamera().get();
         //util::ICamera* viewCamera = vcc->GetCamera().get();
@@ -395,15 +395,17 @@ namespace chimera
 
     void CascadedShadowMapper::SetSunPositionDelegate(chimera::IEventPtr data)
     {
-        /*std::shared_ptr<chimera::SetSunPositionEvent> e = std::static_pointer_cast<chimera::SetSunPositionEvent>(data);
-        std::shared_ptr<chimera::CameraComponent> cc = m_lightActorCamera->GetComponent<chimera::CameraComponent>(chimera::CameraComponent::COMPONENT_ID).lock();
+        std::shared_ptr<chimera::SetSunPositionEvent> e = std::static_pointer_cast<chimera::SetSunPositionEvent>(data);
+        CameraComponent* cmp;
+        m_lightActorCamera->VQueryComponent(CM_CMP_CAMERA, (IActorComponent**)&cmp);
         util::Vec3 newPos = e->m_position;
         newPos.Normalize();
-        cc->GetCamera()->LookAt(newPos, util::Vec3(0,0,0));
-        util::Vec3 f(0,0,0);
-        util::Vec3 u(0,1,0);
-        util::Mat4 m;
-        XMStoreFloat4x4(&m.m_m, XMMatrixLookAtLH(XMLoadFloat3(&newPos.m_v), XMLoadFloat3(&(f.m_v)), XMLoadFloat3(&u.m_v)));*/
+        newPos.Scale(1000.0f);
+        cmp->GetCamera()->LookAt(newPos, util::Vec3(0,0,0));
+//         util::Vec3 f(0,0,0);
+//         util::Vec3 u(0,1,0);
+//         util::Mat4 m;
+//         XMStoreFloat4x4(&m.m_m, XMMatrixLookAtLH(XMLoadFloat3(&newPos.m_v), XMLoadFloat3(&(f.m_v)), XMLoadFloat3(&u.m_v)));
     }
 
     void CascadedShadowMapper::SetSunIntensityDelegate(chimera::IEventPtr data)

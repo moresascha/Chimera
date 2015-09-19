@@ -4,6 +4,7 @@
 #include "util.h"
 #include "D3DGeometry.h"
 #include "D3DTexture.h"
+#include "Event.h"
 
 namespace chimera
 {
@@ -310,10 +311,8 @@ namespace chimera
                 {
                     InitMesh(currentMesh, rawData, lastIndexStart, subMeshData, &indexCount, &vertexCount, currentTopo, matName);
 
-                    /*rawData.m_normals.clear();
-                    rawData.m_positions.clear();
-                    rawData.m_tangents.clear();
-                    rawData.m_texCoords.clear();*/
+                    QUEUE_EVENT_TSAVE(new SubMeshLoadedEvent(meshSet.get(), res.m_name));
+   
                     subMeshData.m_faces.clear();
                     subMeshData.m_trianglesCount = 0;
                     subMeshData.m_triplesCount = 0;
@@ -720,7 +719,7 @@ namespace chimera
         //texture->GetDescription().BindFlags = D3D11_BIND_SHADER_RESOURCE;
 
         //texture->GetDescription().Format = DXGI_FORMAT_R8G8B8A8_UNORM;
-        texture->SetFormat(DXGI_FORMAT_R8G8B8A8_UNORM);
+        texture->SetFormat(DXGI_FORMAT_R8G8B8A8_UNORM_SRGB);
 
         //texture->GetDescription().Width = data->m_width;
         texture->SetWidth(data->m_width);

@@ -1,40 +1,131 @@
 #include "ParticleNode.h"
-#include "Resources.h"
-#include "GameApp.h"
-#include "Cudah.h"
-#include "Particles.cuh"
-#include "GeometryFactory.h"
-#include "SceneGraph.h"
-#include "D3DRenderer.h"
-#include "SceneGraph.h"
-#include "GameView.h"
-#include "VRamManager.h"
-#include "Camera.h"
+#include "Event.h"
 #include "Frustum.h"
 #include "Components.h"
-#include "EventManager.h"
-#include "FileSystem.h"
+#include "ParticleSystem.h"
+#include "util.h"
+
+#define QUAD_GEO_SUFFIX "quadgeo"
 
 namespace chimera
 {
-    ParticleNode::ParticleNode(ActorId id) : SceneNode(id), m_pParticleSystem(NULL), m_time(0)
+
+    class ParticleSystemHandle : public VRamHandle
     {
+    private:
+        IParticleSystem* m_pSystem;
+
+    public:
+        ParticleSystemHandle(IParticleSystem* system) : m_pSystem(system)
+        {
+
+        }
+
+        bool VCreate(void)
+        {
+            if(m_pSystem)
+            {
+                m_pSystem->VOnRestore();
+            }
+            return m_pSystem != NULL;
+        }
+
+        void VDestroy()
+        {
+            if(m_pSystem)
+            {
+                m_pSystem->VRelease();
+            }
+        }
+
+        uint VGetByteCount(void) const
+        {
+            return m_pSystem ? m_pSystem->VGetByteCount() : 0;
+        }
+
+        ~ParticleSystemHandle(void)
+        {
+            SAFE_DELETE(m_pSystem);
+        }
+    };
+
+    class DefaultParticleGeometry : public IVRamHandleCreator
+    {
+    public:
+        IVRamHandle* VGetHandle(void)
+        {
+            return CmGetApp()->VGetHumanView()->VGetGraphicsFactory()->VCreateGeoemtry().release();
+        }
+
+        void VCreateHandle(IVRamHandle* handle)
+        {
+            IGeometry* geo = (IGeometry*)handle;
+
+            float qscale = 0.2f;
+
+            float quad[32] = 
+            {
+                -1 * qscale, -1 * qscale, 0, 0,1,0, 0, 0, 
+                +1 * qscale, -1 * qscale, 0, 0,1,0, 1, 0,
+                -1 * qscale, +1 * qscale, 0, 0,1,0, 0, 1,
+                +1 * qscale, +1 * qscale, 0, 0,1,0, 1, 1
+            };
+
+            uint indices[4] = 
+            {
+                0, 1, 2, 3
+            };
+
+            geo->VSetVertexBuffer(quad, 4, 32);
+            geo->VSetTopology(eTopo_TriangleStrip);
+            geo->VSetIndexBuffer(indices, 4);
+            geo->VCreate();
+        }
+    };
+
+    ParticleNode::ParticleNode(ActorId id, IParticleSystem* pSystem) : SceneNode(id), m_pParticleSystem(pSystem), m_time(0), m_particleSystemHandle(NULL)
+    {
+        CmGetApp()->VGetHumanView()->VGetVRamManager()->VRegisterHandleCreator(QUAD_GEO_SUFFIX, new DefaultParticleGeometry());
     }
 
-    void ParticleNode::_VRender(chimera::SceneGraph* graph, chimera::RenderPath& path)
+    void ParticleNode::_VRender(ISceneGraph* graph, RenderPath& path)
     {
-        if(m_pParticleSystem->VIsReady())
+        if(m_particleSystemHandle->VIsReady())
         {
-            m_pParticleSystem->Update();
-            std::shared_ptr<chimera::Geometry> geo = m_pParticleSystem->GetGeometry();
+            if(!m_pGeometry || !m_pGeometry->VIsReady())
+            {
+                m_pGeometry = std::static_pointer_cast<IGeometry>(CmGetApp()->VGetHumanView()->VGetVRamManager()->VGetHandle(std::string("basicEmitter.") + std::string(QUAD_GEO_SUFFIX)));
+            }
 
+            switch(path)
+            {
+            case CM_RENDERPATH_PARTICLE : 
+                {
+                    util::Mat4 model;
+                    model.RotateX(graph->VGetCamera()->GetTheta());
+                    model.RotateY(graph->VGetCamera()->GetPhi());
+
+                    CmGetApp()->VGetRenderer()->VPushWorldTransform(model);
+
+                    for(auto& it = m_pParticleSystem->VGetEmitter().begin(); it != m_pParticleSystem->VGetEmitter().end(); ++it)
+                    {
+                        m_pGeometry->VSetInstanceBuffer((*it)->VGetGFXPosArray(), 0);
+                        m_pGeometry->VSetInstanceBuffer((*it)->VGetGFXVeloArray(), 1);
+                        m_pGeometry->VBind();
+                        m_pGeometry->VDraw();
+                        m_pGeometry->VUpdate();
+                    }
+                    m_particleSystemHandle->VUpdate();
+                    break;
+                } break;
+            }
+            /*
             switch(path)
             {
             case eRenderPath_DrawEditMode : 
                 {
 
-                    DrawAnchorSphere(m_actor, GetTransformation(), 0.25f);
-                    /*
+                    DrawAnchorSphere(m_actor, VGetTransformation(), 0.25f);
                     app::g_pApp->GetHumanView()->GetRenderer()->SetNormalMapping(FALSE);
                     util::Mat4 m(*m_transformation->GetTransformation());
                     util::Vec3 scale = m_pParticleSystem->GetAxisAlignedBB().GetMax() - m_pParticleSystem->GetAxisAlignedBB().GetMin();
@@ -45,12 +136,12 @@ namespace chimera
                     app::g_pApp->GetHumanView()->GetRenderer()->SetDefaultMaterial();
                     app::g_pApp->GetHumanView()->GetRenderer()->SetActorId(m_actor->GetId());
                     GeometryFactory::GetGlobalDefShadingCube()->Bind();
-                    GeometryFactory::GetGlobalDefShadingCube()->Draw(); */
+                    GeometryFactory::GetGlobalDefShadingCube()->Draw();
                     break;
                 }
             case eRenderPath_DrawPicking :
                 {
-                    DrawPickingSphere(m_actor, GetTransformation(), 1);
+                    DrawPickingSphere(m_actor, VGetTransformation(), 1);
                     //DrawPickingCube(m_actor, m_transformation->GetTransformation(), m_pParticleSystem->GetAxisAlignedBB());
                 } break;
             case eRenderPath_DrawBounding : 
@@ -75,26 +166,26 @@ namespace chimera
                     d3d::ShaderProgram::GetProgram("PointLightShadowMap")->Bind();
 
                     break;
-                } */
+                }
             case eRenderPath_DrawDebugInfo:
                 {
-                    DrawActorInfos(m_actor, GetTransformation(), graph->GetCamera());
+                    DrawActorInfos(m_actor, VGetTransformation(), graph->VGetCamera());
                 } break;
             case eRenderPath_DrawParticles : 
             {
 
                 util::Mat4 model;
-                model.RotateX(graph->GetCamera()->GetTheta());
-                model.RotateY(graph->GetCamera()->GetPhi());
+                model.RotateX(graph->VGetCamera()->GetTheta());
+                model.RotateY(graph->VGetCamera()->GetPhi());
                 //model = util::Mat4::Mul(*m_transformation->GetTransformation(), model);
                 chimera::g_pApp->GetHumanView()->GetRenderer()->VPushWorldTransform(model);
-                geo->SetInstanceBuffer(m_pParticleSystem->GetParticleBuffer());
+                geo->SetInstanceBuffer(m_pParticleSystem->VGetParticleBuffer());
                 geo->Bind();
                 geo->Draw();
                 geo->Update();
                 break;
             }
-            }
+            } */
         }
         else
         {
@@ -102,23 +193,24 @@ namespace chimera
         }
     }
 
-    bool ParticleNode::VIsVisible(SceneGraph* graph)
+    bool ParticleNode::VIsVisible(ISceneGraph* graph)
     {
-        bool in = graph->GetFrustum()->IsInside(m_transformedBBPoint, m_pParticleSystem->GetAxisAlignedBB().GetRadius());
-        return in;
+        bool in = graph->VGetFrustum()->IsInside(m_transformedBBPoint, m_pParticleSystem->VGetAxisAlignedBB().GetRadius());
+        return true;
     }
 
-    void ParticleNode::VOnUpdate(ulong millis, SceneGraph* graph)
+    void ParticleNode::VOnUpdate(ulong millis, ISceneGraph* graph)
     {
         VOnActorMoved();
-        if(m_pParticleSystem->VIsReady())
+        if(m_particleSystemHandle->VIsReady())
         {
             if(VIsVisible(graph))
             {
-                m_timer.Tick();
-                m_pParticleSystem->UpdateTick(m_timer.GetTime(), millis);
+                m_timer.VTick();
+                m_pParticleSystem->VUpdate(m_timer.VGetTime(), millis);
                 SceneNode::VOnUpdate(millis, graph);
             }
+            m_particleSystemHandle->VUpdate();
         }
         else
         {
@@ -126,81 +218,51 @@ namespace chimera
         }
     }
 
-    void Hover(ulong dt, std::shared_ptr<chimera::Actor> a)
+    void Hover(ulong dt, IActor* a)
     {
         static float time = 0;
         time += dt * 1e-3f;
-        chimera::TransformComponent* tc = a->GetComponent<chimera::TransformComponent>(chimera::TransformComponent::COMPONENT_ID).lock().get();
+        TransformComponent* tc;
+        a->VQueryComponent(CM_CMP_TRANSFORM, (IActorComponent**)&tc);
         util::Vec3 t;
         t.y = 0.05f * sin(time);
         t.x = 0.05f * cos(time);
         t.z = 0.05f * sin(time) * cos(time);
         tc->GetTransformation()->Translate(t);
-        QUEUE_EVENT(new chimera::ActorMovedEvent(a));
+        QUEUE_EVENT(new ActorMovedEvent(a));
     }
 
-    chimera::GradientField* gf;
-    void ParticleNode::OnFileChanged(void)
+    void ParticleNode::VOnRestore(ISceneGraph* graph)
     {
-        gf->VOnRestore(m_pParticleSystem.get());
-    }
-
-    void ParticleNode::VOnRestore(chimera::SceneGraph* graph)
-    {
-        if(m_pParticleSystem == NULL || !m_pParticleSystem->VIsReady())
+        if(!m_particleSystemHandle || !m_particleSystemHandle->VIsReady())
         {
-            util::AxisAlignedBB aabb;
-            float bounds = 50;
-            aabb.AddPoint(util::Vec3(-bounds, -bounds, -bounds));
-            aabb.AddPoint(util::Vec3(+bounds, bounds, +bounds));
-            aabb.Construct();
-
-            chimera::BaseEmitter* emitter;// = new SurfaceEmitter("torus.obj", util::Vec3(0,0.1f,0), (UINT)(1.5f * (FLOAT)(1 << 19)), 0, 15000);
-
-            emitter = new chimera::BoxEmitter(util::Vec3(0.5f, 0.1f, 0.5f), util::Vec3(0,0.1f,0), 1024 * 1024, 0, 10); //6000 ((FLOAT)(1 << 8)
-
-            m_pParticleSystem = std::shared_ptr<chimera::ParticleSystem>(new chimera::ParticleSystem(emitter));
-
-            /*tbd::BaseModifier* mod = new tbd::Gravity(-9.81f, 1);
-
-            m_pParticleSystem->AddModifier(mod);
-
-            //mod = new tbd::Turbulence(2, 9.81f);
-
-            //m_pParticleSystem->AddModifier(mod);
-
-            m_pParticleSystem->AddModifier(new tbd::GravityField(util::Vec3(10,10,-10), 1, 5, eAttract));
-
-            m_pParticleSystem->AddModifier(new tbd::GravityField(util::Vec3(10,10,10), 1, 5, eRepel));
-
-            m_pParticleSystem->AddModifier(new tbd::VelocityDamper(0.995f)); */
-            gf = new GradientField();
-            m_pParticleSystem->AddModifier(gf);
-
-            /*
-            util::Plane p;
-            p.Init(util::Vec3(0,1,0), 0);
-            m_pParticleSystem->AddModifier(new tbd::Plane(p)); */
-            m_pParticleSystem->AddModifier(new chimera::BoundingBox());
-
-            m_pParticleSystem->SetAxisAlignedBB(aabb);
-
-            m_pParticleSystem->SetTranslation(GetTransformation()->GetTranslation());
-
-            //unique name
             std::stringstream ss;
-            ss << "particlesystem";
+            ss << "ParticleSystem_";
             ss << m_actorId;
-            chimera::g_pApp->GetHumanView()->GetVRamManager()->AppendAndCreateHandle(ss.str(), m_pParticleSystem);
 
-            std::shared_ptr<proc::Process> proc = std::shared_ptr<proc::Process>(new proc::ActorDelegateProcess(Hover, m_actor));
-            //app::g_pApp->GetLogic()->AttachProcess(proc);
+            m_pParticleSystem = new ParticleSystem(1000000);
 
-            chimera::FileSystem* loader = chimera::g_pApp->GetDLLLoader();
-            fastdelegate::FastDelegate0<> l = fastdelegate::MakeDelegate(this, &ParticleNode::OnFileChanged);
-            loader->RegisterCallback("ParticleData.dll", "../../ParticleData/ParticleData/x64/Debug/", l);
+            util::cmRNG rng;
+            for(int i = 0; i < 1; ++i)
+            {
+                std::unique_ptr<IParticleEmitter> emit(new BaseEmitter(1e5, 0, 10));
+                emit->VSetPosition(util::Vec3(rng.NextFloat(10), 10, rng.NextFloat(10)));
+                m_pParticleSystem->VAddEmitter(emit);
+            }
+            std::unique_ptr<IParticleModifier> gravity(new Gravity(util::Vec3(-0.001f, 0.001f, -0.001)));
+            //m_pParticleSystem->VAddModifier(gravity);
 
-            //m_timer.Reset();
+            std::unique_ptr<IParticleModifier> turbo(new Turbulence(1, 0.01f));
+            //m_pParticleSystem->VAddModifier(turbo);
+
+            std::unique_ptr<IParticleModifier> gfield(new GradientField());
+            m_pParticleSystem->VAddModifier(gfield);
+
+            m_particleSystemHandle = std::shared_ptr<ParticleSystemHandle>(new ParticleSystemHandle(m_pParticleSystem));
+
+            m_particleSystemHandle->VSetResource(ss.str());
+
+            CmGetApp()->VGetHumanView()->VGetVRamManager()->VAppendAndCreateHandle(m_particleSystemHandle);
         }
 
         VOnActorMoved();
@@ -208,13 +270,8 @@ namespace chimera
 
     void ParticleNode::VOnActorMoved(void)
     {
-        m_transformedBBPoint = util::Mat4::Transform(*GetTransformation(), m_pParticleSystem->GetAxisAlignedBB().GetMiddle());
-        m_pParticleSystem->SetTranslation(GetTransformation()->GetTranslation());
-    }
-
-    uint ParticleNode::VGetRenderPaths(void)
-    {
-        return eRenderPath_DrawParticles | eRenderPath_DrawPicking | eRenderPath_DrawBounding | eRenderPath_DrawEditMode;
+        m_transformedBBPoint = util::Mat4::Transform(*VGetTransformation(), m_pParticleSystem->VGetAxisAlignedBB().GetMiddle());
+        //m_pParticleSystem->SetTranslation(GetTransformation()->GetTranslation());
     }
 
     ParticleNode::~ParticleNode(void)

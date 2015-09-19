@@ -36,7 +36,9 @@ namespace chimera
         VRamResource res(suffix);
         if(m_creators.find(res.m_name) != m_creators.end())
         {
-            LOG_CRITICAL_ERROR("suffix creator exists already");
+            LOG_WARNING("suffix creator exists already");
+            SAFE_DELETE(creator);
+            return;
         }
         m_creators[res.m_name] = creator;
     }

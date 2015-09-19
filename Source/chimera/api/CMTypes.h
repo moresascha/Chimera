@@ -339,7 +339,7 @@ namespace chimera
         eBlend_SrcColor = 3,
         eBlend_InvSrcColor = 4,
         eBlend_SrcAlpha = 5,
-        eBlend_InvSrcAlpha	= 6
+        eBlend_InvSrcAlpha    = 6
     };
 
     enum BlendOP

@@ -101,7 +101,9 @@ namespace chimera
             static GeometryDrawer* ARRAY_DRAWER;
 
             VertexBuffer* m_pVertexBuffer;
-            IVertexBuffer* m_pInstanceBuffer;
+
+            IVertexBuffer* m_pInstanceBuffer[16];
+            bool m_ownsInstanceBufferMask[16];
 
             IndexBuffer* m_pIndexBuffer;
 
@@ -111,8 +113,6 @@ namespace chimera
             uint m_elementCount;
 
             GeometryDrawer* m_pDrawer;
-
-            bool m_ownsInstanceBuffer;
 
         public:
 
@@ -143,15 +143,15 @@ namespace chimera
 
             IVertexBuffer* VGetVertexBuffer(void);
 
-            IVertexBuffer* VGetInstanceBuffer(void);
+            IVertexBuffer* VGetInstanceBuffer(uint index);
 
             IDeviceBuffer* VGetIndexBuffer(void);
 
             void VAddInstanceBuffer(float* data, uint count, uint stride);
 
-            void VSetInstanceBuffer(IVertexBuffer* buffer);
+            void VSetInstanceBuffer(IVertexBuffer* buffer, uint slot = 0);
 
-            void SetOwnsInstanceBuffer(bool owns);
+            void SetOwnsInstanceBuffer(bool owns, uint index);
 
             void DeleteRawData(void);
 

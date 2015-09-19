@@ -1,5 +1,6 @@
 #pragma once
 #include "CMTypes.h"
+
 namespace chimera
 {
     class IApplication

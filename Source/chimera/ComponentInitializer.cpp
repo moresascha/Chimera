@@ -116,7 +116,6 @@ namespace chimera
                 cameraCmp->m_type = std::string("FreeLook");
             }
 
-
             if(cameraCmp->m_type == std::string("FPSCharacter"))
             {
                 cameraCmp->m_camera = std::shared_ptr<util::FPSCamera>(new util::CharacterCamera(
@@ -287,6 +286,12 @@ namespace chimera
         {
             lightComp->m_castShadow = atof(castShadow->GetText()) > 0;
         }
+
+        return true;
+    }
+
+    bool InitializeParticleComponent(IActorComponent* cmp, ICMStream* stream)
+    {
 
         return true;
     }

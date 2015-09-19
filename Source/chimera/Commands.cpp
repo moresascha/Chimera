@@ -490,6 +490,11 @@ namespace chimera
 
             free(szCmdline);
 
+            if(exitCode != 0)
+            {
+                throw "Process failed!";
+            }
+
             return exitCode > 0;
         }
 
@@ -579,7 +584,6 @@ namespace chimera
                 pe->m_actor = lastActor;
                 QUEUE_EVENT(pe);
 
-                TransformComponent* tCmp;
                 IActor* targetActor = CmGetApp()->VGetLogic()->VFindActor(lastActor);
                 TRIGGER_EVENT(new MoveActorEvent(lastActor, (cameraCmp->GetCamera()->GetViewDir() * 5) + eyePos, false));
 
@@ -661,7 +665,6 @@ namespace chimera
                 pe->m_actor = lastActor;
                 TRIGGER_EVENT(pe);
 
-                TransformComponent* tCmp;
                 IActor* targetActor = CmGetApp()->VGetLogic()->VFindActor(lastActor);
                 TRIGGER_EVENT(new MoveActorEvent(lastActor, (cameraCmp->GetCamera()->GetViewDir() * 5) + cameraCmp->GetCamera()->GetEyePos(), false));
 

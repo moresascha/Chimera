@@ -249,11 +249,6 @@ namespace chimera
         {
             CmGetApp()->VGetCache()->VGetHandle(CMResource(m_resource));
         }
-/*
-        if(CMResource(m_info) != c)
-        {
-            CmGetApp()->VGetCache()->VGetHandle(CMResource(m_info));
-        }*/
     }
 
     bool VI213nitialize(ICMStream* stream)

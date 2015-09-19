@@ -1,39 +1,36 @@
 #pragma once
 #include "stdafx.h"
 #include "SceneNode.h"
-#include "Geometry.h"
-#include "Actor.h"
-#include "ShaderProgram.h"
-#include "ParticleSystem.h"
+#include "Timer.h"
 
 namespace chimera
 {
     class ParticleNode : public SceneNode
     {
     private:
-        std::shared_ptr<chimera::ParticleSystem> m_pParticleSystem;
+        IParticleSystem* m_pParticleSystem;
         UINT m_time;
         util::Vec3 m_transformedBBPoint;
         util::Timer m_timer;
+        std::shared_ptr<IGeometry> m_pGeometry;
+        std::shared_ptr<IVRamHandle> m_particleSystemHandle;
 
-        VOID OnFileChanged(VOID);
+        void OnFileChanged(void);
 
     public:
-        ParticleNode(ActorId id);
+        ParticleNode(ActorId id, IParticleSystem* pSystem);
 
-        VOID _VRender(chimera::SceneGraph* graph, chimera::RenderPath& path);
+        void _VRender(ISceneGraph* graph, RenderPath& path);
 
-        BOOL VIsVisible(SceneGraph* graph);
+        bool VIsVisible(ISceneGraph* graph);
 
-        VOID VOnRestore(chimera::SceneGraph* graph);
+        void VOnRestore(ISceneGraph* graph);
 
-        VOID VOnUpdate(ULONG millis, SceneGraph* graph);
+        void VOnUpdate(ULONG millis, ISceneGraph* graph);
 
-        VOID VOnActorMoved(VOID);
+        void VOnActorMoved(void);
 
-        UINT VGetRenderPaths(VOID);
-
-        ~ParticleNode(VOID);
+        ~ParticleNode(void);
     };
 }
 

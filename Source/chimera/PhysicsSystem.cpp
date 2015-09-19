@@ -508,7 +508,7 @@ namespace chimera
         auto iit = m_actorIdToPxActorMap.find(actor->GetId());
         if(iit != m_actorIdToPxActorMap.end())
         {
-            TBD_FOR(iit->second)
+            for(auto it = iit->second.begin(); it != iit->second.end(); ++it)
             {
                 physx::PxActor* a = *it;
                 if(a->isRigidDynamic())
@@ -525,7 +525,7 @@ namespace chimera
         auto iit = m_actorIdToPxActorMap.find(actor->GetId());
         if(iit != m_actorIdToPxActorMap.end())
         {
-            TBD_FOR(iit->second)
+            for(auto it = iit->second.begin(); it != iit->second.end(); ++it)
             {
                 physx::PxActor* a = *it;
                 if(a->isRigidDynamic())
@@ -812,6 +812,21 @@ namespace chimera
 
             VApplyTorque(pCastEventData->m_torque, pCastEventData->m_newtons, pCastEventData->m_actor);
         }
+    }
+
+    ActorId PhysX::VRayCast(const util::Vec3* pos,  const util::Vec3* dir)
+    {
+        PxVec3 origin = PxVec3(pos->GetX(), pos->GetY(), pos->GetZ());
+        PxVec3 unitDir = PxVec3(dir->GetX(), dir->GetY(), dir->GetZ());
+        PxReal maxDistance = 1000;
+        physx::PxSceneQueryHit hit;
+        bool status = m_pScene->raycastAny(origin, unitDir, maxDistance, hit);
+        if(status)
+        {
+            physx::PxActor* actor = (physx::PxActor*)(&hit.shape->getActor());
+            return m_pxActorToActorId[actor];
+        }
+        return CM_INVALID_ACTOR_ID;
     }
 
     void PhysX::CreateFromActor(IActor* actor)

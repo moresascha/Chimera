@@ -1,16 +1,7 @@
-﻿Build started 27.01.2014 20:57:29.
-     1>Project "E:\Dropbox\VisualStudio\Chimera\Source\Chimera.vcxproj" on node 2 (Build target(s)).
-     1>InitializeBuildStatus:
-         Creating "E:\Dropbox\VisualStudio\Chimera\Source\..\Tmp\Chimerax64Debug\Chimera.unsuccessfulbuild" because "AlwaysCreate" was specified.
-       AddCudaCompileDeps:
-       Skipping target "AddCudaCompileDeps" because all output files are up-to-date with respect to the input files.
-       AddCudaCompilePropsDeps:
-       Skipping target "AddCudaCompilePropsDeps" because all output files are up-to-date with respect to the input files.
-       CudaBuild:
-       Skipping target "CudaBuild" because all output files are up-to-date with respect to the input files.
-       ClCompile:
-         All outputs are up-to-date.
-         C:\Program Files (x86)\Microsoft Visual Studio 11.0\VC\bin\x86_amd64\CL.exe /c /I../Cudah/Source /I../Include /I./Source/Chimera /I../Include/physx/foundation /I../Include/physx/Source/foundation/include /I../Include/physx/physxprofilesdk /I../Include/physx/physxvisualdebuggersdk /I../Include/physx/common /I../Include/physx/geometry /I../Include/physx/pvd /I../Include/physx/particles /I../Include/physx/cooking /I../Include/physx/extensions /I../Include/physx/characterdynamic /I../Include/physx/vehicle /I../Include/physx/RepX /I../Include/physx/RepXUpgrader /I../Include/physx/Source/GeomUtils/headers /I"C:\Program Files\NVIDIA GPU Computing Toolkit\CUDA\v5.5\include" /Zi /nologo /W3 /WX- /MP /Od /D __COMPILING_DLL /D _WINDLL /D _UNICODE /D UNICODE /Gm /EHsc /RTC1 /MDd /GS /fp:precise /Zc:wchar_t /Zc:forScope /Fo"E:\Dropbox\VisualStudio\Chimera\Source\..\Tmp\Chimerax64Debug\\" /Fd"E:\Dropbox\VisualStudio\Chimera\Source\..\Tmp\Chimerax64Debug\vc110.pdb" /Gd /TP /errorReport:prompt /MP chimera\Actor.cpp chimera\ActorFactory.cpp chimera\AxisAlignedBB.cpp chimera\Camera.cpp chimera\CameraNode.cpp chimera\CascadedShadowMapper.cpp chimera\ChimeraAPI.cpp chimera\Commands.cpp chimera\Components.cpp chimera\Config.cpp chimera\Controller.cpp chimera\Effect.cpp chimera\Event.cpp chimera\EventManager.cpp chimera\Frustum.cpp chimera\GameLogic.cpp chimera\GameView.cpp chimera\GeometryFactory.cpp chimera\GeometryNode.cpp chimera\GraphicsSettings.cpp chimera\GuiComponent.cpp chimera\Input.cpp chimera\InstancedMeshNode.cpp chimera\LevelManager.cpp chimera\Logger.cpp chimera\MeshNode.cpp chimera\PhysicsSystem.cpp chimera\Picker.cpp chimera\Process.cpp chimera\ProcessManager.cpp chimera\SceneGraph.cpp chimera\SceneNode.cpp chimera\Scheduler.cpp chimera\SkyDomeNode.cpp chimera\SpotlightNode.cpp chimera\tbdFont.cpp chimera\Timer.cpp chimera\util.cpp chimera\VRamManager.cpp
+﻿Build started 10/13/2014 10:11:11 PM.
+     1>Project "C:\Users\Sascha\Dropbox\VisualStudio\Chimera\Source\Chimera.vcxproj" on node 2 (Build target(s)).
+     1>ClCompile:
+         C:\Program Files (x86)\Microsoft Visual Studio 11.0\VC\bin\x86_amd64\CL.exe /c /I../Cudah/Source /I../Include /I./Source/Chimera /I../Include/physx/foundation /I../Include/physx/Source/foundation/include /I../Include/physx/physxprofilesdk /I../Include/physx/physxvisualdebuggersdk /I../Include/physx/common /I../Include/physx/geometry /I../Include/physx/pvd /I../Include/physx/particles /I../Include/physx/cooking /I../Include/physx/extensions /I../Include/physx/characterdynamic /I../Include/physx/vehicle /I../Include/physx/RepX /I../Include/physx/RepXUpgrader /I../Include/physx/Source/GeomUtils/headers /I"C:\Program Files\NVIDIA GPU Computing Toolkit\CUDA\v6.0\include" /Zi /nologo /W3 /WX- /MP /Od /D __COMPILING_DLL /D _UNICODE /D UNICODE /Gm /EHsc /RTC1 /MDd /GS /fp:precise /Zc:wchar_t /Zc:forScope /Fo"C:\Users\Sascha\Dropbox\VisualStudio\Chimera\Source\..\Tmp\Chimerax64Debug\\" /Fd"C:\Users\Sascha\Dropbox\VisualStudio\Chimera\Source\..\Tmp\Chimerax64Debug\vc110.pdb" /Gd /TP /errorReport:prompt /MP chimera\Actor.cpp chimera\ActorFactory.cpp chimera\AxisAlignedBB.cpp chimera\Camera.cpp chimera\CameraNode.cpp chimera\CascadedShadowMapper.cpp chimera\ChimeraAPI.cpp chimera\Commands.cpp chimera\Components.cpp chimera\Config.cpp chimera\Controller.cpp chimera\Effect.cpp chimera\Event.cpp chimera\EventManager.cpp chimera\Frustum.cpp chimera\GameLogic.cpp chimera\GameView.cpp chimera\GeometryFactory.cpp chimera\GeometryNode.cpp chimera\GraphicsSettings.cpp chimera\GuiComponent.cpp chimera\Input.cpp chimera\InstancedMeshNode.cpp chimera\LevelManager.cpp chimera\Logger.cpp chimera\MeshNode.cpp chimera\Modifier.cpp chimera\ParticleManager.cpp chimera\ParticleNode.cpp chimera\ParticleSystem.cpp chimera\PhysicsSystem.cpp chimera\Picker.cpp chimera\Process.cpp chimera\ProcessManager.cpp chimera\SceneGraph.cpp chimera\SceneNode.cpp chimera\Scheduler.cpp chimera\SkyDomeNode.cpp chimera\SpotlightNode.cpp chimera\tbdFont.cpp chimera\Timer.cpp chimera\util.cpp chimera\VRamManager.cpp
      1>cl : Command line warning D9030: '/Gm' is incompatible with multiprocessing; ignoring /MP switch
          Skipping... (no relevant changes detected)
          VRamManager.cpp
@@ -26,6 +17,10 @@
          Process.cpp
          Picker.cpp
          PhysicsSystem.cpp
+         ParticleSystem.cpp
+         ParticleNode.cpp
+         ParticleManager.cpp
+         Modifier.cpp
          MeshNode.cpp
          Logger.cpp
          LevelManager.cpp
@@ -52,15 +47,28 @@
          AxisAlignedBB.cpp
          ActorFactory.cpp
          Actor.cpp
-         All outputs are up-to-date.
-         C:\Program Files (x86)\Microsoft Visual Studio 11.0\VC\bin\x86_amd64\CL.exe /c /I../Cudah/Source /I../Include /I./Source/Chimera /I../Include/physx/foundation /I../Include/physx/Source/foundation/include /I../Include/physx/physxprofilesdk /I../Include/physx/physxvisualdebuggersdk /I../Include/physx/common /I../Include/physx/geometry /I../Include/physx/pvd /I../Include/physx/particles /I../Include/physx/cooking /I../Include/physx/extensions /I../Include/physx/characterdynamic /I../Include/physx/vehicle /I../Include/physx/RepX /I../Include/physx/RepXUpgrader /I../Include/physx/Source/GeomUtils/headers /I"C:\Program Files\NVIDIA GPU Computing Toolkit\CUDA\v5.5\include" /Zi /nologo /W3 /WX- /MP /Od /D __COMPILING_DLL /D _WINDLL /D _UNICODE /D UNICODE /Gm /EHsc /RTC1 /MDd /GS /fp:precise /Zc:wchar_t /Zc:forScope /Fo"E:\Dropbox\VisualStudio\Chimera\Source\..\Tmp\Chimerax64Debug\\" /Fd"E:\Dropbox\VisualStudio\Chimera\Source\..\Tmp\Chimerax64Debug\vc110.pdb" /Gd /TP /errorReport:prompt /MP chimera\APIError.cpp chimera\Application.cpp chimera\Cache.cpp chimera\ComponentInitializer.cpp chimera\D3DConstBuffer.cpp chimera\D3DGeometry.cpp chimera\D3DGraphics.cpp chimera\D3DGraphicsFactory.cpp chimera\D3DRenderer.cpp chimera\D3DRenderTarget.cpp chimera\D3DShaderProgram.cpp chimera\D3DTexture.cpp chimera\LightNode.cpp chimera\ResourceLoader.cpp chimera\ScreenElement.cpp chimera\tinyxml2.cpp Main.cpp
+         C:\Program Files (x86)\Microsoft Visual Studio 11.0\VC\bin\x86_amd64\CL.exe /c /I../Cudah/Source /I../Include /I./Source/Chimera /I../Include/physx/foundation /I../Include/physx/Source/foundation/include /I../Include/physx/physxprofilesdk /I../Include/physx/physxvisualdebuggersdk /I../Include/physx/common /I../Include/physx/geometry /I../Include/physx/pvd /I../Include/physx/particles /I../Include/physx/cooking /I../Include/physx/extensions /I../Include/physx/characterdynamic /I../Include/physx/vehicle /I../Include/physx/RepX /I../Include/physx/RepXUpgrader /I../Include/physx/Source/GeomUtils/headers /I"C:\Program Files\NVIDIA GPU Computing Toolkit\CUDA\v6.0\include" /Zi /nologo /W3 /WX- /MP /Od /D __COMPILING_DLL /D _UNICODE /D UNICODE /Gm /EHsc /RTC1 /MDd /GS /fp:precise /Zc:wchar_t /Zc:forScope /Fo"C:\Users\Sascha\Dropbox\VisualStudio\Chimera\Source\..\Tmp\Chimerax64Debug\\" /Fd"C:\Users\Sascha\Dropbox\VisualStudio\Chimera\Source\..\Tmp\Chimerax64Debug\vc110.pdb" /Gd /TP /errorReport:prompt /MP chimera\APIError.cpp chimera\Application.cpp chimera\Cache.cpp chimera\ComponentInitializer.cpp chimera\D3DConstBuffer.cpp chimera\D3DGeometry.cpp chimera\D3DGraphics.cpp chimera\D3DGraphicsFactory.cpp chimera\D3DRenderer.cpp chimera\D3DRenderTarget.cpp chimera\D3DShaderProgram.cpp chimera\D3DTexture.cpp chimera\Emitter.cpp chimera\LightNode.cpp chimera\ResourceLoader.cpp chimera\ScreenElement.cpp chimera\tinyxml2.cpp Main.cpp
      1>cl : Command line warning D9030: '/Gm' is incompatible with multiprocessing; ignoring /MP switch
-         Skipping... (no relevant changes detected)
          Main.cpp
+     1>c:\users\sascha\dropbox\visualstudio\chimera\source\chimera\Vec3.h(249): warning C4244: 'argument' : conversion from 'float' to 'int', possible loss of data
+     1>c:\users\sascha\dropbox\visualstudio\chimera\source\chimera\Vec3.h(249): warning C4244: 'argument' : conversion from 'int' to 'float', possible loss of data
+     1>c:\users\sascha\dropbox\visualstudio\chimera\source\chimera\Vec3.h(250): warning C4244: 'argument' : conversion from 'float' to 'int', possible loss of data
+     1>c:\users\sascha\dropbox\visualstudio\chimera\source\chimera\Vec3.h(250): warning C4244: 'argument' : conversion from 'int' to 'float', possible loss of data
+     1>c:\users\sascha\dropbox\visualstudio\chimera\source\chimera\Vec3.h(251): warning C4244: 'argument' : conversion from 'float' to 'int', possible loss of data
+     1>c:\users\sascha\dropbox\visualstudio\chimera\source\chimera\Vec3.h(251): warning C4244: 'argument' : conversion from 'int' to 'float', possible loss of data
+     1>c:\users\sascha\dropbox\visualstudio\chimera\source\chimera\Vec3.h(258): warning C4244: 'argument' : conversion from 'float' to 'int', possible loss of data
+     1>c:\users\sascha\dropbox\visualstudio\chimera\source\chimera\Vec3.h(258): warning C4244: 'argument' : conversion from 'int' to 'float', possible loss of data
+     1>c:\users\sascha\dropbox\visualstudio\chimera\source\chimera\Vec3.h(259): warning C4244: 'argument' : conversion from 'float' to 'int', possible loss of data
+     1>c:\users\sascha\dropbox\visualstudio\chimera\source\chimera\Vec3.h(259): warning C4244: 'argument' : conversion from 'int' to 'float', possible loss of data
+     1>c:\users\sascha\dropbox\visualstudio\chimera\source\chimera\Vec3.h(260): warning C4244: 'argument' : conversion from 'float' to 'int', possible loss of data
+     1>c:\users\sascha\dropbox\visualstudio\chimera\source\chimera\Vec3.h(260): warning C4244: 'argument' : conversion from 'int' to 'float', possible loss of data
+         Generating Code...
+         Skipping... (no relevant changes detected)
          tinyxml2.cpp
          ScreenElement.cpp
          ResourceLoader.cpp
          LightNode.cpp
+         Emitter.cpp
          D3DTexture.cpp
          D3DShaderProgram.cpp
          D3DRenderTarget.cpp
@@ -73,72 +81,72 @@
          Cache.cpp
          Application.cpp
          APIError.cpp
-       ResourceCompile:
-         All outputs are up-to-date.
        Link:
-         C:\Program Files (x86)\Microsoft Visual Studio 11.0\VC\bin\x86_amd64\link.exe /ERRORREPORT:PROMPT /OUT:"E:\Dropbox\VisualStudio\Chimera\Source\..\Bin\x64Debug\Chimerax64Debug.dll" /INCREMENTAL /NOLOGO /LIBPATH:../Lib /LIBPATH:"C:\Program Files (x86)\Windows Kits\8.0\Lib/win8/um/($Platform)" kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib /NODEFAULTLIB:LIBCMTD /NODEFAULTLIB:LIBCMT /NODEFAULTLIB:libcpmt /MANIFEST /MANIFESTUAC:"level='asInvoker' uiAccess='false'" /manifest:embed /DEBUG /PDB:"E:\Dropbox\VisualStudio\Chimera\Source\..\Bin\x64Debug\Chimerax64Debug.pdb" /SUBSYSTEM:WINDOWS /TLBID:1 /DYNAMICBASE /NXCOMPAT /IMPLIB:"E:\Dropbox\VisualStudio\Chimera\Source\..\Bin\x64Debug\Chimerax64Debug.lib" /MACHINE:X64 /DLL E:\Dropbox\VisualStudio\Chimera\Source\..\Tmp\Chimerax64Debug\Chimera.res
-         E:\Dropbox\VisualStudio\Chimera\Source\..\Tmp\Chimerax64Debug\Actor.obj
-         E:\Dropbox\VisualStudio\Chimera\Source\..\Tmp\Chimerax64Debug\ActorFactory.obj
-         E:\Dropbox\VisualStudio\Chimera\Source\..\Tmp\Chimerax64Debug\AxisAlignedBB.obj
-         E:\Dropbox\VisualStudio\Chimera\Source\..\Tmp\Chimerax64Debug\Camera.obj
-         E:\Dropbox\VisualStudio\Chimera\Source\..\Tmp\Chimerax64Debug\CameraNode.obj
-         E:\Dropbox\VisualStudio\Chimera\Source\..\Tmp\Chimerax64Debug\CascadedShadowMapper.obj
-         E:\Dropbox\VisualStudio\Chimera\Source\..\Tmp\Chimerax64Debug\ChimeraAPI.obj
-         E:\Dropbox\VisualStudio\Chimera\Source\..\Tmp\Chimerax64Debug\Commands.obj
-         E:\Dropbox\VisualStudio\Chimera\Source\..\Tmp\Chimerax64Debug\Components.obj
-         E:\Dropbox\VisualStudio\Chimera\Source\..\Tmp\Chimerax64Debug\Config.obj
-         E:\Dropbox\VisualStudio\Chimera\Source\..\Tmp\Chimerax64Debug\Controller.obj
-         E:\Dropbox\VisualStudio\Chimera\Source\..\Tmp\Chimerax64Debug\Effect.obj
-         E:\Dropbox\VisualStudio\Chimera\Source\..\Tmp\Chimerax64Debug\Event.obj
-         E:\Dropbox\VisualStudio\Chimera\Source\..\Tmp\Chimerax64Debug\EventManager.obj
-         E:\Dropbox\VisualStudio\Chimera\Source\..\Tmp\Chimerax64Debug\Frustum.obj
-         E:\Dropbox\VisualStudio\Chimera\Source\..\Tmp\Chimerax64Debug\GameLogic.obj
-         E:\Dropbox\VisualStudio\Chimera\Source\..\Tmp\Chimerax64Debug\GameView.obj
-         E:\Dropbox\VisualStudio\Chimera\Source\..\Tmp\Chimerax64Debug\GeometryFactory.obj
-         E:\Dropbox\VisualStudio\Chimera\Source\..\Tmp\Chimerax64Debug\GeometryNode.obj
-         E:\Dropbox\VisualStudio\Chimera\Source\..\Tmp\Chimerax64Debug\GraphicsSettings.obj
-         E:\Dropbox\VisualStudio\Chimera\Source\..\Tmp\Chimerax64Debug\GuiComponent.obj
-         E:\Dropbox\VisualStudio\Chimera\Source\..\Tmp\Chimerax64Debug\Input.obj
-         E:\Dropbox\VisualStudio\Chimera\Source\..\Tmp\Chimerax64Debug\InstancedMeshNode.obj
-         E:\Dropbox\VisualStudio\Chimera\Source\..\Tmp\Chimerax64Debug\LevelManager.obj
-         E:\Dropbox\VisualStudio\Chimera\Source\..\Tmp\Chimerax64Debug\Logger.obj
-         E:\Dropbox\VisualStudio\Chimera\Source\..\Tmp\Chimerax64Debug\MeshNode.obj
-         E:\Dropbox\VisualStudio\Chimera\Source\..\Tmp\Chimerax64Debug\PhysicsSystem.obj
-         E:\Dropbox\VisualStudio\Chimera\Source\..\Tmp\Chimerax64Debug\Picker.obj
-         E:\Dropbox\VisualStudio\Chimera\Source\..\Tmp\Chimerax64Debug\Process.obj
-         E:\Dropbox\VisualStudio\Chimera\Source\..\Tmp\Chimerax64Debug\ProcessManager.obj
-         E:\Dropbox\VisualStudio\Chimera\Source\..\Tmp\Chimerax64Debug\SceneGraph.obj
-         E:\Dropbox\VisualStudio\Chimera\Source\..\Tmp\Chimerax64Debug\SceneNode.obj
-         E:\Dropbox\VisualStudio\Chimera\Source\..\Tmp\Chimerax64Debug\Scheduler.obj
-         E:\Dropbox\VisualStudio\Chimera\Source\..\Tmp\Chimerax64Debug\SkyDomeNode.obj
-         E:\Dropbox\VisualStudio\Chimera\Source\..\Tmp\Chimerax64Debug\SpotlightNode.obj
-         E:\Dropbox\VisualStudio\Chimera\Source\..\Tmp\Chimerax64Debug\tbdFont.obj
-         E:\Dropbox\VisualStudio\Chimera\Source\..\Tmp\Chimerax64Debug\Timer.obj
-         E:\Dropbox\VisualStudio\Chimera\Source\..\Tmp\Chimerax64Debug\util.obj
-         E:\Dropbox\VisualStudio\Chimera\Source\..\Tmp\Chimerax64Debug\VRamManager.obj
-         E:\Dropbox\VisualStudio\Chimera\Source\..\Tmp\Chimerax64Debug\APIError.obj
-         E:\Dropbox\VisualStudio\Chimera\Source\..\Tmp\Chimerax64Debug\Application.obj
-         E:\Dropbox\VisualStudio\Chimera\Source\..\Tmp\Chimerax64Debug\Cache.obj
-         E:\Dropbox\VisualStudio\Chimera\Source\..\Tmp\Chimerax64Debug\ComponentInitializer.obj
-         E:\Dropbox\VisualStudio\Chimera\Source\..\Tmp\Chimerax64Debug\D3DConstBuffer.obj
-         E:\Dropbox\VisualStudio\Chimera\Source\..\Tmp\Chimerax64Debug\D3DGeometry.obj
-         E:\Dropbox\VisualStudio\Chimera\Source\..\Tmp\Chimerax64Debug\D3DGraphics.obj
-         E:\Dropbox\VisualStudio\Chimera\Source\..\Tmp\Chimerax64Debug\D3DGraphicsFactory.obj
-         E:\Dropbox\VisualStudio\Chimera\Source\..\Tmp\Chimerax64Debug\D3DRenderer.obj
-         E:\Dropbox\VisualStudio\Chimera\Source\..\Tmp\Chimerax64Debug\D3DRenderTarget.obj
-         E:\Dropbox\VisualStudio\Chimera\Source\..\Tmp\Chimerax64Debug\D3DShaderProgram.obj
-         E:\Dropbox\VisualStudio\Chimera\Source\..\Tmp\Chimerax64Debug\D3DTexture.obj
-         E:\Dropbox\VisualStudio\Chimera\Source\..\Tmp\Chimerax64Debug\LightNode.obj
-         E:\Dropbox\VisualStudio\Chimera\Source\..\Tmp\Chimerax64Debug\ResourceLoader.obj
-         E:\Dropbox\VisualStudio\Chimera\Source\..\Tmp\Chimerax64Debug\ScreenElement.obj
-         E:\Dropbox\VisualStudio\Chimera\Source\..\Tmp\Chimerax64Debug\tinyxml2.obj
-         E:\Dropbox\VisualStudio\Chimera\Source\..\Tmp\Chimerax64Debug\Main.obj
-         Chimera.vcxproj -> E:\Dropbox\VisualStudio\Chimera\Source\..\Bin\x64Debug\Chimerax64Debug.dll
-       FinalizeBuildStatus:
-         Deleting file "E:\Dropbox\VisualStudio\Chimera\Source\..\Tmp\Chimerax64Debug\Chimera.unsuccessfulbuild".
-         Touching "E:\Dropbox\VisualStudio\Chimera\Source\..\Tmp\Chimerax64Debug\Chimera.lastbuildstate".
-     1>Done Building Project "E:\Dropbox\VisualStudio\Chimera\Source\Chimera.vcxproj" (Build target(s)).
+         C:\Program Files (x86)\Microsoft Visual Studio 11.0\VC\bin\x86_amd64\link.exe /ERRORREPORT:PROMPT /OUT:"C:\Users\Sascha\Dropbox\VisualStudio\Chimera\Source\..\Bin\x64Debug\Chimerax64Debug.exe" /INCREMENTAL /NOLOGO /LIBPATH:../Lib /LIBPATH:"C:\Program Files (x86)\Windows Kits\8.0\Lib/win8/um/($Platform)" kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib /NODEFAULTLIB:LIBCMTD /NODEFAULTLIB:LIBCMT /NODEFAULTLIB:libcpmt /MANIFEST /MANIFESTUAC:"level='asInvoker' uiAccess='false'" /manifest:embed /DEBUG /PDB:"C:\Users\Sascha\Dropbox\VisualStudio\Chimera\Source\..\Bin\x64Debug\Chimerax64Debug.pdb" /SUBSYSTEM:WINDOWS /TLBID:1 /DYNAMICBASE /NXCOMPAT /IMPLIB:"C:\Users\Sascha\Dropbox\VisualStudio\Chimera\Source\..\Bin\x64Debug\Chimerax64Debug.lib" /MACHINE:X64 C:\Users\Sascha\Dropbox\VisualStudio\Chimera\Source\..\Tmp\Chimerax64Debug\Chimera.res
+         C:\Users\Sascha\Dropbox\VisualStudio\Chimera\Source\..\Tmp\Chimerax64Debug\Actor.obj
+         C:\Users\Sascha\Dropbox\VisualStudio\Chimera\Source\..\Tmp\Chimerax64Debug\ActorFactory.obj
+         C:\Users\Sascha\Dropbox\VisualStudio\Chimera\Source\..\Tmp\Chimerax64Debug\AxisAlignedBB.obj
+         C:\Users\Sascha\Dropbox\VisualStudio\Chimera\Source\..\Tmp\Chimerax64Debug\Camera.obj
+         C:\Users\Sascha\Dropbox\VisualStudio\Chimera\Source\..\Tmp\Chimerax64Debug\CameraNode.obj
+         C:\Users\Sascha\Dropbox\VisualStudio\Chimera\Source\..\Tmp\Chimerax64Debug\CascadedShadowMapper.obj
+         C:\Users\Sascha\Dropbox\VisualStudio\Chimera\Source\..\Tmp\Chimerax64Debug\ChimeraAPI.obj
+         C:\Users\Sascha\Dropbox\VisualStudio\Chimera\Source\..\Tmp\Chimerax64Debug\Commands.obj
+         C:\Users\Sascha\Dropbox\VisualStudio\Chimera\Source\..\Tmp\Chimerax64Debug\Components.obj
+         C:\Users\Sascha\Dropbox\VisualStudio\Chimera\Source\..\Tmp\Chimerax64Debug\Config.obj
+         C:\Users\Sascha\Dropbox\VisualStudio\Chimera\Source\..\Tmp\Chimerax64Debug\Controller.obj
+         C:\Users\Sascha\Dropbox\VisualStudio\Chimera\Source\..\Tmp\Chimerax64Debug\Effect.obj
+         C:\Users\Sascha\Dropbox\VisualStudio\Chimera\Source\..\Tmp\Chimerax64Debug\Event.obj
+         C:\Users\Sascha\Dropbox\VisualStudio\Chimera\Source\..\Tmp\Chimerax64Debug\EventManager.obj
+         C:\Users\Sascha\Dropbox\VisualStudio\Chimera\Source\..\Tmp\Chimerax64Debug\Frustum.obj
+         C:\Users\Sascha\Dropbox\VisualStudio\Chimera\Source\..\Tmp\Chimerax64Debug\GameLogic.obj
+         C:\Users\Sascha\Dropbox\VisualStudio\Chimera\Source\..\Tmp\Chimerax64Debug\GameView.obj
+         C:\Users\Sascha\Dropbox\VisualStudio\Chimera\Source\..\Tmp\Chimerax64Debug\GeometryFactory.obj
+         C:\Users\Sascha\Dropbox\VisualStudio\Chimera\Source\..\Tmp\Chimerax64Debug\GeometryNode.obj
+         C:\Users\Sascha\Dropbox\VisualStudio\Chimera\Source\..\Tmp\Chimerax64Debug\GraphicsSettings.obj
+         C:\Users\Sascha\Dropbox\VisualStudio\Chimera\Source\..\Tmp\Chimerax64Debug\GuiComponent.obj
+         C:\Users\Sascha\Dropbox\VisualStudio\Chimera\Source\..\Tmp\Chimerax64Debug\Input.obj
+         C:\Users\Sascha\Dropbox\VisualStudio\Chimera\Source\..\Tmp\Chimerax64Debug\InstancedMeshNode.obj
+         C:\Users\Sascha\Dropbox\VisualStudio\Chimera\Source\..\Tmp\Chimerax64Debug\LevelManager.obj
+         C:\Users\Sascha\Dropbox\VisualStudio\Chimera\Source\..\Tmp\Chimerax64Debug\Logger.obj
+         C:\Users\Sascha\Dropbox\VisualStudio\Chimera\Source\..\Tmp\Chimerax64Debug\MeshNode.obj
+         C:\Users\Sascha\Dropbox\VisualStudio\Chimera\Source\..\Tmp\Chimerax64Debug\Modifier.obj
+         C:\Users\Sascha\Dropbox\VisualStudio\Chimera\Source\..\Tmp\Chimerax64Debug\ParticleManager.obj
+         C:\Users\Sascha\Dropbox\VisualStudio\Chimera\Source\..\Tmp\Chimerax64Debug\ParticleNode.obj
+         C:\Users\Sascha\Dropbox\VisualStudio\Chimera\Source\..\Tmp\Chimerax64Debug\ParticleSystem.obj
+         C:\Users\Sascha\Dropbox\VisualStudio\Chimera\Source\..\Tmp\Chimerax64Debug\PhysicsSystem.obj
+         C:\Users\Sascha\Dropbox\VisualStudio\Chimera\Source\..\Tmp\Chimerax64Debug\Picker.obj
+         C:\Users\Sascha\Dropbox\VisualStudio\Chimera\Source\..\Tmp\Chimerax64Debug\Process.obj
+         C:\Users\Sascha\Dropbox\VisualStudio\Chimera\Source\..\Tmp\Chimerax64Debug\ProcessManager.obj
+         C:\Users\Sascha\Dropbox\VisualStudio\Chimera\Source\..\Tmp\Chimerax64Debug\SceneGraph.obj
+         C:\Users\Sascha\Dropbox\VisualStudio\Chimera\Source\..\Tmp\Chimerax64Debug\SceneNode.obj
+         C:\Users\Sascha\Dropbox\VisualStudio\Chimera\Source\..\Tmp\Chimerax64Debug\Scheduler.obj
+         C:\Users\Sascha\Dropbox\VisualStudio\Chimera\Source\..\Tmp\Chimerax64Debug\SkyDomeNode.obj
+         C:\Users\Sascha\Dropbox\VisualStudio\Chimera\Source\..\Tmp\Chimerax64Debug\SpotlightNode.obj
+         C:\Users\Sascha\Dropbox\VisualStudio\Chimera\Source\..\Tmp\Chimerax64Debug\tbdFont.obj
+         C:\Users\Sascha\Dropbox\VisualStudio\Chimera\Source\..\Tmp\Chimerax64Debug\Timer.obj
+         C:\Users\Sascha\Dropbox\VisualStudio\Chimera\Source\..\Tmp\Chimerax64Debug\util.obj
+         C:\Users\Sascha\Dropbox\VisualStudio\Chimera\Source\..\Tmp\Chimerax64Debug\VRamManager.obj
+         C:\Users\Sascha\Dropbox\VisualStudio\Chimera\Source\..\Tmp\Chimerax64Debug\APIError.obj
+         C:\Users\Sascha\Dropbox\VisualStudio\Chimera\Source\..\Tmp\Chimerax64Debug\Application.obj
+         C:\Users\Sascha\Dropbox\VisualStudio\Chimera\Source\..\Tmp\Chimerax64Debug\Cache.obj
+         C:\Users\Sascha\Dropbox\VisualStudio\Chimera\Source\..\Tmp\Chimerax64Debug\ComponentInitializer.obj
+         C:\Users\Sascha\Dropbox\VisualStudio\Chimera\Source\..\Tmp\Chimerax64Debug\D3DConstBuffer.obj
+         C:\Users\Sascha\Dropbox\VisualStudio\Chimera\Source\..\Tmp\Chimerax64Debug\D3DGeometry.obj
+         C:\Users\Sascha\Dropbox\VisualStudio\Chimera\Source\..\Tmp\Chimerax64Debug\D3DGraphics.obj
+         C:\Users\Sascha\Dropbox\VisualStudio\Chimera\Source\..\Tmp\Chimerax64Debug\D3DGraphicsFactory.obj
+         C:\Users\Sascha\Dropbox\VisualStudio\Chimera\Source\..\Tmp\Chimerax64Debug\D3DRenderer.obj
+         C:\Users\Sascha\Dropbox\VisualStudio\Chimera\Source\..\Tmp\Chimerax64Debug\D3DRenderTarget.obj
+         C:\Users\Sascha\Dropbox\VisualStudio\Chimera\Source\..\Tmp\Chimerax64Debug\D3DShaderProgram.obj
+         C:\Users\Sascha\Dropbox\VisualStudio\Chimera\Source\..\Tmp\Chimerax64Debug\D3DTexture.obj
+         C:\Users\Sascha\Dropbox\VisualStudio\Chimera\Source\..\Tmp\Chimerax64Debug\Emitter.obj
+         C:\Users\Sascha\Dropbox\VisualStudio\Chimera\Source\..\Tmp\Chimerax64Debug\LightNode.obj
+         C:\Users\Sascha\Dropbox\VisualStudio\Chimera\Source\..\Tmp\Chimerax64Debug\ResourceLoader.obj
+         C:\Users\Sascha\Dropbox\VisualStudio\Chimera\Source\..\Tmp\Chimerax64Debug\ScreenElement.obj
+         C:\Users\Sascha\Dropbox\VisualStudio\Chimera\Source\..\Tmp\Chimerax64Debug\tinyxml2.obj
+         C:\Users\Sascha\Dropbox\VisualStudio\Chimera\Source\..\Tmp\Chimerax64Debug\Main.obj
+         Chimera.vcxproj -> C:\Users\Sascha\Dropbox\VisualStudio\Chimera\Source\..\Bin\x64Debug\Chimerax64Debug.exe
+     1>Done Building Project "C:\Users\Sascha\Dropbox\VisualStudio\Chimera\Source\Chimera.vcxproj" (Build target(s)).
 
 Build succeeded.
 
-Time Elapsed 00:00:03.18
+Time Elapsed 00:00:03.20

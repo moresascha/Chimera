@@ -1,0 +1,9 @@
+log.txt, 10/13/14
+[INFO] Failed to queue event, no listener for event: ∞Ö+
+       Function: chimera::EventManager::VQueueEvent
+       File: chimera\EventManager.cpp
+       Line: 95
+[INFO] Failed to queue event, no listener for event: êq
+       Function: chimera::EventManager::VQueueEvent
+       File: chimera\EventManager.cpp
+       Line: 95

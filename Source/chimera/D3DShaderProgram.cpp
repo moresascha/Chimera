@@ -84,7 +84,8 @@ namespace chimera
             SAFE_RELEASE(m_pShader);
         }
 
-        VertexShader::VertexShader(LPCTSTR file, LPCSTR function) : Shader(function, file), m_pShader(NULL), m_pVertexShaderCode(NULL), m_pLayout(NULL), m_numInputElemens(0)
+        VertexShader::VertexShader(LPCTSTR file, LPCSTR function) 
+            : Shader(function, file), m_pShader(NULL), m_pVertexShaderCode(NULL), m_pLayout(NULL), m_numInputElemens(0), m_numInstancedInputElemens(0)
         {
 
         }
@@ -182,13 +183,14 @@ namespace chimera
 
         void VertexShader::SetInputAttrInstanced(LPCSTR name, uint position, uint slot, DXGI_FORMAT format) 
         {
-            ZeroMemory(&this->m_layouts[position], sizeof(D3D11_INPUT_ELEMENT_DESC));
-            m_layouts[position].AlignedByteOffset = 0; //TODO allow more attributes per instance
+            ZeroMemory(&m_layouts[position], sizeof(D3D11_INPUT_ELEMENT_DESC));
+            m_layouts[position].AlignedByteOffset = m_numInstancedInputElemens == 0 ? 0 : D3D11_APPEND_ALIGNED_ELEMENT;
             m_layouts[position].Format = format;
             m_layouts[position].InputSlot = slot;
             m_layouts[position].InputSlotClass = D3D11_INPUT_PER_INSTANCE_DATA;
             m_layouts[position].SemanticName = name;
             m_layouts[position].InstanceDataStepRate = 1;
+            m_numInstancedInputElemens++;
             m_numInputElemens++;
         }
 
@@ -200,7 +202,9 @@ namespace chimera
         void VertexShader::GenerateLayout(void) 
         {
             SAFE_RELEASE(m_pLayout);
-            D3D_SAVE_CALL(chimera::d3d::GetDevice()->CreateInputLayout(m_layouts, m_numInputElemens, m_pVertexShaderCode->GetBufferPointer(), m_pVertexShaderCode->GetBufferSize(), &this->m_pLayout));
+            D3D_SAVE_CALL(chimera::d3d::GetDevice()->CreateInputLayout(
+                m_layouts, m_numInputElemens, m_pVertexShaderCode->GetBufferPointer(), 
+                m_pVertexShaderCode->GetBufferSize(), &m_pLayout));
         }
 
         VertexShader::~VertexShader(void)

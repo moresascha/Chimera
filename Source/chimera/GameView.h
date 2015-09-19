@@ -24,6 +24,7 @@ namespace chimera
         IGuiFactory* m_pGuiFactroy;
         IPicker* m_pActorPicker;
         bool m_isFullscreen;
+        IProcessManager* m_pProcessManager;
 
     public:
         HumanGameView(void);

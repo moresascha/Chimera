@@ -115,6 +115,9 @@
     <Filter Include="Header Files\view\particles">
       <UniqueIdentifier>{0f9992ae-ea6a-4b8e-9e32-ade8b623e7c2}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Source Files\view\particles">
+      <UniqueIdentifier>{9f928131-d358-451a-8ea2-73b5f2679ca0}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\Assets\shader\ShaderGlobals.h">
@@ -351,6 +354,15 @@
     <ClInclude Include="chimera\Quat.h">
       <Filter>Header Files\util</Filter>
     </ClInclude>
+    <ClInclude Include="chimera\ParticleNode.h">
+      <Filter>Header Files\view\nodes</Filter>
+    </ClInclude>
+    <ClInclude Include="chimera\ParticleData.h">
+      <Filter>Header Files\view\particles</Filter>
+    </ClInclude>
+    <ClInclude Include="chimera\ParticleManager.h">
+      <Filter>Header Files\view\particles</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="chimera\tinyxml2.cpp">
@@ -488,22 +500,10 @@
     <ClCompile Include="chimera\Maze.cpp">
       <Filter>Source Files\unused</Filter>
     </ClCompile>
-    <ClCompile Include="chimera\Modifier.cpp">
-      <Filter>Source Files\unused</Filter>
-    </ClCompile>
     <ClCompile Include="chimera\Packman.cpp">
       <Filter>Source Files\unused</Filter>
     </ClCompile>
     <ClCompile Include="chimera\PackmanLogic.cpp">
-      <Filter>Source Files\unused</Filter>
-    </ClCompile>
-    <ClCompile Include="chimera\ParticleManager.cpp">
-      <Filter>Source Files\unused</Filter>
-    </ClCompile>
-    <ClCompile Include="chimera\ParticleNode.cpp">
-      <Filter>Source Files\unused</Filter>
-    </ClCompile>
-    <ClCompile Include="chimera\ParticleSystem.cpp">
       <Filter>Source Files\unused</Filter>
     </ClCompile>
     <ClCompile Include="chimera\Profiling.cpp">
@@ -598,6 +598,21 @@
     </ClCompile>
     <ClCompile Include="chimera\Picker.cpp">
       <Filter>Source Files\view</Filter>
+    </ClCompile>
+    <ClCompile Include="chimera\ParticleNode.cpp">
+      <Filter>Source Files\view\nodes</Filter>
+    </ClCompile>
+    <ClCompile Include="chimera\ParticleSystem.cpp">
+      <Filter>Source Files\view\particles</Filter>
+    </ClCompile>
+    <ClCompile Include="chimera\Modifier.cpp">
+      <Filter>Source Files\view\particles</Filter>
+    </ClCompile>
+    <ClCompile Include="chimera\Emitter.cpp">
+      <Filter>Source Files\view\particles</Filter>
+    </ClCompile>
+    <ClCompile Include="chimera\ParticleManager.cpp">
+      <Filter>Source Files\view\particles</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

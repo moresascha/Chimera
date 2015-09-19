@@ -45,9 +45,24 @@ namespace chimera
                 m_generator.seed(m_seed);
             }
 
+            float NextFloat(float scale)
+            {
+                return scale * m_distribution(m_generator) / (float)UINT_MAX;
+            }
+
             float NextFloat(void)
             {
-                return m_distribution(m_generator) / (float)UINT_MAX;
+                return NextFloat(1);
+            }
+
+            float NextCubeFloat(float scale)
+            {
+                return -scale + 2 * NextFloat(scale);
+            }
+
+            float NextCubeFloat(void)
+            {
+                return NextCubeFloat(1);
             }
 
             uint NextInt(void)

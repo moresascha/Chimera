@@ -58,7 +58,7 @@ namespace Logger
 //#ifdef _DEBUG
 
 #define _GET_TEXT(format, ...) \
-    CHAR __tmp[2048]; \
+    char __tmp[2048]; \
     sprintf_s(__tmp, 2048, format, __VA_ARGS__); \
     std::string __msg__(__tmp);
 

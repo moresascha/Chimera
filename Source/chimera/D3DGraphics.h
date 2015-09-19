@@ -36,7 +36,7 @@ namespace chimera
         extern LPCSTR g_vertexShaderMaxProfile;
         extern LPCSTR g_pixelShaderMaxProfile;
         extern LPCSTR g_geometryShaderMaxProfile;
-        extern ID3D11SamplerState* g_pSamplerStates[4];
+        extern ID3D11SamplerState* g_pSamplerStates[5];
         extern HWND g_hWnd;
 
         extern uint g_width;

@@ -22,6 +22,22 @@ namespace chimera
         }
     };
 
+    typedef void (*function_ptr)(uint); 
+    class FunctionProcess : public IProcess
+    {
+    private:
+        function_ptr m_pF;
+    public:
+        FunctionProcess(function_ptr fp) : m_pF(fp)
+        {
+
+        }
+        void VOnUpdate(ulong deltaMillis)
+        {
+            m_pF(deltaMillis);
+        }
+    };
+
     typedef fastdelegate::FastDelegate2<ulong, IActor*> _AFDelegate;
     class ActorDelegateProcess : public IProcess
     {

@@ -30,15 +30,15 @@ namespace chimera
         ~AlbedoSetting(void);
     };
 
-	class WireFrameSettings : public ShaderPathSetting
-	{
-	private:
-		std::unique_ptr<IRasterState> m_pWireFrameState;
-	public:
-		WireFrameSettings(void);
-		void VRender(void);
-		bool VOnRestore(uint w, uint h);
-	};
+    class WireFrameSettings : public ShaderPathSetting
+    {
+    private:
+        std::unique_ptr<IRasterState> m_pWireFrameState;
+    public:
+        WireFrameSettings(void);
+        void VRender(void);
+        bool VOnRestore(uint w, uint h);
+    };
 
     class GloablLightingSetting : public ShaderPathSetting
     {
@@ -56,6 +56,16 @@ namespace chimera
         void VRender(void);
         bool VOnRestore(uint w, uint h);
         CMShaderProgramDescription* VGetProgramDescription(void) { return NULL; }
+    };
+
+    class ParticleSetting : public ShaderPathSetting
+    {
+    private:
+        std::unique_ptr<IRasterState> m_pNoCullingState;
+    public:
+        ParticleSetting(void);
+        bool VOnRestore(uint w, uint h);
+        void VRender(void);
     };
 
     class CSMSetting : public IGraphicSetting

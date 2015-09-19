@@ -5,7 +5,11 @@ namespace chimera
 {
     GeometryNode::GeometryNode(ActorId actor, std::unique_ptr<IGeometry> geo) : SceneNode(actor)
     {
-        m_pMaterial = std::unique_ptr<IMaterial>(new Material());
+        Material* m = new Material();
+        m->m_ambient.x = 1;
+        m->m_ambient.y = 1;
+        m->m_ambient.z = 1;
+        m_pMaterial = std::unique_ptr<IMaterial>(m);
         m_pGeometry = std::move(geo);
         VSetRenderPaths(CM_RENDERPATH_ALBEDO | CM_RENDERPATH_SHADOWMAP);
     }
@@ -38,8 +42,8 @@ namespace chimera
                     CmGetApp()->VGetHumanView()->VGetRenderer()->VPushWorldTransform(*VGetTransformation());
                     CmGetApp()->VGetHumanView()->VGetRenderer()->VSetDefaultTexture();
                     CmGetApp()->VGetHumanView()->VGetRenderer()->VSetDefaultMaterial();
-                    //CmGetApp()->VGetHumanView()->VGetRenderer()->VPushMaterial(*m_pMaterial);
-                    CmGetApp()->VGetHumanView()->VGetRenderer()->VSetNormalMapping(false);
+                    CmGetApp()->VGetHumanView()->VGetRenderer()->VPushMaterial(*m_pMaterial);
+                    //CmGetApp()->VGetHumanView()->VGetRenderer()->VSetNormalMapping(false);
                     m_pGeometry->VBind();
                     m_pGeometry->VDraw();
                 } break;

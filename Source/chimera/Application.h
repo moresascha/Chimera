@@ -20,7 +20,7 @@ namespace chimera
         IConfig* m_pConfig;
         bool m_running;
         ulong m_updateInterval; //freq per second
-        DOUBLE m_updateFreqMillis;
+        double m_updateFreqMillis;
         IFileSystem* m_pFileSystem;
 
         static HINSTANCE g_hInstance;

@@ -59,6 +59,8 @@ namespace chimera
 
         virtual void VSyncScene(void) = 0;
 
+        virtual ActorId VRayCast(const util::Vec3* pos,  const util::Vec3* dir) = 0;
+
         virtual void VUpdate(float deltaMillis) = 0;
 
         virtual ~IPhysicsSystem(void) {}
@@ -197,6 +199,8 @@ namespace chimera
         void DeleteComponentDelegate(IEventPtr data);
 
         void ApplyForceTorqueDelegate(IEventPtr data);
+
+        ActorId PhysX::VRayCast(const util::Vec3* pos,  const util::Vec3* dir);
 
         void OnResourceChanged(IEventPtr data);
 

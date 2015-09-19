@@ -228,7 +228,6 @@ namespace chimera
                 imsg.message = (KF_REPEAT & HIWORD(msg.lParam)) ? KEY_REPEAT : KEY_PRESSED;
                 UpdateListener(imsg);
                 m_isKeyDown[imsg.button] = true;
-
             } break;
         case WM_KEYUP:
             {

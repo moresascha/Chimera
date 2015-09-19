@@ -1,5 +1,6 @@
 #include "GraphicsSettings.h"
 #include "CascadedShadowMapper.h"
+#include "Effect.h"
 
 namespace chimera
 {  
@@ -196,30 +197,30 @@ namespace chimera
         SAFE_DELETE(m_pCSM);
     }
 
-	WireFrameSettings::WireFrameSettings(void) : ShaderPathSetting(CM_RENDERPATH_ALBEDO_WIRE, DEFERRED_WIREFRAME_SHADER_NAME, DEFERRED_WIREFRAME_SHADER_NAME)
-	{
-		m_pWireFrameState = NULL;
-	}
+    WireFrameSettings::WireFrameSettings(void) : ShaderPathSetting(CM_RENDERPATH_ALBEDO_WIRE, DEFERRED_WIREFRAME_SHADER_NAME, DEFERRED_WIREFRAME_SHADER_NAME)
+    {
+        m_pWireFrameState = NULL;
+    }
 
-	void WireFrameSettings::VRender(void) 
-	{
-		CmGetApp()->VGetHumanView()->VGetRenderer()->VPushRasterState(m_pWireFrameState.get());
-		ShaderPathSetting::VRender();
-		CmGetApp()->VGetHumanView()->VGetRenderer()->VPopRasterState();
-	}
+    void WireFrameSettings::VRender(void) 
+    {
+        CmGetApp()->VGetHumanView()->VGetRenderer()->VPushRasterState(m_pWireFrameState.get());
+        ShaderPathSetting::VRender();
+        CmGetApp()->VGetHumanView()->VGetRenderer()->VPopRasterState();
+    }
 
-	bool WireFrameSettings::VOnRestore(uint w, uint h)
-	{
-		std::unique_ptr<IGraphicsStateFactroy> factory = CmGetApp()->VGetHumanView()->VGetGraphicsFactory()->VCreateStateFactory();
+    bool WireFrameSettings::VOnRestore(uint w, uint h)
+    {
+        std::unique_ptr<IGraphicsStateFactroy> factory = CmGetApp()->VGetHumanView()->VGetGraphicsFactory()->VCreateStateFactory();
 
-		RasterStateDesc rasterDesc;
-		ZeroMemory(&rasterDesc, sizeof(RasterStateDesc));
-		rasterDesc.CullMode = eCullMode_None;
-		rasterDesc.FillMode = eFillMode_Wire;
-		rasterDesc.DepthClipEnable = true;
-		rasterDesc.FrontCounterClockwise = true;
-		rasterDesc.MultisampleEnable = false;
-		rasterDesc.AntialiasedLineEnable = false;
+        RasterStateDesc rasterDesc;
+        ZeroMemory(&rasterDesc, sizeof(RasterStateDesc));
+        rasterDesc.CullMode = eCullMode_None;
+        rasterDesc.FillMode = eFillMode_Wire;
+        rasterDesc.DepthClipEnable = true;
+        rasterDesc.FrontCounterClockwise = true;
+        rasterDesc.MultisampleEnable = false;
+        rasterDesc.AntialiasedLineEnable = false;
 
         VGetProgramDescription()->vs.file = DEFERRED_WIREFRAME_SHADER_FILE;
         VGetProgramDescription()->vs.function = DEFERRED_WIREFRAME_SHADER_VS_FUNCTION;
@@ -247,12 +248,12 @@ namespace chimera
         VGetProgramDescription()->fs.file = DEFERRED_WIREFRAME_SHADER_FILE;
         VGetProgramDescription()->fs.function = DEFERRED_WIREFRAME_SHADER_FS_FUNCTION;
 
-		m_pWireFrameState.reset();
+        m_pWireFrameState.reset();
 
-		m_pWireFrameState = std::unique_ptr<IRasterState>(factory->VCreateRasterState(&rasterDesc));
+        m_pWireFrameState = std::unique_ptr<IRasterState>(factory->VCreateRasterState(&rasterDesc));
 
-		return ShaderPathSetting::VOnRestore(w, h);
-	}
+        return ShaderPathSetting::VOnRestore(w, h);
+    }
 
     LightingSetting::LightingSetting(void) : IGraphicSetting("Lighting")
     {
@@ -293,7 +294,7 @@ namespace chimera
             desc.function = "Luminance";
 
             IEffect* lumi = m_pEffectChain->VAppendEffect(desc);
-            lumi->VSetSource(m_pSource);
+            lumi->VAddSource(m_pSource);
 
             //lumi->SetParameters(std::shared_ptr<LuminanceParameter>(new LuminanceParameter(1.0f)));
             
@@ -321,14 +322,14 @@ namespace chimera
             desc.function = "Sample";
             IEffect* ds = m_pEffectChain->VAppendEffect(desc, 1.0f / w, 1.0f / h);
             //ds->VAddRequirement(e);
-            e = ds;
+            //e = ds;
 
             float brightPathSize = 0.25f;
 
             desc.function = "Brightness";
 
             IEffect* bright = m_pEffectChain->VAppendEffect(desc, brightPathSize, brightPathSize);
-            bright->VSetSource(m_pSource);
+            bright->VAddSource(m_pSource);
 
             desc.function = "BlurH";
             IEffect* e0 = m_pEffectChain->VAppendEffect(desc, brightPathSize, brightPathSize);
@@ -337,10 +338,32 @@ namespace chimera
             desc.function = "BlurV";
             IEffect* e1 = m_pEffectChain->VAppendEffect(desc, brightPathSize, brightPathSize);
             //e1->VAddRequirement(e0);
+// 
+            /*std::unique_ptr<IEffect> ssaa(new SSAA());
+            desc.function = "SSAA";
+            ssaa->VCreate(desc, 1, 1);*/
+
+//             desc.function = "SSAA";
+//             IEffect* ac = m_pEffectChain->VAppendEffect(desc);
+//             std::unique_ptr<IEffectParmaters> ssaaParams(new SSAAParameters());
+//             ac->VSetParameters(ssaaParams);
+// 
+//             float ssaaBlurSize = 0.5f;
+//             desc.function = "BlurH";
+//             IEffect* ssaaBlurH = m_pEffectChain->VAppendEffect(desc, ssaaBlurSize, ssaaBlurSize);
+// 
+//             desc.function = "BlurV";
+//             IEffect* ssaaBlurV = m_pEffectChain->VAppendEffect(desc, ssaaBlurSize, ssaaBlurSize);
+
+//             desc.function = "SSAAAfterBlur";
+//             IEffect* ssaaAfterBlur = m_pEffectChain->VAppendEffect(desc);
+//             ssaaAfterBlur->VAddSource(m_pSource);
 
             desc.function = "ToneMap";
             IEffect* e2 = m_pEffectChain->VAppendEffect(desc);
-            e2->VSetSource(m_pSource);
+            e2->VAddSource(m_pSource);
+            //e2->VAddSource(e1->VGetTarget());
+            e2->VAddSource(ds->VGetTarget());
             //e2->VAddRequirement(e1);
 
             m_pEffectChain->VOnRestore(w, h);
@@ -473,6 +496,69 @@ namespace chimera
     {
        // CmGetApp()->VGetHumanView()->VGetGui()->VOnRestore();
         return true;
+    }
+
+    ParticleSetting::ParticleSetting(void) : ShaderPathSetting(CM_RENDERPATH_PARTICLE, "ParticlesProgram", "ParticleSettings")
+    {
+
+    }
+
+    void ParticleSetting::VRender(void)
+    {
+        CmGetApp()->VGetRenderer()->VPushRasterState(m_pNoCullingState.get());
+        ShaderPathSetting::VRender();
+        CmGetApp()->VGetRenderer()->VPopRasterState();
+    }
+
+    bool ParticleSetting::VOnRestore(uint w, uint h)
+    {        
+        RasterStateDesc rastDesc;
+        ZeroMemory(&rastDesc, sizeof(RasterStateDesc));
+        rastDesc.FillMode = eFillMode_Solid;
+        rastDesc.CullMode = eCullMode_None;
+
+        std::unique_ptr<IGraphicsStateFactroy> sf = CmGetApp()->VGetHumanView()->VGetGraphicsFactory()->VCreateStateFactory();
+        m_pNoCullingState = std::unique_ptr<IRasterState>(sf->VCreateRasterState(&rastDesc));
+
+        VGetProgramDescription()->vs.file = L"Particles.hlsl";
+        VGetProgramDescription()->vs.function = "Particle_VS";
+
+        VGetProgramDescription()->vs.layoutCount = 5;
+
+        VGetProgramDescription()->vs.inputLayout[0].instanced = false;
+        VGetProgramDescription()->vs.inputLayout[0].name = "POSITION";
+        VGetProgramDescription()->vs.inputLayout[0].position = 0;
+        VGetProgramDescription()->vs.inputLayout[0].slot = 0;
+        VGetProgramDescription()->vs.inputLayout[0].format = eFormat_R32G32B32_FLOAT;
+
+        VGetProgramDescription()->vs.inputLayout[1].instanced = false;
+        VGetProgramDescription()->vs.inputLayout[1].name = "NORMAL";
+        VGetProgramDescription()->vs.inputLayout[1].position = 1;
+        VGetProgramDescription()->vs.inputLayout[1].slot = 0;
+        VGetProgramDescription()->vs.inputLayout[1].format = eFormat_R32G32B32_FLOAT;
+
+        VGetProgramDescription()->vs.inputLayout[2].instanced = false;
+        VGetProgramDescription()->vs.inputLayout[2].name = "TEXCOORD";
+        VGetProgramDescription()->vs.inputLayout[2].position = 2;
+        VGetProgramDescription()->vs.inputLayout[2].slot = 0;
+        VGetProgramDescription()->vs.inputLayout[2].format = eFormat_R32G32_FLOAT;
+
+        VGetProgramDescription()->vs.inputLayout[3].instanced = true;
+        VGetProgramDescription()->vs.inputLayout[3].name = "INSTANCED_POSITION";
+        VGetProgramDescription()->vs.inputLayout[3].position = 3;
+        VGetProgramDescription()->vs.inputLayout[3].slot = 1;
+        VGetProgramDescription()->vs.inputLayout[3].format = eFormat_R32G32B32A32_FLOAT;
+
+        VGetProgramDescription()->vs.inputLayout[4].instanced = true;
+        VGetProgramDescription()->vs.inputLayout[4].name = "INSTANCED_VELO";
+        VGetProgramDescription()->vs.inputLayout[4].position = 4;
+        VGetProgramDescription()->vs.inputLayout[4].slot = 2;
+        VGetProgramDescription()->vs.inputLayout[4].format = eFormat_R32G32B32_FLOAT;
+
+        VGetProgramDescription()->fs.file = L"Particles.hlsl";
+        VGetProgramDescription()->fs.function = "Particle_PS";
+
+        return ShaderPathSetting::VOnRestore(w, h);
     }
     
     //Settings...
@@ -669,9 +755,8 @@ namespace chimera
     DefaultGraphicsSettings::DefaultGraphicsSettings(void)
     {
         VAddSetting(std::unique_ptr<IGraphicSetting>(new AlbedoSetting()), eGraphicsSetting_Albedo);
-		VAddSetting(std::unique_ptr<IGraphicSetting>(new WireFrameSettings()), eGraphicsSetting_Albedo);
-        /*VAddSetting(std::unique_ptr<IGraphicSetting>(new ShaderPathSetting(eRenderPath_DrawToAlbedoInstanced, "DefShaderInstanced", "albedoInstanced")), eGraphicsSetting_Albedo);
-        VAddSetting(std::unique_ptr<IGraphicSetting>(new ShaderPathSetting(eRenderPath_DrawParticles, "Particles", "particles")), eGraphicsSetting_Albedo);*/
+        VAddSetting(std::unique_ptr<IGraphicSetting>(new WireFrameSettings()), eGraphicsSetting_Albedo);
+        VAddSetting(std::unique_ptr<IGraphicSetting>(new ParticleSetting()), eGraphicsSetting_Albedo);
 
         ShaderPathSetting* skySettings = new ShaderPathSetting(CM_RENDERPATH_SKY, "Sky", "sky");
 

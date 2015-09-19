@@ -389,6 +389,7 @@ namespace chimera
                 uint quadPosX = (uint)(x * w);
                 uint quadPosY = (uint)((1-y) * h);
 
+                //fixme: offset of -1 produces wrong results if x is 0
                 quadPosX += curserX + metric->xoffset;
                 quadPosY -= metric->yoffset - curserY;
                 

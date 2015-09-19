@@ -9,6 +9,7 @@
 #include "PointLightNode.h"
 #include "SpotLightNode.h"
 #include "Picker.h"
+#include "ParticleNode.h"
 
 namespace chimera
 {
@@ -33,6 +34,22 @@ namespace chimera
         }
 
         return mn;
+    }
+
+    ISceneNode* CreateParticleNode(IHumanView* gw, IActor* actor)
+    {
+        ParticleComponent* cmp;
+        actor->VQueryComponent(CM_CMP_PARTICLE, (IActorComponent**)(&cmp));
+        if(!cmp)
+        {
+            return NULL;
+        }
+        ISceneNode* node = new ParticleNode(actor->GetId(), cmp->m_pSystem);
+
+        RenderPath rp = node->VGetRenderPaths();
+        rp ^= CM_RENDERPATH_PARTICLE;
+        node->VSetRenderPaths(rp);
+        return node;
     }
 
     ISceneNode* CreateRenderNode(IHumanView* gw, IActor* actor)
@@ -144,6 +161,7 @@ namespace chimera
         VAddSceneNodeCreator(CreateRenderNode, CM_CMP_RENDERING);
         VAddSceneNodeCreator(CreateLightNode, CM_CMP_LIGHT);
         VAddSceneNodeCreator(CreateCameraNode, CM_CMP_CAMERA);
+        VAddSceneNodeCreator(CreateParticleNode, CM_CMP_PARTICLE);
 
         return true;
     }
@@ -158,7 +176,7 @@ namespace chimera
         {
             m_pSceneGraph->VGetCamera()->SetAspect(VGetRenderer()->VGetWidth(), VGetRenderer()->VGetHeight());
             VGetRenderer()->VSetProjectionTransform(m_pSceneGraph->VGetCamera()->GetProjection(), m_pSceneGraph->VGetCamera()->GetFar());
-            VGetRenderer()->VSetViewTransform(m_pSceneGraph->VGetCamera()->GetView(), m_pSceneGraph->VGetCamera()->GetIView(), m_pSceneGraph->VGetCamera()->GetEyePos());
+            VGetRenderer()->VSetViewTransform(m_pSceneGraph->VGetCamera()->GetView(), m_pSceneGraph->VGetCamera()->GetIView(), m_pSceneGraph->VGetCamera()->GetEyePos(), m_pSceneGraph->VGetCamera()->GetViewDir());
         }
 
         std::string fontFile = CmGetApp()->VGetConfig()->VGetString("sResCache") + CmGetApp()->VGetConfig()->VGetString("sFontPath") + std::string("font_16.fnt");
@@ -239,7 +257,8 @@ namespace chimera
 
             m_pSceneGraph->VGetCamera()->MoveToPosition(trans);
 
-            VGetRenderer()->VSetViewTransform(m_pSceneGraph->VGetCamera()->GetView(), m_pSceneGraph->VGetCamera()->GetIView(), m_pSceneGraph->VGetCamera()->GetEyePos());
+            VGetRenderer()->VSetViewTransform(m_pSceneGraph->VGetCamera()->GetView(), 
+                m_pSceneGraph->VGetCamera()->GetIView(), m_pSceneGraph->VGetCamera()->GetEyePos(), m_pSceneGraph->VGetCamera()->GetViewDir());
         }
     }
 
@@ -521,7 +540,7 @@ namespace chimera
    
                 IView::VSetTarget(actor);
 
-                VGetRenderer()->VSetViewTransform(cam->GetView(), cam->GetIView(), cam->GetEyePos());
+                VGetRenderer()->VSetViewTransform(cam->GetView(), cam->GetIView(), cam->GetEyePos(), cam->GetViewDir());
                 VGetRenderer()->VSetProjectionTransform(cam->GetProjection(), cam->GetFar() - cam->GetNear());
 
                 m_pSceneGraph->VSetCamera(cam);

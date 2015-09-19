@@ -140,6 +140,11 @@ namespace chimera
         return new ControllerComponent;
     }
 
+    IActorComponent* CreateParticleComponent(void)
+    {
+        return new ParticleComponent;
+    }
+
     bool InitializeTransformComponent(IActorComponent* cmp, ICMStream* stream);
 
     bool InitializeRenderingComponent(IActorComponent* cmp, ICMStream* stream);
@@ -151,6 +156,8 @@ namespace chimera
     bool InitializePhysicsComponent(IActorComponent* cmp, ICMStream* stream);
 
     bool InitializeLightComponent(IActorComponent* cmp, ICMStream* stream);
+
+    bool InitializeParticleComponent(IActorComponent* cmp, ICMStream* stream);
 
     bool InitializeNothing(IActorComponent* cmp, ICMStream* stream)
     {
@@ -169,6 +176,7 @@ namespace chimera
         VAddComponentCreator(CreateParentComponent, "ParentComponent", CM_CMP_PARENT_ACTOR);
         VAddComponentCreator(CreateControllerComponent, "ControllerComponent", CM_CMP_CONTROLLER);
         VAddComponentCreator(CreatePickableComponent, "PickableComponent", CM_CMP_PICKABLE);
+        VAddComponentCreator(CreateParticleComponent, "ParticleComponent", CM_CMP_PARTICLE);
 
         VAddComponentInitializer(InitializeTransformComponent, "TransformComponent", CM_CMP_TRANSFORM);
         VAddComponentInitializer(InitializeRenderingComponent, "RenderComponent", CM_CMP_RENDERING);
@@ -176,6 +184,7 @@ namespace chimera
         VAddComponentInitializer(InitializeControllerComponent, "ControllerComponent", CM_CMP_CONTROLLER);
         VAddComponentInitializer(InitializePhysicsComponent, "PhysicComponent", CM_CMP_PHX);
         VAddComponentInitializer(InitializeLightComponent, "LightComponent", CM_CMP_LIGHT);
+        VAddComponentInitializer(InitializeParticleComponent, "ParticleComponent", CM_CMP_PARTICLE);
     }
 
     void ActorFactory::VAddComponentCreator(ActorComponentCreator creator, LPCSTR name, ComponentId id)

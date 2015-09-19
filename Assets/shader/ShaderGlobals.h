@@ -4,7 +4,8 @@
 #define CASCADES_COUNT 3
 
 #define PI 3.1415926535897
-#define PIDIV2 PI/2.0f
+#define PIDIV2 (PI*0.5f)
+#define PIDIV4 (PIDIV2*0.5f)
 
 SamplerState g_samPoint
 {
@@ -18,6 +19,7 @@ cbuffer ViewBuffer : register(b0)
     matrix g_view;
     matrix g_invView;
     float4 g_eyePos;
+    float4 g_viewDir;
 }
 
 cbuffer ProjectionBuffer : register(b1)
@@ -101,9 +103,10 @@ cbuffer CSMLightingBuffer : register(b12)
 }
 
 SamplerState g_samplerWrap : register(s0);
-SamplerState g_samplerClamp : register(s1);
-SamplerState g_samplerAniso : register(s2);
-SamplerState g_samplerPoint : register(s3);
+SamplerState g_samplerMirror : register(s1);
+SamplerState g_samplerClamp : register(s2);
+SamplerState g_samplerAniso : register(s3);
+SamplerState g_samplerPoint : register(s4);
 
 Texture2D<float4> g_diffuseColor : register(t0);
 Texture2D<float4> g_worldPosDepth : register(t1);
@@ -123,5 +126,10 @@ Texture2D<float4> g_effectSource2 : register(t12);
 Texture2D<float4> g_effectSource3 : register(t13);
 
 //Texture2D<float4> g_cascadedShadows[CASCADES_COUNT] : register(t14); //TODO slot
+
+float3 getViewDir(void)
+{
+    return g_viewDir.xyz;
+}
 
 #endif //__GLOBALS__

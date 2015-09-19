@@ -226,7 +226,7 @@ PixelOutput GlobalLighting_PS(PixelInput input)
             computeCSMContr(op.color, input.texCoord, normal);
         }
 
-        op.color += g_ambient * diffuse;//float4(g_ambient.xyz * ambientMat.xyz, 0); // * diffuse.xyz
+        op.color.xyz += ambientMat.xyz; //float4(g_ambient.xyz * ambientMat.xyz, 0); // * diffuse.xyz
     } 
     else
     {
@@ -241,8 +241,7 @@ PixelOutput GlobalLighting_PS(PixelInput input)
         float powa = pow(saturate(dot(ray.xyz, sunposition)), 32);
         
         float l = clamp(worldDepth.y * 0.1, 0, 1);
-        op.color = 0.802*diffuse;//lerp(sky, tex, l);
-        //op.color += sun * powa;
+        op.color = 0*diffuse;
     }
     return op;
 }
@@ -407,7 +406,7 @@ PixelOutput SpotLighting_PS(PixelInput input)
 
     normal = g_normals.Sample(g_samplerClamp, input.texCoord).xyz;
 
-    int hasNormal = abs(dot(normal, normal)) > 0;
+    int hasNormal = 1;//abs(dot(normal, normal)) > 0;
 
     if(hasNormal)
     {
@@ -455,12 +454,14 @@ PixelOutput SpotLighting_PS(PixelInput input)
     
     float3 projTex = g_normalColor.Sample(g_samplerClamp, float2(tc.x, 1 - tc.y)).rgb;
 
-    float3 color = projTex * lightColor * (specular * specularMat + diffuseMat * diffuse * diffuseColor);
+    float3 color = lightColor * (specular * specularMat + diffuseMat * diffuse * diffuseColor);
     
     color *= intensity;
 
-    op.color = !hasNormal * float4(intensity * lightColor * diffuseColor, 1) 
+    op.color = float4(intensity * lightColor * diffuseColor, 1) 
         + hasNormal * !shadow * float4(color, 1);
+
+    op.color.xyz *= projTex;
 
     return op;
 }

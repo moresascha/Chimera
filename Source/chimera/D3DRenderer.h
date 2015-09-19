@@ -15,6 +15,7 @@ namespace chimera
             XMFLOAT4X4 m_view;
             XMFLOAT4X4 m_invView;
             XMFLOAT4 m_eyePos;
+            XMFLOAT4 m_viewDir;
         };
 
         struct _MaterialBuffer 
@@ -190,7 +191,7 @@ namespace chimera
 
             IAlbedoBuffer* VGetAlbedoBuffer(void);
 
-            void VSetViewTransform(const util::Mat4& mat, const util::Mat4& invMat, const util::Vec3& eyePos);
+            void VSetViewTransform(const util::Mat4& mat, const util::Mat4& invMat, const util::Vec3& eyePos, const util::Vec3& viewDir);
 
             void VSetProjectionTransform(const util::Mat4& mat, float distance);
 
@@ -200,7 +201,7 @@ namespace chimera
 
             void VPopWorldTransform(void);
 
-            void VPushViewTransform(const util::Mat4& mat, const util::Mat4& invMat, const util::Vec3& eyePos);
+            void VPushViewTransform(const util::Mat4& mat, const util::Mat4& invMat, const util::Vec3& eyePos, const util::Vec3& viewDir);
 
             void VPopViewTransform(void);
 

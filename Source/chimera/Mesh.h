@@ -43,6 +43,7 @@ namespace chimera
     class Mesh : public IMesh
     {
         friend class ObjLoader;
+
     private:
         std::list<Face> m_faces;
         std::vector<IndexBufferInterval> m_indexIntervals;
@@ -53,8 +54,8 @@ namespace chimera
         uint m_vertexCount;
         uint m_vertexStride;
         util::AxisAlignedBB m_aabb;
-    public:
 
+    public:
         Mesh(void) { }
 
         CMResource& VGetMaterials(void)

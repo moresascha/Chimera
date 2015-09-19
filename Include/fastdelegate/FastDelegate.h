@@ -502,7 +502,7 @@ struct SimplifyMemFunc<SINGLE_MEMFUNCPTR_SIZE + 3*sizeof(int) >
         // Finally we can add the three components together. Phew!
         return reinterpret_cast<GenericClass *>(
 			reinterpret_cast<char *>(pthis) + u.s.delta + virtual_delta);
-	};
+	}
 };
 #endif // MSVC 7 and greater
 

@@ -5,7 +5,7 @@
 	<LightComponent>
         <Type>spot</Type>
         <Color r="1" g="1" b="1" />
-        <Intensity>7</Intensity>
+        <Intensity>1</Intensity>
         <Activate />
         <Angle>70</Angle>
         <Radius>100</Radius>

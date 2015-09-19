@@ -18,7 +18,6 @@ namespace chimera
             return (void*)m_pTextureView;
         }
 
-
         void Texture::VDestroy(void)
         {
             SAFE_RELEASE(m_pTextureView);

@@ -121,7 +121,7 @@ namespace chimera
 
             RasterStateDesc rasterDesc;
             ZeroMemory(&rasterDesc, sizeof(RasterStateDesc));
-            rasterDesc.CullMode = eCullMode_Back;;
+            rasterDesc.CullMode = eCullMode_Back;
             rasterDesc.FillMode = eFillMode_Solid;
             rasterDesc.DepthClipEnable = true;
             rasterDesc.FrontCounterClockwise = true;
@@ -379,7 +379,7 @@ namespace chimera
 
         }
 
-        void Renderer::VSetViewTransform(const util::Mat4& mat, const util::Mat4& invMat, const util::Vec3& eyePos)
+        void Renderer::VSetViewTransform(const util::Mat4& mat, const util::Mat4& invMat, const util::Vec3& eyePos, const util::Vec3& viewDir)
         {
             m_viewMatrixStack.Clear();
             _ViewMatrixBuffer buffer;
@@ -389,6 +389,9 @@ namespace chimera
             buffer.m_eyePos.y = eyePos.m_v.y;
             buffer.m_eyePos.z = eyePos.m_v.z;
             buffer.m_eyePos.w = 0;
+            buffer.m_viewDir.x = viewDir.x;
+            buffer.m_viewDir.y = viewDir.y;
+            buffer.m_viewDir.z = viewDir.z;
 
             _ViewMatrixBuffer* vb = (_ViewMatrixBuffer*)m_constBuffer[eViewBuffer]->VMap();
             *vb = buffer;
@@ -398,7 +401,7 @@ namespace chimera
             chimera::CmGetApp()->VGetLogic()->VGetHumanView()->VGetSceneGraph()->VResetVisibility();
         }
 
-        void Renderer::VPushViewTransform(const util::Mat4& mat, const util::Mat4& invMat, const util::Vec3& eyePos)
+        void Renderer::VPushViewTransform(const util::Mat4& mat, const util::Mat4& invMat, const util::Vec3& eyePos, const util::Vec3& viewDir)
         {
             //VSetViewTransform(mat, invMat, eyePos);
 
@@ -409,6 +412,9 @@ namespace chimera
             buffer.m_eyePos.y = eyePos.m_v.y;
             buffer.m_eyePos.z = eyePos.m_v.z;
             buffer.m_eyePos.w = 0;
+            buffer.m_viewDir.x = viewDir.x;
+            buffer.m_viewDir.y = viewDir.y;
+            buffer.m_viewDir.z = viewDir.z;
 
             m_viewMatrixStack.Push(buffer);
             _ViewMatrixBuffer* pBuffer = (_ViewMatrixBuffer*)m_constBuffer[eViewBuffer]->VMap();

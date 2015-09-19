@@ -11,7 +11,7 @@
 #define CM_CMP_SOUND 0x568a0c05
 #define CM_CMP_PARENT_ACTOR 0xde7b06f1
 #define CM_CMP_CONTROLLER 0xc591361a
-
+#define CM_CMP_PARTICLE 0x813462a7
 
 #define CM_CREATE_CMP_HEADER(__type, __name) \
     ComponentId VGetComponentId(VOID) CONST { return __type; } \
@@ -65,6 +65,7 @@ namespace chimera
     {
     public:
         std::list<util::Vec3> m_instances;
+
         std::string m_anchorType;
 
         std::string m_type;
@@ -90,6 +91,15 @@ namespace chimera
         void VCreateResources(void);
 
         CM_CREATE_CMP_HEADER(CM_CMP_RENDERING, RenderComponent);
+    };
+
+    class ParticleComponent : public ActorComponent
+    {
+    public:
+        IParticleSystem* m_pSystem;
+        std::vector<std::string> m_modifier;
+        ParticleComponent(void) : m_pSystem(NULL) { }
+        CM_CREATE_CMP_HEADER(CM_CMP_PARTICLE, ParticleComponent);
     };
 
     class CameraComponent : public ActorComponent

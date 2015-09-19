@@ -28,6 +28,7 @@
 #define CM_EVENT_DELETE_COMPONENT 0xdab24554
 #define CM_EVENT_SET_SUN_INTENSITY 0x130d2b31
 #define CM_EVENT_SET_SUN_AMBIENT 0xa8882b58
+#define CM_EVENT_SUBMESH_LOADED 0x317da8d1
 
 #define CM_CREATE_EVENT_HEADER(__type, __name) \
     EventType VGetEventType(VOID) CONST { return __type; } \
@@ -62,6 +63,17 @@ namespace chimera
         CM_INLINE SetSunIntensityEvent(float x, float y, float z);
 
         CM_CREATE_EVENT_HEADER(CM_EVENT_SET_SUN_INTENSITY, SetSunIntensityEvent);
+    };
+
+    class SubMeshLoadedEvent : public Event
+    {
+    public:
+        IMeshSet* m_meshSet;
+        std::string m_meshId;
+
+        CM_INLINE SubMeshLoadedEvent(IMeshSet* meshSet, std::string id);
+
+        CM_CREATE_EVENT_HEADER(CM_EVENT_SUBMESH_LOADED, SubMeshLoadedEvent);
     };
 
     class PreRestoreEvent : public Event
@@ -339,6 +351,11 @@ namespace chimera
         m_ambient.x = x;
         m_ambient.y = y;
         m_ambient.z = z;
+    }
+
+    SubMeshLoadedEvent::SubMeshLoadedEvent(IMeshSet* meshSet, std::string id) : m_meshSet(meshSet), m_meshId(id)
+    {
+
     }
 
     MoveActorEvent::MoveActorEvent(ActorId id, util::Vec3 translation, util::Vec4 quat, bool isDeltaMove) 

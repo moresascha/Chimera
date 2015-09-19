@@ -1,88 +1,109 @@
 #pragma once
 #include "stdafx.h"
 #include "AxisAlignedBB.h"
+#include <Nutty.h>
+#include <cuda/cuda_helper.h>
+#include <Copy.h>
 #include <DeviceBuffer.h>
 #include <cuda/Kernel.h>
+#include <cuda/Module.h>
 #include <interop/D3DInterop.h>
 #include <interop/shared_resources.h>
+#include "ParticleData.h"
+
+#define CUDA_GROUP_SIZE (uint)256
+
+#define KERNEL_PTX "../Assets/kernel/Particles.ptx"
 
 namespace chimera
 {
-    class ParticleQuadGeometryHandleCreator : public IVRamHandleCreator
-    {
-    public:
-
-        VRamHandle* VGetHandle(void);
-
-        void VCreateHandle(VRamHandle* handle);
-    };
-
-    struct FLOAT4
-    {
-        float x;
-        float y;
-        float z;
-        float w;
-
-        FLOAT4(void) : x(0), y(0), z(0), w(0)
-        {
-        }
-
-        FLOAT4(float x, float y, float z, float w) : x(x), y(y), z(z), w(w)
-        {
-        }
-    };
-
-    struct BaseParticleProperties
-    {
-        FLOAT4 velocity;
-    };
-
-    class BaseModifier : public IParticleModifier
-    {
-        friend class ParticleSystem;
-    protected:
-        util::AxisAlignedBB m_aabb;
-        nutty::cuKernel m_kernel;
-        ParticleSystem* m_sys;
-    public:
-
-        BaseModifier(void) : m_sys(NULL), m_kernel(NULL) { }
-
-        virtual void VUpdate(ParticleSystem* sys, float time, float dt) = 0;
-
-        virtual void VOnRestore(ParticleSystem* sys) { }
-
-        virtual uint VGetByteCount(void) = 0;
-
-        void VSetAABB(const util::AxisAlignedBB& aabb);
-
-        virtual ~BaseModifier(void) {}
-    };
-
-    class BaseEmitter : public BaseModifier
+    class BaseEmitter : public IParticleEmitter
     {
     protected:
         float m_startSpawnTime;
         float m_endSpawnTime;
         uint m_particleCount;
-        nutty::DeviceBuffer<float3> m_emitterData;
-        nutty::DeviceBuffer<float3> m_startingPositions;
-        util::Vec3 m_position;
+        util::Vec3 m_pos;
+
+        nutty::DeviceBuffer<EmitterData> m_emitterData;
+        nutty::DeviceBuffer<ParticlePosition> m_startingPositions;
+        nutty::DeviceBuffer<float3> m_acceleration;
+
+        nutty::DevicePtr<ParticlePosition> m_mappedPositionPtr;
+        //nutty::MappedBufferPtr<ParticlePosition> m_mappedPositionResource;
+        cudaGraphicsResource_t m_positionResoure;
+
+        nutty::DevicePtr<float3> m_mappedVeloPtr;
+        //nutty::MappedBufferPtr<float3> m_mappedVeloResource;
+        cudaGraphicsResource_t m_veloResoure;
+
+        nutty::cuKernel m_emitKernel;
+        nutty::cuModule m_module;
+
+        ParticleCreator m_fpCreator;
+
+        IVertexBuffer* m_pParticleBuffer;
+        IVertexBuffer* m_pParticleVeloBuffer;
 
     public:
-        BaseEmitter(const util::Vec3& position, uint count, float starSpawnTime, float endSpawnTime);
+        BaseEmitter(uint count, float starSpawnTime, float endSpawnTime);
 
-        virtual void VUpdate(ParticleSystem* sys, float time, float dt);
-        virtual void VOnRestore(ParticleSystem* sys);
+        virtual void VUpdate(IParticleSystem* sys, IParticleEmitter* emitter, float time, float dt);
 
-        virtual ParticlePosition CreateParticles(void) = 0;
+        virtual void VOnRestore(IParticleSystem* sys, IParticleEmitter* emitter);
 
-        uint GetParticleCount(void) const { return m_particleCount; }
-        float GetStartSpawnTime(void) const { return m_startSpawnTime; }
-        float GetEndSpawnTime(void) const { return m_endSpawnTime; }
+        virtual void VCreateParticles(ParticlePosition* positions);
 
-        virtual ~BaseEmitter(void) {}
+        uint VGetParticleCount(void) const { return m_particleCount; }
+
+        void VSetPosition(const util::Vec3& pos) { m_pos = pos; }
+
+        void VSetParticleCreator(ParticleCreator creator) { m_fpCreator = creator; }
+
+        void VMapArrays(void);
+
+        void VUnmapArrays(void);
+
+        void VRelease(void);
+
+        MemPtr VGetVelocitiesArray(void);
+
+        MemPtr VGetAccelerationArray(void);
+
+        MemPtr VGetParticleArray(void);
+
+        IVertexBuffer* VGetGFXPosArray(void);
+
+        IVertexBuffer* VGetGFXVeloArray(void);
+
+        uint VGetByteCount(void) const;
+
+        void VSetAABB(const util::AxisAlignedBB& aabb) { }
+
+        virtual ~BaseEmitter(void);
+    };
+
+    class BaseModifier : public IParticleModifier
+    {
+    protected:
+        util::AxisAlignedBB m_aabb;
+        nutty::cuKernel m_kernel;
+        nutty::cuModule m_module;
+
+    public:
+        BaseModifier(void) {}
+
+        virtual void VUpdate(IParticleSystem* sys, IParticleEmitter* emitter, float time, float dt) = 0;
+
+        virtual void VOnRestore(IParticleSystem* sys) { }
+
+        virtual uint VGetByteCount(void) const = 0;
+
+        void VSetAABB(const util::AxisAlignedBB& aabb) { m_aabb = aabb; }
+
+        virtual void VRelease(void) { }
+
+        virtual ~BaseModifier(void) {}
     };
 
     class IRandomGenerator
@@ -91,7 +112,7 @@ namespace chimera
         uint m_count;
     public:
         IRandomGenerator(uint count) : m_count(count) {}
-        virtual float* CreateRandomValues(void) = 0;
+        virtual void CreateRandomValues(float* data) = 0;
         uint IRandomGenerator::GetValuesCount(void) { return m_count;}
         virtual ~IRandomGenerator(void) { }
     };
@@ -102,7 +123,7 @@ namespace chimera
         uint m_seed;
     public:
         PositiveNormalizedUniformValueGenerator(uint count, int seed);
-        float* CreateRandomValues(void);
+        void CreateRandomValues(float* data);
     };
 
     class NormalizedUniformValueGenerator : public IRandomGenerator
@@ -112,64 +133,59 @@ namespace chimera
         float m_scale;
     public:
         NormalizedUniformValueGenerator(uint count, int seed, float scale);
-        float* CreateRandomValues(void);
+        void CreateRandomValues(float* data);
     };
 
-    class ParticleSystem : public VRamHandle, public IParticleSystem
+    class ParticleSystem : public IParticleSystem
     {
     private:
-        std::shared_ptr<IGeometry> m_geometry;
-        IVertexBuffer* m_pParticleBuffer;
+        std::vector<IParticleModifier*> m_mods;
+        std::vector<IParticleEmitter*> m_emitter;
 
-        std::vector<std::unique_ptr<IParticleModifier>> m_mods;
         util::AxisAlignedBB m_aabb;
         RNG m_fpRandGenerator;
 
         nutty::DeviceBuffer<float> m_randomValues;
-        nutty::DeviceBuffer<float3> m_acceleration;
-        nutty::DeviceBuffer<float3> m_velocities;
-        nutty::MappedBufferPtr<float4> m_particles;
 
         nutty::cuKernel m_kernel;
+        nutty::cuModule m_cudaMod;
 
         uint m_updateInterval;
         uint m_time;
 
-        uint m_localWorkSize;
-
-        ParticleCreator m_fpCreator;
-
     public:
-        ParticleSystem(uint particleCount, IRandomGenerator* generator = NULL);
-
-        IGeometry* VGetParticleGeometry(void);
-
-        void VSetParticleCreator(ParticleCreator creator);
+        ParticleSystem(uint particleCount, RNG rng = NULL);
 
         IParticleModifier* VAddModifier(std::unique_ptr<IParticleModifier>& mod);
 
+        IParticleEmitter* VAddEmitter(std::unique_ptr<IParticleEmitter>& emitter);
+
+        std::vector<IParticleEmitter*>& VGetEmitter(void) { return m_emitter; }
+
         bool VRemoveModifier(IParticleModifier* mod);
+
+        void VAddForce(const util::Vec3* dir) {}
+
+        void VAddDrain(const util::Plane* drain) {}
+
+        void VAddSpawn(const util::Vec3* pos, uint particles) {}
+
+        MemPtr VGetDeviceRNGArray(void) const
+        {
+            return NULL;
+        }
+
+        bool VRemoveEmitter(IParticleEmitter* mod);
         
-        void VUpdateTick(ulong time, float dt);
+        void VUpdate(ulong time, uint dt);
 
-        uint VGetParticlesCount(void) const;
+        void VRelease(void);
 
-        IVertexBuffer* VGetParticleArray(void) const;
+        uint VGetParticleCount(void) const;
 
-        const util::AxisAlignedBB& GetAxisAlignedBB(void) const;
+        const util::AxisAlignedBB& VGetAxisAlignedBB(void) const;
 
-        LPCGPUDEVMEM VGetDeviceVelocitiesArray(void) const;
-
-        LPCGPUDEVMEM VGetDeviceAccelerationArray(void) const;
-
-        LPCGPUDEVMEM VGetDeviceParticlesArray(void) const;
-
-        LPCGPUDEVMEM VGetDeviceRNGArray(void) const;
-
-        //vram interface
-        bool VCreate(void);
-
-        void VDestroy();
+        void VOnRestore(void);
 
         uint VGetByteCount(void) const;
 
@@ -181,12 +197,16 @@ namespace chimera
     class Gravity : public BaseModifier
     {
     private:
-        float m_factor;
-        UCHAR m_axis;
+        util::Vec3 m_dir;
+
     public:
-        Gravity(float factor, UCHAR axis);
-        void VUpdate(ParticleSystem* sys, float time, float dt);
-        void VOnRestore(ParticleSystem* sys);
+        Gravity(const util::Vec3& dir);
+
+        void VUpdate(IParticleSystem* sys, IParticleEmitter* emitter, float time, float dt);
+
+        void VOnRestore(IParticleSystem* sys, IParticleEmitter* emitter);
+
+        uint VGetByteCount(void) const { return 0; }
     };
 
     class Turbulence : public BaseModifier
@@ -195,11 +215,15 @@ namespace chimera
         nutty::DeviceBuffer<float3> m_randomDirections;
         int m_seed;
         float m_strength;
+
     public:
         Turbulence(int seed, float strength) : m_seed(seed), m_strength(strength) {}
-        void VOnRestore(ParticleSystem* sys);
-        void VUpdate(ParticleSystem* sys, float time, float dt);
-        uint VGetByteCount(void);
+
+        void VUpdate(IParticleSystem* sys, IParticleEmitter* emitter, float time, float dt);
+
+        void VOnRestore(IParticleSystem* sys, IParticleEmitter* emitter);
+
+        uint VGetByteCount(void) const;
     };
 
     class ActorBasedModifier : public BaseModifier
@@ -215,19 +239,26 @@ namespace chimera
         virtual ~ActorBasedModifier(void);
     };
 
-    class GradientField : public ActorBasedModifier
+    class GradientField : public BaseModifier
     {
     private:
         ActorId m_actorId;
         float4 m_positionNscale;
-		//cudah::cuda_array m_array;
+        nutty::DeviceBuffer<float3> m_randomDirections;
+        CUarray m_pArray;
 
     public:
         GradientField(void);
-        void VOnRestore(ParticleSystem* sys);
-        void VUpdate(ParticleSystem* sys, float time, float dt);
-        void VOnActorMoved(IActor* actor);
-        uint VGetByteCount(void);
+
+        void VUpdate(IParticleSystem* sys, IParticleEmitter* emitter, float time, float dt);
+
+        void VOnRestore(IParticleSystem* sys, IParticleEmitter* emitter);
+
+        uint VGetByteCount(void) const;
+
+        void OnResourceChangedDelegate(IEventPtr event);
+
+        ~GradientField(void);
     };
 
     enum GravityPolarization
@@ -271,22 +302,22 @@ namespace chimera
         uint VGetByteCount(void) { return 0; }
     };
 
-	class BoundingBox : public BaseModifier
-	{
-	private:
-		nutty::DeviceBuffer<float3> m_min;
+    class BoundingBox : public BaseModifier
+    {
+    private:
+        nutty::DeviceBuffer<float3> m_min;
         nutty::DeviceBuffer<float3> m_max;
         nutty::cuKernel m_second;
-		float* m_pData[2];
+        float* m_pData[2];
         util::AxisAlignedBB m_aabb;
-	public:
-		BoundingBox(void);
-		void VUpdate(ParticleSystem* sys, float time, float dt);
-		void VOnRestore(ParticleSystem* sys);
+    public:
+        BoundingBox(void);
+        void VUpdate(ParticleSystem* sys, float time, float dt);
+        void VOnRestore(ParticleSystem* sys);
         uint VGetByteCount(void);
         const util::AxisAlignedBB& GetAABB(void) { return m_aabb; }
-		~BoundingBox(void);
-	};
+        ~BoundingBox(void);
+    };
 
     //--emitter
 

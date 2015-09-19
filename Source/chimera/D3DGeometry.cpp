@@ -14,7 +14,7 @@ namespace chimera
         public:
             void VDraw(Geometry* geo, const uint& count, const uint& start, const uint& vertexbase)
             {
-                chimera::d3d::GetContext()->DrawIndexedInstanced(count, geo->VGetInstanceBuffer()->VGetElementCount(), start, vertexbase, 0);
+                chimera::d3d::GetContext()->DrawIndexedInstanced(count, geo->VGetInstanceBuffer(0)->VGetElementCount(), start, vertexbase, 0);
             }
         };
 
@@ -63,7 +63,7 @@ namespace chimera
             m_desc.Usage = GetUsage();
             m_desc.CPUAccessFlags = GetCPUAccess();
             m_desc.BindFlags = GetBindflags();
-            D3D_SAVE_CALL(chimera::d3d::GetDevice()->CreateBuffer(&m_desc, &m_data, &m_pBuffer));
+            D3D_SAVE_CALL(chimera::d3d::GetDevice()->CreateBuffer(&m_desc, m_data.pSysMem != NULL ? &m_data : NULL, &m_pBuffer));
         }
 
         D3D11_MAPPED_SUBRESOURCE* Buffer::Map(void)
@@ -151,9 +151,15 @@ namespace chimera
         VertexBuffer::~VertexBuffer() {}
 
         Geometry::Geometry(bool ownsInstanceBuffer /* = false */) 
-            : m_pVertexBuffer(NULL), m_pIndexBuffer(NULL), m_ownsInstanceBuffer(ownsInstanceBuffer), m_pInstanceBuffer(NULL), m_elementCount(0), m_initialized(false)
+            : m_pVertexBuffer(NULL), m_pIndexBuffer(NULL), m_elementCount(0), m_initialized(false), m_primType(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST)
         {
             m_pDrawer = DEFAULT_DRAWER;
+
+            for(int i = 0; i < 16; ++i)
+            {
+                m_ownsInstanceBufferMask[i] = false;
+                m_pInstanceBuffer[i] = NULL;
+            }
         }
 
         void Geometry::VSetIndexBuffer(const uint* indices, uint size) 
@@ -194,9 +200,13 @@ namespace chimera
             {
                 indexBytes = sizeof(uint) * m_pIndexBuffer->VGetElementCount();
             }
-            if(m_pInstanceBuffer)
+            for(int i = 0; i < 16; ++i)
             {
-                instancedBytes = m_pInstanceBuffer->VGetElementCount() * m_pInstanceBuffer->VGetStride() * sizeof(float);
+                IVertexBuffer* ib = m_pInstanceBuffer[i];
+                if(ib)
+                {
+                    instancedBytes = ib->VGetElementCount() * ib->VGetStride() * sizeof(float);
+                }
             }
             return m_pVertexBuffer->VGetElementCount() * m_pVertexBuffer->VGetStride() * sizeof(float) + instancedBytes + indexBytes;
         }
@@ -225,9 +235,16 @@ namespace chimera
                 m_pDrawer = ARRAY_DRAWER;
             }
 
-            if(m_pInstanceBuffer)
+            if(m_pInstanceBuffer[0])
             {
-                m_pInstanceBuffer->VCreate();
+                for(int i = 0; i < 16; ++i)
+                {
+                    IVertexBuffer* ib = m_pInstanceBuffer[i];
+                    if(ib)
+                    {
+                        ib->VCreate();
+                    }
+                }
                 m_pDrawer = INSTANCED_DRAWER;
             }
 
@@ -255,19 +272,28 @@ namespace chimera
 
                 if(m_pInstanceBuffer)
                 {
-                    ID3D11Buffer* buffer[2];
+                    ID3D11Buffer* buffer[16];
+                    uint strides[16];
+                    uint offsets[16];
+                    uint count = 1;
+
                     buffer[0] = (ID3D11Buffer*)m_pVertexBuffer->VGetDevicePtr();
-                    buffer[1] = (ID3D11Buffer*)m_pInstanceBuffer->VGetDevicePtr();
-
-                    uint strides[2];
                     strides[0] = m_pVertexBuffer->VGetStride();
-                    strides[1] = m_pInstanceBuffer->VGetStride();
-
-                    uint offsets[2];
                     offsets[0] = m_pVertexBuffer->VGetOffset();
-                    offsets[1] = m_pInstanceBuffer->VGetOffset();
 
-                    chimera::d3d::GetContext()->IASetVertexBuffers(0, 2, buffer, strides, offsets);
+                    for(int i = 1; i < 17; ++i)
+                    {
+                        IVertexBuffer* ib = m_pInstanceBuffer[i-1];
+                        if(ib)
+                        {
+                            buffer[i] = (ID3D11Buffer*)ib->VGetDevicePtr();
+                            strides[i] = ib->VGetStride();
+                            offsets[i] = ib->VGetOffset();
+                            count++;
+                        }
+                    }
+
+                    chimera::d3d::GetContext()->IASetVertexBuffers(0, count, buffer, strides, offsets);
                 }
                 else
                 {
@@ -284,15 +310,20 @@ namespace chimera
         {
             SAFE_DELETE(m_pIndexBuffer);
             SAFE_DELETE(m_pVertexBuffer);
-            if(m_ownsInstanceBuffer)
+            for(int i = 0; i < 16; ++i)
             {
-                SAFE_DELETE(m_pInstanceBuffer);
+                IVertexBuffer* ib = m_pInstanceBuffer[i];
+                bool mask = m_ownsInstanceBufferMask[i];
+                if(ib && mask)
+                {
+                    SAFE_DELETE(ib);
+                }
             }
         }
 
-        IVertexBuffer* Geometry::VGetInstanceBuffer(void)
+        IVertexBuffer* Geometry::VGetInstanceBuffer(uint index)
         {
-            return m_pInstanceBuffer;
+            return m_pInstanceBuffer[index];
         }
 
         IDeviceBuffer* Geometry::VGetIndexBuffer(void)
@@ -300,9 +331,9 @@ namespace chimera
             return m_pIndexBuffer;
         }
 
-        void Geometry::SetOwnsInstanceBuffer(bool owns)
+        void Geometry::SetOwnsInstanceBuffer(bool owns, uint index)
         {
-            m_ownsInstanceBuffer = owns;
+            m_ownsInstanceBufferMask[index] = owns;
         }
 
 //         VOID Geometry::VAddInstanceBuffer(FLOAT* data, UINT count, UINT stride)
@@ -315,9 +346,14 @@ namespace chimera
 //             m_pDrawer = INSTANCED_DRAWER;
 //         }
 
-        void Geometry::VSetInstanceBuffer(IVertexBuffer* buffer)
+        void Geometry::VSetInstanceBuffer(IVertexBuffer* buffer, uint slot)
         {
-            m_pInstanceBuffer = buffer;
+            m_pInstanceBuffer[slot] = buffer;
+
+            assert(m_ownsInstanceBufferMask[slot] == false);
+
+            m_ownsInstanceBufferMask[slot] = false;
+
             if(m_psCurrentBound == this)
             {
                 m_psCurrentBound = NULL;

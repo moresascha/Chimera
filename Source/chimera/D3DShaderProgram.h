@@ -130,6 +130,7 @@ namespace chimera
         ID3D11InputLayout* m_pLayout;
         D3D11_INPUT_ELEMENT_DESC m_layouts[16];
         uint m_numInputElemens;
+        uint m_numInstancedInputElemens;
         
     public:
         VertexShader(LPCTSTR file, LPCSTR function);
