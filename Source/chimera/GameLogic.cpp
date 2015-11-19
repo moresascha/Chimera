@@ -483,7 +483,7 @@ namespace chimera
 
     void BaseGameLogic::LevelLoadedDelegate(IEventPtr eventData)
     {
-        m_gameState = CM_STATE_RUNNING;
+        m_gameState = CM_STATE_RUNNING; 
     }
 
     void BaseGameLogic::CreateProcessDelegate(IEventPtr eventData)

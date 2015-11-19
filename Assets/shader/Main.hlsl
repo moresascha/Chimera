@@ -97,7 +97,7 @@ PixelOutput mainPS(PixelInput input)
     float specular = pow(saturate(dot(reflectVec, posToEye)), 12);
 
     float3 pos2Light = g_PointLightPos - input.world.xyz;
-    float intensity = 300.0 / (1+dot(pos2Light, pos2Light));
+    float intensity = 300.0 / (1 + dot(pos2Light, pos2Light));
 
     op.color = diffuseMaterial * diffuse * tex;
     float3 lightToPosShadow = input.world.xyz - g_PointLightPos;

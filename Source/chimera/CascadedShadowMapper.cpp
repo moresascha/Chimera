@@ -41,7 +41,7 @@ namespace chimera
         }
 #endif
         */
-        m_intensity = util::Vec3(2,2,2);
+        m_intensity = util::Vec3(1,1,1);
 
         m_ambient = util::Vec3(0.1f, 0.1f, 0.1f);
 
@@ -52,7 +52,8 @@ namespace chimera
 
         m_lightActorCamera = CmGetApp()->VGetLogic()->VCreateActor(std::move(desc));
 
-        util::Vec3 lightPos(1.0f,1.3f,0.6f);
+        //util::Vec3 lightPos(1.0f,1.3f,0.6f);
+        util::Vec3 lightPos(1.0f, 1, 0);
         lightPos.Normalize();
         lightPos.Scale(util::Vec3(1000.0f, 1000.0f, 1000.0f));
         tc->GetTransformation()->SetTranslation(lightPos.x, lightPos.y, lightPos.z);

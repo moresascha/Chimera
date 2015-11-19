@@ -85,10 +85,20 @@ float3x3 GetTangentSpaceMatrix3(float3 N, float3 p, float2 uv)
     float3 T = dp2perp * duv1.x + dp1perp * duv2.x;
     float3 B = dp2perp * duv1.y + dp1perp * duv2.y;
 
-    //if(dot(cross(B, T), N) < 0)
+    if(dot(cross(B, T), N) < 0)
     {
         B *= -1;
     }
+
+    /*
+    T = normalize(T - N * dot(N, T));
+
+    if(dot(cross(N, T), B) < 0)
+    {
+        T *= -1;
+    }
+    */
+
  
     // construct a scale-invariant frame 
     float invmax = rsqrt( max( dot(T,T), dot(B,B) ) );
@@ -125,7 +135,8 @@ PixelOutput DefShading_PS(PixelInput input)
     {
         float3x3 nm = GetTangentSpaceMatrix3(iNormal, input.world.xyz, input.texCoords);
         float3 normal = g_normalColor.Sample(g_samplerWrap, g_textureScale * input.texCoords).xyz;
-        normal = 2 * normal - float3(1, 1, 1);
+        //normal.x = 1.0 - normal.x; //make left handed, normals are moslty in right handed
+        normal = 2.0 * normal - float3(1.0, 1.0, 1.0);
         normal = normalize(normal);
         normal = mul(nm, normal);
         op.normal = float4(normal, 0);
@@ -135,9 +146,11 @@ PixelOutput DefShading_PS(PixelInput input)
        op.normal = float4(normalize(input.normal), 0);
     }
 
+   // op.normal = float4(normalize(input.normal), 0);
+
     op.normal.w = dot(normalize(g_CSMlightPos.xyz), iNormal); //peter panning hack sucks balls
 
-    //tex = tex * tex;//pow(abs(tex), 2.2);// * tex;//pow(tex, 1.0 / 2.0);// * tex; //gamma (2.0) correction 
+    tex = tex * tex;//pow(abs(tex), 2.2);// * tex;//pow(tex, 1.0 / 2.0);// * tex; //gamma (2.0) correction 
 
     op.worldPosDepth = input.world;
     op.worldPosDepth.w = input.worldView.z;
@@ -146,9 +159,10 @@ PixelOutput DefShading_PS(PixelInput input)
     op.ambientMaterialSpecG = half4(g_ambientMaterial.x, g_ambientMaterial.y, g_ambientMaterial.z, g_specularMaterial.y);
     op.diffuseColorSpecB = half4(tex.x, tex.y, tex.z, g_specularMaterial.z);
 
-    //op.normal = float4(normalize(input.normal), 0);
+    //op.normal = float4(input.texCoords.x, input.texCoords.y,0, 0);
     //op.diffuseColorSpecB = half4(op.normal.x, op.normal.y, op.normal.z, g_specularMaterial.z);
-    
+    //op.diffuseColorSpecB = half4(input.texCoords.x, input.texCoords.y, 0, g_specularMaterial.z);
+
     op.reflectionStr = (half)g_reflectanceMaterial;
 
     //HIGHLIGHT_PICKED

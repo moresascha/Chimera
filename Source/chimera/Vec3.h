@@ -246,18 +246,18 @@ namespace chimera
             CM_INLINE static util::Vec3 Min(const util::Vec3& p0, const util::Vec3& p1)
             {
                 util::Vec3 result;
-                result.x = min(p0.x, p1.x);
-                result.y = min(p0.y, p1.y);
-                result.z = min(p0.z, p1.z);
+                result.x = fminf(p0.x, p1.x);
+                result.y = fminf(p0.y, p1.y);
+                result.z = fminf(p0.z, p1.z);
                 return result;
             }
 
             CM_INLINE static util::Vec3 Max(const util::Vec3& p0, const util::Vec3& p1)
             {
                 util::Vec3 result;
-                result.x = max(p0.x, p1.x);
-                result.y = max(p0.y, p1.y);
-                result.z = max(p0.z, p1.z);
+                result.x = fmaxf(p0.x, p1.x);
+                result.y = fmaxf(p0.y, p1.y);
+                result.z = fmaxf(p0.z, p1.z);
                 return result;
             }
 

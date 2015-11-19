@@ -316,10 +316,10 @@ PixelOutput ToneMap(PixelInput input)
     float yr = key * lumi / avgLum;
     float lumiScaled = yr / (1 + yr);
 
-    //color += bright;
+    color += bright;
     //color = color * lumiScaled;
     
-    op.color = color; //float4(avgLum); //pow(abs(color), 1.0 / 2.2); gamma correction
+    op.color = pow(abs(color), 1.0 / 2.2); // gamma correction
     return op;
 }
 

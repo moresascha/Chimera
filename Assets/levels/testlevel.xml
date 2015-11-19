@@ -4,7 +4,7 @@
         <PhysicComponent>
             <Material>kinematic</Material>
             <ShapeStyle>box</ShapeStyle>
-            <MeshFile>unknown</MeshFile>
+            <MeshFile>box.obj</MeshFile>
             <Dimension x="2" y="2" z="2" />
         </PhysicComponent>
         <RenderComponent>

@@ -2,7 +2,7 @@
 <Actor>
     <TransformComponent />
     <RenderComponent>
-		<Resource>dspot.obj</Resource>
+		<Resource>spot.obj</Resource>
     </RenderComponent>
     
     <PickableComponent />
@@ -18,11 +18,10 @@
 	<LightComponent>
         <Type>spot</Type>
         <Color r="1" g="1" b="0" />
-        <Intensity>12</Intensity>
+        <Intensity>0.2</Intensity>
         <Activate />
         <Angle>90</Angle>
-        <Radius>100</Radius>
-        <Texture>flashlight.png</Texture>
+        <Radius>20</Radius>
         <CastShadow>1</CastShadow>
 	</LightComponent>
     </Actor>
@@ -34,11 +33,10 @@
 	<LightComponent>
         <Type>spot</Type>
         <Color r="0" g="1" b="1" />
-        <Intensity>12</Intensity>
+        <Intensity>0.2</Intensity>
         <Activate />
         <Angle>90</Angle>
-        <Radius>100</Radius>
-        <Texture>flashlight.png</Texture>
+        <Radius>20</Radius>
         <CastShadow>1</CastShadow>
 	</LightComponent>
     </Actor>

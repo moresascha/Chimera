@@ -1,14 +1,14 @@
 <?xml version="1.0" ?>
 <Level>
-    <Actor>
+  <Actor>
         <PhysicComponent>
             <Material>static</Material>
-            <Shape>plane</Shape>
+            <ShapeStyle>plane</ShapeStyle>
             <MeshFile>plane.obj</MeshFile>
             <Dimension x="1" y="1" z="1" />
         </PhysicComponent>
         <RenderComponent>
-            <MeshFile>plane.obj</MeshFile>
+            <Resource>plane.obj</Resource>
         </RenderComponent>
         <TransformComponent>
             <Position x="0" y="0" z="0" />
@@ -18,12 +18,12 @@
     <Actor>
         <PhysicComponent>
             <Material>kinematic</Material>
-            <Shape>box</Shape>
+            <ShapeStyle>box</ShapeStyle>
             <MeshFile>plane.obj</MeshFile>
             <Dimension x="1" y="1" z="1" />
         </PhysicComponent>
         <RenderComponent>
-            <MeshFile>box.obj</MeshFile>
+            <Resource>box.obj</Resource>
         </RenderComponent>
         <PickableComponent />
         <TransformComponent>
@@ -33,9 +33,10 @@
     </Actor>
     <Actor>
         <LightComponent>
-            <Type>Point</Type>
-            <Color r="127.819" g="271.214" b="176.793" />
-            <Radius>10</Radius>
+            <Type>point</Type>
+            <Color r="1" g="0.1" b="0.7" />
+            <Activate />
+            <Intensity>1</Intensity>
         </LightComponent>
         <PickableComponent />
         <TransformComponent>
@@ -46,12 +47,12 @@
     <Actor>
         <PhysicComponent>
             <Material>kinematic</Material>
-            <Shape>box</Shape>
-            <MeshFile>unknown</MeshFile>
+            <ShapeStyle>box</ShapeStyle>
+            <MeshFile>box.obj</MeshFile>
             <Dimension x="2" y="2" z="2" />
         </PhysicComponent>
         <RenderComponent>
-            <MeshFile>box.obj</MeshFile>
+            <Resource>box.obj</Resource>
         </RenderComponent>
         <PickableComponent />
         <TransformComponent>
@@ -62,12 +63,12 @@
     <Actor>
         <PhysicComponent>
             <Material>kinematic</Material>
-            <Shape>sphere</Shape>
-            <MeshFile>unknown</MeshFile>
+            <ShapeStyle>sphere</ShapeStyle>
+            <MeshFile>box.obj</MeshFile>
             <Dimension x="2" y="2" z="2" />
         </PhysicComponent>
         <RenderComponent>
-            <MeshFile>sphere.obj</MeshFile>
+            <Resource>sphere.obj</Resource>
         </RenderComponent>
         <PickableComponent />
         <TransformComponent>
@@ -77,9 +78,10 @@
     </Actor>
     <Actor>
         <LightComponent>
-            <Type>Point</Type>
-            <Color r="127.819" g="271.214" b="176.793" />
-            <Radius>10</Radius>
+            <Type>point</Type>
+            <Color r="1" g="0.1" b="0.7" />
+            <Activate />
+            <Intensity>1</Intensity>
         </LightComponent>
         <PickableComponent />
         <TransformComponent>
@@ -89,9 +91,10 @@
     </Actor>
     <Actor>
         <LightComponent>
-            <Type>Point</Type>
-            <Color r="216.824" g="355.97" b="337.324" />
-            <Radius>10</Radius>
+            <Type>point</Type>
+            <Color r="1" g="0.1" b="0.7" />
+            <Activate />
+            <Intensity>1</Intensity>
         </LightComponent>
         <PickableComponent />
         <TransformComponent>
@@ -101,9 +104,10 @@
     </Actor>
     <Actor>
         <LightComponent>
-            <Type>Point</Type>
-            <Color r="127.819" g="271.214" b="176.793" />
-            <Radius>10</Radius>
+            <Type>point</Type>
+            <Color r="1" g="0.1" b="0.7" />
+            <Activate />
+            <Intensity>1</Intensity>
         </LightComponent>
         <PickableComponent />
         <TransformComponent>
@@ -113,9 +117,10 @@
     </Actor>
     <Actor>
         <LightComponent>
-            <Type>Point</Type>
-            <Color r="333.729" g="276.677" b="249.868" />
-            <Radius>10</Radius>
+            <Type>point</Type>
+            <Color r="1" g="0.1" b="0.7" />
+            <Activate />
+            <Intensity>1</Intensity>
         </LightComponent>
         <PickableComponent />
         <TransformComponent>
@@ -125,9 +130,10 @@
     </Actor>
     <Actor>
         <LightComponent>
-            <Type>Point</Type>
-            <Color r="216.824" g="355.97" b="337.324" />
-            <Radius>10</Radius>
+            <Type>point</Type>
+            <Color r="1" g="0.1" b="0.7" />
+            <Activate />
+            <Intensity>1</Intensity>
         </LightComponent>
         <PickableComponent />
         <TransformComponent>

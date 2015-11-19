@@ -442,7 +442,7 @@ namespace chimera
         return (att & FILE_ATTRIBUTE_DIRECTORY) != 0;
     }
 
-    int ResourceFolder::VGetRawRessource(const CMResource&  r, char** buffer)
+    int ResourceFolder::VGetRawRessource(const CMResource& r, char** buffer)
     {
         std::string fileName(m_folder + "/" + r.m_name);
         std::ifstream file(fileName, std::ios::in | std::ios::binary);

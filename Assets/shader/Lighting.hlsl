@@ -203,19 +203,22 @@ PixelOutput GlobalLighting_PS(PixelInput input)
             skyTex = g_diffuseColor.Sample(g_samplerClamp, tc).xyz;
             skyTex *= skyTex;
             float refScale = saturate(0.6 + dot(float3(0,1,0), reflectVec));
-            skyTex *= refScale;
+            //skyTex *= refScale; wtf??
         }
 
         int selfShade = nn.w < 0;
 
         diffuse = float4(lerp(diffuse.xyz, skyTex, ref), 0);
-        //op.color = float4(normal, 1);
 
         PixelLight pl = GetLightConComponents(normalize(g_eyePos.xyz - worldDepth.xyz), -sunposition, normalize(normal), 8);
 
-        op.color = float4(sunIntensity * (diffuseMat.xyz * diffuse.xyz * pl.diffuse + specularMat * pl.specular), 1);
+        op.color = max(0, dot(sunposition, normalize(normal))) * float4(diffuse);// sunIntensity * (diffuse.xyz * (diffuseMat.xyz * pl.diffuse + specularMat * pl.specular)), 1);
 
-        //op.color += float4(ambientMat.xyz * diffuse.xyz, 0);
+        if(normal.x < 0)
+        {
+            op.color = float4(1, 1, 1, 1);
+        }
+
         //CSM
         /*if(selfShade) //hack to avoid peter panning, todo
         {
@@ -226,7 +229,10 @@ PixelOutput GlobalLighting_PS(PixelInput input)
             computeCSMContr(op.color, input.texCoord, normal);
         }
 
-        op.color.xyz += ambientMat.xyz; //float4(g_ambient.xyz * ambientMat.xyz, 0); // * diffuse.xyz
+        //some ambi testing
+        //op.color.xyz += max(0, (0.05 - pl.diffuse)) * sunIntensity * diffuse.xyz * g_ambient.xyz;
+
+        //op.color.xyz = clamp(diffuse.xyz, 0, 1);
     } 
     else
     {
@@ -241,7 +247,7 @@ PixelOutput GlobalLighting_PS(PixelInput input)
         float powa = pow(saturate(dot(ray.xyz, sunposition)), 32);
         
         float l = clamp(worldDepth.y * 0.1, 0, 1);
-        op.color = 0*diffuse;
+        op.color =  diffuse + powa * tex;
     }
     return op;
 }

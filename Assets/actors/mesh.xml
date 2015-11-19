@@ -1,0 +1,8 @@
+<Actor name = "Test">
+    <TransformComponent>
+        <Position x="0" y="3" z="0.0" />
+    </TransformComponent>
+    <RenderComponent>
+		<Resource>untitled.obj</Resource>
+    </RenderComponent>
+</Actor>

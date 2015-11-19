@@ -2,12 +2,6 @@
 #include <Nutty.h>
 #include <Copy.h>
 
-#ifdef _DEBUG
-#pragma comment(lib, "Nuttyx64Debug.lib")
-#else
-#pragma comment(lib, "Nuttyx64Release.lib")
-#endif
-
 namespace chimera
 {
     ParticleSystem::ParticleSystem(uint particleCount, RNG generator) : 

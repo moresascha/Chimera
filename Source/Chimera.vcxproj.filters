@@ -118,6 +118,9 @@
     <Filter Include="Source Files\view\particles">
       <UniqueIdentifier>{9f928131-d358-451a-8ea2-73b5f2679ca0}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Source Files\test\clickGame">
+      <UniqueIdentifier>{9fd016d6-944b-41cd-8f30-c1e509a14409}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\Assets\shader\ShaderGlobals.h">
@@ -563,9 +566,6 @@
     <ClCompile Include="chimera\LuaHelper.cpp">
       <Filter>Source Files\unused</Filter>
     </ClCompile>
-    <ClCompile Include="Main.cpp">
-      <Filter>Source Files\test</Filter>
-    </ClCompile>
     <ClCompile Include="chimera\Actor.cpp">
       <Filter>Source Files\logic\actor</Filter>
     </ClCompile>
@@ -613,6 +613,15 @@
     </ClCompile>
     <ClCompile Include="chimera\ParticleManager.cpp">
       <Filter>Source Files\view\particles</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\lib-win\nutty\internal.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Main.cpp">
+      <Filter>Source Files\test\clickGame</Filter>
+    </ClCompile>
+    <ClCompile Include="Test.cpp">
+      <Filter>Source Files\test</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

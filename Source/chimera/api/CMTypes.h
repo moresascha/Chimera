@@ -593,38 +593,44 @@ namespace chimera
 
     class CMResource
     {
-
-    public:
-        std::string m_name;
-        CMResource(const std::string &name) : m_name(name) 
+    private:
+        void ClearString(void)
         {
+            auto removeWS = [](char c){ return (c == '\r' || c == '\t' || c == ' ' || c == '\n'); };
+            m_name.erase(std::remove_if(m_name.begin(), m_name.end(), removeWS), m_name.end());
             std::transform(m_name.begin(), m_name.end(), m_name.begin(), ::tolower);
         }
 
-        CMResource(LPCSTR name)
+    public:
+        std::string m_name;
+
+        CMResource(const std::string &name) : m_name(name) 
         {
-            m_name = name;
-            std::transform(m_name.begin(), m_name.end(), m_name.begin(), ::tolower);
+            ClearString();
+        }
+
+        CMResource(LPCSTR name) : m_name(name)
+        {
+            ClearString();
         }
 
         CMResource(const CMResource& r)
         {
-            this->m_name = r.m_name;
+            m_name = r.m_name;
         }
 
         CMResource(void) : m_name("unknown") {}
 
         void CMResource::operator=(std::string& str) 
         {
-            std::transform(str.begin(), str.end(), str.begin(), ::tolower);
-            this->m_name = str;
+            m_name = str;
+            ClearString();
         }
 
         void CMResource::operator=(char* chars) 
         {
-            std::string str(chars);
-            std::transform(str.begin(), str.end(), str.begin(), ::tolower);
-            this->m_name = str;
+            m_name = chars;
+            ClearString();
         }
 
         void CMResource::operator=(const CMResource& res)
