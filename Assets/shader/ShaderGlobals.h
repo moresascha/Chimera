@@ -26,6 +26,7 @@ cbuffer ProjectionBuffer : register(b1)
 {
     matrix g_projection;
     float4 g_viewDistance;
+    float g_aspect;
 }
 
 cbuffer ModelMatrixBuffer : register(b2)

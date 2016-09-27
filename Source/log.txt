@@ -1,9 +1,17 @@
-log.txt, 11/20/15
-[INFO] Failed to queue event, no listener for event: ®$
+log.txt, 03/09/16
+[INFO] Failed to queue event, no listener for event: Àq=
        Function: chimera::EventManager::VQueueEvent
        File: chimera\EventManager.cpp
        Line: 95
-[INFO] Failed to queue event, no listener for event: Ğ1
+[INFO] Failed to queue event, no listener for event: 	=
+       Function: chimera::EventManager::VQueueEvent
+       File: chimera\EventManager.cpp
+       Line: 95
+[INFO] Failed to queue event, no listener for event: À×=
+       Function: chimera::EventManager::VQueueEvent
+       File: chimera\EventManager.cpp
+       Line: 95
+[INFO] Failed to queue event, no listener for event: à	«
        Function: chimera::EventManager::VQueueEvent
        File: chimera\EventManager.cpp
        Line: 95

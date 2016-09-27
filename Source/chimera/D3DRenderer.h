@@ -33,6 +33,7 @@ namespace chimera
         {
             XMFLOAT4X4 m_projection;
             XMFLOAT4 m_viewDistance;
+            XMFLOAT4 m_aspect;
         };
 
         struct _ModelMatrixBuffer
@@ -193,7 +194,7 @@ namespace chimera
 
             void VSetViewTransform(const util::Mat4& mat, const util::Mat4& invMat, const util::Vec3& eyePos, const util::Vec3& viewDir);
 
-            void VSetProjectionTransform(const util::Mat4& mat, float distance);
+            void VSetProjectionTransform(const util::Mat4& mat, float distance, float aspect);
 
             void VSetWorldTransform(const util::Mat4& mat);
 
@@ -205,7 +206,7 @@ namespace chimera
 
             void VPopViewTransform(void);
 
-            void VPushProjectionTransform(const util::Mat4& mat, float distance);
+            void VPushProjectionTransform(const util::Mat4& mat, float distance, float aspect);
 
             void VPopProjectionTransform(void);
 

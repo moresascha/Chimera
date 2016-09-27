@@ -614,14 +614,14 @@
     <ClCompile Include="chimera\ParticleManager.cpp">
       <Filter>Source Files\view\particles</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\lib-win\nutty\internal.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="Main.cpp">
       <Filter>Source Files\test\clickGame</Filter>
     </ClCompile>
     <ClCompile Include="Test.cpp">
       <Filter>Source Files\test</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\lib-win\lib-win\nutty\internal.cpp">
+      <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -653,9 +653,6 @@
       <Filter>Resource Files</Filter>
     </None>
     <None Include="..\Assets\shader\Lighting.hlsl">
-      <Filter>Resource Files</Filter>
-    </None>
-    <None Include="..\Assets\shader\Main.hlsl">
       <Filter>Resource Files</Filter>
     </None>
     <None Include="..\Assets\shader\Particles.hlsl">

@@ -74,7 +74,24 @@ namespace chimera
             {
                 LOG_CRITICAL_ERROR("no meshfile specified!");
             }
-            mn = new MeshNode(actor->GetId(), comp->m_resource, comp->m_meshId);
+
+            std::shared_ptr<IMeshSet> meshSet = std::static_pointer_cast<IMeshSet>(CmGetApp()->VGetCache()->VGetHandle(comp->m_resource));
+
+            if(meshSet->VGetMeshCount() > 1)
+            {
+                mn = new SceneNode(actor->GetId());
+                mn->VSetRenderPaths(CM_RENDERPATH_ALBEDO | CM_RENDERPATH_SHADOWMAP);
+                for(auto it = meshSet->VBegin(); it != meshSet->VEnd(); ++it)
+                {
+                    MeshNode* subMeshNode = new MeshNode(actor->GetId(), comp->m_resource, it->first);
+                    subMeshNode->VOnRestore(gw->VGetSceneGraph());
+                    mn->VAddChild(std::move(std::unique_ptr<ISceneNode>(subMeshNode)));
+                }
+            }
+            else
+            {
+                mn = new MeshNode(actor->GetId(), comp->m_resource, "");
+            }
         }
 
         if(comp->m_drawType == "wire")
@@ -175,7 +192,7 @@ namespace chimera
         if(m_pSceneGraph->VGetCamera())
         {
             m_pSceneGraph->VGetCamera()->SetAspect(VGetRenderer()->VGetWidth(), VGetRenderer()->VGetHeight());
-            VGetRenderer()->VSetProjectionTransform(m_pSceneGraph->VGetCamera()->GetProjection(), m_pSceneGraph->VGetCamera()->GetFar());
+            VGetRenderer()->VSetProjectionTransform(m_pSceneGraph->VGetCamera()->GetProjection(), m_pSceneGraph->VGetCamera()->GetFar(), m_pSceneGraph->VGetCamera()->GetAspect());
             VGetRenderer()->VSetViewTransform(m_pSceneGraph->VGetCamera()->GetView(), m_pSceneGraph->VGetCamera()->GetIView(), m_pSceneGraph->VGetCamera()->GetEyePos(), m_pSceneGraph->VGetCamera()->GetViewDir());
         }
 
@@ -541,7 +558,7 @@ namespace chimera
                 IView::VSetTarget(actor);
 
                 VGetRenderer()->VSetViewTransform(cam->GetView(), cam->GetIView(), cam->GetEyePos(), cam->GetViewDir());
-                VGetRenderer()->VSetProjectionTransform(cam->GetProjection(), cam->GetFar() - cam->GetNear());
+                VGetRenderer()->VSetProjectionTransform(cam->GetProjection(), cam->GetFar() - cam->GetNear(), cam->GetAspect());
 
                 m_pSceneGraph->VSetCamera(cam);
 

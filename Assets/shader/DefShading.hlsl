@@ -87,19 +87,16 @@ float3x3 GetTangentSpaceMatrix3(float3 N, float3 p, float2 uv)
 
     if(dot(cross(B, T), N) < 0)
     {
-        B *= -1;
+        //B *= -1;
     }
-
-    /*
-    T = normalize(T - N * dot(N, T));
+    
+    /*T = normalize(T - N * dot(N, T));
 
     if(dot(cross(N, T), B) < 0)
     {
         T *= -1;
-    }
-    */
+    } */
 
- 
     // construct a scale-invariant frame 
     float invmax = rsqrt( max( dot(T,T), dot(B,B) ) );
     return transpose(float3x3( T * invmax, B * invmax, N ));
@@ -119,6 +116,34 @@ float3x3 GetTangentSpaceMatrix3_2(float3 normal, float3 position, float2 texCoor
     return transpose(float3x3(normalize(T), normalize(B), normalize(normal)));
 }
 
+float3x3 cotangent_frame(float3 N, float3 p, float2 uv)
+{
+    // get edge vectors of the pixel triangle
+    float3 dp1 = ddx(p);
+    float3 dp2 = ddy(p);
+    float2 duv1 = ddx(uv);
+    float2 duv2 = ddy(uv);
+
+    // solve the linear system
+    float3 dp2perp = cross(dp2, N);
+    float3 dp1perp = cross(N, dp1);
+    float3 T = dp2perp * duv1.x + dp1perp * duv2.x;
+    float3 B = dp2perp * duv1.y + dp1perp * duv2.y;
+
+    // construct a scale-invariant frame 
+    float invmax = rsqrt(max(dot(T, T), dot(B, B)));
+    return transpose(float3x3(T * invmax, B * invmax, N));
+}
+
+float3 perturb_normal(float3 normalMapValue, float3 N, float3 V, float2 texcoord)
+{
+    normalMapValue = 2 * normalMapValue - 1;// normalMapValue * 255. / 127. - 128. / 127.;
+    normalMapValue.y *= -1;
+    normalMapValue.x *= -1;
+    float3x3 TBN = cotangent_frame(N, -V, texcoord);
+    return normalize(mul(TBN, normalMapValue));
+}
+
 PixelOutput DefShading_PS(PixelInput input)
 {
     PixelOutput op;
@@ -133,12 +158,11 @@ PixelOutput DefShading_PS(PixelInput input)
     
     if(g_hasNormalMap.x > 0.5)
     {
-        float3x3 nm = GetTangentSpaceMatrix3(iNormal, input.world.xyz, input.texCoords);
         float3 normal = g_normalColor.Sample(g_samplerWrap, g_textureScale * input.texCoords).xyz;
-        //normal.x = 1.0 - normal.x; //make left handed, normals are moslty in right handed
-        normal = 2.0 * normal - float3(1.0, 1.0, 1.0);
-        normal = normalize(normal);
-        normal = mul(nm, normal);
+        normal = 2 * normal - 1;
+        normal.y *= -1;
+        float3x3 frame = cotangent_frame(iNormal, input.world.xyz, input.texCoords);
+        normal = normalize(mul(frame, normal));
         op.normal = float4(normal, 0);
     }
     else
@@ -146,7 +170,7 @@ PixelOutput DefShading_PS(PixelInput input)
        op.normal = float4(normalize(input.normal), 0);
     }
 
-   // op.normal = float4(normalize(input.normal), 0);
+    //op.normal = float4(normalize(input.normal), 0);
 
     op.normal.w = dot(normalize(g_CSMlightPos.xyz), iNormal); //peter panning hack sucks balls
 
@@ -159,7 +183,7 @@ PixelOutput DefShading_PS(PixelInput input)
     op.ambientMaterialSpecG = half4(g_ambientMaterial.x, g_ambientMaterial.y, g_ambientMaterial.z, g_specularMaterial.y);
     op.diffuseColorSpecB = half4(tex.x, tex.y, tex.z, g_specularMaterial.z);
 
-    //op.normal = float4(input.texCoords.x, input.texCoords.y,0, 0);
+    //op.normal = float4(input.texCoords.x, input.texCoords.y, 0, 1);
     //op.diffuseColorSpecB = half4(op.normal.x, op.normal.y, op.normal.z, g_specularMaterial.z);
     //op.diffuseColorSpecB = half4(input.texCoords.x, input.texCoords.y, 0, g_specularMaterial.z);
 

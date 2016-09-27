@@ -187,13 +187,13 @@ namespace chimera
         virtual void VPresent(void) = 0;
 
         virtual void VSetViewTransform(const util::Mat4& mat, const util::Mat4& invMat, const util::Vec3& eyePos, const util::Vec3& viewDir) = 0;
-        virtual void VSetProjectionTransform(const util::Mat4& mat, float distance) = 0;
         virtual void VSetWorldTransform(const util::Mat4& mat) = 0;
 
         virtual void VPushViewTransform(const util::Mat4& mat, const util::Mat4& invMat, const util::Vec3& eyePos, const util::Vec3& viewDir) = 0;
         virtual void VPopViewTransform(void) = 0;
 
-        virtual void VPushProjectionTransform(const util::Mat4& mat, float distance) = 0;
+        virtual void VSetProjectionTransform(const util::Mat4& mat, float distance, float aspect) = 0;
+        virtual void VPushProjectionTransform(const util::Mat4& mat, float distance, float aspect) = 0;
         virtual void VPopProjectionTransform(void) = 0;
 
         virtual void VPushWorldTransform(const util::Mat4& mat) = 0;

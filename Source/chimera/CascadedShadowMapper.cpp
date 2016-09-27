@@ -53,7 +53,7 @@ namespace chimera
         m_lightActorCamera = CmGetApp()->VGetLogic()->VCreateActor(std::move(desc));
 
         //util::Vec3 lightPos(1.0f,1.3f,0.6f);
-        util::Vec3 lightPos(1.0f, 1, 0);
+        util::Vec3 lightPos(1.0f, 0.2, 0);
         lightPos.Normalize();
         lightPos.Scale(util::Vec3(1000.0f, 1000.0f, 1000.0f));
         tc->GetTransformation()->SetTranslation(lightPos.x, lightPos.y, lightPos.z);
@@ -328,7 +328,7 @@ namespace chimera
             ortographicFrusta.CreateOrthographicOffCenter(vmin.x, vmax.x, vmin.y, vmax.y, n, ff);
             ortographicFrusta.Transform(lightCamera->GetIView());
    
-            renderer->VPushProjectionTransform(settings.m_projection, ff - n);
+            renderer->VPushProjectionTransform(settings.m_projection, ff - n, 1);
 
             m_ppTargets[ci]->VClear();
             m_ppTargets[ci]->VBind();

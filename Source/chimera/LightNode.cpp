@@ -254,7 +254,7 @@ namespace chimera
 
                 m_drawShadow->VBind();
                 IRenderer* renderer = CmGetApp()->VGetHumanView()->VGetRenderer();
-                renderer->VPushProjectionTransform(m_projection, m_lightComponent->m_radius);
+                renderer->VPushProjectionTransform(m_projection, m_lightComponent->m_radius, 1.0);
 
                 IConstShaderBuffer* lb = renderer->VGetConstShaderBuffer(eCubeMapViewsBuffer);
                 XMFLOAT4X4* buffer = (XMFLOAT4X4*)lb->VMap();

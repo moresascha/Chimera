@@ -93,10 +93,10 @@ namespace chimera
                     //b = (INT)(255 * pow((DOUBLE)b / 255.0, 2.2));
                     //a = (INT)(255 * pow((DOUBLE)a / 255.0, 2.2));
 
-                    color[index++] = r & 0xFF;//c.GetR();
-                    color[index++] = g & 0xFF;//c.GetGreen();
-                    color[index++] = b & 0xFF;//c.GetBlue();
-                    color[index++] = a & 0xFF;//c.GetAlpha();
+                    color[index++] = (char)(r & 0xFF);//c.GetR();
+                    color[index++] = (char)(g & 0xFF);//c.GetGreen();
+                    color[index++] = (char)(b & 0xFF);//c.GetBlue();
+                    color[index++] = (char)(a & 0xFF);//c.GetAlpha();
                 }
             }
             return color;

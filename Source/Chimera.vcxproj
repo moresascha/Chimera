@@ -104,7 +104,7 @@
     <ClInclude Include="chimera\VRamManager.h" />
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="..\..\lib-win\nutty\internal.cpp" />
+    <ClCompile Include="..\..\lib-win\lib-win\nutty\internal.cpp" />
     <ClCompile Include="chimera\Actor.cpp">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">false</ExcludedFromBuild>
     </ClCompile>
@@ -362,7 +362,6 @@
     <None Include="..\Assets\shader\GeometryTransformation.ptx" />
     <None Include="..\Assets\shader\Gui.hlsl" />
     <None Include="..\Assets\shader\Lighting.hlsl" />
-    <None Include="..\Assets\shader\Main.hlsl" />
     <None Include="..\Assets\shader\Particles.hlsl" />
     <None Include="..\Assets\shader\Particles.ptx" />
     <None Include="..\Assets\shader\Picking.hlsl" />
@@ -444,11 +443,11 @@
     <IntDir>$(SolutionDir)..\Tmp\$(ProjectName)$(PlatformName)$(Configuration)\</IntDir>
     <OutDir>$(SolutionDir)..\Bin\$(PlatformName)$(Configuration)\</OutDir>
     <TargetName>$(ProjectName)$(PlatformName)$(Configuration)</TargetName>
-    <IncludePath>../../lib-win/nutty/;$(CUDA_PATH_V42)include;$(IncludePath)</IncludePath>
+    <IncludePath>../../lib-win/lib-win/nutty/;$(CUDA_PATH_V42)include;$(IncludePath)</IncludePath>
     <LibraryPath>$(LibraryPath);</LibraryPath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
-    <IncludePath>../../lib-win/nutty/;$(CUDA_PATH_V42)include;$(IncludePath)</IncludePath>
+    <IncludePath>../../lib-win/lib-win/nutty/;$(CUDA_PATH_V42)include;$(IncludePath)</IncludePath>
     <OutDir>$(SolutionDir)..\Bin\$(PlatformName)$(Configuration)\</OutDir>
     <IntDir>$(SolutionDir)..\Tmp\$(ProjectName)$(PlatformName)$(Configuration)\</IntDir>
     <TargetName>$(ProjectName)$(PlatformName)$(Configuration)</TargetName>
@@ -478,7 +477,7 @@
     </ClCompile>
     <Link>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalLibraryDirectories>../Lib;$(FrameworkSdkDir)Lib/win8/um/($Platform)</AdditionalLibraryDirectories>
+      <AdditionalLibraryDirectories>../Lib;../../lib-win/lib;$(FrameworkSdkDir)Lib/win8/um/($Platform)</AdditionalLibraryDirectories>
       <IgnoreSpecificDefaultLibraries>LIBCMTD;LIBCMT;libcpmt;%(IgnoreSpecificDefaultLibraries)</IgnoreSpecificDefaultLibraries>
       <AdditionalDependencies>%(AdditionalDependencies)</AdditionalDependencies>
       <SubSystem>Windows</SubSystem>

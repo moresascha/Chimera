@@ -2,11 +2,11 @@
 <Actor>
     <TransformComponent />
     <RenderComponent>
-		<Resource>spot.obj</Resource>
+		<Resource>spottwotest.obj</Resource>
     </RenderComponent>
     
     <PickableComponent />
-    
+
     <PhysicComponent>
 		<ShapeStyle>sphere</ShapeStyle>
 	</PhysicComponent>

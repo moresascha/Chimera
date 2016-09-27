@@ -311,7 +311,7 @@ namespace chimera
                 {
                     InitMesh(currentMesh, rawData, lastIndexStart, subMeshData, &indexCount, &vertexCount, currentTopo, matName);
 
-                    QUEUE_EVENT_TSAVE(new SubMeshLoadedEvent(meshSet.get(), res.m_name));
+                    //QUEUE_EVENT_TSAVE(new SubMeshLoadedEvent(meshSet.get(), res.m_name)); why??
    
                     subMeshData.m_faces.clear();
                     subMeshData.m_trianglesCount = 0;
@@ -719,7 +719,8 @@ namespace chimera
         //texture->GetDescription().BindFlags = D3D11_BIND_SHADER_RESOURCE;
 
         //texture->GetDescription().Format = DXGI_FORMAT_R8G8B8A8_UNORM;
-        texture->SetFormat(DXGI_FORMAT_R8G8B8A8_UNORM_SRGB);
+        //texture->SetFormat(DXGI_FORMAT_R8G8B8A8_UNORM_SRGB);
+        texture->SetFormat(DXGI_FORMAT_R8G8B8A8_UNORM);
 
         //texture->GetDescription().Width = data->m_width;
         texture->SetWidth(data->m_width);

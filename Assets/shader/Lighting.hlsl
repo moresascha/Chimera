@@ -117,7 +117,7 @@ void computeCSMContr(out in float4 color, in float2 texCoords, in float3 normal)
 
     float light_shadow_bias = 0;//0.1;//-0.1f;
     
-    float light_vsm_epsilon = 0.000001f;
+    float light_vsm_epsilon   = 0.000001f;
     
     rescaled_dist_to_light -= light_shadow_bias;
     
@@ -130,16 +130,7 @@ void computeCSMContr(out in float4 color, in float2 texCoords, in float3 normal)
     float m_d = (rescaled_dist_to_light - moments.x);
     float p = variance / (variance + m_d * m_d);
 
-    color *= max(lit_factor, max(p, 0.1));
-    
-    /*if(lightPosDepth > (moments.x + bias))
-       {
-
-           // if(dot(dd, float3(0,0,1)) > 0)
-            {
-                color *= 0.3;//float4(0,0,0,0);
-            }
-        } */
+    color *= max(lit_factor, p);
 }
 
 PixelOutput DebugGlobalLighting_PS(PixelInput input)
@@ -212,12 +203,9 @@ PixelOutput GlobalLighting_PS(PixelInput input)
 
         PixelLight pl = GetLightConComponents(normalize(g_eyePos.xyz - worldDepth.xyz), -sunposition, normalize(normal), 8);
 
-        op.color = max(0, dot(sunposition, normalize(normal))) * float4(diffuse);// sunIntensity * (diffuse.xyz * (diffuseMat.xyz * pl.diffuse + specularMat * pl.specular)), 1);
+        op.color = max(0, dot(sunposition, normalize(normal))) * float4(sunIntensity * (diffuse.xyz * (diffuseMat.xyz * pl.diffuse + specularMat * pl.specular)), 1);
 
-        if(normal.x < 0)
-        {
-            op.color = float4(1, 1, 1, 1);
-        }
+        //op.color.xyz = diffuse.xyz;
 
         //CSM
         /*if(selfShade) //hack to avoid peter panning, todo
@@ -230,24 +218,21 @@ PixelOutput GlobalLighting_PS(PixelInput input)
         }
 
         //some ambi testing
-        //op.color.xyz += max(0, (0.05 - pl.diffuse)) * sunIntensity * diffuse.xyz * g_ambient.xyz;
-
-        //op.color.xyz = clamp(diffuse.xyz, 0, 1);
+        op.color.xyz += max(0, (0.05 - pl.diffuse)) * sunIntensity * diffuse.xyz * g_ambient.xyz;
     } 
     else
     {
         float4 ray = float4(-1.0 +  2.0 * float2(input.texCoord.x, 1 - input.texCoord.y), 1, 0);
-        ray.y *= 1;
+        ray.y /= g_aspect.x;
         ray.w = 0;
+        ray = normalize(ray);
         ray = mul(g_invView, ray);
         ray = normalize(ray);
-
-        float4 tex = diffuse;
 
         float powa = pow(saturate(dot(ray.xyz, sunposition)), 32);
         
         float l = clamp(worldDepth.y * 0.1, 0, 1);
-        op.color =  diffuse + powa * tex;
+        op.color = diffuse + powa * diffuse;
     }
     return op;
 }

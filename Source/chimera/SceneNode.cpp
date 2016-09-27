@@ -342,6 +342,10 @@ namespace chimera
 
         if(VWasVisibleOnLastTraverse())
         {
+            for(auto childIt = m_childs.begin(); childIt != m_childs.end(); ++childIt)
+            {
+                (*childIt)->VRender(graph, path);
+            }
             VPreRender(graph);
             _VRender(graph, path);
             VPostRender(graph);

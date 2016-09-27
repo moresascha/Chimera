@@ -64,7 +64,7 @@ namespace chimera
     {
         m_pRenderTarget->VBind();
         m_pRenderTarget->VClear();
-        CmGetApp()->VGetHumanView()->VGetRenderer()->VPushProjectionTransform(m_projection, 1000.0f);
+        CmGetApp()->VGetHumanView()->VGetRenderer()->VPushProjectionTransform(m_projection, 1000.0f, 1.0);
         m_pShaderProgram->VBind();
         CmGetApp()->VGetHumanView()->VGetSceneGraph()->VOnRender(CM_RENDERPATH_PICK);
         CmGetApp()->VGetHumanView()->VGetRenderer()->VPopProjectionTransform();

@@ -1,8 +1,9 @@
 <Actor name = "Test">
     <TransformComponent>
-        <Position x="0" y="3" z="0.0" />
+        <Position x="0" y="0" z="0.0" />
+		<Rotation x="0" y="0" z="0" w="-1"/>
     </TransformComponent>
     <RenderComponent>
-		<Resource>untitled.obj</Resource>
+		<Resource>BMW1M-MikePan.obj</Resource>
     </RenderComponent>
 </Actor>

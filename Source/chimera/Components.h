@@ -72,8 +72,6 @@ namespace chimera
 
         std::string m_drawType;
 
-        std::string m_meshId;
-
         float m_anchorRadius;
 
         util::Vec3 m_anchorBoxHE;

@@ -457,12 +457,13 @@ namespace chimera
 
         }
 
-        void Renderer::VSetProjectionTransform(const util::Mat4& mat, float distance) 
+        void Renderer::VSetProjectionTransform(const util::Mat4& mat, float distance, float aspect) 
         {
             m_projectionMatrixStack.Clear();
             _ProjectionMatrixBuffer buffer;
             buffer.m_projection = mat.m_m;
             buffer.m_viewDistance.x = buffer.m_viewDistance.y = buffer.m_viewDistance.z = buffer.m_viewDistance.w = distance;
+            buffer.m_aspect.x = buffer.m_aspect.y = buffer.m_aspect.z = buffer.m_aspect.w = aspect;
             m_projectionMatrixStack.Push(buffer);
             _ProjectionMatrixBuffer* pBuffer = (_ProjectionMatrixBuffer*)m_constBuffer[eProjectionBuffer]->VMap();
             *pBuffer = buffer;
@@ -471,11 +472,12 @@ namespace chimera
             chimera::CmGetApp()->VGetHumanView()->VGetSceneGraph()->VResetVisibility();
         }
 
-        void Renderer::VPushProjectionTransform(const util::Mat4& mat, float distance) 
+        void Renderer::VPushProjectionTransform(const util::Mat4& mat, float distance, float aspect) 
         {
             _ProjectionMatrixBuffer buffer;
             buffer.m_projection = mat.m_m;
             buffer.m_viewDistance.x = buffer.m_viewDistance.y = buffer.m_viewDistance.z = buffer.m_viewDistance.w = distance;
+            buffer.m_aspect.x = buffer.m_aspect.y = buffer.m_aspect.z = buffer.m_aspect.w = aspect;
             m_projectionMatrixStack.Push(buffer);
             _ProjectionMatrixBuffer* pBuffer = (_ProjectionMatrixBuffer*)m_constBuffer[eProjectionBuffer]->VMap();
             *pBuffer = buffer;

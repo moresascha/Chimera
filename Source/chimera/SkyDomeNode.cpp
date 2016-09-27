@@ -16,7 +16,7 @@ namespace chimera
         float dphi = 2 * XM_PI / (float)segmentsX;
         float dtheta = XM_PI / (float)segmentsY;
         float phi = 0;
-        float theta = 0;//-XM_PI;
+        float theta = 0;
         uint ic = 0;
         uint vc = 0;
 
@@ -25,7 +25,7 @@ namespace chimera
             for(uint j = 0; j <= segmentsX; ++j)
             {
                 vertexBuffer[vc++] = sin(theta) * cos(phi);
-                vertexBuffer[vc++] = cos(theta);
+                vertexBuffer[vc++] = cos(1.005 * theta);
                 vertexBuffer[vc++] = sin(theta) * sin(phi);
 
                 vertexBuffer[vc++] = phi / XM_2PI;
